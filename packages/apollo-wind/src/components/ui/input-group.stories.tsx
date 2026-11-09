@@ -933,6 +933,42 @@ export const PopoverAnchoring: Story = {
   ),
 };
 
+function LoadingPicker({ label, value }: { label: string; value?: string }) {
+  const [loading, setLoading] = useState(true);
+  const id = `loading-${label.toLowerCase().replace(/\W+/g, '-')}`;
+  return (
+    <FormField>
+      <div className="flex items-center justify-between">
+        <FormFieldLabel htmlFor={id}>{label}</FormFieldLabel>
+        <Switch aria-label={`Loading, ${label}`} checked={loading} onCheckedChange={setLoading} />
+      </div>
+      <InputGroup>
+        <Popover>
+          <InputGroupPopoverTrigger id={id} placeholder="Choose a queue" loading={loading}>
+            {value && <span className="truncate">{value}</span>}
+          </InputGroupPopoverTrigger>
+          <PopoverContent align="start" className="p-3 text-sm text-muted-foreground">
+            {loading ? 'Fetching queues…' : 'Queues'}
+          </PopoverContent>
+        </Popover>
+      </InputGroup>
+    </FormField>
+  );
+}
+
+/**
+ * `loading` on `InputGroupPopoverTrigger` spins the caret and sets `aria-busy`, so a picker shows
+ * its fetch or save without bringing its own caret, and its `placeholder` still shows when empty.
+ */
+export const PopoverTriggerLoading: Story = {
+  render: () => (
+    <div className="grid w-80 gap-5">
+      <LoadingPicker label="Empty" />
+      <LoadingPicker label="With a value" value="Invoices" />
+    </div>
+  ),
+};
+
 export const WithInlineValidation: Story = {
   render: () => (
     <FormField className="w-72">

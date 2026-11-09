@@ -673,6 +673,54 @@ describe('InputGroup', () => {
       expect(trigger().querySelector('svg')).toBeNull();
     });
 
+    it('spins its caret and reads as busy while loading, keeping the placeholder', () => {
+      render(
+        <Popover>
+          <InputGroupPopoverTrigger aria-label="pick" placeholder="Choose a queue" loading>
+            {undefined}
+          </InputGroupPopoverTrigger>
+        </Popover>
+      );
+      expect(trigger()).toHaveAttribute('aria-busy', 'true');
+      expect(screen.getByText('Choose a queue')).toBeInTheDocument();
+      const caret = trigger().querySelector('[data-slot=input-group-caret]');
+      expect(caret).toHaveClass('animate-spin', 'text-muted-foreground');
+      expect(caret).toHaveClass('lucide-loader-circle');
+    });
+
+    it('shows the chevron, not busy, once loading ends', () => {
+      const { rerender } = render(
+        <Popover>
+          <InputGroupPopoverTrigger aria-label="pick" loading>
+            value
+          </InputGroupPopoverTrigger>
+        </Popover>
+      );
+      rerender(
+        <Popover>
+          <InputGroupPopoverTrigger aria-label="pick" loading={false}>
+            value
+          </InputGroupPopoverTrigger>
+        </Popover>
+      );
+      expect(trigger()).not.toHaveAttribute('aria-busy');
+      const caret = trigger().querySelector('[data-slot=input-group-caret]');
+      expect(caret).not.toHaveClass('animate-spin');
+      expect(caret).toHaveClass('lucide-chevron-down');
+    });
+
+    it('draws no spinner for a trigger that brings its own caret', () => {
+      render(
+        <Popover>
+          <InputGroupPopoverTrigger aria-label="pick" caret={false} loading>
+            value
+          </InputGroupPopoverTrigger>
+        </Popover>
+      );
+      expect(trigger().querySelector('svg')).toBeNull();
+      expect(trigger()).toHaveAttribute('aria-busy', 'true');
+    });
+
     it('positions its panel against the group box', async () => {
       const user = userEvent.setup();
       render(
