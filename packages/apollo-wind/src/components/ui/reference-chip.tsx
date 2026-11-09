@@ -71,12 +71,8 @@ export const ReferenceChip = forwardRef<HTMLSpanElement, ReferenceChipProps>(
             {icon}
           </span>
         )}
-        <span
-          className="min-w-0 truncate font-normal"
-          style={{ fontFamily: "'Noto Sans', sans-serif" }}
-        >
-          {label}
-        </span>
+        {/* Inherits the font so the chip matches the text it sits in. */}
+        <span className="min-w-0 truncate font-normal">{label}</span>
         {onRemove && !readOnly && (
           <button
             type="button"

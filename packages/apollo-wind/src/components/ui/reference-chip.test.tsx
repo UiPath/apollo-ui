@@ -105,6 +105,11 @@ describe('ReferenceChip', () => {
     expect(chip).toHaveStyle({ backgroundColor: 'var(--color-error-background)' });
   });
 
+  it('inherits the font of the text around it', () => {
+    render(<ReferenceChip label="Connection" />);
+    expect(screen.getByText('Connection').style.fontFamily).toBe('');
+  });
+
   it('never uses primary or accent tokens', () => {
     const colors = Object.values(getReferenceChipColors()).flatMap(Object.values);
     for (const value of colors) {
