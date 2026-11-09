@@ -218,7 +218,7 @@ jobs:
       packages: read
       pull-requests: write
     env:
-      SBDIFF_VERSION: 1.11.0
+      SBDIFF_VERSION: 1.13.4
 
     steps:
       - name: Checkout code
