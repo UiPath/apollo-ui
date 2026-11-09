@@ -790,6 +790,8 @@ export function Toolbox<T>({
           clearButtonAriaLabel={clearSearchLabel}
           inputRef={searchInputRef}
           onNavigationKeyDown={handleNavigationKeyDown}
+          // The active row's tooltip follows keyboard focus, so it goes when focus leaves the field.
+          onBlur={() => setKeyboardNav(false)}
           activeDescendantId={activeDescendantId}
           listboxId={isListboxPresent ? TOOLBOX_LISTBOX_ID : undefined}
           pending={searchLoading}

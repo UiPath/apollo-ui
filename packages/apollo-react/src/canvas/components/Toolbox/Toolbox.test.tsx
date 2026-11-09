@@ -766,6 +766,18 @@ describe('Toolbox', () => {
       expect(first).toHaveAttribute('data-open', 'false');
     });
 
+    it('closes the active row tooltip when Tab takes focus out of the search field', async () => {
+      render(<Toolbox {...defaultProps} />);
+      screen.getByPlaceholderText('Search').focus();
+
+      await user.keyboard('{ArrowDown}');
+      const [first] = screen.getAllByTestId('tooltip');
+      expect(first).toHaveAttribute('data-open', 'true');
+
+      await user.tab();
+      expect(first).toHaveAttribute('data-open', 'false');
+    });
+
     it('should move focus from search to first item on ArrowDown', async () => {
       render(<Toolbox {...defaultProps} />);
 
