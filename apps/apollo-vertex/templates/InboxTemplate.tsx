@@ -20,6 +20,11 @@ import {
   InboxTitle,
 } from "@/components/ui/inbox";
 import {
+  MessageThread,
+  MessageThreadHeader,
+  type MessageThreadMessage,
+} from "@/components/ui/message-thread";
+import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -33,14 +38,13 @@ import {
 import { groupByDay } from "@/lib/relative-time";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
-interface Message {
+interface Conversation {
   id: string;
-  from: string;
   subject: string;
-  body: string;
-  receivedAt: string;
   read: boolean;
   attachments?: number;
+  /** Oldest first */
+  messages: [MessageThreadMessage, ...MessageThreadMessage[]];
 }
 
 const MINUTE = 60_000;
@@ -58,107 +62,180 @@ const ago = ({
 }) =>
   new Date(now - minutes * MINUTE - hours * HOUR - days * DAY).toISOString();
 
-const MESSAGES: Message[] = [
+const CONVERSATIONS: Conversation[] = [
   {
     id: "1",
-    from: "Maya Patel",
     subject: "Design review moved to Thursday",
-    body: "Hi all,\n\nThe design review is moving to Thursday at 10:00 so everyone can join. Same room, same agenda.\n\nMaya",
-    receivedAt: ago({ minutes: 12 }),
     read: false,
+    messages: [
+      {
+        id: "1-1",
+        subject: "Design review moved to Thursday",
+        sender: "Maya Patel",
+        sentAt: ago({ hours: 2 }),
+        body: "Hi all,\n\nThe design review is moving to Thursday at 10:00 so everyone can join. Same room, same agenda.\n\nMaya",
+      },
+      {
+        id: "1-2",
+        subject: "Re: Design review moved to Thursday",
+        sender: "Jonas Weber",
+        sentAt: ago({ hours: 1 }),
+        body: "Works for me. Can we add ten minutes for the icon updates?",
+      },
+      {
+        id: "1-3",
+        subject: "Re: Design review moved to Thursday",
+        sender: "Maya Patel",
+        sentAt: ago({ minutes: 12 }),
+        body: "Sure, I added it to the end of the agenda.",
+      },
+    ],
   },
   {
     id: "2",
-    from: "Leo Martins",
     subject: "Q3 roadmap draft",
-    body: "Here's the first draft of the Q3 roadmap. Comments welcome before Friday.",
-    receivedAt: ago({ hours: 3 }),
     read: false,
     attachments: 2,
+    messages: [
+      {
+        id: "2-1",
+        subject: "Q3 roadmap draft",
+        sender: "Leo Martins",
+        sentAt: ago({ hours: 3 }),
+        body: "Here's the first draft of the Q3 roadmap. Comments welcome before Friday.",
+      },
+    ],
   },
   {
     id: "3",
-    from: "Priya Shah",
-    subject: "Re: Onboarding checklist",
-    body: "Thanks, I added the access requests to the checklist.",
-    receivedAt: ago({ days: 1, hours: 2 }),
+    subject: "Onboarding checklist",
     read: true,
+    messages: [
+      {
+        id: "3-1",
+        subject: "Onboarding checklist",
+        sender: "Ana Costa",
+        sentAt: ago({ days: 2 }),
+        body: "Could you add the access requests to the onboarding checklist?",
+      },
+      {
+        id: "3-2",
+        subject: "Re: Onboarding checklist",
+        sender: "Priya Shah",
+        sentAt: ago({ days: 1, hours: 2 }),
+        body: "Thanks, I added the access requests to the checklist.",
+      },
+    ],
   },
   {
     id: "4",
-    from: "Jonas Weber",
     subject: "Release notes for 4.2",
-    body: "The release notes for 4.2 are ready for a final read.",
-    receivedAt: ago({ days: 1, hours: 6 }),
     read: false,
     attachments: 1,
+    messages: [
+      {
+        id: "4-1",
+        subject: "Release notes for 4.2",
+        sender: "Jonas Weber",
+        sentAt: ago({ days: 1, hours: 6 }),
+        body: "The release notes for 4.2 are ready for a final read.",
+      },
+    ],
   },
   {
     id: "5",
-    from: "Ana Costa",
     subject: "Team offsite photos",
-    body: "Photos from the offsite are in the shared folder.",
-    receivedAt: ago({ days: 3 }),
     read: true,
+    messages: [
+      {
+        id: "5-1",
+        subject: "Team offsite photos",
+        sender: "Ana Costa",
+        sentAt: ago({ days: 3 }),
+        body: "Photos from the offsite are in the shared folder.",
+      },
+    ],
   },
   {
     id: "6",
-    from: "Sam Lee",
     subject: "Budget sign-off",
-    body: "Could you sign off on the updated budget by end of week?",
-    receivedAt: ago({ days: 5 }),
     read: false,
+    messages: [
+      {
+        id: "6-1",
+        subject: "Budget sign-off",
+        sender: "Chris Novak",
+        sentAt: ago({ days: 6 }),
+        body: "I updated the budget with the new travel costs.",
+      },
+      {
+        id: "6-2",
+        subject: "Re: Budget sign-off",
+        sender: "Sam Lee",
+        sentAt: ago({ days: 5 }),
+        body: "Could you sign off on the updated budget by end of week?",
+      },
+    ],
   },
   {
     id: "7",
-    from: "Chris Novak",
     subject: "Quarterly report",
-    body: "Attached is the quarterly report.",
-    receivedAt: ago({ days: 12 }),
     read: true,
     attachments: 1,
+    messages: [
+      {
+        id: "7-1",
+        subject: "Quarterly report",
+        sender: "Chris Novak",
+        sentAt: ago({ days: 12 }),
+        body: "Attached is the quarterly report.",
+      },
+    ],
   },
 ];
 
-function MessageDetail({ message }: { message: Message | undefined }) {
-  if (message == null) {
+const latestOf = (c: Conversation) => c.messages.at(-1) ?? c.messages[0];
+
+function ConversationDetail({
+  conversation,
+}: {
+  conversation: Conversation | undefined;
+}) {
+  if (conversation == null) {
     return (
       <p className="p-8 text-sm text-muted-foreground">
-        Select a message to read it.
+        Select a conversation to read it.
       </p>
     );
   }
+  const count = conversation.messages.length;
   return (
-    <div className="h-full overflow-y-auto p-8">
-      <h2 className="text-lg font-semibold">{message.subject}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {message.from}
-        {" · "}
-        <InboxItemTime value={message.receivedAt} />
-      </p>
-      <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed">
-        {message.body}
-      </p>
+    <div className="h-full overflow-y-auto px-8 pt-8 pb-14">
+      <MessageThreadHeader
+        title={conversation.subject}
+        meta={count === 1 ? "1 message" : `${count} messages`}
+      />
+      <MessageThread key={conversation.id} messages={conversation.messages} />
     </div>
   );
 }
 
 function InboxTemplateContent() {
-  const [messages, setMessages] = useState(MESSAGES);
+  const [conversations, setConversations] = useState(CONVERSATIONS);
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // The open message stays listed after it is marked read
+  // The open conversation stays listed after it is marked read
   const visible = unreadOnly
-    ? messages.filter((m) => !m.read || m.id === selectedId)
-    : messages;
-  const groups = groupByDay(visible, (m) => m.receivedAt);
-  const selected = messages.find((m) => m.id === selectedId);
+    ? conversations.filter((c) => !c.read || c.id === selectedId)
+    : conversations;
+  const groups = groupByDay(visible, (c) => latestOf(c).sentAt);
+  const selected = conversations.find((c) => c.id === selectedId);
 
   const open = (id: string) => {
     setSelectedId(id);
-    setMessages((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, read: true } : m)),
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, read: true } : c)),
     );
   };
 
@@ -191,29 +268,32 @@ function InboxTemplateContent() {
             )}
             {groups.map(({ group, items }) => (
               <InboxGroup key={group} group={group}>
-                {items.map((m) => (
-                  <InboxItem
-                    key={m.id}
-                    selected={m.id === selectedId}
-                    unread={!m.read}
-                    onClick={() => open(m.id)}
-                  >
-                    <InboxItemHeader>
-                      <InboxItemTitle>{m.from}</InboxItemTitle>
-                      <InboxItemTime value={m.receivedAt} />
-                    </InboxItemHeader>
-                    <InboxItemSubject>{m.subject}</InboxItemSubject>
-                    <InboxItemPreview>{m.body}</InboxItemPreview>
-                    {m.attachments != null && (
-                      <InboxItemFooter className="text-muted-foreground">
-                        <Paperclip aria-hidden />
-                        {m.attachments === 1
-                          ? "1 attachment"
-                          : `${m.attachments} attachments`}
-                      </InboxItemFooter>
-                    )}
-                  </InboxItem>
-                ))}
+                {items.map((c) => {
+                  const latest = latestOf(c);
+                  return (
+                    <InboxItem
+                      key={c.id}
+                      selected={c.id === selectedId}
+                      unread={!c.read}
+                      onClick={() => open(c.id)}
+                    >
+                      <InboxItemHeader>
+                        <InboxItemTitle>{latest.sender}</InboxItemTitle>
+                        <InboxItemTime value={latest.sentAt} />
+                      </InboxItemHeader>
+                      <InboxItemSubject>{c.subject}</InboxItemSubject>
+                      <InboxItemPreview>{latest.body}</InboxItemPreview>
+                      {c.attachments != null && (
+                        <InboxItemFooter className="text-muted-foreground">
+                          <Paperclip aria-hidden />
+                          {c.attachments === 1
+                            ? "1 attachment"
+                            : `${c.attachments} attachments`}
+                        </InboxItemFooter>
+                      )}
+                    </InboxItem>
+                  );
+                })}
               </InboxGroup>
             ))}
           </InboxContent>
@@ -221,7 +301,7 @@ function InboxTemplateContent() {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel>
-        <MessageDetail message={selected} />
+        <ConversationDetail conversation={selected} />
       </ResizablePanel>
     </ResizablePanelGroup>
   );
