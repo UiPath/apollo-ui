@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.88.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.87.0...@uipath/apollo-wind@2.88.0) (2026-11-09)
+
+### Features
+
+* **apollo-wind:** add ConnectionPicker ([1c0f65a](https://github.com/UiPath/apollo-ui/commit/1c0f65a8658634029f3dbe419347862db7323ba6))
+* **apollo-wind:** add ResourcePicker ([7c6a8d1](https://github.com/UiPath/apollo-ui/commit/7c6a8d1eea220b99551a94d7e177957ff392e638))
+
 ## [@uipath/apollo-wind-v2.87.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.86.1...@uipath/apollo-wind@2.87.0) (2026-11-06)
 
 ### Features
