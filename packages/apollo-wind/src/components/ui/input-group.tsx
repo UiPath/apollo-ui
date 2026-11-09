@@ -142,19 +142,24 @@ const inputGroupVariants = cva(
           'has-[[data-slot][aria-invalid=true]]:ring-error/20 future:has-[[data-slot][aria-invalid=true]]:ring-1 future:has-[[data-slot][aria-invalid=true]]:ring-error/40',
       },
       { variant: FILLED, invalid: true, class: 'ring-error/20 future:ring-1 future:ring-error/40' },
-      // Hovering a trigger lights the whole box, as a standalone picker's own box does. Hovering an
-      // addon does not: it sits beside the trigger, not inside it.
+      // A box whose control is an enabled trigger acts as that trigger: a click on its padding
+      // reaches it (see InputGroup), so the whole box takes its cursor and lights on hover, as a
+      // standalone picker's own box does. Hovering an addon does not: it sits beside the trigger.
+      {
+        layout: ROW_LAYOUTS,
+        class: 'has-[button[data-slot=input-group-control]:not(:disabled)]:cursor-pointer',
+      },
       {
         variant: FILLED,
         layout: ROW_LAYOUTS,
         // Not while a badge inside the control is hovered: the badge takes the hover fill itself,
         // and would vanish against a lit box. Future first restates the resting fill for any hover,
         // since the unprefixed `bg-accent` rule still matches there and out-ranks the variant's own
-        // `future:bg-surface-overlay`; the more specific no-badge rule then lights the box. Both of
-        // its conditions sit on the group (`:has(…):not(:has(…))`), since CSS drops a rule that
-        // nests `:has()` inside another.
+        // `future:bg-surface-overlay`; the more specific no-badge rule then lights the box. Every
+        // condition sits on the group (`:has(…):not(:has(…))`), since CSS drops a rule that nests
+        // `:has()` inside another.
         class:
-          'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-overlay future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover',
+          'hover:has-[button[data-slot=input-group-control]:not(:disabled)]:not-has-[[data-slot=input-group-addon]:hover]:bg-accent future:hover:has-[button[data-slot=input-group-control]:not(:disabled)]:not-has-[[data-slot=input-group-addon]:hover]:bg-surface-overlay future:hover:has-[button[data-slot=input-group-control]:not(:disabled)]:not-has-[[data-slot=input-group-addon]:hover]:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover',
       },
     ],
     defaultVariants: {
@@ -167,6 +172,12 @@ const inputGroupVariants = cva(
   }
 );
 
+/** The group's enabled control, or none. */
+function enabledControl(box: HTMLElement) {
+  const control = box.querySelector<HTMLElement>('[data-slot=input-group-control]');
+  return control && !control.matches(':disabled, [aria-disabled=true]') ? control : null;
+}
+
 const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
   (
     {
@@ -178,6 +189,9 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
       layout = 'row',
       invalid,
       disabled,
+      onPointerDown,
+      onMouseDown,
+      onClick,
       ...props
     },
     ref
@@ -218,9 +232,67 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
       [layout, error, validationId, invalid, disabled]
     );
 
+    // A press on the box itself, its padding or a gap, belongs to the control, since the control
+    // only fills the box's content area. Tracked from the press, so that a drag off the control,
+    // whose click lands on the box, is not taken for a click on the box.
+    const press = React.useRef<{ control: HTMLElement; expanded: boolean } | null>(null);
+    const boxControl = React.useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) =>
+        e.target === e.currentTarget && !disabled ? enabledControl(e.currentTarget) : null,
+      [disabled]
+    );
+
+    const handlePointerDown = React.useCallback(
+      (e: React.PointerEvent<HTMLDivElement>) => {
+        onPointerDown?.(e);
+        // Read before the press reaches the document, where it may dismiss the control's popup.
+        const control = boxControl(e);
+        const pressed = control && {
+          control,
+          expanded: control.getAttribute('aria-expanded') === 'true',
+        };
+        // The press too, since some triggers open on it rather than on the click (a Radix
+        // Select). It bubbles back through here, clearing `press`, so that is set after.
+        if (control instanceof HTMLButtonElement) {
+          control.dispatchEvent(new PointerEvent('pointerdown', e.nativeEvent));
+        }
+        press.current = pressed;
+      },
+      [onPointerDown, boxControl]
+    );
+
+    const handleMouseDown = React.useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        onMouseDown?.(e);
+        // Keeps focus where it is until the click, so a focused control is not blurred and
+        // refocused, which would fire its blur handlers.
+        if (press.current && e.target === e.currentTarget) e.preventDefault();
+      },
+      [onMouseDown]
+    );
+
+    const handleClick = React.useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        onClick?.(e);
+        const pressed = press.current;
+        press.current = null;
+        if (!pressed || e.defaultPrevented || boxControl(e) !== pressed.control) return;
+        const { control } = pressed;
+        if (!(control instanceof HTMLButtonElement)) {
+          control.focus();
+        } else if (!pressed.expanded || control.getAttribute('aria-expanded') === 'true') {
+          // A real click, so a Radix trigger toggles through its own handler. A popup the
+          // press already dismissed stays shut, as a press on the trigger itself leaves it.
+          control.click();
+        }
+      },
+      [onClick, boxControl]
+    );
+
     return (
       <InputGroupContext.Provider value={group}>
         {/* biome-ignore lint/a11y/useSemanticElements: input groups need role="group" to convey relationship between the field and its addons */}
+        {/* biome-ignore lint/a11y/useKeyWithClickEvents: onClick only forwards a pointer click on the box's padding to the control, which stays keyboard-operable itself */}
         <div
           ref={setBox}
           role="group"
@@ -233,6 +305,9 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
             inputGroupVariants({ size, layout, variant, invalid: flagged, disabled }),
             className
           )}
+          onPointerDown={handlePointerDown}
+          onMouseDown={handleMouseDown}
+          onClick={handleClick}
           {...props}
         />
         <FormFieldError id={validationId}>{error || controlError}</FormFieldError>
