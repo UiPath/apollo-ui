@@ -1,5 +1,6 @@
 import { cn } from '@uipath/apollo-wind';
 import { CELL_MARK_CLASS, ROW_MARK_OVERLAY_CLASS } from './gridStyles';
+import type { MarkTone } from './marks';
 
 export const SENTENCES_FRAME_CLASS = cn(
   'relative min-h-0 flex-1 overflow-auto bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
@@ -35,10 +36,17 @@ export const SENTENCES_LIST_CLASS =
 
 export const ROW_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)]';
 
+/** The row rail's colour for each grid tone; a tone added to `MarkTone` fails to compile here until it has one. */
+const RAIL_TONE_CLASS = {
+  success: 'group-data-[tone=success]/row:border-s-success',
+  error: 'group-data-[tone=error]/row:border-s-error',
+  warning: 'group-data-[tone=warning]/row:border-s-warning',
+} satisfies Record<MarkTone, string>;
+
 export const ROW_SURFACE_CLASS = cn(
   'relative flex flex-col border-s-2 border-s-border-de-emp py-[var(--sentence-row-padding)] ps-2.5 text-sm leading-[var(--sentence-line)] text-foreground',
   ROW_MARK_OVERLAY_CLASS,
-  'group-data-[tone=success]/row:border-s-success group-data-[tone=error]/row:border-s-error group-data-[tone=warning]/row:border-s-warning',
+  Object.values(RAIL_TONE_CLASS),
   'forced-colors:group-data-[tone]/row:border-s-4',
   'group-data-[dim=true]/row:text-foreground-de-emp'
 );

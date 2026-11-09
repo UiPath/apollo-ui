@@ -2,9 +2,9 @@ import { Button } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
-import { EMPTY_MARKS, type TableMarks } from './marks';
+import { EMPTY_MARKS, type Mark, type TableMarks } from './marks';
 import { MarkBadge, markIds, SentenceRowCard } from './SentenceRowCard';
-import { isLineMark } from './sentenceMarks';
+import { isLineMark, type MarkFields } from './sentenceMarks';
 import {
   SENTENCE_LINE_HEIGHT_PX,
   SENTENCE_MIN_ROW_HEIGHT_PX,
@@ -56,6 +56,19 @@ const valueTokenAt = (target: EventTarget | null): HoveredToken | null => {
   return chip && rowId && columnId ? { chip, cell: { rowId, columnId } } : null;
 };
 
+/** The `Mark` fields a band column paints; a field added to `Mark` fails to compile here until the column decides on it. */
+const columnMark = (mark: Mark | undefined) =>
+  ({
+    tone: mark?.tone,
+    title: mark?.title,
+    glyph: mark?.glyph,
+    matched: undefined,
+  }) satisfies MarkFields<Mark>;
+
+/** The `TableMarks` maps the view reads; a map added to `TableMarks` fails to compile here until the view decides on it. */
+const tableMarks = ({ rows, columns }: TableMarks) =>
+  ({ rows, columns }) satisfies MarkFields<TableMarks>;
+
 export interface DecisionTableSentencesProps {
   rows: readonly SentenceRow[];
   bands: readonly SentenceBand[];
@@ -93,6 +106,7 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
   dataTestId,
 }) => {
   const idPrefix = useId();
+  const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const listRef = useRef<HTMLUListElement | null>(null);
 
   const onCellHoverRef = useRef(onCellHover);
@@ -180,7 +194,8 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
                 tabIndex={0}
               >
                 {band.columns.map((column, columnIndex) => {
-                  const mark = marks.columns.get(column.id);
+                  const mark = bandMarks.get(column.id);
+                  const { tone, title } = columnMark(mark);
                   const columnMarks = isLineMark(mark) ? [mark] : [];
                   const badgeId = `${idPrefix}-band-${bandIndex}-${columnIndex}`;
                   return (
@@ -191,8 +206,8 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
                         columnMarks.length > 0 ? markIds(badgeId, columnMarks).join(' ') : undefined
                       }
                       data-column-id={column.id}
-                      data-tone={mark?.tone}
-                      data-mark-title={mark?.title}
+                      data-tone={tone}
+                      data-mark-title={title}
                     >
                       {column.name}
                       {columnMarks.length > 0 && (
@@ -238,7 +253,7 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
                   position={segment.from + offset + 1}
                   setSize={rows.length}
                   numbered={numbered}
-                  mark={marks.rows.get(row.rowId)}
+                  mark={rowMarks.get(row.rowId)}
                   idPrefix={idPrefix}
                   dataTestId={dataTestId}
                   labels={labels}

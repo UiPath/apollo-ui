@@ -4,7 +4,7 @@ import { Fragment, memo } from 'react';
 import { showTitleIfClipped } from './clippedTitle';
 import { MarkGlyph } from './MarkGlyph';
 import type { Mark, RowMark } from './marks';
-import { type LineMark, lineMarksOf, worstTone } from './sentenceMarks';
+import { type LineMark, lineMarksOf, type MarkFields, worstTone } from './sentenceMarks';
 import { boundedParts, partsText, tokenText } from './sentenceParts';
 import {
   CLAMPED_LINE_CLASS,
@@ -59,12 +59,32 @@ export const MarkBadge: React.FC<{
   );
 };
 
+/** The `Mark` fields a value chip paints; a field added to `Mark` fails to compile here until the chip decides on it. */
+const chipMark = (mark: Mark | undefined) =>
+  ({
+    tone: mark?.tone,
+    title: mark?.title,
+    matched: mark?.matched,
+    glyph: undefined,
+  }) satisfies MarkFields<Mark>;
+
+/** The `RowMark` fields a card paints; a field added to `RowMark` fails to compile here until the card decides on it. */
+const cardMark = (mark: RowMark | undefined) =>
+  ({
+    tone: mark?.tone,
+    dim: mark?.dim,
+    title: mark?.title,
+    glyph: mark?.glyph,
+    cells: mark?.cells,
+  }) satisfies MarkFields<RowMark>;
+
 const TokenChip: React.FC<{
   token: SentenceToken;
   mark: Mark | undefined;
   output: boolean;
 }> = ({ token, mark, output }) => {
   const isValue = token.kind === 'value';
+  const { tone, title, matched } = chipMark(mark);
   return (
     <span
       className={cn(
@@ -73,9 +93,9 @@ const TokenChip: React.FC<{
       )}
       data-kind={token.kind}
       data-column-id={token.columnId}
-      data-tone={mark?.tone}
-      data-mark-title={mark?.title}
-      data-mark-matched={mark?.matched}
+      data-tone={tone}
+      data-mark-title={title}
+      data-mark-matched={matched}
     >
       {tokenText(token)}
     </span>
@@ -163,7 +183,7 @@ export interface SentenceRowCardProps {
 export const SentenceRowCard = memo<SentenceRowCardProps>(
   ({ row, position, setSize, numbered, mark, idPrefix, dataTestId, labels }) => {
     const id = `${idPrefix}-${position}`;
-    const cells = mark?.cells;
+    const { tone, dim, title, cells } = cardMark(mark);
     const badgeFor = (key: string, marks: LineMark[]) =>
       marks.length > 0 ? { id: `${id}-mark-${key}`, marks, labels } : null;
     const headingBadge = badgeFor('heading', lineMarksOf(row.heading, cells, mark));
@@ -185,12 +205,12 @@ export const SentenceRowCard = memo<SentenceRowCardProps>(
         aria-describedby={describedBy || undefined}
         className={ROW_CARD_CLASS}
         data-row-id={row.rowId}
-        data-tone={mark?.tone}
-        data-dim={mark?.dim}
+        data-tone={tone}
+        data-dim={dim}
         data-testid={`${dataTestId}-row-${row.rowId}`}
       >
         <div className={ROW_SURFACE_CLASS}>
-          <div className={ROW_HEADING_CLASS} data-mark-title={mark?.title}>
+          <div className={ROW_HEADING_CLASS} data-mark-title={title}>
             {numbered && (
               <span id={`${id}-number`} className={ROW_NUMBER_CLASS}>
                 {position}
