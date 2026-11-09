@@ -78,7 +78,7 @@ export const ReferenceChip = forwardRef<HTMLSpanElement, ReferenceChipProps>(
             type="button"
             disabled={disabled}
             aria-label={removeLabel ?? (typeof label === 'string' ? `Remove ${label}` : 'Remove')}
-            className="inline-flex shrink-0 items-center justify-center p-px border-0 bg-transparent cursor-pointer rounded-[2px] w-4 h-4 text-inherit focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current disabled:cursor-default"
+            className="inline-flex shrink-0 items-center justify-center p-px border-0 bg-transparent cursor-pointer rounded-[2px] w-4 h-4 text-inherit enabled:hover:bg-current/10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current disabled:cursor-default"
             onMouseDown={(event) => {
               event.preventDefault();
               event.stopPropagation();
