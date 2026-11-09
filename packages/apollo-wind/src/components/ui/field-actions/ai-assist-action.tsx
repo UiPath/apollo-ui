@@ -1,11 +1,12 @@
 import { Loader2, Sparkles } from 'lucide-react';
 import { type ReactNode, useCallback, useId, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, type ButtonProps } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { FIELD_ACTION_CLASS } from './collapse';
+import { cn } from '@/lib';
+import { FIELD_ACTION_CLASS, FIELD_ACTION_TONE_CLASS } from './collapse';
 
 export interface AiAssistActionStrings {
   trigger: string;
@@ -13,7 +14,7 @@ export interface AiAssistActionStrings {
   prompt: string;
   promptPlaceholder: string;
   generate: string;
-  /** Replaces `generate` while a returned promise is pending. */
+  /** Replaces `generate` while a returned promise is pending, and `tooltip` while `loading`. */
   generating: string;
   /** Shown when a returned promise rejects. */
   error: string;
@@ -52,6 +53,28 @@ export interface AiAssistActionProps {
    * `hint` and prompt strings it then does not use. Called only while the popover is open.
    */
   renderContent?: (props: AiAssistContentProps) => ReactNode;
+  /** Controlled open state of the popover, such as for a host that closes it on submit. */
+  open?: boolean;
+  /** Called when the popover asks to open or close, and from `close`. */
+  onOpenChange?: (open: boolean) => void;
+  /**
+   * Shows the trigger busy for work the host runs, such as a `renderContent` panel's generation.
+   * The trigger glows and reads as busy, and still opens, so the panel can show the work in
+   * progress.
+   */
+  loading?: boolean;
+  /**
+   * Marks the trigger as failed, such as after the host's generation rejected. A message replaces
+   * the tooltip and describes the trigger. The host clears it, such as when the panel is dismissed.
+   */
+  error?: ReactNode;
+  /** Classes for the trigger, such as a tone while the popover is open. */
+  className?: string;
+  /**
+   * The trigger's Button size, for a trigger outside a field header such as in a toolbar. Defaults
+   * to `3xs`, the height a header row expects, whose icon is 12px; other sizes keep their own icon.
+   */
+  size?: ButtonProps['size'];
   /** Overrides for any subset of the English strings. */
   strings?: Partial<AiAssistActionStrings>;
 }
@@ -64,21 +87,41 @@ export function AiAssistAction({
   hint,
   renderContent,
   disabled,
+  open: openProp,
+  onOpenChange,
+  loading = false,
+  error,
+  className,
+  size = '3xs',
   strings,
 }: AiAssistActionProps) {
   const promptId = useId();
   const errorId = useId();
+  const triggerErrorId = useId();
   const [prompt, setPrompt] = useState('');
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
   const text = { ...DEFAULT_AI_ASSIST_ACTION_STRINGS, ...strings };
+  const hasError = !!error;
+  // `true` marks the trigger without a message.
+  const errorMessage = hasError && error !== true ? error : null;
+
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : uncontrolledOpen;
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (!controlled) setUncontrolledOpen(next);
+      onOpenChange?.(next);
+    },
+    [controlled, onOpenChange]
+  );
 
   const changeOpen = (next: boolean) => {
     setFailed(false);
     setOpen(next);
   };
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => setOpen(false), [setOpen]);
 
   const generate = async () => {
     setFailed(false);
@@ -99,23 +142,42 @@ export function AiAssistAction({
   return (
     <Popover open={open && !disabled} onOpenChange={changeOpen}>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
+        {/* Outermost, so the trigger's `data-state` is the popover's rather than the tooltip's. */}
+        <PopoverTrigger asChild>
+          <TooltipTrigger asChild>
             <Button
               type="button"
               variant="ghost"
-              size="3xs"
+              size={size}
               icon
               aria-label={text.trigger}
               disabled={disabled}
-              className={FIELD_ACTION_CLASS}
+              aria-busy={loading || undefined}
+              // Set only with a message, so it does not clear the tooltip's description.
+              {...(errorMessage ? { 'aria-describedby': triggerErrorId } : {})}
+              className={cn(
+                size === '3xs' ? FIELD_ACTION_CLASS : FIELD_ACTION_TONE_CLASS,
+                // The ghost variant's Future tone out-ranks an unprefixed one.
+                hasError && 'text-error hover:text-error future:text-error future:hover:text-error',
+                // The agent color. Its light-theme value is faint on white until it is retuned.
+                loading &&
+                  'animate-glow cursor-progress [--glow-color:var(--color-gradient-agent-start)]',
+                className
+              )}
             >
               <Sparkles />
             </Button>
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent>{text.tooltip}</TooltipContent>
+          </TooltipTrigger>
+        </PopoverTrigger>
+        <TooltipContent>
+          {loading ? text.generating : (errorMessage ?? text.tooltip)}
+        </TooltipContent>
       </Tooltip>
+      {errorMessage && (
+        <span id={triggerErrorId} className="sr-only">
+          {errorMessage}
+        </span>
+      )}
       <PopoverContent align="end" className="space-y-3">
         {renderContent ? (
           <AiAssistSlot render={renderContent} close={close} disabled={!!disabled} />

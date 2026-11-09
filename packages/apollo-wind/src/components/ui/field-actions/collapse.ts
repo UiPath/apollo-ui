@@ -7,9 +7,12 @@ export const COLLAPSED_HIDDEN = '@max-[259px]:hidden';
 /** Shown only once collapsed. */
 export const COLLAPSED_ONLY = 'hidden @max-[259px]:flex';
 
+/** The muted tone of a field's other icon buttons, for a header action of any size. */
+export const FIELD_ACTION_TONE_CLASS =
+  'text-muted-foreground hover:bg-accent hover:text-foreground';
+
 /**
  * A header action is a ghost `3xs` Button, the height FormFieldHeader's `min-h-6` row expects, in
  * the muted tone of the field's other icon buttons. Its icons are 12px.
  */
-export const FIELD_ACTION_CLASS =
-  'text-muted-foreground hover:bg-accent hover:text-foreground [&_svg]:size-3';
+export const FIELD_ACTION_CLASS = `${FIELD_ACTION_TONE_CLASS} [&_svg]:size-3`;

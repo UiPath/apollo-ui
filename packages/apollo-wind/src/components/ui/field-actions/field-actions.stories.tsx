@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
+import { Button } from '../button';
 import { FormField, FormFieldHeader } from '../form-field';
 import { Input } from '../input';
 import { InputGroup } from '../input-group';
+import { Label } from '../label';
+import { Textarea } from '../textarea';
 import { TooltipProvider } from '../tooltip';
 import type { RenderVariablePicker, VariablePickerItem } from '../variable-picker';
 import { AiAssistAction, type AiAssistContentProps } from './ai-assist-action';
@@ -26,6 +29,11 @@ Either can render the host's own panel instead: \`renderPicker\` for Insert vari
 \`renderContent\` for AI assist. The action keeps its trigger, popover, collapse, focus return and
 strings, and calls the slot only while the popover is open. A picker's \`onSelect\` commits and
 closes; both slots get \`close\`.
+
+A host that generates after closing the popover drives AI assist's trigger with \`loading\` and
+\`error\`, and its popover with \`open\` and \`onOpenChange\`. While loading, the trigger glows and
+reads as busy, and still opens. An error
+tints the trigger, and its message replaces the tooltip. \`size\` fits the trigger to a toolbar.
 `,
       },
     },
@@ -250,4 +258,117 @@ export const HostPanels: Story = {
       </FormField>
     );
   },
+};
+
+/**
+ * A host that controls the popover and drives the trigger: it closes the popover on submit, glows
+ * while generating and turns to the error tone if generation fails. Opened while generating, the
+ * panel says so, and closes on success. A failure shows the message and the last prompt for a
+ * retry. Prompts containing "fail" reject.
+ */
+function HostGenerate() {
+  const promptId = useId();
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
+
+  const submit = () => {
+    const prompt = input.trim();
+    if (!prompt || loading) return;
+    setOpen(false);
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      if (prompt.includes('fail')) {
+        setError('The model is over its quota. Try again in a minute.');
+      } else {
+        setError(null);
+        setInput('');
+        setResult(prompt);
+        setOpen(false);
+      }
+    }, 2000);
+  };
+
+  return (
+    <Example label={result ? `Generated from "${result}"` : 'Closes on submit'}>
+      <AiAssistAction
+        open={open}
+        onOpenChange={setOpen}
+        loading={loading}
+        error={error}
+        className="data-[state=open]:bg-accent data-[state=open]:text-foreground"
+        renderContent={() => (
+          <div className="grid gap-3">
+            {error && (
+              <div role="alert" className="grid gap-1 rounded bg-error-background p-2 text-xs">
+                <span className="text-error">{error}</span>
+                <button
+                  type="button"
+                  className="w-fit text-foreground-muted underline hover:text-foreground"
+                  onClick={() => setError(null)}
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+            <div className="grid gap-1.5">
+              <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
+                Instructions
+              </Label>
+              <Textarea
+                id={promptId}
+                rows={3}
+                autoFocus
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    submit();
+                  }
+                }}
+                placeholder="Describe what you want to generate"
+                className="resize-none text-sm"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground-subtle">⌘+Enter to submit</span>
+              <Button
+                size="sm"
+                disabled={!input.trim() || loading}
+                aria-busy={loading || undefined}
+                onClick={submit}
+              >
+                {loading ? 'Generating' : 'Generate'}
+              </Button>
+            </div>
+          </div>
+        )}
+      />
+    </Example>
+  );
+}
+
+/**
+ * The trigger's loading and error states, set by the host, at the header size and a toolbar size,
+ * and a host panel that drives them.
+ */
+export const AiAssistTriggerState: Story = {
+  render: () => (
+    <div className="grid w-80 gap-5">
+      <Example label="Loading">
+        <AiAssistAction loading />
+      </Example>
+      <Example label="Error">
+        <AiAssistAction error="The model is over its quota. Try again in a minute." />
+      </Example>
+      <Example label="Toolbar size (xs)">
+        <AiAssistAction size="xs" loading />
+      </Example>
+      <HostGenerate />
+    </div>
+  ),
 };

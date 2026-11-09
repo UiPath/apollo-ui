@@ -1,8 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { type ReactNode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TooltipProvider } from '../tooltip';
-import { AiAssistAction } from './ai-assist-action';
+import { AiAssistAction, type AiAssistActionProps } from './ai-assist-action';
 
 describe('AiAssistAction', () => {
   it('reports the entered prompt', async () => {
@@ -133,6 +134,139 @@ describe('AiAssistAction', () => {
       await user.click(await screen.findByRole('button', { name: 'Done' }));
       expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
       expect(trigger).toHaveFocus();
+    });
+  });
+
+  describe('with trigger state', () => {
+    const wrap = (node: ReactNode) => render(<TooltipProvider>{node}</TooltipProvider>);
+    const panel: AiAssistActionProps['renderContent'] = ({ close }) => (
+      <button type="button" onClick={close}>
+        Submit
+      </button>
+    );
+
+    it('reads as busy while loading and still opens', async () => {
+      const user = userEvent.setup();
+      wrap(<AiAssistAction loading renderContent={panel} />);
+      const trigger = screen.getByRole('button', { name: 'AI assist' });
+      expect(trigger).toBeEnabled();
+      expect(trigger).toHaveAttribute('aria-busy', 'true');
+      expect(trigger).not.toHaveAttribute('aria-disabled');
+      expect(trigger).toHaveClass('animate-glow');
+
+      await user.click(trigger);
+      expect(await screen.findByRole('button', { name: 'Submit' })).toBeInTheDocument();
+    });
+
+    it('takes a controlled open state', async () => {
+      const user = userEvent.setup();
+      const onOpenChange = vi.fn();
+      const { rerender } = wrap(
+        <AiAssistAction open={false} onOpenChange={onOpenChange} renderContent={panel} />
+      );
+      await user.click(screen.getByRole('button', { name: 'AI assist' }));
+      expect(onOpenChange).toHaveBeenLastCalledWith(true);
+      expect(screen.queryByRole('button', { name: 'Submit' })).toBeNull();
+
+      rerender(
+        <TooltipProvider>
+          <AiAssistAction open onOpenChange={onOpenChange} renderContent={panel} />
+        </TooltipProvider>
+      );
+      await user.click(await screen.findByRole('button', { name: 'Submit' }));
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+      expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
+    });
+
+    it('exposes the popover state, and the tooltip as the description, on the trigger', async () => {
+      const user = userEvent.setup();
+      wrap(<AiAssistAction renderContent={panel} />);
+      const trigger = screen.getByRole('button', { name: 'AI assist' });
+      await user.tab();
+      await waitFor(() => expect(trigger).toHaveAccessibleDescription('Generate with AI'));
+      await user.click(trigger);
+      await screen.findByRole('button', { name: 'Submit' });
+      expect(trigger).toHaveAttribute('data-state', 'open');
+    });
+
+    it('describes the trigger with an error message', () => {
+      wrap(<AiAssistAction error="Quota exceeded" className="data-[state=open]:bg-accent" />);
+      const trigger = screen.getByRole('button', { name: 'AI assist' });
+      expect(trigger).toHaveAccessibleDescription('Quota exceeded');
+      expect(trigger).toHaveClass('text-error', 'data-[state=open]:bg-accent');
+    });
+
+    it('keeps the 3xs header size by default and takes another', () => {
+      wrap(
+        <>
+          <AiAssistAction />
+          <AiAssistAction size="xs" strings={{ trigger: 'Toolbar AI' }} />
+        </>
+      );
+      expect(screen.getByRole('button', { name: 'AI assist' })).toHaveClass(
+        'h-6',
+        '[&_svg]:size-3'
+      );
+      const toolbar = screen.getByRole('button', { name: 'Toolbar AI' });
+      expect(toolbar).toHaveClass('h-8');
+      expect(toolbar).not.toHaveClass('[&_svg]:size-3');
+    });
+
+    it('marks the trigger without a message for `error={true}`', () => {
+      wrap(<AiAssistAction error />);
+      const trigger = screen.getByRole('button', { name: 'AI assist' });
+      expect(trigger).toHaveClass('text-error');
+      expect(trigger).not.toHaveAttribute('aria-describedby');
+    });
+
+    it('lets a host close on submit, show busy, then show the rejection', async () => {
+      const user = userEvent.setup();
+      let reject!: (reason: Error) => void;
+      function Host() {
+        const [open, setOpen] = useState(false);
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState<string | null>(null);
+        return (
+          <AiAssistAction
+            open={open}
+            onOpenChange={setOpen}
+            loading={loading}
+            error={error}
+            renderContent={() => (
+              <>
+                {error && <p role="alert">{error}</p>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    setLoading(true);
+                    new Promise<void>((_, r) => {
+                      reject = r;
+                    }).catch((e: Error) => {
+                      setLoading(false);
+                      setError(e.message);
+                    });
+                  }}
+                >
+                  Submit
+                </button>
+              </>
+            )}
+          />
+        );
+      }
+      wrap(<Host />);
+      const trigger = screen.getByRole('button', { name: 'AI assist' });
+      await user.click(trigger);
+      await user.click(await screen.findByRole('button', { name: 'Submit' }));
+      expect(screen.queryByRole('button', { name: 'Submit' })).toBeNull();
+      expect(trigger).toHaveAttribute('aria-busy', 'true');
+      expect(trigger).toHaveFocus();
+
+      reject(new Error('Quota exceeded'));
+      await waitFor(() => expect(trigger).toHaveAccessibleDescription('Quota exceeded'));
+      await user.click(trigger);
+      expect(await screen.findByRole('alert')).toHaveTextContent('Quota exceeded');
     });
   });
 });
