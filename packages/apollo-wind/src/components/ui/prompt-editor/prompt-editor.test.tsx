@@ -17,7 +17,7 @@ const OPTIONS: PromptEditorAutoCompleteOption[] = [
 ];
 
 describe('PromptEditor', () => {
-  it('uses semantic info and error tokens for token colors', () => {
+  it('uses semantic info, error and warning tokens for token colors', () => {
     expect(getPromptEditorTokenColors()).toEqual({
       valid: {
         background: 'var(--color-info-background)',
@@ -30,6 +30,12 @@ describe('PromptEditor', () => {
         border: 'var(--color-error-icon)',
         text: 'var(--color-error-text)',
         icon: 'var(--color-error-icon)',
+      },
+      warning: {
+        background: 'var(--color-warning-background)',
+        border: 'var(--color-warning-icon)',
+        text: 'var(--color-warning-text)',
+        icon: 'var(--color-warning-icon)',
       },
     });
   });

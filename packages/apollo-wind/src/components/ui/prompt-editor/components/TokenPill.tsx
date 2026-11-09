@@ -49,7 +49,7 @@ const TokenPillBase = ({
       onRemove={onRemove}
       removeLabel={strings.removeToken}
       readOnly={readonly}
-      invalid={isInvalid && !diffType}
+      variant={isInvalid && !diffType ? 'invalid' : 'default'}
       selected={isSelected}
       onMouseDown={onMouseDown}
       className={`${readonly ? 'cursor-default' : 'cursor-pointer'} ${diffType === 'removed' ? 'line-through opacity-60' : ''}`}

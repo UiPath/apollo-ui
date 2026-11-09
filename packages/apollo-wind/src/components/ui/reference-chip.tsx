@@ -1,6 +1,6 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib';
-import { getReferenceChipColors } from './reference-chip-colors';
+import { getReferenceChipColors, type ReferenceChipVariant } from './reference-chip-colors';
 
 export interface ReferenceChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   /** Display name of the referenced variable, resource or connection. */
@@ -12,6 +12,8 @@ export interface ReferenceChipProps extends Omit<HTMLAttributes<HTMLSpanElement>
   removeLabel?: string;
   readOnly?: boolean;
   disabled?: boolean;
+  variant?: ReferenceChipVariant;
+  /** @deprecated Use `variant="invalid"`. Wins over `variant` when true. */
   invalid?: boolean;
   /** Visual selection only. The containing editor or picker owns selection semantics. */
   selected?: boolean;
@@ -27,6 +29,7 @@ export const ReferenceChip = forwardRef<HTMLSpanElement, ReferenceChipProps>(
       removeLabel,
       readOnly = false,
       disabled = false,
+      variant: variantProp = 'default',
       invalid = false,
       selected = false,
       className,
@@ -35,13 +38,15 @@ export const ReferenceChip = forwardRef<HTMLSpanElement, ReferenceChipProps>(
     },
     ref
   ) => {
-    const colors = getReferenceChipColors()[invalid ? 'invalid' : 'valid'];
+    const variant = invalid ? 'invalid' : variantProp;
+    const colors = getReferenceChipColors()[variant === 'default' ? 'valid' : variant];
     return (
       <span
         {...props}
         ref={ref}
         data-slot="reference-chip"
-        data-invalid={invalid || undefined}
+        data-variant={variant}
+        data-invalid={variant === 'invalid' || undefined}
         data-selected={selected || undefined}
         aria-disabled={disabled || undefined}
         className={cn(
