@@ -44,6 +44,7 @@ export * from "@/registry/item/item";
 export * from "@/registry/kbd/kbd";
 export * from "@/registry/label/label";
 export * from "@/registry/menubar/menubar";
+export * from "@/registry/message-thread/message-thread";
 export * from "@/registry/metric-card/metric-card";
 export * from "@/registry/navigation-menu/navigation-menu";
 export * from "@/registry/page-header/page-header";

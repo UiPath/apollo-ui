@@ -2178,6 +2178,42 @@
       ]
     },
     {
+      "name": "message-thread",
+      "type": "registry:ui",
+      "title": "Message Thread",
+      "description": "A conversation of e-mail style messages, newest first, where older messages collapse to their sender, e-mail, subject and an excerpt. Each message header expands and collapses it, and a message can carry a typed notice, actions and a footer.",
+      "dependencies": [
+        "luxon",
+        "@types/luxon",
+        "lucide-react",
+        "react-i18next"
+      ],
+      "registryDependencies": [
+        "@uipath/alert",
+        "@uipath/avatar",
+        "@uipath/badge",
+        "@uipath/button",
+        "@uipath/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/message-thread/message-thread.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/message-thread/message-thread-actions.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/message-thread/message-thread-expansion.ts",
+          "type": "registry:ui"
+        },
+        { "path": "lib/action.ts", "type": "registry:lib" },
+        { "path": "lib/relative-time.ts", "type": "registry:lib" },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
+      ]
+    },
+    {
       "name": "metric-card",
       "type": "registry:ui",
       "title": "Metric Card",
