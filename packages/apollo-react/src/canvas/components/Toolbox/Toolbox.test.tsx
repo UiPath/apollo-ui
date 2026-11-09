@@ -319,6 +319,18 @@ describe('Toolbox', () => {
       expect(screen.getByText('No matching nodes found')).toBeInTheDocument();
     });
 
+    it('does not announce "no matches" while the items are still loading', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<Toolbox {...defaultProps} initialItems={[]} loading />);
+
+      await timedUser.type(screen.getByPlaceholderText('Search'), 'Item');
+      await act(() => vi.advanceTimersByTimeAsync(500));
+
+      expect(screen.getByRole('status')).toBeEmptyDOMElement();
+      vi.useRealTimers();
+    });
+
     it('announces the settled result count and drops aria-controls when nothing matches', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
