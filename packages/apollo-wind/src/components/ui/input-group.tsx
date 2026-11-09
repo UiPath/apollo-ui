@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Loader2 } from 'lucide-react';
 import * as React from 'react';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Input, type InputProps } from '@/components/ui/input';
@@ -551,6 +551,8 @@ export interface InputGroupPopoverTriggerProps extends InputGroupTriggerProps {
   placeholder?: React.ReactNode;
   /** Draws the trailing caret. Pass `false` for a trigger that brings its own. */
   caret?: boolean;
+  /** Spins the caret, and marks the trigger busy, while its options or value are on their way. */
+  loading?: boolean;
 }
 
 function isEmpty(children: React.ReactNode) {
@@ -562,12 +564,12 @@ function isEmpty(children: React.ReactNode) {
  * anchors to the group's box, so it opens below the border at the box's width.
  */
 const InputGroupPopoverTrigger = React.forwardRef<HTMLButtonElement, InputGroupPopoverTriggerProps>(
-  ({ children, placeholder, caret = true, ...props }, ref) => {
+  ({ children, placeholder, caret = true, loading = false, ...props }, ref) => {
     const { anchor } = useInputGroup();
     return (
       <>
         <PopoverTrigger asChild>
-          <InputGroupTrigger ref={ref} {...props}>
+          <InputGroupTrigger ref={ref} aria-busy={loading || undefined} {...props}>
             {isEmpty(children)
               ? placeholder !== undefined && (
                   <span
@@ -578,7 +580,18 @@ const InputGroupPopoverTrigger = React.forwardRef<HTMLButtonElement, InputGroupP
                   </span>
                 )
               : children}
-            {caret && <ChevronDown className="ml-auto shrink-0 text-muted-foreground" />}
+            {caret &&
+              (loading ? (
+                <Loader2
+                  data-slot="input-group-caret"
+                  className="ml-auto shrink-0 animate-spin text-muted-foreground motion-reduce:animate-none"
+                />
+              ) : (
+                <ChevronDown
+                  data-slot="input-group-caret"
+                  className="ml-auto shrink-0 text-muted-foreground"
+                />
+              ))}
           </InputGroupTrigger>
         </PopoverTrigger>
         {/* After the trigger: Radix records the anchor in effects, which run in tree order, so an
