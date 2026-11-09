@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Check, Database, Mail, Variable, X } from 'lucide-react';
+import { Check, Database, FileText, Mail, Variable, X } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { Button } from './button';
 import { ReferenceChip } from './reference-chip';
@@ -17,12 +17,17 @@ const meta = {
     ),
   ],
   args: { label: 'vars.firstName', icon: <Variable /> },
+  argTypes: {
+    variant: { control: 'inline-radio', options: ['default', 'warning', 'invalid'] },
+    invalid: { table: { disable: true } },
+    selected: { control: 'boolean' },
+  },
   parameters: {
     docs: {
       description: {
         component: `A compact reference to a variable, resource or connection. PromptEditor uses this primitive through TokenPill. The connection picker owns its popup and selection behavior; ReferenceChip owns the selected value's appearance.
 
-Colors come from existing semantic tokens, always as a pair from one family. Valid references use --color-info-background with --color-info-text and --color-info-icon. Invalid references use --color-error-background with --color-error-text and --color-error-icon. The selected outline uses the icon token of the same family. getReferenceChipColors() returns these values for hosts that cannot render the component. Do not fill a chip with a primary or accent color and pick a foreground separately: that is how low-contrast chips happen. Branded icons may retain their colors. The Themes story shows every theme side by side.
+Colors come from existing semantic tokens, always as a pair from one family. Valid references use --color-info-background with --color-info-text and --color-info-icon. Invalid references use --color-error-background with --color-error-text and --color-error-icon. Warning references, valid but not usable as is (for example a file variable no tool can read), use --color-warning-background with --color-warning-text and --color-warning-icon. Pick one with variant: default, warning or invalid. The boolean invalid prop is deprecated in favor of variant="invalid". The selected outline uses the icon token of the same family. getReferenceChipColors() returns these values for hosts that cannot render the component. Do not fill a chip with a primary or accent color and pick a foreground separately: that is how low-contrast chips happen. Branded icons may retain their colors. The Themes story shows every theme side by side.
 
 Pass onRemove to expose a keyboard-accessible remove button and removeLabel for localization. readOnly hides removal; disabled disables it. selected is visual only: the host owns selection semantics. Keep a removable chip outside other buttons. Inside a picker trigger, omit onRemove and provide a separate clear button.
 
@@ -44,7 +49,13 @@ export const States: Story = {
       <ReferenceChip
         label="Unavailable reference"
         icon={<Variable />}
-        invalid
+        variant="invalid"
+        onRemove={() => {}}
+      />
+      <ReferenceChip
+        label="vars.report.pdf"
+        icon={<FileText />}
+        variant="warning"
         onRemove={() => {}}
       />
       <ReferenceChip label="Disabled reference" icon={<Database />} disabled onRemove={() => {}} />
@@ -197,7 +208,7 @@ export const Themes: Story = {
   parameters: {
     docs: {
       description: {
-        story: `Every theme on one page, for review and visual comparison. Valid chips use ${getReferenceChipColors().valid.background}; invalid chips use ${getReferenceChipColors().invalid.background}.`,
+        story: `Every theme on one page, for review and visual comparison. Valid chips use ${getReferenceChipColors().valid.background}; invalid chips use ${getReferenceChipColors().invalid.background}; warning chips use ${getReferenceChipColors().warning.background}.`,
       },
     },
   },
@@ -211,7 +222,18 @@ export const Themes: Story = {
           <p className="text-xs font-medium text-muted-foreground">{theme.label}</p>
           <ReferenceChip label="vars.firstName" icon={<Variable />} onRemove={() => {}} />
           <ReferenceChip label="alex@example.com" icon={<Mail />} selected onRemove={() => {}} />
-          <ReferenceChip label="vars.missing" icon={<Variable />} invalid onRemove={() => {}} />
+          <ReferenceChip
+            label="vars.missing"
+            icon={<Variable />}
+            variant="invalid"
+            onRemove={() => {}}
+          />
+          <ReferenceChip
+            label="vars.report.pdf"
+            icon={<FileText />}
+            variant="warning"
+            onRemove={() => {}}
+          />
         </div>
       ))}
     </div>

@@ -67,7 +67,7 @@ export * from './prompt-value-control';
 export * from './quick-form-field';
 export * from './radio-group';
 export { ReferenceChip, type ReferenceChipProps } from './reference-chip';
-export { getReferenceChipColors } from './reference-chip-colors';
+export { getReferenceChipColors, type ReferenceChipVariant } from './reference-chip-colors';
 export * from './resizable';
 export * from './scroll-area';
 export * from './search';

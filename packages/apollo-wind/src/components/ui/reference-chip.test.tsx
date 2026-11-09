@@ -69,18 +69,46 @@ describe('ReferenceChip', () => {
     });
     expect(icon).toHaveStyle({ color: 'var(--color-info-icon)' });
 
-    rerender(<ReferenceChip label="Connection" icon={<svg />} invalid />);
+    rerender(<ReferenceChip label="Connection" icon={<svg />} variant="invalid" />);
     expect(chip).toHaveStyle({
       backgroundColor: 'var(--color-error-background)',
       color: 'var(--color-error-text)',
     });
     expect(icon).toHaveStyle({ color: 'var(--color-error-icon)' });
+
+    rerender(<ReferenceChip label="Connection" icon={<svg />} variant="warning" selected />);
+    expect(chip).toHaveStyle({
+      backgroundColor: 'var(--color-warning-background)',
+      color: 'var(--color-warning-text)',
+      outline: '2px solid var(--color-warning-icon)',
+    });
+    expect(icon).toHaveStyle({ color: 'var(--color-warning-icon)' });
+  });
+
+  it('exposes the variant and lets the deprecated invalid prop win over it', () => {
+    const { rerender } = render(<ReferenceChip label="file" />);
+    const chip = screen.getByText('file').closest('[data-slot="reference-chip"]');
+    expect(chip).toHaveAttribute('data-variant', 'default');
+    expect(chip).not.toHaveAttribute('data-invalid');
+
+    rerender(<ReferenceChip label="file" variant="warning" />);
+    expect(chip).toHaveAttribute('data-variant', 'warning');
+    expect(chip).not.toHaveAttribute('data-invalid');
+
+    rerender(<ReferenceChip label="file" variant="invalid" />);
+    expect(chip).toHaveAttribute('data-variant', 'invalid');
+    expect(chip).toHaveAttribute('data-invalid');
+
+    rerender(<ReferenceChip label="file" variant="warning" invalid />);
+    expect(chip).toHaveAttribute('data-variant', 'invalid');
+    expect(chip).toHaveAttribute('data-invalid');
+    expect(chip).toHaveStyle({ backgroundColor: 'var(--color-error-background)' });
   });
 
   it('never uses primary or accent tokens', () => {
     const colors = Object.values(getReferenceChipColors()).flatMap(Object.values);
     for (const value of colors) {
-      expect(value).toMatch(/^var\(--color-(info|error)-/);
+      expect(value).toMatch(/^var\(--color-(info|error|warning)-/);
     }
   });
 
