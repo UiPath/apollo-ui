@@ -592,6 +592,9 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
       id={TOOLBOX_LISTBOX_ID}
       className={LIST_SCROLLBAR_CLASS}
       role="listbox"
+      // Chrome makes a scrolling list a Tab stop, but the options are driven from the search
+      // field (aria-activedescendant), so the list itself must not take keyboard focus.
+      tabIndex={-1}
       // Signal "list is being updated" to assistive tech while skeleton
       // sentinels are rendered in place of real items or a search is pending.
       aria-busy={activeSkeleton || searchPending ? true : undefined}

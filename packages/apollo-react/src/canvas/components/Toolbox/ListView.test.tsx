@@ -76,6 +76,12 @@ describe('ListView', () => {
       expect(emptyState.style.minHeight).toBe('');
     });
 
+    it('keeps the listbox out of the Tab order', () => {
+      render(<ListView {...defaultProps} items={[{ id: 'a', name: 'A', data: {} }]} />);
+
+      expect(screen.getByRole('listbox')).toHaveAttribute('tabindex', '-1');
+    });
+
     it('should show custom empty state message', () => {
       render(<ListView {...defaultProps} items={[]} emptyStateMessage="Custom empty message" />);
 
