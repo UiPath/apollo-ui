@@ -368,18 +368,23 @@ describe('InputGroup', () => {
   });
 
   describe('hover', () => {
-    const HOVER = 'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent';
+    const TRIGGER = 'has-[button[data-slot=input-group-control]:not(:disabled)]';
+    const NOT_ADDON = 'not-has-[[data-slot=input-group-addon]:hover]';
+    const POINTER = `${TRIGGER}:cursor-pointer`;
+    const HOVER = `hover:${TRIGGER}:${NOT_ADDON}:bg-accent`;
     // Future restates the resting fill for any hover first, since the unprefixed rule above still
     // matches there and would otherwise show through while a badge is hovered.
-    const FUTURE_REST =
-      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-overlay';
-    const FUTURE_HOVER =
-      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover';
+    const FUTURE_REST = `future:hover:${TRIGGER}:${NOT_ADDON}:bg-surface-overlay`;
+    const FUTURE_HOVER = `future:hover:${TRIGGER}:${NOT_ADDON}:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover`;
 
-    it('lights the box while an enabled trigger is hovered, keyed on the trigger alone', () => {
+    it('lights the whole box of an enabled trigger, but not while an addon is hovered', () => {
       render(<InputGroup data-testid="group" />);
-      // Addons sit beside the trigger, so hovering one matches nothing here.
-      expect(screen.getByTestId('group')).toHaveClass(HOVER, FUTURE_REST, FUTURE_HOVER);
+      expect(screen.getByTestId('group')).toHaveClass(POINTER, HOVER, FUTURE_REST, FUTURE_HOVER);
+    });
+
+    it('keeps the pointer on an unpainted box, whose padding still reaches the trigger', () => {
+      render(<InputGroup data-testid="group" variant="outline" />);
+      expect(screen.getByTestId('group')).toHaveClass(POINTER);
     });
 
     it.each([
@@ -390,6 +395,11 @@ describe('InputGroup', () => {
       render(<InputGroup data-testid="group" {...props} />);
       expect(screen.getByTestId('group')).not.toHaveClass(HOVER);
       expect(screen.getByTestId('group')).not.toHaveClass(FUTURE_REST);
+    });
+
+    it('keeps the default cursor on a block box, whose body holds fields of their own', () => {
+      render(<InputGroup data-testid="group" layout="block" />);
+      expect(screen.getByTestId('group')).not.toHaveClass(POINTER);
     });
   });
 
@@ -532,6 +542,214 @@ describe('InputGroup', () => {
 
       await user.click(screen.getByTestId('addon'));
       expect(screen.getByPlaceholderText('Enter text')).not.toHaveFocus();
+    });
+  });
+
+  describe('box click', () => {
+    it("opens a popover trigger's popover from a click on the box's padding", async () => {
+      const user = userEvent.setup();
+      render(
+        <InputGroup data-testid="box">
+          <Popover>
+            <InputGroupPopoverTrigger aria-label="pick">value</InputGroupPopoverTrigger>
+            <PopoverContent>panel</PopoverContent>
+          </Popover>
+        </InputGroup>
+      );
+
+      await user.click(screen.getByTestId('box'));
+      expect(await screen.findByText('panel')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'pick' })).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('closes an open popover from a click on the padding, rather than reopening it', async () => {
+      const user = userEvent.setup();
+      render(
+        <InputGroup data-testid="box">
+          <Popover>
+            <InputGroupPopoverTrigger aria-label="pick">value</InputGroupPopoverTrigger>
+            <PopoverContent>panel</PopoverContent>
+          </Popover>
+        </InputGroup>
+      );
+      const trigger = screen.getByRole('button', { name: 'pick' });
+
+      await user.click(trigger);
+      await screen.findByText('panel');
+      await user.click(screen.getByTestId('box'));
+      await waitFor(() => expect(screen.queryByText('panel')).not.toBeInTheDocument());
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('clicks a plain trigger once, so a caller’s own toggle runs', async () => {
+      const user = userEvent.setup();
+      const onClick = vi.fn();
+      render(
+        <InputGroup data-testid="box">
+          <InputGroupTrigger onClick={onClick}>value</InputGroupTrigger>
+        </InputGroup>
+      );
+
+      await user.click(screen.getByTestId('box'));
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('opens a trigger that opens on the press rather than the click', async () => {
+      const user = userEvent.setup();
+      render(
+        <>
+          <InputGroup data-testid="select">
+            <Select>
+              <SelectTrigger aria-label="Region">
+                <SelectValue placeholder="Region" />
+              </SelectTrigger>
+              <SelectContent />
+            </Select>
+          </InputGroup>
+          <InputGroup data-testid="menu">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <InputGroupTrigger>Menu</InputGroupTrigger>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent />
+            </DropdownMenu>
+          </InputGroup>
+        </>
+      );
+
+      // An open panel hides the rest of the page from the accessibility tree.
+      const named = (role: string, name: string) => screen.getByRole(role, { name, hidden: true });
+      await user.click(screen.getByTestId('select'));
+      expect(named('combobox', 'Region')).toHaveAttribute('aria-expanded', 'true');
+      await user.keyboard('{Escape}');
+      await user.click(screen.getByTestId('menu'));
+      expect(named('button', 'Menu')).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it("focuses an input from a click on the box's padding", async () => {
+      const user = userEvent.setup();
+      render(
+        <InputGroup data-testid="box">
+          <InputGroupInput aria-label="Amount" />
+        </InputGroup>
+      );
+
+      await user.click(screen.getByTestId('box'));
+      expect(screen.getByLabelText('Amount')).toHaveFocus();
+    });
+
+    it('keeps a focused input focused, without a blur in between', async () => {
+      const user = userEvent.setup();
+      const onBlur = vi.fn();
+      render(
+        <InputGroup data-testid="box">
+          <InputGroupInput aria-label="Amount" onBlur={onBlur} />
+        </InputGroup>
+      );
+
+      await user.click(screen.getByLabelText('Amount'));
+      await user.click(screen.getByTestId('box'));
+      expect(screen.getByLabelText('Amount')).toHaveFocus();
+      expect(onBlur).not.toHaveBeenCalled();
+    });
+
+    it('leaves an addon’s own clicks to the addon', async () => {
+      const user = userEvent.setup();
+      const onTrigger = vi.fn();
+      const onAddonButton = vi.fn();
+      render(
+        <InputGroup>
+          <InputGroupTrigger onClick={onTrigger}>value</InputGroupTrigger>
+          <InputGroupAddon align="inline-end" data-testid="addon">
+            <InputGroupButton aria-label="Clear" onClick={onAddonButton} />
+          </InputGroupAddon>
+        </InputGroup>
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Clear' }));
+      expect(onAddonButton).toHaveBeenCalledTimes(1);
+      // The addon's own surface focuses the control, as it always has, but does not click it.
+      await user.click(screen.getByTestId('addon'));
+      expect(screen.getByRole('button', { name: 'value' })).toHaveFocus();
+      expect(onTrigger).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['the control is disabled', { control: true, group: false }],
+      ['the group is disabled', { control: false, group: true }],
+    ])('does nothing when %s', async (_, { control, group }) => {
+      const user = userEvent.setup();
+      render(
+        <>
+          <InputGroup data-testid="picker" disabled={group}>
+            <Popover>
+              <InputGroupPopoverTrigger aria-label="pick" disabled={control}>
+                value
+              </InputGroupPopoverTrigger>
+              <PopoverContent>panel</PopoverContent>
+            </Popover>
+          </InputGroup>
+          <InputGroup data-testid="field" disabled={group}>
+            <InputGroupInput aria-label="Amount" disabled={control} />
+          </InputGroup>
+        </>
+      );
+
+      await user.click(screen.getByTestId('picker'));
+      await user.click(screen.getByTestId('field'));
+      expect(screen.queryByText('panel')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Amount')).not.toHaveFocus();
+    });
+
+    it('leaves a click alone when the caller prevents it', async () => {
+      const user = userEvent.setup();
+      render(
+        <InputGroup data-testid="box" onClick={(e) => e.preventDefault()}>
+          <InputGroupInput aria-label="Amount" />
+        </InputGroup>
+      );
+
+      await user.click(screen.getByTestId('box'));
+      expect(screen.getByLabelText('Amount')).not.toHaveFocus();
+    });
+
+    it('keeps a press dragged off the control from clicking it', async () => {
+      const user = userEvent.setup();
+      const onClick = vi.fn();
+      render(
+        <InputGroup data-testid="box">
+          <InputGroupTrigger onClick={onClick}>value</InputGroupTrigger>
+        </InputGroup>
+      );
+      const trigger = screen.getByRole('button', { name: 'value' });
+
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: trigger },
+        { target: screen.getByTestId('box') },
+        { keys: '[/MouseLeft]' },
+      ]);
+      expect(onClick).not.toHaveBeenCalled();
+    });
+
+    it('keeps a block body’s fields to themselves', async () => {
+      const user = userEvent.setup();
+      const onTrigger = vi.fn();
+      render(
+        <InputGroup layout="block">
+          <InputGroupRow>
+            <InputGroupTrigger onClick={onTrigger}>value</InputGroupTrigger>
+          </InputGroupRow>
+          <InputGroupBody>
+            <InputGroup data-testid="nested">
+              <InputGroupInput aria-label="Nested" />
+            </InputGroup>
+          </InputGroupBody>
+        </InputGroup>
+      );
+
+      await user.click(screen.getByTestId('nested'));
+      expect(screen.getByLabelText('Nested')).toHaveFocus();
+      expect(onTrigger).not.toHaveBeenCalled();
     });
   });
 
