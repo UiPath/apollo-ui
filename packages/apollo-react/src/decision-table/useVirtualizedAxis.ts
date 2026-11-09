@@ -197,7 +197,10 @@ export const useVirtualizedAxis = (
   // fling costs a handful of renders instead of one per item boundary.
   const [anchor, setAnchor] = useState(0);
   const [viewportPx, setViewportPx] = useState<number | null>(null);
+  /** An end the window extends to when the visible end outruns what fills a viewport from the anchor. */
+  const [tail, setTail] = useState(0);
   const anchorRef = useRef(anchor);
+  const tailRef = useRef(tail);
   const viewportRef = useRef(viewportPx);
 
   const scrollElementRef = useRef<HTMLElement | null>(null);
@@ -288,15 +291,24 @@ export const useVirtualizedAxis = (
       const rect = instance.scrollRect;
       if (range) {
         const viewport = (axis === 'horizontal' ? rect?.width : rect?.height) || fallbackViewportPx;
-        const end = windowEnd(Math.min(anchorRef.current, Math.max(0, itemCount - 1)), viewport);
-        const nextAnchor =
-          Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold ||
-          (end < itemCount && range.endIndex >= end - shiftThreshold)
-            ? range.startIndex
-            : anchorRef.current;
+        const lagging = Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold;
+        const nextAnchor = lagging ? range.startIndex : anchorRef.current;
+        const kept = lagging ? 0 : tailRef.current;
+        const end = Math.max(
+          windowEnd(Math.min(nextAnchor, Math.max(0, itemCount - 1)), viewport),
+          kept
+        );
+        const nextTail =
+          end < itemCount && range.endIndex >= end - shiftThreshold
+            ? range.endIndex + 1 + overscanItems
+            : kept;
         if (nextAnchor !== anchorRef.current) {
           anchorRef.current = nextAnchor;
           setAnchor(nextAnchor);
+        }
+        if (nextTail !== tailRef.current) {
+          tailRef.current = nextTail;
+          setTail(nextTail);
         }
       }
       if (rect) {
@@ -389,7 +401,7 @@ export const useVirtualizedAxis = (
       itemCount,
       itemSizePx,
       start,
-      end: windowEnd(safeAnchor, viewport),
+      end: Math.max(windowEnd(safeAnchor, viewport), tail),
       retained,
       offsetsPx: itemOffsetsPx,
     });
@@ -402,6 +414,7 @@ export const useVirtualizedAxis = (
     itemCount,
     itemSizePx,
     anchor,
+    tail,
     viewportPx,
     retained,
     overscanItems,

@@ -11,7 +11,6 @@ import {
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_ROWS,
   manyColumnBands,
-  manyLinesRow,
   manySentenceRows,
   SENTENCE_LABELS,
 } from './__fixtures__/sentences.fixtures';
@@ -334,25 +333,6 @@ describe('DecisionTableSentences', () => {
   });
 
   describe('windowing', () => {
-    it('keeps every row in view mounted after scrolling past a tall row', () => {
-      const rows = [
-        manyLinesRow(50),
-        ...manySentenceRows(200).map((row, index) => ({
-          ...row,
-          rowId: `short-${index}`,
-          lines: [],
-        })),
-      ];
-      renderView({ rows });
-      const offsets = sentenceRowOffsets(rows);
-      act(() => scrollTo(offsets[4] ?? 0));
-      const mounted = mountedRows().map((row) =>
-        rows.findIndex(({ rowId }) => rowId === row.dataset.rowId)
-      );
-      const last = Math.max(...mounted);
-      expect(offsets[last + 1] ?? 0).toBeGreaterThanOrEqual((offsets[4] ?? 0) + 800);
-    });
-
     it('mounts only the viewport and overscan of 20,000 rows, with a spacer for the rest', () => {
       const rows = manySentenceRows(20_000);
       renderView({ rows });

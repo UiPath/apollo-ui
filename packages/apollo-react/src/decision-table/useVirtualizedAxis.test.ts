@@ -63,6 +63,55 @@ describe('useVirtualizedAxis (virtual-core binding)', () => {
   });
 });
 
+describe('useVirtualizedAxis coverage while scrolling through tall items', () => {
+  const sweep = (sizes: number[], viewport: number): number[] => {
+    const element = document.createElement('div');
+    document.body.appendChild(element);
+    const offsets = offsetsFor(sizes);
+    const total = offsets[sizes.length] ?? 0;
+    const indexAt = (px: number) => offsets.findIndex((_, index) => (offsets[index + 1] ?? 0) > px);
+    const gaps: number[] = [];
+    try {
+      const { result, rerender } = renderHook(() =>
+        useVirtualizedAxis(sizes.length, 64, null, {
+          axis: 'vertical',
+          overscanItems: 10,
+          fallbackViewportPx: viewport,
+          itemOffsetsPx: offsets,
+        })
+      );
+      result.current.measureRef(element);
+      rerender();
+      for (let top = 0; top <= total - viewport; top += 8) {
+        act(() => {
+          element.scrollTop = top;
+          element.dispatchEvent(new Event('scroll'));
+        });
+        const last = indexAt(Math.min(top + viewport, total) - 1);
+        for (let index = indexAt(top); index <= last; index += 1) {
+          if (!mountsItem(result.current.segments, index)) {
+            gaps.push(top);
+            break;
+          }
+        }
+      }
+    } finally {
+      element.remove();
+    }
+    return gaps;
+  };
+  const short = (count: number) => new Array<number>(count).fill(64);
+
+  it.each([200, 480, 800])('mounts every item in a %ipx viewport at every offset', (viewport) => {
+    expect({
+      leading: sweep([1264, ...short(60)], viewport),
+      middle: sweep([...short(30), 1264, ...short(30)], viewport),
+      backToBack: sweep([...short(20), 1264, 1264, ...short(30)], viewport),
+      taller: sweep([...short(20), 3200, ...short(20), 4000, ...short(20)], viewport),
+    }).toEqual({ leading: [], middle: [], backToBack: [], taller: [] });
+  });
+});
+
 /**
  * The segment maths is the entire correctness of the row window: every row is either mounted or
  * accounted for by a spacer of exactly its height, in order, with no overlap. A one-row error
