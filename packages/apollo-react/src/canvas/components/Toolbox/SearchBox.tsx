@@ -17,6 +17,7 @@ interface SearchBoxProps {
   clearButtonAriaLabel?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
   onNavigationKeyDown?: (e: React.KeyboardEvent) => void;
+  onBlur?: () => void;
   activeDescendantId?: string;
   /** Id of the listbox the field controls; omit while no listbox is mounted. */
   listboxId?: string;
@@ -37,6 +38,7 @@ export const SearchBox = memo(function SearchBox({
   clearButtonAriaLabel = 'Clear search',
   inputRef: externalInputRef,
   onNavigationKeyDown,
+  onBlur,
   activeDescendantId,
   listboxId,
   pending = false,
@@ -83,6 +85,7 @@ export const SearchBox = memo(function SearchBox({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onNavigationKeyDown}
+          onBlur={onBlur}
         />
         {value && (
           <InputGroupAddon align="inline-end">
