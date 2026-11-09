@@ -604,6 +604,7 @@ const ErrorsGrid = () => {
         dataTestId="errors-grid"
         tableMark={{ tone: 'error', title: ERRORS_TABLE_ISSUES.join('\n') }}
         retainedRowIndex={nav.editing ? nav.focus?.row : null}
+        retainedColumnIndex={nav.editing ? nav.focus?.col : null}
         containerProps={{
           onKeyDown: nav.onKeyDown,
           // The table only carries a mark's message (`data-mark-title`); showing it is the
@@ -1067,6 +1068,8 @@ const EditingGrid = ({
           }
         }}
         retainedRowIndex={nav.editing ? nav.focus?.row : null}
+        // Unpinned, so the focused column's index is its window index.
+        retainedColumnIndex={nav.editing ? nav.focus?.col : null}
         clipboard={{
           range: nav.range,
           editing: nav.editing,

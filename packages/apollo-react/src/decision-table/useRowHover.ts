@@ -1,9 +1,10 @@
-import { type RefObject, useEffect } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 
 /**
  * Keeps the row hover overlay under the pointer's row: one composited element moved per row change,
- * in place of a style change on every cell of the row entered and the row left. Off while `active`
- * is false (a drag, whose rows slide out of their index positions).
+ * in place of a style change on every cell of the row entered and the row left. Hidden while `active`
+ * is false (a drag, whose rows slide out of their index positions), and back over the row under the
+ * pointer once it is true again, without waiting for the pointer to move.
  */
 export const useRowHover = (
   containerRef: RefObject<HTMLElement | null>,
@@ -11,6 +12,8 @@ export const useRowHover = (
   rowTopPx: (index: number) => number,
   active: boolean
 ): void => {
+  // Outlives the effect, which re-runs when `active` flips under a pointer that has not moved.
+  const hoveredRowRef = useRef<Element | null>(null);
   useEffect(() => {
     const container = containerRef.current;
     const overlay = overlayRef.current;
@@ -28,16 +31,12 @@ export const useRowHover = (
         overlay.style.transform = `translateY(${top}px)`;
       }
     };
-    if (!active) {
-      overlay.style.display = 'none';
-      return;
-    }
-    let hoveredRow: Element | null = null;
     const refresh = () => {
+      const row = hoveredRowRef.current;
       // A data row only, and not one with an open editor: the editor is the user's focus.
-      const cell = hoveredRow?.querySelector(':scope > [data-row]');
+      const cell = row?.isConnected ? row.querySelector(':scope > [data-row]') : null;
       place(
-        cell instanceof HTMLElement && !hoveredRow?.querySelector('[data-editing]')
+        active && cell instanceof HTMLElement && !row?.querySelector('[data-editing]')
           ? rowTopPx(Number(cell.dataset.row))
           : null
       );
@@ -46,15 +45,17 @@ export const useRowHover = (
       if (event.pointerType === 'touch' || !(event.target instanceof Element)) {
         return;
       }
-      hoveredRow = event.target.closest('tbody > tr');
+      hoveredRowRef.current = event.target.closest('tbody > tr');
       refresh();
     };
     const onPointerOut = (event: PointerEvent) => {
       if (!(event.relatedTarget instanceof Node) || !container.contains(event.relatedTarget)) {
-        hoveredRow = null;
+        hoveredRowRef.current = null;
         place(null);
       }
     };
+    overlay.style.display = 'none';
+    refresh();
     // An editor opened or closed from the keyboard, under a pointer that has not moved.
     const editing = new MutationObserver(refresh);
     editing.observe(container, { subtree: true, attributeFilter: ['data-editing'] });

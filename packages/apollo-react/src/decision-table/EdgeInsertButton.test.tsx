@@ -23,6 +23,12 @@ describe('EdgeInsertButton', () => {
     expect(parent.onClick).not.toHaveBeenCalled();
   });
 
+  it('stays out of the tab order, which would otherwise stop on every row and header', () => {
+    const { button } = renderInside();
+
+    expect(button).toHaveAttribute('tabindex', '-1');
+  });
+
   it('keeps its press from reaching what it sits in, so it never starts a drag', () => {
     const { parent, button } = renderInside();
 

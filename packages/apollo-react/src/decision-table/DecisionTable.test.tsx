@@ -7,6 +7,7 @@ import {
   type DecisionTableProps,
   groupBoundsOf,
   groupColumnRuns,
+  type HeaderCellContext,
 } from './DecisionTable';
 import type { GridColumn, GridColumnGroup, GridHandle, VisibleGridColumn } from './gridTypes';
 
@@ -183,6 +184,22 @@ describe('DecisionTable', () => {
     container.scrollTop = 0;
     fireEvent.scroll(container);
     expect(container).toHaveAttribute('data-scrolled', 'false');
+  });
+
+  it('hands a pinned header its offset and its layer class, and a scrolling header neither', () => {
+    const contexts = new Map<string, HeaderCellContext>();
+    renderTable({
+      pinnedColumnCount: 1,
+      renderHeaderCell: (column, context) => {
+        contexts.set(column.id, context);
+        return <th key={column.id}>{column.name}</th>;
+      },
+    });
+    expect(contexts.get('a0')).toMatchObject({ pinnedLeftPx: 52, pinnedClassName: 'z-5' });
+    expect(contexts.get('a1')).toMatchObject({
+      pinnedLeftPx: undefined,
+      pinnedClassName: undefined,
+    });
   });
 
   it("merges a band cell's style, with the pinned offset winning over the consumer's left", () => {

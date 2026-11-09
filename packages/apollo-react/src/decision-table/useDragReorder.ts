@@ -486,9 +486,11 @@ export const useDragReorder = (options: DragReorderOptions) => {
         }
       };
       // No key reaches the grid while a unit is carried: typing would open an editor, Delete clear
-      // the selection, under a drag about to move it. Escape cancels.
+      // the selection, under a drag about to move it. Nor does a key's browser action: Ctrl/Cmd+X
+      // and V fire cut and paste, which bypass the grid's key handling. Escape cancels.
       const onKeyDown = (key: KeyboardEvent) => {
         key.stopPropagation();
+        key.preventDefault();
         if (key.key === 'Escape') {
           cleanup();
         }

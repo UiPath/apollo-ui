@@ -93,6 +93,19 @@ describe('useRowHover', () => {
     expect(overlay().style.transform).toBe(`translateY(${rowTopPx(2)}px)`);
   });
 
+  it('brings the overlay back over the row under a still pointer once active again', () => {
+    const { rerender } = render(<Table />);
+    hover('row-0');
+    rerender(<Table active={false} />);
+    hover('row-2');
+    expect(overlay().style.display).toBe('none');
+
+    rerender(<Table />);
+
+    expect(overlay().style.display).toBe('');
+    expect(overlay().style.transform).toBe(`translateY(${rowTopPx(2)}px)`);
+  });
+
   it('keeps the overlay hidden while inactive', () => {
     render(<Table active={false} />);
 

@@ -56,6 +56,8 @@ export const EdgeInsertButton = ({
         className={cn(AXIS_CLASSES[axis].button, buttonClassName)}
         aria-label={label}
         title={label}
+        // One per row and header: in the tab order they would be dozens of identical stops.
+        tabIndex={-1}
         data-testid={testId}
         onPointerEnter={onHoverChange && (() => onHoverChange(true))}
         onPointerLeave={onHoverChange && (() => onHoverChange(false))}

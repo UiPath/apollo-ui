@@ -234,6 +234,37 @@ describe('DecisionTable drag: where it can start and land', () => {
     expect(onColumnMove).not.toHaveBeenCalled();
   });
 
+  it('refuses a column past the real ones when the group sizes overcount', () => {
+    const { handle, onColumnMove } = setup({ columnGroupSizes: [3, 3] });
+    let began = true;
+    act(() => {
+      began = handle().startColumnDrag(1, 1, press(360, 10));
+    });
+    pointer('pointermove', 0, 10);
+    pointer('pointerup', 0, 10);
+    expect(began).toBe(false);
+    expect(onColumnMove).not.toHaveBeenCalled();
+  });
+
+  it('moves a column one slot along a later group, past the groups before it', () => {
+    const outputColumns = ['b0', 'b1', 'b2'].map((id) => ({
+      id,
+      name: id,
+      defaultWidth: 100,
+      group: outputs,
+    }));
+    const { handle, onColumnMove } = setup({
+      columns: [...columns.slice(0, 2), ...outputColumns],
+      columnGroupSizes: [2, 3],
+    });
+    act(() => {
+      handle().startColumnDrag(1, 0, press(260, 10)); // b0, 8px into it
+    });
+    pointer('pointermove', 360, 10); // the copy now sits exactly on b1's slot
+    pointer('pointerup', 360, 10);
+    expect(onColumnMove).toHaveBeenCalledWith(1, 0, 1);
+  });
+
   it('carries a wide column past narrow neighbours to the end of its band', () => {
     const { handle, onColumnMove } = setup({
       columns: columns.map((column, index) =>
@@ -259,6 +290,25 @@ describe('DecisionTable drag: ways it ends', () => {
     fireEvent.keyDown(container(), { key: 'a' });
     fireEvent.keyDown(container(), { key: 'Delete' });
     expect(onKeyDown).not.toHaveBeenCalled();
+    pointer('pointerup');
+  });
+
+  it("blocks the browser's own key actions, cut and paste among them, while a row is carried", () => {
+    const { handle } = setup();
+    act(() => {
+      handle().startRowDrag(0, press(0, H * 0.6));
+    });
+    pointer('pointermove', 0, H * 1.6);
+    const cut = new KeyboardEvent('keydown', {
+      key: 'x',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      container().dispatchEvent(cut);
+    });
+    expect(cut.defaultPrevented).toBe(true);
     pointer('pointerup');
   });
 

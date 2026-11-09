@@ -67,11 +67,10 @@ const visiblePositionOf = (visibleColumns: VisibleGridColumn[], flexIndex: numbe
 export interface HeaderCellContext {
   /** The grid's resize grab strip, or null when columns are not resizable — place it inside the returned `<th>`. */
   resizeHandle: React.ReactNode;
-  /**
-   * Set for pinned columns: the sticky left offset their header must carry. A pinned header also
-   * takes `PINNED_HEADER_Z_CLASS`, so the scrolling headers pass under it rather than over it.
-   */
+  /** Set for pinned columns: the sticky left offset their header must carry. */
   pinnedLeftPx?: number;
+  /** Set for pinned columns: the class lifting their header so the scrolling headers pass under it. */
+  pinnedClassName?: string;
 }
 
 export interface DecisionTableProps {
@@ -336,14 +335,16 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     // Fenceposts derived from the group sizes: group i spans [boundaries[i], boundaries[i + 1])
     // in windowed-column space. No sizes -> a single fencepost -> no group to drag within.
     const sizesKey = (columnGroupSizes ?? []).join(',');
+    // Capped at the column count: group sizes that overcount would otherwise let a drag start on, or
+    // drop onto, a column the table does not have.
     // biome-ignore lint/correctness/useExhaustiveDependencies: sizesKey is `columnGroupSizes` by value
     const boundaries = React.useMemo(() => {
       const out = [0];
       for (const size of columnGroupSizes ?? []) {
-        out.push(out[out.length - 1]! + size);
+        out.push(Math.min(out[out.length - 1]! + size, columns.length));
       }
       return out;
-    }, [sizesKey]);
+    }, [sizesKey, columns.length]);
     const boundariesRef = useRef(boundaries);
     boundariesRef.current = boundaries;
     const previewHostRef = useRef<HTMLDivElement>(null);
@@ -1025,11 +1026,14 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                   );
                 }
                 const width = widths[visible.flexIndex] ?? visible.column.defaultWidth;
+                const pinnedLeftPx = pinnedLeftPxOf(visible.flexIndex);
                 return (
                   <React.Fragment key={visible.column.id}>
                     {renderHeaderCell(visible.column, {
                       resizeHandle: renderResizeHandle(visible.column, width),
-                      pinnedLeftPx: pinnedLeftPxOf(visible.flexIndex),
+                      pinnedLeftPx,
+                      pinnedClassName:
+                        pinnedLeftPx === undefined ? undefined : PINNED_HEADER_Z_CLASS,
                     })}
                   </React.Fragment>
                 );
