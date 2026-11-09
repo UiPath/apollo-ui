@@ -30,6 +30,23 @@ describe('VariableValueControl', () => {
     expect(screen.getByRole('button', { name: 'Ref' })).toHaveTextContent('$vars.orderId');
   });
 
+  it('renders a node placeholder while none is bound', () => {
+    render(
+      <InputGroup>
+        <VariableValueControl
+          aria-label="Ref"
+          onChange={vi.fn()}
+          variables={[]}
+          placeholder={<span data-testid="host-placeholder">Pick one</span>}
+        />
+      </InputGroup>
+    );
+    const trigger = screen.getByRole('button', { name: 'Ref' });
+    expect(screen.getByTestId('host-placeholder')).toHaveTextContent('Pick one');
+    expect(trigger).toContainElement(screen.getByTestId('host-placeholder'));
+    expect(trigger).not.toHaveTextContent('Select a variable');
+  });
+
   it('replaces the reference with a pick, resolving a function only when opened', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

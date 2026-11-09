@@ -46,8 +46,11 @@ interface VariableValueControlBaseProps {
    */
   describeReference?: (reference: string) => VariableReferenceDescription | undefined;
   disabled?: boolean;
-  /** Shown while no variable is bound. Defaults to `strings.variablePlaceholder`. */
-  placeholder?: string;
+  /**
+   * Shown while no variable is bound, such as a styled node for a host's own placeholder colour.
+   * Defaults to `strings.variablePlaceholder`.
+   */
+  placeholder?: React.ReactNode;
   /** Overrides for any subset of the English strings. */
   strings?: Partial<ValueModeStrings>;
   className?: string;
