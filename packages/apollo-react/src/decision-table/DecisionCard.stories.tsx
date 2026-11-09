@@ -64,7 +64,7 @@ const DEMO_MARKS: TableMarks = {
 };
 
 const meta: Meta<typeof DecisionCard> = {
-  title: 'Decision Card',
+  title: 'Decision Table/Decision Card',
   component: DecisionCard,
   parameters: { layout: 'padded' },
 };
