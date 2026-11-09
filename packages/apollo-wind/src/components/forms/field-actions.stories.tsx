@@ -155,7 +155,7 @@ export const Actions: Story = {
 
 // Stand-in for a host's own picker, such as a virtualized tree with an Assets tab.
 const hostPicker: FormVariablePicker = ({ onSelect, close }) => (
-  <div className="grid gap-1 p-2 text-xs">
+  <div className="grid w-[280px] gap-1 p-2 text-xs">
     <span className="px-1 text-foreground-muted">Host picker</span>
     {['$vars.orderId', '$assets.apiKey'].map((reference) => (
       <button

@@ -191,4 +191,25 @@ describe('VariablePicker', () => {
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('button', { name: 'Host cancel' })).not.toBeInTheDocument();
   });
+
+  it('keeps the built-in tree at 280px and sizes to a host picker', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<VariablePicker items={items} onSelect={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+    const tree = await screen.findByRole('dialog');
+    expect(tree).toHaveClass('w-[280px]', 'max-w-[calc(100vw-1rem)]');
+    unmount();
+
+    render(
+      <VariablePicker
+        items={items}
+        onSelect={vi.fn()}
+        renderPicker={() => <div className="w-[360px]">Host picker</div>}
+      />
+    );
+    await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+    const host = await screen.findByRole('dialog');
+    expect(host).toHaveClass('w-auto', 'max-w-[calc(100vw-1rem)]');
+    expect(host).not.toHaveClass('w-[280px]');
+  });
 });
