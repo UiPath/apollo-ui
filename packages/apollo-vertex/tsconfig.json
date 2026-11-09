@@ -73,6 +73,9 @@
       "@/components/ui/item": ["./registry/item/item"],
       "@/components/ui/kbd": ["./registry/kbd/kbd"],
       "@/components/ui/label": ["./registry/label/label"],
+      "@/components/ui/message-thread": [
+        "./registry/message-thread/message-thread"
+      ],
       "@/components/ui/menubar": ["./registry/menubar/menubar"],
       "@/components/ui/metric-card": ["./registry/metric-card/metric-card"],
       "@/components/ui/native-select": [

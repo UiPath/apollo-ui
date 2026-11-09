@@ -336,6 +336,7 @@
   "theme_editor": "Theme Editor",
   "theme_preview_description": "This is a preview of the card component with your custom theme.",
   "thinking": "Thinking",
+  "to_recipients": "to {{recipients}}",
   "toggle_columns": "Toggle columns",
   "toggle_sidebar": "Toggle Sidebar",
   "toggle_theme": "Toggle theme",

@@ -1,0 +1,244 @@
+---
+title: "Message Thread"
+description: "A conversation of e-mail style messages, newest first. Older messages collapse to their sender, e-mail, subject and an excerpt, each message header expands and collapses it, and a message can carry a notice, actions and a footer."
+whenToUse:
+  - "people read and act on a conversation of several messages, such as an e-mail thread or a support request, where only the latest messages need full attention."
+avoidWhen:
+  - when: "people chat with an AI assistant."
+    use: ai-chat
+  - when: "the history is a list of events rather than messages."
+    use: timeline
+example: |
+  import { MessageThread, MessageThreadHeader } from "@uipath/apollo-vertex";
+
+  <MessageThreadHeader title="Laptop replacement request" meta="2 messages" />
+  <MessageThread
+    messages={[
+      {
+        id: "1",
+        sender: "Sam Lee",
+        senderEmail: "sam.lee@example.com",
+        recipients: ["IT Support"],
+        sentAt: "2026-11-06T09:12:00Z",
+        subject: "Laptop replacement request",
+        body: "My laptop battery runs out within an hour. Could I get a replacement?",
+      },
+      {
+        id: "2",
+        sender: "Ana Costa",
+        recipients: ["Sam Lee"],
+        sentAt: "2026-11-07T10:30:00Z",
+        subject: "Re: Laptop replacement request",
+        body: "Approved. The new laptop ships tomorrow.",
+      },
+    ]}
+  />
+---
+
+import { MessageThreadTemplate } from '../../../templates/MessageThreadTemplate';
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <MessageThreadTemplate />
+</div>
+
+## Features
+
+- **Collapsible history**: the latest message starts expanded. Older messages show the avatar, sender, e-mail, subject and a one-line excerpt of the body.
+- **One toggle per message**: the header of a message expands and collapses it. The header stays in place, so keyboard focus stays on it.
+- **New messages open**: messages added to the end of the thread expand, also when several arrive at once. Messages the user collapsed stay collapsed, and earlier messages loaded later, such as history, stay collapsed. A thread that renders empty while it loads starts with only the latest message expanded once the messages arrive.
+- **Stable time and sender**: the sender's e-mail stays visible in both states. The time is always relative, with the full timestamp in a tooltip on hover.
+- **E-mail header**: an expanded message also shows the recipients under the subject.
+- **Notices**: a message can carry an info, warning or error notice. It shows as a badge on the collapsed row and as an alert, with optional actions, above the body.
+- **Thread header**: `MessageThreadHeader` shows the title, a status badge, a meta line and actions such as "Mark solved".
+- **One kind of action**: notices, messages and the thread header take the same actions: a label, a click handler and an optional icon. The first action is the primary button.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/message-thread
+```
+
+## Usage
+
+```tsx
+import {
+  MessageThread,
+  MessageThreadHeader,
+  type MessageThreadMessage,
+} from "@uipath/apollo-vertex";
+```
+
+### Basic
+
+Pass the messages in the order they were sent, oldest first. The thread shows the newest first.
+
+```tsx
+<MessageThreadHeader title="Laptop replacement request" meta="2 messages" />
+<MessageThread
+  messages={[
+    {
+      id: "1",
+      sender: "Sam Lee",
+      senderEmail: "sam.lee@example.com",
+      recipients: ["IT Support"],
+      sentAt: "2026-11-06T09:12:00Z",
+      subject: "Laptop replacement request",
+      body: "Hi,\n\nMy laptop battery runs out within an hour. Could I get a replacement?\n\nSam",
+    },
+    {
+      id: "2",
+      sender: "Ana Costa",
+      senderEmail: "it-support@example.com",
+      recipients: ["Sam Lee"],
+      sentAt: "2026-11-07T10:30:00Z",
+      subject: "Re: Laptop replacement request",
+      body: "Approved. The new laptop ships tomorrow.",
+    },
+  ]}
+/>
+```
+
+The body is plain text and keeps its line breaks. The collapsed row shows it on one line, below the subject.
+
+The thread doesn't scroll by itself, so put it in a scroll container when it shares a pane with other content.
+
+### Notices
+
+A notice flags something about a message. Its `label` is the badge on the collapsed row and the alert title when the message is expanded. Its `actions` are buttons under the description, and the first one is the primary action:
+
+```tsx
+{
+  id: "3",
+  sender: "Sam Lee",
+  sentAt: "2026-11-08T08:05:00Z",
+  body: "Could you ship the new one to the Berlin office?",
+  notice: {
+    status: "warning",
+    label: "Address change",
+    description: "The shipping address differs from the one on file.",
+    actions: [
+      { label: "Confirm address", onClick: () => confirmAddress("3") },
+      { label: "Keep current", onClick: () => keepAddress("3") },
+    ],
+  },
+}
+```
+
+### Actions and footers
+
+`actions` show beside the header of an expanded message, outside its toggle. `footer` shows below the body, for example a reply form on the latest message:
+
+```tsx
+{
+  id: "4",
+  sender: "Ana Costa",
+  sentAt: "2026-11-09T14:20:00Z",
+  body: "Approved. The new laptop ships tomorrow.",
+  actions: [{ label: "Forward", icon: Forward, onClick: () => forward("4") }],
+  footer: <ReplyForm onSend={send} />,
+}
+```
+
+### Thread header
+
+`MessageThreadHeader` takes a `title`, a status `badge`, a `meta` line and `actions`:
+
+```tsx
+<MessageThreadHeader
+  title="Laptop replacement request"
+  badge={{ label: "Open", status: "info" }}
+  meta="Started 3 days ago · 4 messages"
+  actions={[{ label: "Mark solved", icon: CircleCheck, onClick: markSolved }]}
+/>
+```
+
+### Order
+
+Set `order="oldest-first"` to read the thread top to bottom, as in a chat. The latest message still starts expanded.
+
+### Controlled expansion
+
+By default the thread keeps track of which messages are expanded. To control it, for example to remember it per conversation, pass `expandedIds` and `onExpandedChange`. A controlled thread doesn't expand arriving messages for you.
+
+```tsx
+const [expandedIds, setExpandedIds] = useState(["4"]);
+
+<MessageThread
+  messages={messages}
+  expandedIds={expandedIds}
+  onExpandedChange={setExpandedIds}
+/>
+```
+
+To start with other messages expanded without taking control, pass `defaultExpandedIds`. A thread of one message always shows it expanded.
+
+### In an inbox
+
+Pair it with an [`Inbox`](/patterns/inbox) for a master-detail layout. Give the thread a `key` per conversation, so its expanded messages reset when the user opens another one:
+
+```tsx
+<ResizablePanel>
+  <MessageThread key={selectedId} messages={messages} />
+</ResizablePanel>
+```
+
+## API Reference
+
+### MessageThread
+
+Also accepts the props of the `ol` element it renders, including `className`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `messages` | `MessageThreadMessage[]` | — | The messages, oldest first |
+| `order` | `"newest-first" \| "oldest-first"` | `"newest-first"` | The order to show them in |
+| `expandedIds` | `string[]` | — | Ids of the expanded messages, when controlled |
+| `defaultExpandedIds` | `string[]` | the latest message | Ids of the messages that start expanded |
+| `onExpandedChange` | `(ids: string[]) => void` | — | Called when the user expands or collapses a message |
+
+### MessageThreadMessage
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Unique id |
+| `sender` | `string` | Sender name; also gives the avatar its initials |
+| `senderEmail` | `string` | Shown after the sender in both states |
+| `avatarSrc` | `string` | Avatar image; falls back to initials |
+| `recipients` | `string[]` | Shown as "to A and B" when expanded |
+| `sentAt` | `DateTime \| Date \| string` | When it was sent. Relative in the header, full timestamp in a tooltip. Hidden when invalid |
+| `subject` | `string` | In the header, above the excerpt when collapsed |
+| `body` | `string` | The message as plain text. Line breaks are kept |
+| `notice` | `MessageThreadNotice` | An info, warning or error notice |
+| `actions` | `Action[]` | Buttons beside the header when expanded. The first one is the primary action |
+| `footer` | `ReactNode` | Below the body when expanded, e.g. a reply form |
+
+### MessageThreadNotice
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `status` | `"info" \| "warning" \| "error"` | Sets the icon and colors |
+| `label` | `string` | The badge on the collapsed row and the alert title |
+| `description` | `string` | Below the title in the alert |
+| `actions` | `Action[]` | Buttons under the description. The first one is the primary action |
+
+### Action
+
+The shared action type of Apollo Vertex, exported from the package root. Notices, messages and `MessageThreadHeader` show their actions as buttons: the first one is the primary button and the others are outline buttons.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `label` | `string` | The button text |
+| `onClick` | `() => void` | Called when the button is clicked |
+| `disabled` | `boolean` | Disables the button |
+| `icon` | `ComponentType<{ className?: string }>` | An icon before the label, e.g. one from `lucide-react` |
+
+### MessageThreadHeader
+
+Also accepts the props of the `header` element it renders.
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `title` | `string` | The thread's title, rendered as an `h2` |
+| `badge` | `{ label: string; status: "info" \| "success" \| "warning" \| "error" }` | A status badge below the title |
+| `meta` | `string` | Text below the title, e.g. the message count |
+| `actions` | `Action[]` | Buttons beside the title. The first one is the primary action |

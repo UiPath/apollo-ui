@@ -238,6 +238,38 @@ Import every name below from `@uipath/apollo-vertex`. Follow the
     </Inbox>
     ```
 
+- **Message Thread**: A conversation of e-mail style messages, newest first. Older messages collapse to their sender, e-mail, subject and an excerpt, each message header expands and collapses it, and a message can carry a notice, actions and a footer. Exports: `MessageThread`, `MessageThreadHeader`.
+  - Use when people read and act on a conversation of several messages, such as an e-mail thread or a support request, where only the latest messages need full attention.
+  - Avoid when people chat with an AI assistant. Use **AI Chat** instead.
+  - Avoid when the history is a list of events rather than messages. Use **Timeline** instead.
+
+    ```tsx
+    import { MessageThread, MessageThreadHeader } from "@uipath/apollo-vertex";
+
+    <MessageThreadHeader title="Laptop replacement request" meta="2 messages" />
+    <MessageThread
+      messages={[
+        {
+          id: "1",
+          sender: "Sam Lee",
+          senderEmail: "sam.lee@example.com",
+          recipients: ["IT Support"],
+          sentAt: "2026-11-06T09:12:00Z",
+          subject: "Laptop replacement request",
+          body: "My laptop battery runs out within an hour. Could I get a replacement?",
+        },
+        {
+          id: "2",
+          sender: "Ana Costa",
+          recipients: ["Sam Lee"],
+          sentAt: "2026-11-07T10:30:00Z",
+          subject: "Re: Laptop replacement request",
+          body: "Approved. The new laptop ships tomorrow.",
+        },
+      ]}
+    />
+    ```
+
 - **Metric Card**: Displays a labeled metric with a value, optional trend direction, and percentage change badge. Includes a skeleton loading state for consistent UX during data fetches. Exports: `MetricCard`, `MetricCardSkeleton`.
 - **Shell**: A component with a collapsible sidebar, theme and language toggles, and optional OAuth2 authentication. Exports: `ApolloShell`, `AuthContext`, `GroupMembershipGuard`, `LocaleProvider`, `MembershipDenied`, `Role`, `ShellAuthProvider`, `ShellLayout`, `ShellLogin`, `ShellSidebar`, `ShellUserProvider`, `STALE_TIME_MS`, `ThemeProvider`, `useAccessToken`, `useAuth`, `useGroupId`, `useGroupMembers`, `useIsGroupMember`, `useTheme`, `useUser`, `VerifyingMembership`.
 
