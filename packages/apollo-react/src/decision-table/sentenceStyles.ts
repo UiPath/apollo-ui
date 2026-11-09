@@ -52,6 +52,8 @@ export const LINE_CLASS = 'flex h-[var(--sentence-line)] items-center gap-2';
 
 export const LINE_TEXT_CLASS = 'min-w-0 truncate';
 
+export const CLAMPED_LINE_CLASS = 'flex items-center gap-2';
+
 export const HEADING_TEXT_CLASS = cn(LINE_TEXT_CLASS, 'self-baseline py-[2px] leading-[20px]');
 
 const MUTED_TEXT_CLASS =

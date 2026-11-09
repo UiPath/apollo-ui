@@ -394,7 +394,8 @@ describe('DecisionTableSentences', () => {
       expect(line.querySelectorAll('[data-kind="value"]')).toHaveLength(20);
       const more = line.querySelector<HTMLElement>('[data-more-values]');
       expect(more).toHaveTextContent('+9,980 more');
-      expect(more?.parentElement).toBe(line);
+      expect(more?.parentElement?.parentElement).toBe(line);
+      expect(more?.previousElementSibling).toHaveClass('truncate');
       expect(more?.previousElementSibling?.textContent).toMatch(/"Country 20"$/);
     });
 
@@ -423,7 +424,10 @@ describe('DecisionTableSentences', () => {
 
     it('keeps the words after a clamped run on the line and in its title', () => {
       renderView({ rows: [countryThenAge(21)] });
-      expect(lead()?.textContent).toMatch(/"C20" and Age is greater than 18$/);
+      expect(lead()?.textContent).toMatch(/"C20"\+1 more and Age is greater than 18$/);
+      const more = card('m1').querySelector<HTMLElement>('[data-more-values]');
+      expect(more?.previousElementSibling?.textContent).toMatch(/"C20"$/);
+      expect(more?.nextElementSibling?.textContent).toBe(' and Age is greater than 18');
       expect(card('m1').querySelector('[data-more-values]')?.getAttribute('title')).toBe(
         '"C21" and Age is greater than 18'
       );
@@ -458,7 +462,9 @@ describe('DecisionTableSentences', () => {
       });
       const leadLine = lead()?.parentElement;
       expect(leadLine?.querySelectorAll('[data-kind="value"]')).toHaveLength(40);
-      expect(lead()?.textContent).toMatch(/"C20" and Channel is one of "K1", .*"K20"$/);
+      expect(lead()?.textContent).toMatch(
+        /"C20"\+9,980 more and Channel is one of "K1", .*"K20"\+9,980 more$/
+      );
       const counts = [...(leadLine?.querySelectorAll<HTMLElement>('[data-more-values]') ?? [])];
       expect(counts.map((count) => count.textContent)).toEqual(['+9,980 more', '+9,980 more']);
       expect(counts.map((count) => count.title.slice(0, 14))).toEqual([
@@ -467,6 +473,10 @@ describe('DecisionTableSentences', () => {
       ]);
       expect(counts[1]?.title).toMatch(/"K40"…$/);
       expect(counts[0]?.title).toMatch(/"C40"… and Channel is one of "K1", .*"K20"$/);
+      expect(counts.map((count) => count.previousElementSibling?.textContent?.slice(-5))).toEqual([
+        '"C20"',
+        '"K20"',
+      ]);
     });
 
     it('shows a clamped line in full as its title on hover, as a grid cell does', () => {

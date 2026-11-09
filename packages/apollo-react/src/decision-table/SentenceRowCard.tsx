@@ -1,12 +1,13 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { memo } from 'react';
+import { Fragment, memo } from 'react';
 import { showTitleIfClipped } from './clippedTitle';
 import { MarkGlyph } from './MarkGlyph';
 import type { Mark, RowMark } from './marks';
 import { type LineMark, lineMarksOf, worstTone } from './sentenceMarks';
 import { boundedParts, partsText, tokenText } from './sentenceParts';
 import {
+  CLAMPED_LINE_CLASS,
   HEADING_TEXT_CLASS,
   LINE_BULLET_CLASS,
   LINE_CLASS,
@@ -96,39 +97,53 @@ const LineText: React.FC<{
   labels: SentenceLabels;
 }> = ({ id, heading = false, parts, cells, labels }) => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
-  return (
-    <>
-      <span
-        id={id}
-        className={heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS}
-        onMouseEnter={showTitleIfClipped}
-      >
-        {shown.map((part, index) =>
-          typeof part === 'string' ? (
-            <span key={index} className={WORD_CLASS}>
-              {part}
-            </span>
-          ) : (
-            <TokenChip
-              key={index}
-              token={part}
-              mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
-              output={heading}
-            />
-          )
-        )}
-      </span>
-      {clamped.map(({ hidden, after, hiddenValues }, index) => (
-        <span
-          key={index}
-          className={MORE_VALUES_CLASS}
-          data-more-values={hiddenValues}
-          title={hiddenTitle(hidden, after)}
-        >
-          {labels.moreValues(hiddenValues)}
+  const textClass = heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS;
+  const text = (from: number, to = shown.length) =>
+    shown.slice(from, to).map((part, offset) =>
+      typeof part === 'string' ? (
+        <span key={from + offset} className={WORD_CLASS}>
+          {part}
         </span>
+      ) : (
+        <TokenChip
+          key={from + offset}
+          token={part}
+          mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
+          output={heading}
+        />
+      )
+    );
+  if (clamped.length === 0) {
+    return (
+      <span id={id} className={textClass} onMouseEnter={showTitleIfClipped}>
+        {text(0)}
+      </span>
+    );
+  }
+  const cuts = clamped.map(({ after }) => shown.length - after.length);
+  const tail = cuts.at(-1) ?? shown.length;
+  return (
+    <span id={id} className={cn(textClass, CLAMPED_LINE_CLASS)}>
+      {clamped.map(({ hidden, after, hiddenValues }, index) => (
+        <Fragment key={index}>
+          <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
+            {text(cuts[index - 1] ?? 0, cuts[index])}
+          </span>
+          <span
+            className={MORE_VALUES_CLASS}
+            data-more-values={hiddenValues}
+            title={hiddenTitle(hidden, after)}
+          >
+            {labels.moreValues(hiddenValues)}
+          </span>
+        </Fragment>
       ))}
-    </>
+      {tail < shown.length && (
+        <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
+          {text(tail)}
+        </span>
+      )}
+    </span>
   );
 };
 
