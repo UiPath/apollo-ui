@@ -234,16 +234,19 @@ describe('DecisionTable drag: where it can start and land', () => {
     expect(onColumnMove).not.toHaveBeenCalled();
   });
 
-  it('refuses a column past the real ones when the group sizes overcount', () => {
-    const { handle, onColumnMove } = setup({ columnGroupSizes: [3, 3] });
+  it('caps overcounting group sizes at the unpinned columns, the only ones a drag moves', () => {
+    const { handle, onColumnMove } = setup({ pinnedColumnCount: 2, columnGroupSizes: [4] });
     let began = true;
     act(() => {
-      began = handle().startColumnDrag(1, 1, press(360, 10));
+      began = handle().startColumnDrag(0, 2, press(360, 10));
     });
-    pointer('pointermove', 0, 10);
-    pointer('pointerup', 0, 10);
     expect(began).toBe(false);
-    expect(onColumnMove).not.toHaveBeenCalled();
+    act(() => {
+      handle().startColumnDrag(0, 0, press(260, 10)); // a2, the first unpinned column
+    });
+    pointer('pointermove', 5000, 10);
+    pointer('pointerup', 5000, 10);
+    expect(onColumnMove).toHaveBeenCalledWith(0, 0, 1);
   });
 
   it('moves a column one slot along a later group, past the groups before it', () => {

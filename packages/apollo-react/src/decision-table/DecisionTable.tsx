@@ -335,16 +335,17 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     // Fenceposts derived from the group sizes: group i spans [boundaries[i], boundaries[i + 1])
     // in windowed-column space. No sizes -> a single fencepost -> no group to drag within.
     const sizesKey = (columnGroupSizes ?? []).join(',');
-    // Capped at the column count: group sizes that overcount would otherwise let a drag start on, or
-    // drop onto, a column the table does not have.
+    // Capped at the unpinned column count, the space the groups index: group sizes that overcount
+    // would otherwise let a drag start on, or drop onto, a column the table does not have.
+    const windowedColumnCount = Math.max(0, columns.length - pinnedColumnCount);
     // biome-ignore lint/correctness/useExhaustiveDependencies: sizesKey is `columnGroupSizes` by value
     const boundaries = React.useMemo(() => {
       const out = [0];
       for (const size of columnGroupSizes ?? []) {
-        out.push(Math.min(out[out.length - 1]! + size, columns.length));
+        out.push(Math.min(out[out.length - 1]! + size, windowedColumnCount));
       }
       return out;
-    }, [sizesKey, columns.length]);
+    }, [sizesKey, windowedColumnCount]);
     const boundariesRef = useRef(boundaries);
     boundariesRef.current = boundaries;
     const previewHostRef = useRef<HTMLDivElement>(null);
