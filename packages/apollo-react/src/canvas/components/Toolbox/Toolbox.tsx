@@ -713,8 +713,10 @@ export function Toolbox<T>({
         } else if (navigationStack.canGoBack) {
           handleBackTransition();
         } else {
+          // Tab can take focus out of an open Toolbox; only pull it back if it was still inside.
+          const focusWasInside = containerRef.current?.contains(document.activeElement) ?? false;
           handleClose();
-          if (opener?.isConnected && opener !== document.body) opener.focus();
+          if (focusWasInside && opener?.isConnected && opener !== document.body) opener.focus();
         }
       }
     };
