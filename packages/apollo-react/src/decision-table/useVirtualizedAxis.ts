@@ -182,6 +182,17 @@ export const useVirtualizedAxis = (
     [itemOffsetsPx, itemSizePx]
   );
 
+  /** The window's end for an anchor: the items filling a viewport from it, plus the overscan. */
+  const windowEnd = useCallback(
+    (anchor: number, viewport: number): number => {
+      const fillEnd = itemOffsetsPx
+        ? indexAtPx(itemStartPx(anchor) + viewport - 1) + 1
+        : anchor + Math.ceil(viewport / itemSizePx);
+      return Math.min(itemCount, fillEnd + overscanItems);
+    },
+    [itemOffsetsPx, indexAtPx, itemStartPx, itemSizePx, itemCount, overscanItems]
+  );
+
   // Trails the first visible item by up to the threshold and snaps forward in coarse steps, so a
   // fling costs a handful of renders instead of one per item boundary.
   const [anchor, setAnchor] = useState(0);
@@ -274,9 +285,13 @@ export const useVirtualizedAxis = (
     // anchor step or real viewport resize.
     onChange: (instance) => {
       const range = instance.range;
+      const rect = instance.scrollRect;
       if (range) {
+        const viewport = (axis === 'horizontal' ? rect?.width : rect?.height) || fallbackViewportPx;
+        const end = windowEnd(Math.min(anchorRef.current, Math.max(0, itemCount - 1)), viewport);
         const nextAnchor =
-          Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold
+          Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold ||
+          (end < itemCount && range.endIndex >= end - shiftThreshold)
             ? range.startIndex
             : anchorRef.current;
         if (nextAnchor !== anchorRef.current) {
@@ -284,7 +299,6 @@ export const useVirtualizedAxis = (
           setAnchor(nextAnchor);
         }
       }
-      const rect = instance.scrollRect;
       if (rect) {
         const nextViewport = (axis === 'horizontal' ? rect.width : rect.height) || null;
         if (nextViewport !== viewportRef.current) {
@@ -371,16 +385,11 @@ export const useVirtualizedAxis = (
     // browser's own scroll correction.
     const safeAnchor = Math.min(anchor, Math.max(0, itemCount - 1));
     const start = Math.max(0, safeAnchor - overscanItems);
-    // How many items fill a viewport from the anchor: exact under offsets, uniform otherwise.
-    const fillEnd = itemOffsetsPx
-      ? indexAtPx(itemStartPx(safeAnchor) + viewport - 1) + 1
-      : safeAnchor + Math.ceil(viewport / itemSizePx);
-    const end = Math.min(itemCount, fillEnd + overscanItems);
     const next = windowSegments({
       itemCount,
       itemSizePx,
       start,
-      end,
+      end: windowEnd(safeAnchor, viewport),
       retained,
       offsetsPx: itemOffsetsPx,
     });
@@ -398,8 +407,7 @@ export const useVirtualizedAxis = (
     overscanItems,
     fallbackViewportPx,
     itemOffsetsPx,
-    indexAtPx,
-    itemStartPx,
+    windowEnd,
   ]);
 
   return { segments, measureRef, scrollItemIntoView };
