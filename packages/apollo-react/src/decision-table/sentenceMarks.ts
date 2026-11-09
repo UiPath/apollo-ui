@@ -1,8 +1,21 @@
-import type { Mark, MarkTone, RowMark } from './marks';
+import type { Mark, MarkTone, RowMark, TableMarks } from './marks';
 import type { SentencePart } from './sentenceTypes';
 
 /** Every field of a grid mark type, required, so a field added there fails to compile where the view lists the ones it shows. */
 export type MarkFields<T> = { [K in keyof T]-?: unknown };
+
+/** The `Mark` fields a band column paints; a field added to `Mark` fails to compile here until the column decides on it. */
+export const columnMark = (mark: Mark | undefined) =>
+  ({
+    tone: mark?.tone,
+    title: mark?.title,
+    glyph: mark?.glyph,
+    matched: undefined,
+  }) satisfies MarkFields<Mark>;
+
+/** The `TableMarks` maps the view reads; a map added to `TableMarks` fails to compile here until the view decides on it. */
+export const tableMarks = ({ rows, columns }: TableMarks) =>
+  ({ rows, columns }) satisfies MarkFields<TableMarks>;
 
 /** Whether each grid tone ends a line with a glyph; a tone added to `MarkTone` fails to compile here until it is decided. */
 const SHOWS_GLYPH = { success: false, error: true, warning: true } satisfies Record<
