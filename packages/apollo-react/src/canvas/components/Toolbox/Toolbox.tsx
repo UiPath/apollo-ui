@@ -300,8 +300,9 @@ export function Toolbox<T>({
         })
       : '';
 
+  // While the items are still loading, an empty result is not "no matches".
   const searchResultsText =
-    isSearching && !searchLoading && !isSearchingInitialItems
+    isSearching && !searchLoading && !loading && !isSearchingInitialItems
       ? searchedItems.length === 0
         ? noMatchesLabel
         : _({
