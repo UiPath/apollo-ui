@@ -388,10 +388,27 @@ describe('ListView', () => {
         },
       ];
 
+      const { container } = render(<ListView {...defaultProps} items={items} />);
+
+      const img = container.querySelector('img');
+      expect(img).toHaveAttribute('src', 'https://example.com/icon.png');
+      expect(img).toHaveAttribute('alt', '');
+      expect(screen.getByRole('option', { name: 'Test Item' })).toBeInTheDocument();
+    });
+
+    it('should use the icon alt text when the icon says more than the row name', () => {
+      const items: ListItem[] = [
+        {
+          id: 'item-1',
+          name: 'Group Created',
+          data: {},
+          icon: { url: 'https://example.com/icon.png', alt: 'Act! 365' },
+        },
+      ];
+
       render(<ListView {...defaultProps} items={items} />);
 
-      const img = screen.getByAltText('Test Item');
-      expect(img).toHaveAttribute('src', 'https://example.com/icon.png');
+      expect(screen.getByRole('option', { name: 'Act! 365 Group Created' })).toBeInTheDocument();
     });
 
     it('should render an initials badge when the item has no icon source', () => {

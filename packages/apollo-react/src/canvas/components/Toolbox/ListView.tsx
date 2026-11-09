@@ -28,6 +28,11 @@ export interface ListItemIcon {
    */
   url?: string;
   /**
+   * Alt text for a `url` icon. Omit when the row's name already says what the
+   * icon shows; the image is then decorative and not read twice.
+   */
+  alt?: string;
+  /**
    * custom React component for the icon
    */
   Component?: React.ComponentType;
@@ -361,7 +366,12 @@ const ListViewRow = memo(
       >
         <ListViewIconContainer background={bgColor} color={item.contentColor}>
           {item.icon?.url && (
-            <img src={item.icon?.url} alt={item.name} draggable={false} className="w-5 h-5" />
+            <img
+              src={item.icon.url}
+              alt={item.icon.alt ?? ''}
+              draggable={false}
+              className="w-5 h-5"
+            />
           )}
           {item.icon?.name && <CanvasIcon icon={item.icon.name} size={20} />}
           {item.icon?.Component && <item.icon.Component />}
