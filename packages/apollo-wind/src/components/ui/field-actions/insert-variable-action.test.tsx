@@ -128,6 +128,15 @@ describe('InsertVariableAction', () => {
       expect(trigger).toHaveFocus();
     });
 
+    it('sizes its popover to the host picker', async () => {
+      const user = userEvent.setup();
+      render(<InsertVariableAction renderPicker={hostPicker} onInsert={vi.fn()} />);
+      await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+      const popover = await screen.findByRole('dialog');
+      expect(popover).toHaveClass('w-auto');
+      expect(popover).not.toHaveClass('w-[280px]');
+    });
+
     it('is disabled with nowhere to insert', () => {
       render(<InsertVariableAction renderPicker={hostPicker} />);
       expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();

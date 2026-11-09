@@ -74,7 +74,8 @@ export interface VariablePickerProps extends VariablePickerContentProps {
   triggerAriaLabel?: string;
   /**
    * The host's own picker, rendered in the popover in place of the search and tree, whose `items`
-   * it then does not use. A pick reaches `onSelect` as an entry made from the picked value.
+   * it then does not use. A pick reaches `onSelect` as an entry made from the picked value. The
+   * popover then sizes to the host picker, which sets its own width.
    */
   renderPicker?: RenderVariablePicker;
 }
@@ -308,7 +309,11 @@ export function VariablePicker({
       </PopoverTrigger>
       <PopoverContent
         align={align}
-        className={cn('w-[280px] max-w-[calc(100vw-1rem)] overflow-hidden p-0', className)}
+        className={cn(
+          'max-w-[calc(100vw-1rem)] overflow-hidden p-0',
+          renderPicker ? 'w-auto' : 'w-[280px]',
+          className
+        )}
       >
         {renderPicker ? (
           <VariablePickerSlot

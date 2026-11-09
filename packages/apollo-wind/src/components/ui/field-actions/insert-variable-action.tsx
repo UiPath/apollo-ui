@@ -65,7 +65,10 @@ export type InsertVariableActionProps = InsertVariableActionBaseProps &
     | {
         /** Ignored while `renderPicker` is set. */
         variables?: VariablePickerItem[] | (() => VariablePickerItem[]);
-        /** The host's own picker, rendered in the popover in place of the built-in one. */
+        /**
+         * The host's own picker, rendered in the popover in place of the built-in one. The popover
+         * sizes to it, so it sets its own width.
+         */
         renderPicker: RenderVariablePicker;
       }
   );

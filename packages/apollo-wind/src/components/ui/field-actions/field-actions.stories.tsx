@@ -186,7 +186,7 @@ const HOST_ROWS = [
 ];
 
 const hostPicker: RenderVariablePicker = ({ value, onSelect, close }) => (
-  <div className="grid gap-1 p-2 text-xs">
+  <div className="grid w-[280px] gap-1 p-2 text-xs">
     <span className="px-1 text-foreground-muted">Host picker</span>
     {HOST_ROWS.map((row) => (
       <button
@@ -371,4 +371,73 @@ export const AiAssistTriggerState: Story = {
       <HostGenerate />
     </div>
   ),
+};
+
+const WIDE_HOST_TABS = {
+  Variables: [
+    { value: '$vars.orderId', label: 'orderId', type: 'string' },
+    { value: '$vars.customer.shippingAddress', label: 'customer.shippingAddress', type: 'object' },
+  ],
+  Assets: [{ value: '$assets.apiKey', label: 'apiKey', type: 'credential' }],
+};
+type WideHostTab = keyof typeof WIDE_HOST_TABS;
+
+// A host picker with its own fixed width and tab bar, wider than the built-in 280px tree.
+function WideHostPicker({ onSelect }: { onSelect(value: string): void }) {
+  const [tab, setTab] = useState<WideHostTab>('Variables');
+  return (
+    <div className="w-[360px] text-xs">
+      <div role="tablist" className="flex border-b border-border">
+        {(Object.keys(WIDE_HOST_TABS) as WideHostTab[]).map((name) => (
+          <button
+            key={name}
+            type="button"
+            role="tab"
+            aria-selected={tab === name}
+            onClick={() => setTab(name)}
+            className="flex-1 px-3 py-2 text-foreground-muted aria-selected:border-b-2 aria-selected:border-primary aria-selected:text-foreground"
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" className="grid gap-0.5 p-1.5">
+        {WIDE_HOST_TABS[tab].map((row) => (
+          <button
+            key={row.value}
+            type="button"
+            onClick={() => onSelect(row.value)}
+            className="flex items-center justify-between gap-3 rounded px-2 py-1 text-left font-mono hover:bg-surface-overlay"
+          >
+            <span className="truncate">{row.label}</span>
+            <span className="shrink-0 font-sans text-[10px] text-foreground-muted">{row.type}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A host picker sets its own width: the popover sizes to it instead of the built-in 280px. */
+export const WideHostPanel: Story = {
+  render: () => {
+    const [value, setValue] = useState('');
+    return (
+      <FormField className="w-96">
+        <FormFieldHeader
+          label="Endpoint"
+          htmlFor="wide-host-endpoint"
+          actions={
+            <InsertVariableAction
+              renderPicker={({ onSelect }) => <WideHostPicker onSelect={onSelect} />}
+              onInsert={(variable) => setValue((v) => `${v}${variable}`)}
+            />
+          }
+        />
+        <InputGroup>
+          <Input id="wide-host-endpoint" value={value} onChange={(e) => setValue(e.target.value)} />
+        </InputGroup>
+      </FormField>
+    );
+  },
 };

@@ -211,9 +211,10 @@ const CATALOGUE: Record<string, { label: string; icon: ReactNode }> = {
   '$assets.apiKey': { label: 'API key', icon: <KeyRound /> },
 };
 
-// Called only while a picker is open, with the field it picks for.
+// Called only while a picker is open, with the field it picks for. It fills the value control's
+// panel and keeps 280px in the Insert popover, which sizes to it.
 const hostPicker: FormVariablePicker = ({ field, value, onSelect }) => (
-  <div className="grid gap-1 p-2 text-xs">
+  <div className="grid min-w-[280px] gap-1 p-2 text-xs">
     <span className="px-1 text-foreground-muted">Host picker for {field.label}</span>
     {Object.entries(CATALOGUE).map(([reference, { label, icon }]) => (
       <button
