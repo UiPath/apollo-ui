@@ -4,7 +4,13 @@ import { Fragment, memo } from 'react';
 import { showTitleIfClipped } from './clippedTitle';
 import { MarkGlyph } from './MarkGlyph';
 import type { Mark, RowMark } from './marks';
-import { type LineMark, lineMarksOf, type MarkFields, worstTone } from './sentenceMarks';
+import {
+  type LineMark,
+  lineMarksOf,
+  type MarkFields,
+  unplacedColumnIds,
+  worstTone,
+} from './sentenceMarks';
 import { boundedParts, partsText, tokenText } from './sentenceParts';
 import {
   CLAMPED_LINE_CLASS,
@@ -201,7 +207,11 @@ export const RuleCard = memo<RuleCardProps>(
     const { tone, dim, title, cells } = cardMark(mark);
     const badgeFor = (key: string, marks: LineMark[]) =>
       marks.length > 0 ? { id: `${id}-mark-${key}`, marks, labels } : null;
-    const headingBadge = badgeFor('heading', lineMarksOf(rule.heading, cells, mark));
+    const unplaced = unplacedColumnIds(
+      [rule.heading, rule.lead, ...rule.lines.map((line) => line.parts)],
+      cells
+    );
+    const headingBadge = badgeFor('heading', lineMarksOf(rule.heading, cells, mark, unplaced));
     const leadBadge = badgeFor('lead', lineMarksOf(rule.lead, cells));
     const lineBadges = rule.lines.map((line, index) =>
       badgeFor(`line-${index}`, lineMarksOf(line.parts, cells))

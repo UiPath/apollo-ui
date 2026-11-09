@@ -33,13 +33,26 @@ const valueColumnIds = (parts: readonly SentencePart[]): string[] => [
 export const isLineMark = (mark: Mark | undefined): mark is Mark & LineMark =>
   mark?.glyph === true && mark.tone !== undefined && SHOWS_GLYPH[mark.tone];
 
-/** The glyph marks of `own` and of a line's value tokens, once per tone and message. */
+/** The marked columns that none of `lines` shows as a value token. */
+export const unplacedColumnIds = (
+  lines: readonly (readonly SentencePart[])[],
+  cells: RowMark['cells']
+): string[] => {
+  const placed = new Set(lines.flatMap(valueColumnIds));
+  return Object.keys(cells ?? {}).filter((columnId) => !placed.has(columnId));
+};
+
+/** The glyph marks of `own`, of a line's value tokens and of the `unplaced` columns, once per tone and message. */
 export const lineMarksOf = (
   parts: readonly SentencePart[],
   cells: RowMark['cells'],
-  own?: Mark
+  own?: Mark,
+  unplaced: readonly string[] = []
 ): LineMark[] => {
-  const candidates = [own, ...valueColumnIds(parts).map((columnId) => cells?.[columnId])];
+  const candidates = [
+    own,
+    ...[...valueColumnIds(parts), ...unplaced].map((columnId) => cells?.[columnId]),
+  ];
   const marks = new Map<string, LineMark>();
   for (const mark of candidates.filter(isLineMark)) {
     marks.set(`${mark.tone}\n${mark.title ?? ''}`, { tone: mark.tone, title: mark.title });

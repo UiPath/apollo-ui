@@ -205,6 +205,31 @@ describe('DecisionCard', () => {
       expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
     });
 
+    it('puts the glyph of a cell its sentence leaves out on the heading line, once', () => {
+      renderView({
+        marks: rowMarks({
+          m3: {
+            cells: {
+              score: { tone: 'warning', title: 'Overlaps row 1', glyph: true },
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+            },
+          },
+        }),
+      });
+      const heading = card('m3').querySelector('[id$="-heading"]')?.parentElement;
+      const lead = card('m3').querySelector('[id$="-lead"]')?.parentElement;
+      expect(heading?.querySelector('[data-glyph="error"]')?.parentElement).toHaveAttribute(
+        'data-mark-title',
+        'Not a number'
+      );
+      expect(lead?.querySelector('[data-glyph="warning"]')?.parentElement).toHaveAttribute(
+        'data-mark-title',
+        'Overlaps row 1'
+      );
+      expect(card('m3').querySelectorAll('[data-glyph]')).toHaveLength(2);
+      expect(card('m3')).toHaveAccessibleDescription('Error: Not a number Warning: Overlaps row 1');
+    });
+
     it('marks a band column with its column mark', () => {
       renderView({
         marks: {
