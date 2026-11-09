@@ -714,6 +714,21 @@ describe('Toolbox', () => {
       opener.remove();
     });
 
+    it('leaves focus alone when Escape closes it after Tab already moved focus out', async () => {
+      const opener = document.createElement('button');
+      const elsewhere = document.createElement('button');
+      document.body.append(opener, elsewhere);
+      opener.focus();
+      render(<Toolbox {...defaultProps} />);
+      elsewhere.focus();
+
+      await user.keyboard('{Escape}');
+
+      expect(elsewhere).toHaveFocus();
+      opener.remove();
+      elsewhere.remove();
+    });
+
     it('leaves focus where the user clicked when an outside click closes it', async () => {
       const opener = document.createElement('button');
       const elsewhere = document.createElement('button');
