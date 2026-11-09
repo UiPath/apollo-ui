@@ -8,16 +8,18 @@ import { type LineMark, lineMarksOf, type MarkFields, worstTone } from './senten
 import { boundedParts, partsText, tokenText } from './sentenceParts';
 import {
   CLAMPED_LINE_CLASS,
+  EMPTY_OUTPUT_VALUE_CLASS,
   HEADING_TEXT_CLASS,
   LINE_BULLET_CLASS,
   LINE_CLASS,
+  LINE_FILL_CLASS,
   LINE_MARK_CLASS,
   LINE_TEXT_CLASS,
+  LINES_CLASS,
   MARK_GLYPH_CLASS,
   MARKED_CHIP_CLASS,
   MORE_VALUES_CLASS,
   OUTPUT_VALUE_CLASS,
-  ROW_HEADING_CLASS,
   ROW_NUMBER_CLASS,
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
@@ -83,6 +85,12 @@ const cardMark = (mark: RowMark | undefined) =>
     cells: mark?.cells,
   }) satisfies MarkFields<RowMark>;
 
+/** A token's own look: an output's value is a pill, or muted when the cell is empty. */
+const tokenClass = (token: SentenceToken, output: boolean): string => {
+  if (token.kind !== 'value' || !output) return TOKEN_KIND_CLASS[token.kind];
+  return token.text === '' ? EMPTY_OUTPUT_VALUE_CLASS : OUTPUT_VALUE_CLASS;
+};
+
 const TokenChip: React.FC<{
   token: SentenceToken;
   mark: Mark | undefined;
@@ -92,10 +100,7 @@ const TokenChip: React.FC<{
   const { tone, title, matched } = chipMark(mark);
   return (
     <span
-      className={cn(
-        isValue && output ? OUTPUT_VALUE_CLASS : TOKEN_KIND_CLASS[token.kind],
-        isValue && MARKED_CHIP_CLASS
-      )}
+      className={cn(tokenClass(token, output), isValue && MARKED_CHIP_CLASS)}
       data-kind={token.kind}
       data-column-id={token.columnId}
       data-tone={tone}
@@ -113,6 +118,10 @@ const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePa
   return `${partsText(shown)}${clamped.length > 0 ? '…' : ''}${partsText(after)}`;
 };
 
+/** A line that tests an input mutes its connecting words, as the condition's operator. */
+const testsInput = (parts: readonly SentencePart[]): boolean =>
+  parts.some((part) => typeof part !== 'string' && part.kind === 'input');
+
 /** One clamped line: its first values, then a count of the rest that the clamp never hides. */
 const LineText: React.FC<{
   id?: string;
@@ -122,11 +131,12 @@ const LineText: React.FC<{
   labels: DecisionCardLabels;
 }> = ({ id, heading = false, parts, cells, labels }) => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
-  const textClass = heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS;
+  const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, LINE_FILL_CLASS);
+  const wordClass = testsInput(parts) ? WORD_CLASS : undefined;
   const text = (from: number, to = shown.length) =>
     shown.slice(from, to).map((part, offset) =>
       typeof part === 'string' ? (
-        <span key={from + offset} className={WORD_CLASS}>
+        <span key={from + offset} className={wordClass}>
           {part}
         </span>
       ) : (
@@ -215,12 +225,12 @@ export const RuleCard = memo<RuleCardProps>(
         data-testid={`${dataTestId}-row-${rule.rowId}`}
       >
         <div className={ROW_SURFACE_CLASS}>
-          <div className={ROW_HEADING_CLASS} data-mark-title={title}>
-            {numbered && (
-              <span id={`${id}-number`} className={ROW_NUMBER_CLASS}>
-                {position}
-              </span>
-            )}
+          {numbered && (
+            <span id={`${id}-number`} className={ROW_NUMBER_CLASS}>
+              {position}
+            </span>
+          )}
+          <div className={LINE_CLASS} data-mark-title={title}>
             <LineText
               id={`${id}-heading`}
               heading
@@ -235,7 +245,7 @@ export const RuleCard = memo<RuleCardProps>(
             {leadBadge && <MarkBadge {...leadBadge} />}
           </div>
           {rule.lines.length > 0 && (
-            <ul>
+            <ul className={LINES_CLASS}>
               {rule.lines.map((line, index) => {
                 const lineBadge = lineBadges[index];
                 return (

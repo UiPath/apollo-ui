@@ -1,4 +1,5 @@
-import { Button } from '@uipath/apollo-wind';
+import { Button, EmptyState } from '@uipath/apollo-wind';
+import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
@@ -7,7 +8,9 @@ import { MarkBadge, markIds, RuleCard } from './RuleCard';
 import { isLineMark, type MarkFields } from './sentenceMarks';
 import {
   SENTENCE_LINE_HEIGHT_PX,
+  SENTENCE_LINES_GAP_PX,
   SENTENCE_MIN_RULE_HEIGHT_PX,
+  SENTENCE_RULE_BORDER_PX,
   SENTENCE_RULE_GAP_PX,
   SENTENCE_RULE_PADDING_PX,
   sentenceRuleOffsets,
@@ -21,6 +24,7 @@ import {
   DECISION_CARD_HEADER_CLASS,
   DECISION_CARD_LIST_CLASS,
   EMPTY_STATE_CLASS,
+  EMPTY_STATE_FRAME_CLASS,
   HEADER_LABEL_CLASS,
 } from './sentenceStyles';
 import type {
@@ -38,7 +42,9 @@ type SentenceListStyle = React.CSSProperties & Record<`--sentence-${string}`, st
 
 const LIST_GEOMETRY: SentenceListStyle = {
   '--sentence-line': `${SENTENCE_LINE_HEIGHT_PX}px`,
+  '--sentence-row-border': `${SENTENCE_RULE_BORDER_PX}px`,
   '--sentence-row-padding': `${SENTENCE_RULE_PADDING_PX}px`,
+  '--sentence-lines-gap': `${SENTENCE_LINES_GAP_PX}px`,
   '--sentence-row-gap': `${SENTENCE_RULE_GAP_PX}px`,
 };
 
@@ -181,7 +187,11 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
         <span>{header.hint}</span>
       </div>
       {bands.length > 0 && (
-        <div className={DECISION_CARD_BANDS_CLASS} data-testid={`${dataTestId}-bands`}>
+        <div
+          className={DECISION_CARD_BANDS_CLASS}
+          style={listStyle}
+          data-testid={`${dataTestId}-bands`}
+        >
           {bands.map((band, bandIndex) => (
             <div key={band.id} className="contents" data-band-id={band.id}>
               <span aria-hidden className={BAND_CAPTION_CLASS}>
@@ -222,13 +232,20 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
         </div>
       )}
       {rules.length === 0 ? (
-        <div className={EMPTY_STATE_CLASS} data-testid={`${dataTestId}-empty`}>
-          <p>{labels.emptyRules}</p>
-          {addRule && (
-            <Button variant="outline" size="xs" onClick={addRule.onAdd}>
-              {addRule.label}
-            </Button>
-          )}
+        <div className={EMPTY_STATE_FRAME_CLASS}>
+          <EmptyState
+            size="compact"
+            title={labels.emptyRules}
+            className={EMPTY_STATE_CLASS}
+            data-testid={`${dataTestId}-empty`}
+          >
+            {addRule && (
+              <Button variant="outline" size="sm" onClick={addRule.onAdd}>
+                <Plus aria-hidden />
+                {addRule.label}
+              </Button>
+            )}
+          </EmptyState>
         </div>
       ) : (
         <ul ref={listRef} className={DECISION_CARD_LIST_CLASS} style={listStyle}>
