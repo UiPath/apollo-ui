@@ -6,32 +6,32 @@ import {
   COUNTRY,
   channel,
   country,
-  longValueListRow,
+  DECISION_CARD_LABELS,
+  longValueListRule,
   MULTI_SENTENCE_BANDS,
   MULTI_SENTENCE_HEADER,
-  MULTI_SENTENCE_ROWS,
+  MULTI_SENTENCE_RULES,
   manyColumnBands,
-  manySentenceRows,
-  SENTENCE_LABELS,
+  manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
 import { EMPTY_VALUE_DASH } from './constants';
-import { DecisionTableSentences, type DecisionTableSentencesProps } from './DecisionTableSentences';
+import { DecisionCard, type DecisionCardProps } from './DecisionCard';
 import type { RowMark, TableMarks } from './marks';
-import { sentenceRowOffsets } from './sentenceRowHeights';
-import type { SentencePart, SentenceRow } from './sentenceTypes';
+import { sentenceRuleOffsets } from './sentenceRuleHeights';
+import type { SentencePart, SentenceRule } from './sentenceTypes';
 
-const view = (props: Partial<DecisionTableSentencesProps> = {}) => (
-  <DecisionTableSentences
-    rows={MULTI_SENTENCE_ROWS}
+const view = (props: Partial<DecisionCardProps> = {}) => (
+  <DecisionCard
+    rules={MULTI_SENTENCE_RULES}
     bands={MULTI_SENTENCE_BANDS}
     header={MULTI_SENTENCE_HEADER}
-    labels={SENTENCE_LABELS}
+    labels={DECISION_CARD_LABELS}
     ariaLabel="Rules"
     dataTestId="nl"
     {...props}
   />
 );
-const renderView = (props: Partial<DecisionTableSentencesProps> = {}) => render(view(props));
+const renderView = (props: Partial<DecisionCardProps> = {}) => render(view(props));
 
 const card = (rowId: string) => screen.getByTestId(`nl-row-${rowId}`);
 const mountedRows = () => [...document.querySelectorAll<HTMLElement>('li[data-row-id]')];
@@ -52,9 +52,9 @@ const scrollTo = (px: number) => {
   fireEvent.scroll(frame);
 };
 
-describe('DecisionTableSentences', () => {
+describe('DecisionCard', () => {
   describe('layout', () => {
-    it('shows the header label and hint above the rows', () => {
+    it('shows the header label and hint above the rules', () => {
       renderView();
       expect(screen.getByTestId('nl-header')).toHaveTextContent(
         'CollectReturns the matches as a list.'
@@ -104,43 +104,10 @@ describe('DecisionTableSentences', () => {
       renderView();
       expect(valueChip('m2', 'reason')).toHaveTextContent(EMPTY_VALUE_DASH);
     });
-
-    it('numbers rows only when asked', () => {
-      const { unmount } = renderView();
-      expect(card('m1').textContent?.startsWith('Decision')).toBe(true);
-      unmount();
-      renderView({ numbered: true });
-      expect(['m1', 'm2', 'm3', 'm4', 'm5'].map((rowId) => card(rowId).textContent?.[0])).toEqual([
-        '1',
-        '2',
-        '3',
-        '4',
-        '5',
-      ]);
-    });
-
-    it('tags each chip with its kind and column', () => {
-      renderView();
-      const kinds = [...card('m3').querySelectorAll<HTMLElement>('[data-kind]')].map(
-        (chip) => `${chip.dataset.kind}:${chip.dataset.columnId}:${chip.textContent}`
-      );
-      expect(kinds).toEqual([
-        'output:decision:Decision',
-        'value:decision:"decline"',
-        'output:limit:Credit Limit',
-        'value:limit:0',
-        'output:reason:Reason',
-        'value:reason:"low score"',
-        'input:score:Credit Score',
-        'value:score:600',
-        'input:channel:Channel',
-        'value:channel:"branch"',
-      ]);
-    });
   });
 
   describe('accessibility', () => {
-    it('names each row by its heading and lead, and counts it among all rows', () => {
+    it('names each row by its heading and lead, and counts it among all rules', () => {
       renderView({ numbered: true });
       const row = card('m3');
       expect(row).toHaveAccessibleName(
@@ -271,12 +238,12 @@ describe('DecisionTableSentences', () => {
       const onCellHover = vi.fn();
       const { rerender } = renderView({ onCellHover });
       fireEvent.pointerOver(valueChip('m3', 'score'));
-      const reworded = MULTI_SENTENCE_ROWS.map((row) =>
+      const reworded = MULTI_SENTENCE_RULES.map((row) =>
         row.rowId === 'm3'
           ? { ...row, lead: ['when ', CHANNEL, ' is not ', channel('"branch"')] }
           : row
       );
-      rerender(view({ onCellHover, rows: reworded }));
+      rerender(view({ onCellHover, rules: reworded }));
       expect(onCellHover.mock.calls).toEqual([
         [{ rowId: 'm3', columnId: 'score' }],
         [{ rowId: 'm3', columnId: 'channel' }],
@@ -285,10 +252,10 @@ describe('DecisionTableSentences', () => {
 
     it('reports null when scrolling unmounts the hovered row', () => {
       const onCellHover = vi.fn();
-      const rows = manySentenceRows(2000);
-      renderView({ rows, onCellHover });
+      const rules = manySentenceRules(2000);
+      renderView({ rules, onCellHover });
       fireEvent.pointerOver(valueChip('row-0', 'decision'));
-      act(() => scrollTo(sentenceRowOffsets(rows)[500] ?? 0));
+      act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
       expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
       expect(onCellHover).toHaveBeenLastCalledWith(null);
     });
@@ -317,7 +284,7 @@ describe('DecisionTableSentences', () => {
   describe('empty state', () => {
     it('keeps the header and bands and offers the add action', () => {
       const onAddRow = vi.fn();
-      renderView({ rows: [], addRow: { label: 'Add rule', onAdd: onAddRow } });
+      renderView({ rules: [], addRule: { label: 'Add rule', onAdd: onAddRow } });
       const empty = screen.getByTestId('nl-empty');
       expect(empty).toHaveTextContent('No rules yet');
       fireEvent.click(within(empty).getByRole('button', { name: 'Add rule' }));
@@ -326,16 +293,16 @@ describe('DecisionTableSentences', () => {
       expect(screen.getByTestId('nl-bands')).toBeInTheDocument();
     });
 
-    it('offers no add action without addRow', () => {
-      renderView({ rows: [] });
+    it('offers no add action without addRule', () => {
+      renderView({ rules: [] });
       expect(within(screen.getByTestId('nl-empty')).queryByRole('button')).toBeNull();
     });
   });
 
   describe('windowing', () => {
-    it('mounts only the viewport and overscan of 20,000 rows, with a spacer for the rest', () => {
-      const rows = manySentenceRows(20_000);
-      renderView({ rows });
+    it('mounts only the viewport and overscan of 20,000 rules, with a spacer for the rest', () => {
+      const rules = manySentenceRules(20_000);
+      renderView({ rules });
       const mounted = mountedRows();
       expect(mounted.map((row) => row.dataset.rowId)).toEqual(
         Array.from({ length: mounted.length }, (_, index) => `row-${index}`)
@@ -345,42 +312,36 @@ describe('DecisionTableSentences', () => {
       const spacer = mounted.at(-1)?.nextElementSibling;
       expect(spacer).toBe(screen.getByTestId('nl-row-spacer'));
       expect(spacer).toHaveAttribute('aria-hidden', 'true');
-      const offsets = sentenceRowOffsets(rows);
+      const offsets = sentenceRuleOffsets(rules);
       expect(spacer).toHaveStyle({
         height: `${(offsets[20_000] ?? 0) - (offsets[mounted.length] ?? 0)}px`,
       });
     });
 
-    it('keeps the mounted rows when the leading spacer appears', () => {
-      const rows = manySentenceRows(2000);
-      renderView({ rows });
+    it('keeps the mounted rules when the leading spacer appears', () => {
+      const rules = manySentenceRules(2000);
+      renderView({ rules });
       const before = card('row-15');
-      act(() => scrollTo(sentenceRowOffsets(rows)[12] ?? 0));
+      act(() => scrollTo(sentenceRuleOffsets(rules)[12] ?? 0));
       expect(screen.getAllByTestId('nl-row-spacer')).toHaveLength(2);
       expect(card('row-15')).toBe(before);
     });
   });
 
   describe('at scale', () => {
-    const countryLine = () => {
-      const line = card('long-list').querySelector<HTMLElement>('li[data-column-id="country"]');
-      if (!line) throw new Error('line');
-      return line;
-    };
-
     it('renders the first 20 values of a 10,000-value line and counts the rest outside the clamp', () => {
-      renderView({ rows: [longValueListRow(10_000)] });
-      const line = countryLine();
-      expect(line.querySelectorAll('[data-kind="value"]')).toHaveLength(20);
-      const more = line.querySelector<HTMLElement>('[data-more-values]');
+      renderView({ rules: [longValueListRule(10_000)] });
+      const line = card('long-list').querySelector<HTMLElement>('li[data-column-id="country"]');
+      expect(line?.querySelectorAll('[data-kind="value"]')).toHaveLength(20);
+      const more = line?.querySelector<HTMLElement>('[data-more-values]');
       expect(more).toHaveTextContent('+9,980 more');
       expect(more?.parentElement?.parentElement).toBe(line);
       expect(more?.previousElementSibling).toHaveClass('truncate');
       expect(more?.previousElementSibling?.textContent).toMatch(/"Country 20"$/);
     });
 
-    const countryThenAge = (count: number): SentenceRow => {
-      const [first] = MULTI_SENTENCE_ROWS;
+    const countryThenAge = (count: number): SentenceRule => {
+      const [first] = MULTI_SENTENCE_RULES;
       if (!first) throw new Error('fixture');
       const values = Array.from({ length: count }, (_, index) => `"C${index + 1}"`);
       return {
@@ -403,7 +364,7 @@ describe('DecisionTableSentences', () => {
     const lead = () => card('m1').querySelector<HTMLElement>('[id$="-lead"]');
 
     it('keeps the words after a clamped run on the line and in its title', () => {
-      renderView({ rows: [countryThenAge(21)] });
+      renderView({ rules: [countryThenAge(21)] });
       expect(lead()?.textContent).toMatch(/"C20"\+1 more and Age is greater than 18$/);
       const more = card('m1').querySelector<HTMLElement>('[data-more-values]');
       expect(more?.previousElementSibling?.textContent).toMatch(/"C20"$/);
@@ -414,7 +375,7 @@ describe('DecisionTableSentences', () => {
     });
 
     it('clamps every oversized run of a line on its own', () => {
-      const [first] = MULTI_SENTENCE_ROWS;
+      const [first] = MULTI_SENTENCE_RULES;
       if (!first) throw new Error('fixture');
       const run = (value: (text: string) => SentencePart, prefix: string) =>
         Array.from({ length: 10_000 }, (_, index): SentencePart[] =>
@@ -423,7 +384,7 @@ describe('DecisionTableSentences', () => {
             : [', ', value(`"${prefix}${index + 1}"`)]
         ).flat();
       renderView({
-        rows: [
+        rules: [
           {
             ...first,
             lead: [

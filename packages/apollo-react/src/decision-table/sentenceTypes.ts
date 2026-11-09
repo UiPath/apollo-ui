@@ -18,7 +18,7 @@ export interface SentenceLine {
 }
 
 /** One row of the table, worded. */
-export interface SentenceRow {
+export interface SentenceRule {
   rowId: string;
   /** The row's outputs, shown first. */
   heading: readonly SentencePart[];
@@ -28,12 +28,12 @@ export interface SentenceRow {
   lines: readonly SentenceLine[];
 }
 
-/** A labelled run of columns shown above the rows. */
+/** A labelled run of columns shown above the rules. */
 export interface SentenceBand extends Pick<GridColumnGroup, 'id' | 'label'> {
   columns: readonly Pick<GridColumn, 'id' | 'name'>[];
 }
 
-/** The sticky line above the rows: a label and its hint. */
+/** The sticky line above the rules: a label and its hint. */
 export interface SentenceHeader {
   label: string;
   hint: string;
@@ -46,8 +46,8 @@ export interface SentenceCellId {
 }
 
 /** The view's own strings; the consumer passes localized values. */
-export interface SentenceLabels {
-  emptyRows: string;
+export interface DecisionCardLabels {
+  emptyRules: string;
   /** One mark as read aloud, e.g. "Warning: Overlaps row 1"; `message` is absent when the mark has none. */
   markStatus: (tone: Exclude<MarkTone, 'success'>, message: string | undefined) => string;
   /** The count a line shows in place of the values past its limit, e.g. "+9,980 more". */

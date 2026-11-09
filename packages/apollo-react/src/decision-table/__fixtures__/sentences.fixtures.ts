@@ -1,10 +1,10 @@
 import type {
+  DecisionCardLabels,
   SentenceBand,
   SentenceHeader,
-  SentenceLabels,
   SentenceLine,
   SentencePart,
-  SentenceRow,
+  SentenceRule,
   SentenceToken,
 } from '../sentenceTypes';
 
@@ -46,7 +46,7 @@ const [INCOME, income] = column('income', 'input', 'income');
 const [RISK, risk] = column('risk', 'output', 'risk');
 
 /** The grid story's table (age, income → risk), worded. */
-export const GRID_SENTENCE_ROWS: SentenceRow[] = [
+export const GRID_SENTENCE_RULES: SentenceRule[] = [
   {
     rowId: 'r1',
     heading: [RISK, ' is ', risk('"high"')],
@@ -114,8 +114,8 @@ const outputs = (result: string, amount: string, why: string): SentencePart[] =>
   ...[REASON, ' is ', reason(why)],
 ];
 
-/** Five inputs and three outputs: every operator form, rows with and without condition lines, and an empty output. */
-export const MULTI_SENTENCE_ROWS: SentenceRow[] = [
+/** Five inputs and three outputs: every operator form, rules with and without condition lines, and an empty output. */
+export const MULTI_SENTENCE_RULES: SentenceRule[] = [
   {
     rowId: 'm1',
     heading: outputs('"approve"', '25000', '"prime"'),
@@ -179,8 +179,8 @@ export const MULTI_SENTENCE_HEADER: SentenceHeader = {
   hint: 'Returns the matches as a list.',
 };
 
-export const SENTENCE_LABELS: SentenceLabels = {
-  emptyRows: 'No rules yet',
+export const DECISION_CARD_LABELS: DecisionCardLabels = {
+  emptyRules: 'No rules yet',
   markStatus: (tone, message) => {
     const status = tone === 'error' ? 'Error' : 'Warning';
     return message ? `${status}: ${message}` : status;
@@ -188,22 +188,22 @@ export const SENTENCE_LABELS: SentenceLabels = {
   moreValues: (count) => `+${count.toLocaleString('en-US')} more`,
 };
 
-const firstRow = (): SentenceRow => {
-  const [row] = MULTI_SENTENCE_ROWS;
-  if (!row) throw new Error('MULTI_SENTENCE_ROWS is empty');
+const firstRule = (): SentenceRule => {
+  const [row] = MULTI_SENTENCE_RULES;
+  if (!row) throw new Error('MULTI_SENTENCE_RULES is empty');
   return row;
 };
 
-/** `count` rows cycling through `MULTI_SENTENCE_ROWS`, each with its own id. */
-export const manySentenceRows = (count: number): SentenceRow[] =>
+/** `count` rules cycling through `MULTI_SENTENCE_RULES`, each with its own id. */
+export const manySentenceRules = (count: number): SentenceRule[] =>
   Array.from({ length: count }, (_, index) => ({
-    ...(MULTI_SENTENCE_ROWS[index % MULTI_SENTENCE_ROWS.length] ?? firstRow()),
+    ...(MULTI_SENTENCE_RULES[index % MULTI_SENTENCE_RULES.length] ?? firstRule()),
     rowId: `row-${index}`,
   }));
 
 /** The first multi row with one `country` line naming `count` values. */
-export const longValueListRow = (count: number): SentenceRow => ({
-  ...firstRow(),
+export const longValueListRule = (count: number): SentenceRule => ({
+  ...firstRule(),
   rowId: 'long-list',
   lines: [
     line(
@@ -220,8 +220,8 @@ export const longValueListRow = (count: number): SentenceRow => ({
 const generatedInput = (index: number) => column(`input-${index}`, 'input', `Input ${index + 1}`);
 
 /** The first multi row with `count` condition lines, one per generated input. */
-export const manyLinesRow = (count: number): SentenceRow => ({
-  ...firstRow(),
+export const manyLinesRule = (count: number): SentenceRule => ({
+  ...firstRule(),
   rowId: 'many-lines',
   lines: Array.from({ length: count }, (_, index) => {
     const [name, value] = generatedInput(index);

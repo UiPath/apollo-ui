@@ -3,43 +3,43 @@ import type React from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { EMPTY_MARKS, type Mark, type TableMarks } from './marks';
-import { MarkBadge, markIds, SentenceRowCard } from './SentenceRowCard';
+import { MarkBadge, markIds, RuleCard } from './RuleCard';
 import { isLineMark, type MarkFields } from './sentenceMarks';
 import {
   SENTENCE_LINE_HEIGHT_PX,
-  SENTENCE_MIN_ROW_HEIGHT_PX,
-  SENTENCE_ROW_GAP_PX,
-  SENTENCE_ROW_PADDING_PX,
-  sentenceRowOffsets,
-} from './sentenceRowHeights';
+  SENTENCE_MIN_RULE_HEIGHT_PX,
+  SENTENCE_RULE_GAP_PX,
+  SENTENCE_RULE_PADDING_PX,
+  sentenceRuleOffsets,
+} from './sentenceRuleHeights';
 import {
   BAND_CAPTION_CLASS,
   BAND_COLUMN_CLASS,
   BAND_COLUMNS_CLASS,
+  DECISION_CARD_BANDS_CLASS,
+  DECISION_CARD_FRAME_CLASS,
+  DECISION_CARD_HEADER_CLASS,
+  DECISION_CARD_LIST_CLASS,
   EMPTY_STATE_CLASS,
   HEADER_LABEL_CLASS,
-  SENTENCES_BANDS_CLASS,
-  SENTENCES_FRAME_CLASS,
-  SENTENCES_HEADER_CLASS,
-  SENTENCES_LIST_CLASS,
 } from './sentenceStyles';
 import type {
+  DecisionCardLabels,
   SentenceBand,
   SentenceCellId,
   SentenceHeader,
-  SentenceLabels,
-  SentenceRow,
+  SentenceRule,
 } from './sentenceTypes';
 import { useVirtualizedAxis } from './useVirtualizedAxis';
 
-const SENTENCE_ROW_OVERSCAN = 10;
+const SENTENCE_RULE_OVERSCAN = 10;
 
 type SentenceListStyle = React.CSSProperties & Record<`--sentence-${string}`, string | number>;
 
 const LIST_GEOMETRY: SentenceListStyle = {
   '--sentence-line': `${SENTENCE_LINE_HEIGHT_PX}px`,
-  '--sentence-row-padding': `${SENTENCE_ROW_PADDING_PX}px`,
-  '--sentence-row-gap': `${SENTENCE_ROW_GAP_PX}px`,
+  '--sentence-row-padding': `${SENTENCE_RULE_PADDING_PX}px`,
+  '--sentence-row-gap': `${SENTENCE_RULE_GAP_PX}px`,
 };
 
 interface HoveredToken {
@@ -69,20 +69,20 @@ const columnMark = (mark: Mark | undefined) =>
 const tableMarks = ({ rows, columns }: TableMarks) =>
   ({ rows, columns }) satisfies MarkFields<TableMarks>;
 
-export interface DecisionTableSentencesProps {
-  rows: readonly SentenceRow[];
+export interface DecisionCardProps {
+  rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
   header: SentenceHeader;
-  /** Shows each row's 1-based position before its heading. */
+  /** Shows each rule's 1-based position before its heading. */
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
   /** The empty state's add action and its label. */
-  addRow?: { label: string; onAdd: () => void };
+  addRule?: { label: string; onAdd: () => void };
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
   onCellHover?: (cell: SentenceCellId | null) => void;
-  /** The view's own strings; mounted rows re-render when it changes, so memoize it. */
-  labels: SentenceLabels;
+  /** The view's own strings; mounted rules re-render when it changes, so memoize it. */
+  labels: DecisionCardLabels;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Merged onto the scroll container; a `data-testid` here overrides `dataTestId`. */
@@ -91,14 +91,14 @@ export interface DecisionTableSentencesProps {
   dataTestId: string;
 }
 
-/** A decision table read as sentences: one card per row, windowed, painted by the grid's marks. */
-export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
-  rows,
+/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks. */
+export const DecisionCard: React.FC<DecisionCardProps> = ({
+  rules,
   bands,
   header,
   numbered = false,
   marks = EMPTY_MARKS,
-  addRow,
+  addRule,
   onCellHover,
   labels,
   ariaLabel,
@@ -131,14 +131,14 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
   useEffect(() => () => hoverTo(null), [hoverTo]);
 
   const listStart = useCallback(() => listRef.current?.offsetTop ?? 0, []);
-  const offsetsPx = useMemo(() => sentenceRowOffsets(rows), [rows]);
+  const offsetsPx = useMemo(() => sentenceRuleOffsets(rules), [rules]);
   const { segments, measureRef } = useVirtualizedAxis(
-    rows.length,
-    SENTENCE_MIN_ROW_HEIGHT_PX,
+    rules.length,
+    SENTENCE_MIN_RULE_HEIGHT_PX,
     null,
     {
       axis: 'vertical',
-      overscanItems: SENTENCE_ROW_OVERSCAN,
+      overscanItems: SENTENCE_RULE_OVERSCAN,
       fallbackViewportPx: FALLBACK_ROW_VIEWPORT_PX,
       leadingFixedPx: listStart,
       itemOffsetsPx: offsetsPx,
@@ -151,9 +151,9 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
     ...restContainerProps
   } = containerProps ?? {};
   const listStyle: SentenceListStyle = numbered
-    ? { ...LIST_GEOMETRY, '--sentence-number-digits': String(rows.length).length }
+    ? { ...LIST_GEOMETRY, '--sentence-number-digits': String(rules.length).length }
     : LIST_GEOMETRY;
-  let nextRowIndex = 0;
+  let nextRuleIndex = 0;
 
   return (
     <section
@@ -161,7 +161,7 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
       aria-label={ariaLabel}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be reachable by keyboard
       tabIndex={0}
-      className={SENTENCES_FRAME_CLASS}
+      className={DECISION_CARD_FRAME_CLASS}
       data-testid={dataTestId}
       onPointerOver={(event) => {
         hoverTo(valueTokenAt(event.target));
@@ -176,12 +176,12 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
       }}
       {...restContainerProps}
     >
-      <div className={SENTENCES_HEADER_CLASS} data-testid={`${dataTestId}-header`}>
+      <div className={DECISION_CARD_HEADER_CLASS} data-testid={`${dataTestId}-header`}>
         <span className={HEADER_LABEL_CLASS}>{header.label}</span>
         <span>{header.hint}</span>
       </div>
       {bands.length > 0 && (
-        <div className={SENTENCES_BANDS_CLASS} data-testid={`${dataTestId}-bands`}>
+        <div className={DECISION_CARD_BANDS_CLASS} data-testid={`${dataTestId}-bands`}>
           {bands.map((band, bandIndex) => (
             <div key={band.id} className="contents" data-band-id={band.id}>
               <span aria-hidden className={BAND_CAPTION_CLASS}>
@@ -221,39 +221,39 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
           ))}
         </div>
       )}
-      {rows.length === 0 ? (
+      {rules.length === 0 ? (
         <div className={EMPTY_STATE_CLASS} data-testid={`${dataTestId}-empty`}>
-          <p>{labels.emptyRows}</p>
-          {addRow && (
-            <Button variant="outline" size="xs" onClick={addRow.onAdd}>
-              {addRow.label}
+          <p>{labels.emptyRules}</p>
+          {addRule && (
+            <Button variant="outline" size="xs" onClick={addRule.onAdd}>
+              {addRule.label}
             </Button>
           )}
         </div>
       ) : (
-        <ul ref={listRef} className={SENTENCES_LIST_CLASS} style={listStyle}>
+        <ul ref={listRef} className={DECISION_CARD_LIST_CLASS} style={listStyle}>
           {segments.flatMap((segment) => {
             if (segment.type === 'spacer') {
               return (
                 <li
-                  key={`spacer-${nextRowIndex}`}
+                  key={`spacer-${nextRuleIndex}`}
                   aria-hidden
                   data-testid={`${dataTestId}-row-spacer`}
                   style={{ height: segment.sizePx }}
                 />
               );
             }
-            nextRowIndex = segment.to;
-            return rows
+            nextRuleIndex = segment.to;
+            return rules
               .slice(segment.from, segment.to)
-              .map((row, offset) => (
-                <SentenceRowCard
-                  key={row.rowId}
-                  row={row}
+              .map((rule, offset) => (
+                <RuleCard
+                  key={rule.rowId}
+                  rule={rule}
                   position={segment.from + offset + 1}
-                  setSize={rows.length}
+                  setSize={rules.length}
                   numbered={numbered}
-                  mark={rowMarks.get(row.rowId)}
+                  mark={rowMarks.get(rule.rowId)}
                   idPrefix={idPrefix}
                   dataTestId={dataTestId}
                   labels={labels}

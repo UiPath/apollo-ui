@@ -2,17 +2,17 @@ import { cn } from '@uipath/apollo-wind';
 import { CELL_MARK_CLASS, ROW_MARK_OVERLAY_CLASS } from './gridStyles';
 import type { MarkTone } from './marks';
 
-export const SENTENCES_FRAME_CLASS = cn(
+export const DECISION_CARD_FRAME_CLASS = cn(
   'relative min-h-0 flex-1 overflow-auto bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
   '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)]'
 );
 
-export const SENTENCES_HEADER_CLASS =
+export const DECISION_CARD_HEADER_CLASS =
   'sticky top-0 z-2 flex flex-wrap items-baseline gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
 
 export const HEADER_LABEL_CLASS = 'font-semibold';
 
-export const SENTENCES_BANDS_CLASS =
+export const DECISION_CARD_BANDS_CLASS =
   'grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-2 px-4 pt-3 pb-3';
 
 export const BAND_CAPTION_CLASS =
@@ -31,10 +31,10 @@ export const BAND_COLUMN_CLASS = cn(
 export const EMPTY_STATE_CLASS =
   'flex flex-col items-start gap-2 px-4 py-6 text-sm text-foreground-de-emp';
 
-export const SENTENCES_LIST_CLASS =
+export const DECISION_CARD_LIST_CLASS =
   'pe-4 ps-[max(2.25rem,calc(var(--sentence-number-digits,0)*1ch+1.25rem))]';
 
-export const ROW_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)]';
+export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)]';
 
 /** The row rail's colour for each grid tone; a tone added to `MarkTone` fails to compile here until it has one. */
 const RAIL_TONE_CLASS = {

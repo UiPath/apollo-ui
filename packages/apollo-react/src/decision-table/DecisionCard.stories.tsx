@@ -1,33 +1,33 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import {
+  DECISION_CARD_LABELS,
   GRID_SENTENCE_BANDS,
   GRID_SENTENCE_HEADER,
-  GRID_SENTENCE_ROWS,
-  longValueListRow,
+  GRID_SENTENCE_RULES,
+  longValueListRule,
   MULTI_SENTENCE_BANDS,
   MULTI_SENTENCE_HEADER,
-  MULTI_SENTENCE_ROWS,
+  MULTI_SENTENCE_RULES,
   manyColumnBands,
-  manyLinesRow,
-  manySentenceRows,
-  SENTENCE_LABELS,
+  manyLinesRule,
+  manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
-import { DecisionTableSentences, type DecisionTableSentencesProps } from './DecisionTableSentences';
+import { DecisionCard, type DecisionCardProps } from './DecisionCard';
 import type { RowMark, TableMarks } from './marks';
 import type { SentenceCellId } from './sentenceTypes';
 
-const DemoSentences = (props: Partial<DecisionTableSentencesProps>) => {
+const DemoDecisionCard = (props: Partial<DecisionCardProps>) => {
   const [hovered, setHovered] = useState<SentenceCellId | null>(null);
   return (
     <div className="flex h-[480px] flex-col gap-2">
-      <DecisionTableSentences
-        rows={GRID_SENTENCE_ROWS}
+      <DecisionCard
+        rules={GRID_SENTENCE_RULES}
         bands={GRID_SENTENCE_BANDS}
         header={GRID_SENTENCE_HEADER}
-        labels={SENTENCE_LABELS}
+        labels={DECISION_CARD_LABELS}
         ariaLabel="Rules"
-        dataTestId="sentences"
+        dataTestId="decision-card"
         onCellHover={setHovered}
         {...props}
       />
@@ -63,23 +63,23 @@ const DEMO_MARKS: TableMarks = {
   columns: new Map([['start', { tone: 'warning', title: 'No type', glyph: true }]]),
 };
 
-const meta: Meta<typeof DecisionTableSentences> = {
-  title: 'Decision Table Sentences',
-  component: DecisionTableSentences,
+const meta: Meta<typeof DecisionCard> = {
+  title: 'Decision Card',
+  component: DecisionCard,
   parameters: { layout: 'padded' },
 };
 export default meta;
 
-type Story = StoryObj<typeof DecisionTableSentences>;
+type Story = StoryObj<typeof DecisionCard>;
 
 export const Default: Story = {
-  render: () => <DemoSentences />,
+  render: () => <DemoDecisionCard />,
 };
 
 export const WithMarks: Story = {
   render: () => (
-    <DemoSentences
-      rows={MULTI_SENTENCE_ROWS}
+    <DemoDecisionCard
+      rules={MULTI_SENTENCE_RULES}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
       numbered
@@ -91,26 +91,30 @@ export const WithMarks: Story = {
 export const Empty: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4">
-      <DemoSentences rows={[]} addRow={{ label: 'Add rule', onAdd: () => {} }} />
-      <DemoSentences rows={[]} ariaLabel="Rules without an add action" />
+      <DemoDecisionCard rules={[]} addRule={{ label: 'Add rule', onAdd: () => {} }} />
+      <DemoDecisionCard rules={[]} ariaLabel="Rules without an add action" />
     </div>
   ),
 };
 
-const LONG_LIST = [longValueListRow(10_000)];
+const LONG_LIST = [longValueListRule(10_000)];
 
 export const LongValueList: Story = {
   render: () => (
-    <DemoSentences rows={LONG_LIST} bands={MULTI_SENTENCE_BANDS} header={MULTI_SENTENCE_HEADER} />
+    <DemoDecisionCard
+      rules={LONG_LIST}
+      bands={MULTI_SENTENCE_BANDS}
+      header={MULTI_SENTENCE_HEADER}
+    />
   ),
 };
 
-const MANY_ROWS = manySentenceRows(50_000);
+const MANY_RULES = manySentenceRules(50_000);
 
-export const ManyRows: Story = {
+export const ManyRules: Story = {
   render: () => (
-    <DemoSentences
-      rows={MANY_ROWS}
+    <DemoDecisionCard
+      rules={MANY_RULES}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
       numbered
@@ -119,10 +123,10 @@ export const ManyRows: Story = {
 };
 
 const MANY_COLUMNS = manyColumnBands(50);
-const MANY_LINES = [manyLinesRow(50)];
+const MANY_LINES = [manyLinesRule(50)];
 
 export const ManyColumns: Story = {
   render: () => (
-    <DemoSentences bands={MANY_COLUMNS} rows={MANY_LINES} header={MULTI_SENTENCE_HEADER} />
+    <DemoDecisionCard bands={MANY_COLUMNS} rules={MANY_LINES} header={MULTI_SENTENCE_HEADER} />
   ),
 };

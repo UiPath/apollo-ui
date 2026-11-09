@@ -6,11 +6,11 @@
 
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
-export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export {
-  DecisionTableSentences,
-  type DecisionTableSentencesProps,
-} from './DecisionTableSentences';
+  DecisionCard,
+  type DecisionCardProps,
+} from './DecisionCard';
+export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export {

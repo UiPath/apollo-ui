@@ -17,14 +17,19 @@ import {
   MARKED_CHIP_CLASS,
   MORE_VALUES_CLASS,
   OUTPUT_VALUE_CLASS,
-  ROW_CARD_CLASS,
   ROW_HEADING_CLASS,
   ROW_NUMBER_CLASS,
   ROW_SURFACE_CLASS,
+  RULE_CARD_CLASS,
   TOKEN_KIND_CLASS,
   WORD_CLASS,
 } from './sentenceStyles';
-import type { SentenceLabels, SentencePart, SentenceRow, SentenceToken } from './sentenceTypes';
+import type {
+  DecisionCardLabels,
+  SentencePart,
+  SentenceRule,
+  SentenceToken,
+} from './sentenceTypes';
 
 /** Most value tokens one line renders before the rest collapse into a count. */
 const SENTENCE_LINE_VALUE_LIMIT = 20;
@@ -39,7 +44,7 @@ export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
 export const MarkBadge: React.FC<{
   id: string;
   marks: readonly LineMark[];
-  labels: SentenceLabels;
+  labels: DecisionCardLabels;
 }> = ({ id, marks, labels }) => {
   const tone = worstTone(marks);
   const titles = marks.flatMap((mark) => (mark.title ? [mark.title] : []));
@@ -114,7 +119,7 @@ const LineText: React.FC<{
   heading?: boolean;
   parts: readonly SentencePart[];
   cells: RowMark['cells'];
-  labels: SentenceLabels;
+  labels: DecisionCardLabels;
 }> = ({ id, heading = false, parts, cells, labels }) => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
   const textClass = heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS;
@@ -167,8 +172,8 @@ const LineText: React.FC<{
   );
 };
 
-export interface SentenceRowCardProps {
-  row: SentenceRow;
+export interface RuleCardProps {
+  rule: SentenceRule;
   /** 1-based, as announced and as numbered. */
   position: number;
   setSize: number;
@@ -176,19 +181,19 @@ export interface SentenceRowCardProps {
   mark: RowMark | undefined;
   idPrefix: string;
   dataTestId: string;
-  labels: SentenceLabels;
+  labels: DecisionCardLabels;
 }
 
-/** One row as a sentence: its heading, its lead and its condition lines. */
-export const SentenceRowCard = memo<SentenceRowCardProps>(
-  ({ row, position, setSize, numbered, mark, idPrefix, dataTestId, labels }) => {
+/** One rule as a sentence: its heading, its lead and its condition lines. */
+export const RuleCard = memo<RuleCardProps>(
+  ({ rule, position, setSize, numbered, mark, idPrefix, dataTestId, labels }) => {
     const id = `${idPrefix}-${position}`;
     const { tone, dim, title, cells } = cardMark(mark);
     const badgeFor = (key: string, marks: LineMark[]) =>
       marks.length > 0 ? { id: `${id}-mark-${key}`, marks, labels } : null;
-    const headingBadge = badgeFor('heading', lineMarksOf(row.heading, cells, mark));
-    const leadBadge = badgeFor('lead', lineMarksOf(row.lead, cells));
-    const lineBadges = row.lines.map((line, index) =>
+    const headingBadge = badgeFor('heading', lineMarksOf(rule.heading, cells, mark));
+    const leadBadge = badgeFor('lead', lineMarksOf(rule.lead, cells));
+    const lineBadges = rule.lines.map((line, index) =>
       badgeFor(`line-${index}`, lineMarksOf(line.parts, cells))
     );
     const describedBy = [headingBadge, leadBadge, ...lineBadges]
@@ -203,11 +208,11 @@ export const SentenceRowCard = memo<SentenceRowCardProps>(
           .filter(Boolean)
           .join(' ')}
         aria-describedby={describedBy || undefined}
-        className={ROW_CARD_CLASS}
-        data-row-id={row.rowId}
+        className={RULE_CARD_CLASS}
+        data-row-id={rule.rowId}
         data-tone={tone}
         data-dim={dim}
-        data-testid={`${dataTestId}-row-${row.rowId}`}
+        data-testid={`${dataTestId}-row-${rule.rowId}`}
       >
         <div className={ROW_SURFACE_CLASS}>
           <div className={ROW_HEADING_CLASS} data-mark-title={title}>
@@ -219,19 +224,19 @@ export const SentenceRowCard = memo<SentenceRowCardProps>(
             <LineText
               id={`${id}-heading`}
               heading
-              parts={row.heading}
+              parts={rule.heading}
               cells={cells}
               labels={labels}
             />
             {headingBadge && <MarkBadge {...headingBadge} />}
           </div>
           <div className={LINE_CLASS}>
-            <LineText id={`${id}-lead`} parts={row.lead} cells={cells} labels={labels} />
+            <LineText id={`${id}-lead`} parts={rule.lead} cells={cells} labels={labels} />
             {leadBadge && <MarkBadge {...leadBadge} />}
           </div>
-          {row.lines.length > 0 && (
+          {rule.lines.length > 0 && (
             <ul>
-              {row.lines.map((line, index) => {
+              {rule.lines.map((line, index) => {
                 const lineBadge = lineBadges[index];
                 return (
                   <li key={index} className={LINE_CLASS} data-column-id={line.columnId}>
