@@ -99,6 +99,22 @@ describe('Toolbox', () => {
     });
   });
 
+  describe('maxHeight', () => {
+    it('caps the toolbox to the given height', () => {
+      render(<Toolbox {...defaultProps} maxHeight={200} />);
+
+      const column = screen.getByTestId('toolbox-container').firstElementChild as HTMLElement;
+      expect(column.style.maxHeight).toContain('min(200px');
+    });
+
+    it('never grows past the default height', () => {
+      render(<Toolbox {...defaultProps} maxHeight={5000} />);
+
+      const column = screen.getByTestId('toolbox-container').firstElementChild as HTMLElement;
+      expect(column.style.maxHeight).not.toContain('5000px');
+    });
+  });
+
   describe('Navigation', () => {
     let user: UserEvent;
 
@@ -671,6 +687,35 @@ describe('Toolbox', () => {
       await user.keyboard('{Escape}');
 
       expect(onClose).toHaveBeenCalled();
+    });
+
+    it('returns focus to whatever opened it when Escape closes it', async () => {
+      const opener = document.createElement('button');
+      document.body.appendChild(opener);
+      opener.focus();
+      render(<Toolbox {...defaultProps} />);
+      screen.getByPlaceholderText('Search').focus();
+
+      await user.keyboard('{Escape}');
+
+      expect(opener).toHaveFocus();
+      opener.remove();
+    });
+
+    it('leaves focus where the user clicked when an outside click closes it', async () => {
+      const opener = document.createElement('button');
+      const elsewhere = document.createElement('button');
+      document.body.append(opener, elsewhere);
+      opener.focus();
+      const onClose = vi.fn();
+      render(<Toolbox {...defaultProps} onClose={onClose} />);
+
+      await user.click(elsewhere);
+
+      expect(onClose).toHaveBeenCalled();
+      expect(opener).not.toHaveFocus();
+      opener.remove();
+      elsewhere.remove();
     });
 
     it('should navigate back when Escape is pressed in nested view', async () => {

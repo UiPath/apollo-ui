@@ -112,6 +112,12 @@ export interface ToolboxProps<T> {
   loading?: boolean;
   fullWidth?: boolean; // If true, the toolbox will be full width of the container.
   fullHeight?: boolean; // If true, the toolbox will be full height of the container.
+  /**
+   * Caps the toolbox height in px, for a host that positions it outside a
+   * `FloatingCanvasPanel` and knows how much room it has (e.g. above a button at
+   * high zoom). Ignored with `fullHeight`.
+   */
+  maxHeight?: number;
   onClose: () => void;
   onItemSelect: (item: ListItem<T>) => Promise<void> | void;
   onItemHover?: (item: ListItem<T>) => void;
@@ -203,6 +209,7 @@ export function Toolbox<T>({
   loading,
   fullWidth = false,
   fullHeight = false,
+  maxHeight,
   quickActions,
   renderEmptyState,
   searchPlaceholder: searchPlaceholderProp,
@@ -689,6 +696,12 @@ export function Toolbox<T>({
     onClose();
   }, [navigationStack, onClose]);
 
+  // Whatever had focus when the toolbox opened (usually the button that opened it), so
+  // Escape can hand focus back instead of dropping it on the page.
+  const [opener] = useState(() =>
+    typeof document === 'undefined' ? null : (document.activeElement as HTMLElement | null)
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -700,6 +713,7 @@ export function Toolbox<T>({
           handleBackTransition();
         } else {
           handleClose();
+          if (opener?.isConnected && opener !== document.body) opener.focus();
         }
       }
     };
@@ -723,6 +737,7 @@ export function Toolbox<T>({
     clearSearch,
     startTransition,
     handleBackTransition,
+    opener,
   ]);
 
   // When rendered inside a `FloatingCanvasPanel`, the panel's `size` middleware
@@ -735,9 +750,9 @@ export function Toolbox<T>({
         : {
             boxSizing: 'border-box',
             overflow: 'hidden',
-            maxHeight: `min(${TOOLBOX_HEIGHT}px, var(--floating-available-height, ${TOOLBOX_HEIGHT}px))`,
+            maxHeight: `min(${Math.min(TOOLBOX_HEIGHT, maxHeight ?? TOOLBOX_HEIGHT)}px, var(--floating-available-height, ${TOOLBOX_HEIGHT}px))`,
           },
-    [fullHeight]
+    [fullHeight, maxHeight]
   );
 
   return (
