@@ -1,3 +1,18 @@
+## [@uipath/apollo-react-v7.17.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.0...@uipath/apollo-react@7.17.1) (2026-11-09)
+
+### Bug Fixes
+
+* **apollo-react:** announce Toolbox search results to screen readers [MST-12439] ([3fefff0](https://github.com/UiPath/apollo-ui/commit/3fefff0631a9290d76eaaecacc30f9f030d6197a))
+* **apollo-react:** close the active row tooltip when focus leaves Toolbox search [MST-12421] ([1a9397b](https://github.com/UiPath/apollo-ui/commit/1a9397b8a5c8b151632889493112f638d55b3213))
+* **apollo-react:** don't announce no matches while Toolbox items load [MST-12439] ([0f14a1d](https://github.com/UiPath/apollo-ui/commit/0f14a1da5354706e8374547cf5b685d3477f5cd1))
+* **apollo-react:** don't repeat the row name in Toolbox icon alt text [MST-12417] ([9ef2d7d](https://github.com/UiPath/apollo-ui/commit/9ef2d7db387fbdeedf8523bcbbfc9d7eb462cfa2))
+* **apollo-react:** expose the Toolbox title as a heading [MST-12379] ([92376d3](https://github.com/UiPath/apollo-ui/commit/92376d340d146971af27776c1e6b70cffd81e179))
+* **apollo-react:** fit the Toolbox empty state to a capped height [MST-12409] ([3ccb2bd](https://github.com/UiPath/apollo-ui/commit/3ccb2bd5adc4da6ee3d404e3923388731f6d5dd4))
+* **apollo-react:** keep the scrolling Toolbox list out of the Tab order [MST-12421] ([7ccb1c1](https://github.com/UiPath/apollo-ui/commit/7ccb1c1d43ea95d7fd44f3765570336691b20e58))
+* **apollo-react:** let Tab leave the Toolbox search field [MST-12421] ([662ce3a](https://github.com/UiPath/apollo-ui/commit/662ce3a2781e5cdf07111a729d20b34e53979477))
+* **apollo-react:** return focus on Escape only if it was inside the Toolbox [MST-12365] ([197a56d](https://github.com/UiPath/apollo-ui/commit/197a56d76e6c7d2ec4ed578e514b016a13b2ca5d))
+* **apollo-react:** return focus to the opener when Escape closes the Toolbox [MST-12365] ([96cd5e4](https://github.com/UiPath/apollo-ui/commit/96cd5e4971da3179b1860395200de1ef45b833c2))
+
 ## [@uipath/apollo-react-v7.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.4...@uipath/apollo-react@7.17.0) (2026-11-06)
 
 ### Features
