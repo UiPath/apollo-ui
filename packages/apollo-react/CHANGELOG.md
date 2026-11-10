@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v7.17.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.1...@uipath/apollo-react@7.17.2) (2026-11-10)
+
+### Bug Fixes
+
+* **apollo-react:** drop the Toolbox section description test [MST-12449] ([206c0c8](https://github.com/UiPath/apollo-ui/commit/206c0c87d6b85822a679557772b6cb93064cf8a6))
+* **apollo-react:** name the Toolbox listbox after its title ([6cace97](https://github.com/UiPath/apollo-ui/commit/6cace97f973f0f0f4f3688e3344852cb03e72cf0))
+* **apollo-react:** read the section name with each Toolbox option ([254e324](https://github.com/UiPath/apollo-ui/commit/254e324e188be9d0499af281f240f3f2a1364ec6))
+
 ## [@uipath/apollo-react-v7.17.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.0...@uipath/apollo-react@7.17.1) (2026-11-09)
 
 ### Bug Fixes
