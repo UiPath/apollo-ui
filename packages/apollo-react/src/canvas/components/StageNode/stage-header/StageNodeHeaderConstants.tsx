@@ -2,7 +2,6 @@ import { Icon } from '@uipath/apollo-core';
 import { Flag } from 'lucide-react';
 import { ChecklistIcon } from '../../../../icons';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../../icons';
-import { StageChip } from '../StageNode.styles';
 import type { StageSlaIcon } from '../StageNode.types';
 import { StageHeaderChipType } from '../StageNode.types';
 

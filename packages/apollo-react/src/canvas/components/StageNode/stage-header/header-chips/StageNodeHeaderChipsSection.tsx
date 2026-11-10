@@ -22,13 +22,14 @@ const StageNodeHeaderChipsSectionInner = ({
 }: StageNodeHeaderChipsSectionInnerProps) => {
   const labels = useStageNodeLabels();
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;
+  const hasSlaText = slaText && slaText.trim() !== '';
 
-  if (!slaText && !headerChips?.length) {
+  if (!hasSlaText && !headerChips?.length) {
     return null;
   }
   return (
     <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-2 gap-y-2">
-      {slaText && (
+      {hasSlaText && (
         <span
           className="inline-flex items-center gap-1 text-xs text-foreground-muted"
           data-testid={`stage-sla-${id}`}
@@ -40,7 +41,7 @@ const StageNodeHeaderChipsSectionInner = ({
           {slaText}
         </span>
       )}
-      {headerChips && headerChips.length > 0 && (
+      {headerChips != null && headerChips.length > 0 && (
         <div
           className="ml-auto flex flex-wrap items-center gap-x-1 gap-y-2"
           data-testid={`stage-header-chips-${id}`}
