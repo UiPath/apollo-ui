@@ -1,3 +1,19 @@
+## [@uipath/apollo-wind-v2.89.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.88.0...@uipath/apollo-wind@2.89.0) (2026-11-10)
+
+### Features
+
+* **apollo-wind:** add a loading caret to InputGroupPopoverTrigger ([eb21453](https://github.com/UiPath/apollo-ui/commit/eb21453487ba20e4ce5795201e5043891e3a8ccb))
+* **apollo-wind:** add variant prop with warning tone to ReferenceChip ([6b1efdb](https://github.com/UiPath/apollo-ui/commit/6b1efdbf0594d447ecd4ce395879e00d76006c45))
+* **apollo-wind:** host-driven open, loading, error and size for the AI assist trigger ([dfa8a8e](https://github.com/UiPath/apollo-ui/commit/dfa8a8e0bc8a52962838f6022dc8d57324c02f62))
+* **apollo-wind:** let VariableValueControl take a node placeholder ([701ee0f](https://github.com/UiPath/apollo-ui/commit/701ee0f7a1abdde344076bd9a115626907b6ce2c))
+
+### Bug Fixes
+
+* **apollo-wind:** inherit the surrounding font in ReferenceChip labels ([a5bb856](https://github.com/UiPath/apollo-ui/commit/a5bb85660740d39c448d18b96beebb01b2501221))
+* **apollo-wind:** let a click in an InputGroup's padding reach its control ([cfbb024](https://github.com/UiPath/apollo-ui/commit/cfbb0245a25835164e0265b99a8cc67ef503d0b3))
+* **apollo-wind:** size variable picker popover to a host picker ([02a2943](https://github.com/UiPath/apollo-ui/commit/02a2943f0dfeb0dc2a28e736e639c234fd9c1197))
+* **apollo-wind:** tint the ReferenceChip remove button on hover ([38274a8](https://github.com/UiPath/apollo-ui/commit/38274a8aa24f67a98e619513fb0c43b173457b5c))
+
 ## [@uipath/apollo-wind-v2.88.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.87.0...@uipath/apollo-wind@2.88.0) (2026-11-09)
 
 ### Features
