@@ -584,8 +584,24 @@ describe('ListView', () => {
 
       render(<ListView {...defaultProps} items={items} enableSections={true} />);
 
-      expect(screen.getByText('Section A')).toBeInTheDocument();
-      expect(screen.getByText('Section B')).toBeInTheDocument();
+      const headers = screen.getAllByTestId('list-section-header');
+      expect(headers.map((header) => header.textContent)).toEqual(['Section A', 'Section B']);
+    });
+
+    it('should describe each option with its section name', () => {
+      const items: ListItem[] = [
+        { id: 'item-1', name: 'Item A1', data: {}, section: 'Section A' },
+        { id: 'item-2', name: 'Item B1', data: {}, section: 'Section B' },
+      ];
+
+      render(<ListView {...defaultProps} items={items} enableSections={true} />);
+
+      expect(screen.getByRole('option', { name: 'Item A1' })).toHaveAccessibleDescription(
+        'Section A'
+      );
+      expect(screen.getByRole('option', { name: 'Item B1' })).toHaveAccessibleDescription(
+        'Section B'
+      );
     });
 
     it('should group items under their sections', () => {
@@ -625,7 +641,7 @@ describe('ListView', () => {
       // Headers are the separator themselves — no rule element is rendered.
       expect(screen.getAllByTestId('list-section-header')).toHaveLength(3);
       expect(screen.queryByTestId('list-section-rule')).not.toBeInTheDocument();
-      const label = screen.getByText('Section A');
+      const label = screen.getAllByTestId('list-section-header')[0]!.firstElementChild;
       expect(label).toHaveClass('uppercase');
       expect(label).toHaveClass('font-bold');
     });
@@ -805,12 +821,7 @@ describe('ListView', () => {
 
       render(<ListView {...defaultProps} items={items} enableSections={true} />);
 
-      const container = screen.getByTestId('virtualized-list');
-      const text = container.textContent || '';
-
-      // Count occurrences of "Section A" - should only appear once
-      const matches = text.match(/Section A/g);
-      expect(matches?.length).toBe(1);
+      expect(screen.getAllByTestId('list-section-header')).toHaveLength(1);
     });
   });
 });

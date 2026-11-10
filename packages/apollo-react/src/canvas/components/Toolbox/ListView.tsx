@@ -114,7 +114,7 @@ export type ListItem<T = any> = {
 
 export type RenderItem<T extends ListItem> =
   | { type: 'section'; sectionName: string; first: boolean }
-  | { type: 'item'; item: T }
+  | { type: 'item'; item: T; sectionName?: string }
   | { type: 'skeleton' }
   | { type: 'divider' };
 
@@ -167,11 +167,11 @@ export function buildRenderedItems<T extends ListItem>(
     for (let i = 0; i < count; i++) result.push({ type: 'skeleton' });
   };
 
-  const pushItem = (item: T) => {
+  const pushItem = (item: T, sectionName?: string) => {
     // Suppress a leading divider — a separator with nothing above it reads
     // as a stray line.
     if (item.dividerBefore && result.length > 0) result.push({ type: 'divider' });
-    result.push({ type: 'item', item });
+    result.push({ type: 'item', item, sectionName });
   };
 
   // `enableSections: false` means a flat list (search results) — items that
@@ -208,7 +208,7 @@ export function buildRenderedItems<T extends ListItem>(
   for (const sectionName of sectionNames) {
     result.push({ type: 'section', sectionName, first: result.length === 0 });
     for (const item of itemsBySection.get(sectionName) ?? []) {
-      pushItem(item);
+      pushItem(item, sectionName);
     }
     const skeletonForSection = skeletonBySection.get(sectionName);
     if (skeletonForSection) {
@@ -340,7 +340,10 @@ const ListViewRow = memo(
 
     const isActive = index === activeIndex;
 
+    // Read the section name with each option: screen readers announce only the
+    // active option, never the section header text between options.
     const description = [
+      renderItem.sectionName,
       item.detail,
       item.children ? _({ id: 'toolbox.item.submenu', message: 'Has submenu' }) : undefined,
     ]
