@@ -810,6 +810,8 @@ export {
   PanelTabsStrip,
   PanelTabsTrigger,
 } from './components/ui/panel-tabs';
+export type { PasswordInputProps } from './components/ui/password-input';
+export { PasswordInput } from './components/ui/password-input';
 export {
   Popover,
   PopoverAnchor,

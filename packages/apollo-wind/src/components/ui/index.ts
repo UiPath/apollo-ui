@@ -59,6 +59,7 @@ export * from './model-picker';
 export * from './multi-select';
 export * from './pagination';
 export * from './panel-tabs';
+export * from './password-input';
 export * from './popover';
 export * from './portal-container';
 export * from './progress';
