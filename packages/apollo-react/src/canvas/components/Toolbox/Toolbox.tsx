@@ -821,6 +821,7 @@ export function Toolbox<T>({
               onItemHover={onItemHover}
               onScroll={handleListScroll}
               onListboxPresenceChange={setIsListboxPresent}
+              listboxLabel={currentParentItem?.name || title}
               enableSections={!isSearching}
               // Suppress skeletons while searching — the user expects
               // search results, not a "more on the way" hint.
