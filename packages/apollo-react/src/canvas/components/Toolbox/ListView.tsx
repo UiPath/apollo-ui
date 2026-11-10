@@ -493,6 +493,8 @@ interface ListViewProps<T extends ListItem> {
    * state and back, so a controlling combobox can keep `aria-controls` valid.
    */
   onListboxPresenceChange?: (present: boolean) => void;
+  /** Accessible name of the listbox, such as the toolbox title. */
+  listboxLabel?: string;
 }
 
 /**
@@ -530,6 +532,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     enableSections = true,
     loadingSkeleton,
     onListboxPresenceChange,
+    listboxLabel,
   }: ListViewProps<T>,
   ref: React.Ref<ListViewHandle<T>>
 ) {
@@ -595,6 +598,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
       id={TOOLBOX_LISTBOX_ID}
       className={LIST_SCROLLBAR_CLASS}
       role="listbox"
+      aria-label={listboxLabel}
       // Chrome makes a scrolling list a Tab stop, but the options are driven from the search
       // field (aria-activedescendant), so the list itself must not take keyboard focus.
       tabIndex={-1}

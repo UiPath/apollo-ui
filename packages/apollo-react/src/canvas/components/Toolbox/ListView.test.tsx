@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '../../utils/testing';
+import { render, screen, within } from '../../utils/testing';
 import { CanvasThemeProvider } from '../BaseCanvas/CanvasThemeContext';
 import type { ListItem, RenderItem } from './ListView';
 import {
@@ -641,7 +641,7 @@ describe('ListView', () => {
       // Headers are the separator themselves — no rule element is rendered.
       expect(screen.getAllByTestId('list-section-header')).toHaveLength(3);
       expect(screen.queryByTestId('list-section-rule')).not.toBeInTheDocument();
-      const label = screen.getAllByTestId('list-section-header')[0]!.firstElementChild;
+      const label = within(screen.getAllByTestId('list-section-header')[0]!).getByText('Section A');
       expect(label).toHaveClass('uppercase');
       expect(label).toHaveClass('font-bold');
     });
