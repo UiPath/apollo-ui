@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
 import { useState } from 'react';
 import {
   DECISION_TEXT_LABELS,
@@ -16,6 +17,42 @@ import {
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { RowMark, TableMarks } from './marks';
 import type { SentenceCellId } from './sentenceTypes';
+
+const cellText = (cell: SentenceCellId | null) =>
+  cell ? `${cell.rowId} / ${cell.columnId}` : 'none';
+
+interface StoryCaptionProps {
+  children: React.ReactNode;
+}
+
+const StoryCaption = ({ children }: StoryCaptionProps) => (
+  <p className="text-xs text-foreground-de-emp">{children}</p>
+);
+
+interface ReadOnlyDemoProps extends Partial<DecisionTextProps> {
+  caption: string;
+}
+
+/** A host that only shows the rules and reports the hovered cell. */
+const ReadOnlyDemo = ({ caption, ...props }: ReadOnlyDemoProps) => {
+  const [hovered, setHovered] = useState<SentenceCellId | null>(null);
+  return (
+    <div className="flex h-[480px] flex-col gap-2">
+      <DecisionText
+        rules={GRID_SENTENCE_RULES}
+        bands={GRID_SENTENCE_BANDS}
+        header={GRID_SENTENCE_HEADER}
+        labels={DECISION_TEXT_LABELS}
+        ariaLabel="Rules"
+        dataTestId="decision-text"
+        onCellHover={setHovered}
+        {...props}
+      />
+      <StoryCaption>Hovered cell: {cellText(hovered)}</StoryCaption>
+      <StoryCaption>{caption}</StoryCaption>
+    </div>
+  );
+};
 
 const DemoDecisionText = (props: Partial<DecisionTextProps>) => {
   const [hovered, setHovered] = useState<SentenceCellId | null>(null);
@@ -73,17 +110,18 @@ export default meta;
 type Story = StoryObj<typeof DecisionText>;
 
 export const Default: Story = {
-  render: () => <DemoDecisionText />,
+  render: () => <ReadOnlyDemo caption="Read only: no selection and no editing." />,
 };
 
 export const WithMarks: Story = {
   render: () => (
-    <DemoDecisionText
+    <ReadOnlyDemo
       rules={MULTI_SENTENCE_RULES}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
       numbered
       marks={DEMO_MARKS}
+      caption="The grid's marks on values, rules and band columns. Hover a glyph for its message."
     />
   ),
 };
@@ -92,7 +130,12 @@ export const Empty: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4">
       <DemoDecisionText rules={[]} addRule={{ label: 'Add rule', onAdd: () => {} }} />
-      <DemoDecisionText rules={[]} ariaLabel="Rules without an add action" />
+      <ReadOnlyDemo
+        rules={[]}
+        ariaLabel="Rules without an add action"
+        dataTestId="decision-text-no-add"
+        caption="Without addRule there is no add action."
+      />
     </div>
   ),
 };
@@ -127,6 +170,11 @@ const MANY_LINES = [manyLinesRule(50)];
 
 export const ManyColumns: Story = {
   render: () => (
-    <DemoDecisionText bands={MANY_COLUMNS} rules={MANY_LINES} header={MULTI_SENTENCE_HEADER} />
+    <ReadOnlyDemo
+      bands={MANY_COLUMNS}
+      rules={MANY_LINES}
+      header={MULTI_SENTENCE_HEADER}
+      caption="50 band columns scroll on one line, and a 50-line rule is taller than the view."
+    />
   ),
 };
