@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.90.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.89.0...@uipath/apollo-wind@2.90.0) (2026-11-10)
+
+### Features
+
+* **apollo-wind:** add PasswordInput with show/hide toggle ([7dda562](https://github.com/UiPath/apollo-ui/commit/7dda562c4a102d9684f3562b8365de21b571013d))
+
 ## [@uipath/apollo-wind-v2.89.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.88.0...@uipath/apollo-wind@2.89.0) (2026-11-10)
 
 ### Features
