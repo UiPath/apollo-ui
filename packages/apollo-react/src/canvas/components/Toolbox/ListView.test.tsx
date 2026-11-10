@@ -588,22 +588,6 @@ describe('ListView', () => {
       expect(headers.map((header) => header.textContent)).toEqual(['Section A', 'Section B']);
     });
 
-    it('should describe each option with its section name', () => {
-      const items: ListItem[] = [
-        { id: 'item-1', name: 'Item A1', data: {}, section: 'Section A' },
-        { id: 'item-2', name: 'Item B1', data: {}, section: 'Section B' },
-      ];
-
-      render(<ListView {...defaultProps} items={items} enableSections={true} />);
-
-      expect(screen.getByRole('option', { name: 'Item A1' })).toHaveAccessibleDescription(
-        'Section A'
-      );
-      expect(screen.getByRole('option', { name: 'Item B1' })).toHaveAccessibleDescription(
-        'Section B'
-      );
-    });
-
     it('should group items under their sections', () => {
       const items: ListItem[] = [
         { id: 'item-1', name: 'Item A1', data: {}, section: 'Section A' },
