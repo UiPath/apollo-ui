@@ -194,3 +194,52 @@ export const WithInitialCategory: Story = {
     onItemSelect: () => {},
   },
 };
+
+const SECTIONED_ITEMS: ListItem[] = [
+  { id: 'placeholder', name: 'Agentic process placeholder', icon: { name: 'plus' }, data: {} },
+  { id: 'create', name: 'Create new Agentic process', icon: { name: 'plus' }, data: {} },
+  {
+    id: 'local-1',
+    name: 'Agentic Process',
+    section: 'In this solution',
+    icon: { name: 'workflow' },
+    data: {},
+  },
+  {
+    id: 'local-2',
+    name: 'Simple.Process.Demo',
+    description: 'Shared',
+    section: 'In this solution',
+    icon: { name: 'workflow' },
+    data: {},
+  },
+  {
+    id: 'published-1',
+    name: 'Agentic Process',
+    description: 'Shared/Golden Scenario',
+    section: 'Published',
+    icon: { name: 'workflow' },
+    data: {},
+  },
+  {
+    id: 'published-2',
+    name: 'Agentic Process',
+    description: 'Shared/SLACK Automation 1',
+    section: 'Published',
+    icon: { name: 'workflow' },
+    data: {},
+  },
+];
+
+/**
+ * Groups items under section headers, such as resources from the current
+ * solution and published ones. Items without a `section` stay at the top.
+ */
+export const WithSections: Story = {
+  args: {
+    title: 'Agentic process',
+    initialItems: SECTIONED_ITEMS,
+    onClose: () => {},
+    onItemSelect: () => {},
+  },
+};
