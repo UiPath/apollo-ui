@@ -1,18 +1,22 @@
 import { StageItemsSection } from '../StageNode.styles';
-import type { StageNodeProps } from '../StageNode.types';
+import type { SectionState, StageRule } from '../StageNode.types';
 import { CollapsibleStageHeader } from '../shared/CollapsibleStageHeader';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { StageRulesContainer } from './StageRulesContainer';
 
 interface EntryRulesContainerProps {
-  props: StageNodeProps;
+  id: string;
+  entryRules?: StageRule[];
+  sectionState?: SectionState;
   isReadOnly: boolean;
 }
 
-export const EntryRulesContainer = ({ props, isReadOnly }: EntryRulesContainerProps) => {
-  const { id, stageDetails } = props;
-  const { entryRules, sectionStates } = stageDetails;
-
+export const EntryRulesContainer = ({
+  id,
+  entryRules,
+  sectionState,
+  isReadOnly,
+}: EntryRulesContainerProps) => {
   if (!entryRules || entryRules.length === 0) {
     return null;
   }
@@ -21,13 +25,13 @@ export const EntryRulesContainer = ({ props, isReadOnly }: EntryRulesContainerPr
     <StageRulesContainer rules={entryRules} ruleType="entry" isReadOnly={isReadOnly} />
   );
 
-  if (sectionStates?.entryRules) {
+  if (sectionState) {
     rulesContainer = (
       <CollapsibleStageHeader
-        isOpen={!sectionStates.entryRules.isCollapsed}
+        isOpen={!sectionState.isCollapsed}
         label="Entry rules"
         testId={`entry-rules-header-${id}`}
-        onToggle={sectionStates.entryRules.onCollapsedToggle}
+        onToggle={sectionState.onCollapsedToggle}
       >
         {rulesContainer}
       </CollapsibleStageHeader>
