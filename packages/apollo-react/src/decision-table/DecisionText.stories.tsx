@@ -121,7 +121,7 @@ export const WithMarks: Story = {
       header={MULTI_SENTENCE_HEADER}
       numbered
       marks={DEMO_MARKS}
-      caption="The grid's marks on values, rules and band columns. Hover a glyph for its message."
+      caption="The grid's marks on values, rules and band columns. Each glyph's message is read with its line; a host shows it on hover from data-mark-title, as the grid's host does."
     />
   ),
 };
