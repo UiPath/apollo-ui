@@ -1,5 +1,5 @@
 import type React from 'react';
-import { BandColumn } from './BandColumn';
+import { BandColumn, type BandColumnProps } from './BandColumn';
 import type { TableMarks } from './marks';
 import type { SentenceListStyle } from './sentenceRuleHeights';
 import {
@@ -7,7 +7,7 @@ import {
   BAND_COLUMNS_CLASS,
   DECISION_TEXT_BANDS_CLASS,
 } from './sentenceStyles';
-import type { DecisionTextLabels, SentenceBand } from './sentenceTypes';
+import type { SentenceBand } from './sentenceTypes';
 
 export interface SentenceBandsProps {
   bands: readonly SentenceBand[];
@@ -15,7 +15,7 @@ export interface SentenceBandsProps {
   style: SentenceListStyle;
   idPrefix: string;
   dataTestId: string;
-  labels: DecisionTextLabels;
+  labels: BandColumnProps['labels'];
 }
 
 /** The inputs and outputs above the rules, one captioned band each. */

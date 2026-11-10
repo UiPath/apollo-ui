@@ -1,15 +1,15 @@
 import type React from 'react';
-import { MarkBadge, markIds } from './MarkBadge';
+import { MarkBadge, type MarkBadgeProps, markIds } from './MarkBadge';
 import type { Mark } from './marks';
 import { columnMark, isLineMark } from './sentenceMarks';
 import { BAND_COLUMN_CLASS } from './sentenceStyles';
-import type { DecisionTextLabels, SentenceBand } from './sentenceTypes';
+import type { SentenceBand } from './sentenceTypes';
 
 export interface BandColumnProps {
   column: SentenceBand['columns'][number];
   mark: Mark | undefined;
   badgeId: string;
-  labels: DecisionTextLabels;
+  labels: MarkBadgeProps['labels'];
 }
 
 /** One input or output of a band, painted by its column's mark. */

@@ -12,7 +12,7 @@ import {
   MORE_VALUES_CLASS,
   WORD_CLASS,
 } from './sentenceStyles';
-import type { DecisionTextLabels, SentencePart } from './sentenceTypes';
+import type { SentencePart } from './sentenceTypes';
 import { TokenChip } from './TokenChip';
 
 /** Most value tokens one line renders before the rest collapse into a count. */
@@ -28,12 +28,18 @@ const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePa
 const testsInput = (parts: readonly SentencePart[]): boolean =>
   parts.some((part) => typeof part !== 'string' && part.kind === 'input');
 
+/** A line's strings. */
+export interface LineTextLabels {
+  /** The count a line shows in place of the values past its limit, e.g. "+9,980 more". */
+  moreValues: (count: number) => string;
+}
+
 export interface LineTextProps {
   id?: string;
   heading?: boolean;
   parts: readonly SentencePart[];
   cells: RowMark['cells'];
-  labels: DecisionTextLabels;
+  labels: LineTextLabels;
 }
 
 /** One clamped line: its first values, then a count of the rest that the clamp never hides. */

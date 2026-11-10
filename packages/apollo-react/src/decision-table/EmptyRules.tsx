@@ -1,12 +1,11 @@
 import { EmptyState } from '@uipath/apollo-wind';
 import type React from 'react';
-import { AddRuleButton } from './AddRuleButton';
-import type { DecisionTextAddRule } from './DecisionText';
+import { AddRuleButton, type AddRuleButtonProps } from './AddRuleButton';
 import { EMPTY_STATE_CLASS, EMPTY_STATE_FRAME_CLASS } from './sentenceStyles';
 
 export interface EmptyRulesProps {
   title: string;
-  addRule: DecisionTextAddRule | undefined;
+  addRule: AddRuleButtonProps | undefined;
   dataTestId: string;
 }
 
@@ -19,7 +18,7 @@ export const EmptyRules: React.FC<EmptyRulesProps> = ({ title, addRule, dataTest
       className={EMPTY_STATE_CLASS}
       data-testid={`${dataTestId}-empty`}
     >
-      {addRule && <AddRuleButton addRule={addRule} />}
+      {addRule && <AddRuleButton {...addRule} />}
     </EmptyState>
   </div>
 );

@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { LineText } from './LineText';
-import { MarkBadge, markIds } from './MarkBadge';
+import { LineText, type LineTextLabels } from './LineText';
+import { MarkBadge, type MarkBadgeLabels, markIds } from './MarkBadge';
 import type { RowMark } from './marks';
 import { type LineMark, lineMarksOf, type MarkFields, unplacedColumnIds } from './sentenceMarks';
 import {
@@ -11,7 +11,7 @@ import {
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
 } from './sentenceStyles';
-import type { DecisionTextLabels, SentenceRule } from './sentenceTypes';
+import type { SentenceRule } from './sentenceTypes';
 
 /** The `RowMark` fields a card paints; a field added to `RowMark` fails to compile here until the card decides on it. */
 const cardMark = (mark: RowMark | undefined) =>
@@ -23,6 +23,9 @@ const cardMark = (mark: RowMark | undefined) =>
     cells: mark?.cells,
   }) satisfies MarkFields<RowMark>;
 
+/** A card's strings: its badges' and its lines'. */
+export interface RuleCardLabels extends MarkBadgeLabels, LineTextLabels {}
+
 export interface RuleCardProps {
   rule: SentenceRule;
   /** 1-based, as announced and as numbered. */
@@ -32,7 +35,7 @@ export interface RuleCardProps {
   mark: RowMark | undefined;
   idPrefix: string;
   dataTestId: string;
-  labels: DecisionTextLabels;
+  labels: RuleCardLabels;
 }
 
 /** One rule as a sentence: its heading, its lead and its condition lines. */

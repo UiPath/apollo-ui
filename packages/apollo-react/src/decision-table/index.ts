@@ -7,13 +7,10 @@
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
+export { DecisionText, type DecisionTextLabels, type DecisionTextProps } from './DecisionText';
+export type { SentenceHeader } from './DecisionTextHeader';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
-export {
-  DecisionText,
-  type DecisionTextAddRule,
-  type DecisionTextProps,
-} from './DecisionText';
 export {
   GridCell,
   type GridCellEditorContext,

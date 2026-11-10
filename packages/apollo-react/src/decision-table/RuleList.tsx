@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
 import type { TableMarks } from './marks';
-import { RuleCard } from './RuleCard';
+import { RuleCard, type RuleCardProps } from './RuleCard';
 import type { SentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_LIST_CLASS } from './sentenceStyles';
-import type { DecisionTextLabels, SentenceRule } from './sentenceTypes';
+import type { SentenceRule } from './sentenceTypes';
 import type { AxisSegment } from './useVirtualizedAxis';
 
 export interface RuleListProps {
@@ -14,7 +14,7 @@ export interface RuleListProps {
   style: SentenceListStyle;
   idPrefix: string;
   dataTestId: string;
-  labels: DecisionTextLabels;
+  labels: RuleCardProps['labels'];
 }
 
 /** The windowed rules: a rule card for each mounted rule, a spacer for each run left out. */

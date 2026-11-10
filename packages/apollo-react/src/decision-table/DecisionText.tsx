@@ -1,28 +1,24 @@
 import type React from 'react';
 import { useId } from 'react';
+import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
-import { DecisionTextHeader } from './DecisionTextHeader';
+import { DecisionTextHeader, type SentenceHeader } from './DecisionTextHeader';
 import { EmptyRules } from './EmptyRules';
 import { EMPTY_MARKS, type TableMarks } from './marks';
+import type { RuleCardLabels } from './RuleCard';
 import { RuleList } from './RuleList';
 import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
-import type {
-  DecisionTextLabels,
-  SentenceBand,
-  SentenceCellId,
-  SentenceHeader,
-  SentenceRule,
-} from './sentenceTypes';
+import type { SentenceBand, SentenceCellId, SentenceRule } from './sentenceTypes';
 import { useCellHover } from './useCellHover';
 import { useContainerHandlers } from './useContainerHandlers';
 import { useRuleWindow } from './useRuleWindow';
 
-export interface DecisionTextAddRule {
-  label: string;
-  onAdd: () => void;
+/** The view's own strings; the consumer passes localized values. */
+export interface DecisionTextLabels extends RuleCardLabels {
+  emptyRules: string;
 }
 
 export interface DecisionTextProps {
@@ -34,7 +30,7 @@ export interface DecisionTextProps {
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
   /** The add-rule action and its label, after the rules and in the empty state. */
-  addRule?: DecisionTextAddRule;
+  addRule?: AddRuleButtonProps;
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
   onCellHover?: (cell: SentenceCellId | null) => void;
   /** The view's own strings; mounted rules re-render when it changes, so memoize it. */

@@ -1,7 +1,7 @@
+import type { DecisionTextLabels } from '../DecisionText';
+import type { SentenceHeader } from '../DecisionTextHeader';
 import type {
-  DecisionTextLabels,
   SentenceBand,
-  SentenceHeader,
   SentenceLine,
   SentencePart,
   SentenceRule,

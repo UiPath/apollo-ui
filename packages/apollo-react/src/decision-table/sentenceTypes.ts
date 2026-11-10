@@ -1,5 +1,4 @@
 import type { GridColumn, GridColumnGroup } from './gridTypes';
-import type { MarkTone } from './marks';
 
 /** A column name or a cell value inside a sentence; `columnId` is the input's or output's id. */
 export interface SentenceToken {
@@ -33,23 +32,8 @@ export interface SentenceBand extends Pick<GridColumnGroup, 'id' | 'label'> {
   columns: readonly Pick<GridColumn, 'id' | 'name'>[];
 }
 
-/** The sticky line above the rules: a label and its hint. */
-export interface SentenceHeader {
-  label: string;
-  hint: string;
-}
-
 /** A cell, addressed as the grid's marks address it. */
 export interface SentenceCellId {
   rowId: string;
   columnId: string;
-}
-
-/** The view's own strings; the consumer passes localized values. */
-export interface DecisionTextLabels {
-  emptyRules: string;
-  /** One mark as read aloud, e.g. "Warning: Overlaps row 1"; `message` is absent when the mark has none. */
-  markStatus: (tone: Exclude<MarkTone, 'success'>, message: string | undefined) => string;
-  /** The count a line shows in place of the values past its limit, e.g. "+9,980 more". */
-  moreValues: (count: number) => string;
 }

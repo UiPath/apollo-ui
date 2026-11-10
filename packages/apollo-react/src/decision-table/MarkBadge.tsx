@@ -1,8 +1,8 @@
 import type React from 'react';
 import { MarkGlyph } from './MarkGlyph';
+import type { MarkTone } from './marks';
 import { type LineMark, worstTone } from './sentenceMarks';
 import { LINE_MARK_CLASS, MARK_GLYPH_CLASS } from './sentenceStyles';
-import type { DecisionTextLabels } from './sentenceTypes';
 
 const markId = (id: string, index: number): string => `${id}-${index}`;
 
@@ -10,10 +10,16 @@ const markId = (id: string, index: number): string => `${id}-${index}`;
 export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
   marks.map((_, index) => markId(id, index));
 
+/** A badge's strings. */
+export interface MarkBadgeLabels {
+  /** One mark as read aloud, e.g. "Warning: Overlaps row 1"; `message` is absent when the mark has none. */
+  markStatus: (tone: Exclude<MarkTone, 'success'>, message: string | undefined) => string;
+}
+
 export interface MarkBadgeProps {
   id: string;
   marks: readonly LineMark[];
-  labels: DecisionTextLabels;
+  labels: MarkBadgeLabels;
 }
 
 /** A glyph in the worst tone of its marks, and each mark's announcement for `aria-describedby`. */

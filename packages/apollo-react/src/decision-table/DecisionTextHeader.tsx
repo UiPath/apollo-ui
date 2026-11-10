@@ -1,6 +1,11 @@
 import type React from 'react';
 import { DECISION_TEXT_HEADER_CLASS, HEADER_LABEL_CLASS } from './sentenceStyles';
-import type { SentenceHeader } from './sentenceTypes';
+
+/** The sticky line above the rules: a label and its hint. */
+export interface SentenceHeader {
+  label: string;
+  hint: string;
+}
 
 export interface DecisionTextHeaderProps {
   header: SentenceHeader;

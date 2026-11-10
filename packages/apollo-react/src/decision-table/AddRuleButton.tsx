@@ -1,16 +1,16 @@
 import { Button } from '@uipath/apollo-wind';
 import { Plus } from 'lucide-react';
 import type React from 'react';
-import type { DecisionTextAddRule } from './DecisionText';
 
 export interface AddRuleButtonProps {
-  addRule: DecisionTextAddRule;
+  label: string;
+  onAdd: () => void;
 }
 
 /** The view's add-rule action. */
-export const AddRuleButton: React.FC<AddRuleButtonProps> = ({ addRule }) => (
-  <Button variant="outline" size="sm" onClick={addRule.onAdd}>
+export const AddRuleButton: React.FC<AddRuleButtonProps> = ({ label, onAdd }) => (
+  <Button variant="outline" size="sm" onClick={onAdd}>
     <Plus aria-hidden />
-    {addRule.label}
+    {label}
   </Button>
 );
