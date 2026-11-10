@@ -1,6 +1,6 @@
-import { Button, EmptyState } from '@uipath/apollo-wind';
-import { Plus } from 'lucide-react';
+import { EmptyState } from '@uipath/apollo-wind';
 import type React from 'react';
+import { AddRuleButton } from './AddRuleButton';
 import type { DecisionTextAddRule } from './DecisionText';
 import { EMPTY_STATE_CLASS, EMPTY_STATE_FRAME_CLASS } from './sentenceStyles';
 
@@ -19,12 +19,7 @@ export const EmptyRules: React.FC<EmptyRulesProps> = ({ title, addRule, dataTest
       className={EMPTY_STATE_CLASS}
       data-testid={`${dataTestId}-empty`}
     >
-      {addRule && (
-        <Button variant="outline" size="sm" onClick={addRule.onAdd}>
-          <Plus aria-hidden />
-          {addRule.label}
-        </Button>
-      )}
+      {addRule && <AddRuleButton addRule={addRule} />}
     </EmptyState>
   </div>
 );

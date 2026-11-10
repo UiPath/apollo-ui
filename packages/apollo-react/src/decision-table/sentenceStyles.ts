@@ -95,3 +95,5 @@ export const EMPTY_OUTPUT_VALUE_CLASS = 'italic text-foreground-de-emp';
 export const LINE_MARK_CLASS = 'inline-flex shrink-0 items-center';
 
 export const MARK_GLYPH_CLASS = 'size-3.5 forced-colors:text-[CanvasText]';
+
+export const ADD_RULE_FOOTER_CLASS = cn('pb-4', GUTTER_CLASS);

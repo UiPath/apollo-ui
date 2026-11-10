@@ -318,9 +318,14 @@ describe('DecisionText', () => {
       expect(screen.getByTestId('nl-bands')).toBeInTheDocument();
     });
 
-    it('offers no add action without addRule', () => {
-      renderView({ rules: [] });
-      expect(within(screen.getByTestId('nl-empty')).queryByRole('button')).toBeNull();
+    it('follows the rules with the add-rule action', () => {
+      const onAdd = vi.fn();
+      renderView({ addRule: { label: 'Add rule', onAdd } });
+      const add = screen.getByRole('button', { name: 'Add rule' });
+      const list = card('m5').closest('ul');
+      expect(list?.compareDocumentPosition(add)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      fireEvent.click(add);
+      expect(onAdd).toHaveBeenCalledTimes(1);
     });
   });
 
