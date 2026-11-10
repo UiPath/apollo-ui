@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { NodeMenuItem } from 'src/canvas/components/NodeContextMenu';
+import type { NodeMenuItem } from '../../../NodeContextMenu';
 import type { StageNodeProps, StageTaskExecution, StageTaskItem } from '../../StageNode.types';
 import { SortableTaskRow } from '../shared/SortableTaskRow';
 import { AdhocTaskContent } from './AdhocTaskContent';

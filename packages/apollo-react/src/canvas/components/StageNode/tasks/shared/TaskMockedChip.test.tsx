@@ -4,7 +4,7 @@ import { TaskMockedChip } from './TaskMockedChip';
 
 // Surface CanvasTooltip content into the DOM so assertions don't depend on
 // Radix's pointer-event-driven open/close logic (unreliable in jsdom).
-vi.mock('../../CanvasTooltip', () => ({
+vi.mock('../../../CanvasTooltip', () => ({
   CanvasTooltip: ({
     content,
     children,

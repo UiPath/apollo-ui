@@ -4,7 +4,7 @@ import { render, screen } from '../../../../utils/testing';
 import type { StageTaskItem } from '../../StageNode.types';
 import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
 
-vi.mock('../../CanvasTooltip', () => ({
+vi.mock('../../../CanvasTooltip', () => ({
   CanvasTooltip: ({ content, children }: { content: ReactNode; children: ReactNode }) => (
     <span
       data-testid="canvas-tooltip"

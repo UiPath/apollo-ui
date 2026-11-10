@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from '../../../../../test/durations';
 import { render, screen } from '../../../../utils/testing';
 import type { StageTaskExecution, StageTaskItem } from '../../StageNode.types';
-import { TaskContent } from '../TaskContent';
+import { TaskContent } from './TaskContent';
 
 // Surface CanvasTooltip content into the DOM so assertions don't depend on
 // Radix's pointer-event-driven open/close logic (unreliable in jsdom).
-vi.mock('../../CanvasTooltip', () => ({
+vi.mock('../../../CanvasTooltip', () => ({
   CanvasTooltip: ({
     content,
     children,

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '../../../../utils/testing';
 import type { StageTaskExecution, StageTaskItem } from '../../StageNode.types';
-import { TaskContent } from '../TaskContent';
+import { TaskContent } from './TaskContent';
 import { DraggableTask } from './DraggableTask';
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({

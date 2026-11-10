@@ -2,7 +2,6 @@ import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from '../../../../test/durations';
 import { act, fireEvent, render, screen } from '../../../utils/testing';
-import type { StageNodeProps } from '../StageNode.types';
 import { StageNodeHeader } from './StageNodeHeader';
 
 // Uses the real Radix tooltip (the shared setup stubs it out) to cover that the exact duration
@@ -11,18 +10,17 @@ import { StageNodeHeader } from './StageNodeHeader';
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
 const renderHeader = (durationMs: number) => {
-  const props = {
-    id: 'stage-1',
-    stageDetails: { label: 'Stage 1', tasks: [] },
-    execution: { stageStatus: { durationMs }, taskStatus: {} },
-  } as unknown as StageNodeProps;
-
   return render(
     <ReactFlowProvider>
       <StageNodeHeader
-        props={props}
+        id="stage-1"
+        stageLabel="Stage 1"
+        stageStatus={{ durationMs }}
         isReadOnly={true}
-        status={undefined}
+        onStatusClick={undefined}
+        onTaskAdd={undefined}
+        onAddTaskFromToolbox={undefined}
+        onStageTitleChange={undefined}
         handleTaskAddClick={vi.fn()}
       />
     </ReactFlowProvider>

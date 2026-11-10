@@ -23,7 +23,7 @@ const StageNodeHeaderChipsSectionInner = ({
   const labels = useStageNodeLabels();
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;
 
-  if (!slaText || !headerChips || !headerChips.length) {
+  if (!slaText && !headerChips?.length) {
     return null;
   }
   return (
