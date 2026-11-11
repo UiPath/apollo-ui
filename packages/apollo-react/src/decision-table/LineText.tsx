@@ -7,10 +7,9 @@ import { boundedParts, partsText } from './sentenceParts';
 import {
   CLAMPED_LINE_CLASS,
   HEADING_TEXT_CLASS,
-  LINE_FILL_CLASS,
   LINE_TEXT_CLASS,
   MORE_VALUES_CLASS,
-  WORD_CLASS,
+  MUTED_TEXT_CLASS,
 } from './sentenceStyles';
 import type { SentencePart } from './sentenceTypes';
 import { TokenChip } from './TokenChip';
@@ -51,8 +50,8 @@ export const LineText: React.FC<LineTextProps> = ({
   labels,
 }) => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
-  const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, LINE_FILL_CLASS);
-  const wordClass = testsInput(parts) ? WORD_CLASS : undefined;
+  const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, 'flex-1');
+  const wordClass = testsInput(parts) ? MUTED_TEXT_CLASS : undefined;
   const text = (from: number, to = shown.length) =>
     shown.slice(from, to).map((part, offset) =>
       typeof part === 'string' ? (

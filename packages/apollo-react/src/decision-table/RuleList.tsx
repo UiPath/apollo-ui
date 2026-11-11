@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import type { TableMarks } from './marks';
 import { RuleCard, type RuleCardProps } from './RuleCard';
 import type { SentenceListStyle } from './sentenceRuleHeights';
-import { DECISION_TEXT_LIST_CLASS } from './sentenceStyles';
+import { GUTTER_CLASS } from './sentenceStyles';
 import type { SentenceRule } from './sentenceTypes';
 import type { AxisSegment } from './useVirtualizedAxis';
 
@@ -22,7 +22,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
   ({ rules, segments, numbered, marks, style, idPrefix, dataTestId, labels }, ref) => {
     let nextRuleIndex = 0;
     return (
-      <ul ref={ref} className={DECISION_TEXT_LIST_CLASS} style={style}>
+      <ul ref={ref} className={GUTTER_CLASS} style={style}>
         {segments.flatMap((segment) => {
           if (segment.type === 'spacer') {
             return (

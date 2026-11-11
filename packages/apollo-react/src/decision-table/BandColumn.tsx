@@ -1,9 +1,18 @@
 import type React from 'react';
 import { MarkBadge, type MarkBadgeProps, markIds } from './MarkBadge';
 import type { Mark } from './marks';
-import { columnMark, isLineMark } from './sentenceMarks';
+import { isLineMark, type MarkFields } from './sentenceMarks';
 import { BAND_COLUMN_CLASS } from './sentenceStyles';
 import type { SentenceBand } from './sentenceTypes';
+
+/** The `Mark` fields a band column paints; a field added to `Mark` fails to compile here until the column decides on it. */
+const columnMark = (mark: Mark | undefined) =>
+  ({
+    tone: mark?.tone,
+    title: mark?.title,
+    glyph: mark?.glyph,
+    matched: undefined,
+  }) satisfies MarkFields<Mark>;
 
 export interface BandColumnProps {
   column: SentenceBand['columns'][number];

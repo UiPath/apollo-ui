@@ -1,7 +1,7 @@
 import { EmptyState } from '@uipath/apollo-wind';
 import type React from 'react';
 import { AddRuleButton, type AddRuleButtonProps } from './AddRuleButton';
-import { EMPTY_STATE_CLASS, EMPTY_STATE_FRAME_CLASS } from './sentenceStyles';
+import { EMPTY_STATE_CLASS, GUTTER_CLASS } from './sentenceStyles';
 
 export interface EmptyRulesProps {
   title: string;
@@ -11,7 +11,7 @@ export interface EmptyRulesProps {
 
 /** What the view shows with no rules: its message and, when given, the add action. */
 export const EmptyRules: React.FC<EmptyRulesProps> = ({ title, addRule, dataTestId }) => (
-  <div className={EMPTY_STATE_FRAME_CLASS}>
+  <div className={GUTTER_CLASS}>
     <EmptyState
       size="compact"
       title={title}

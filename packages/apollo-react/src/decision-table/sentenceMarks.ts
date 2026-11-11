@@ -1,17 +1,9 @@
 import type { Mark, MarkTone, RowMark, TableMarks } from './marks';
+import { isValue } from './sentenceParts';
 import type { SentencePart } from './sentenceTypes';
 
 /** Every field of a grid mark type, required, so a field added there fails to compile where the view lists the ones it shows. */
 export type MarkFields<T> = { [K in keyof T]-?: unknown };
-
-/** The `Mark` fields a band column paints; a field added to `Mark` fails to compile here until the column decides on it. */
-export const columnMark = (mark: Mark | undefined) =>
-  ({
-    tone: mark?.tone,
-    title: mark?.title,
-    glyph: mark?.glyph,
-    matched: undefined,
-  }) satisfies MarkFields<Mark>;
 
 /** The `TableMarks` maps the view reads; a map added to `TableMarks` fails to compile here until the view decides on it. */
 export const tableMarks = ({ rows, columns }: TableMarks) =>
@@ -35,11 +27,7 @@ const SEVERITY = { warning: 1, error: 2 } satisfies Record<GlyphTone, number>;
 export type LineMark = Pick<Mark, 'title'> & { tone: GlyphTone };
 
 const valueColumnIds = (parts: readonly SentencePart[]): string[] => [
-  ...new Set(
-    parts.flatMap((part) =>
-      typeof part !== 'string' && part.kind === 'value' ? [part.columnId] : []
-    )
-  ),
+  ...new Set(parts.filter(isValue).map((part) => part.columnId)),
 ];
 
 /** Whether a mark shows a glyph. */

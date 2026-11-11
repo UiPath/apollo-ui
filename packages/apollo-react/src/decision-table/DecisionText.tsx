@@ -13,7 +13,7 @@ import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
 import type { SentenceBand, SentenceCellId, SentenceRule } from './sentenceTypes';
 import { useCellHover } from './useCellHover';
-import { useContainerHandlers } from './useContainerHandlers';
+import { type ContainerProps, useContainerHandlers } from './useContainerHandlers';
 import { useRuleWindow } from './useRuleWindow';
 
 /** The view's own strings; the consumer passes localized values. */
@@ -38,7 +38,7 @@ export interface DecisionTextProps {
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Merged onto the scroll container; a `data-testid` here overrides `dataTestId`. */
-  containerProps?: React.HTMLAttributes<HTMLElement> & Record<`data-${string}`, string | undefined>;
+  containerProps?: ContainerProps;
   /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`. */
   dataTestId: string;
 }

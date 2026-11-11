@@ -1,9 +1,11 @@
 import type React from 'react';
-import type { DecisionTextProps } from './DecisionText';
 import { type HoveredToken, valueTokenAt } from './sentenceTargets';
 
+export type ContainerProps = React.HTMLAttributes<HTMLElement> &
+  Record<`data-${string}`, string | undefined>;
+
 export interface ContainerHandlersParams {
-  containerProps: DecisionTextProps['containerProps'];
+  containerProps: ContainerProps | undefined;
   hoverTo: (next: HoveredToken | null) => void;
 }
 

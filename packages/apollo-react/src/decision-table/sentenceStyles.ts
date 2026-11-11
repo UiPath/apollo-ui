@@ -12,7 +12,7 @@ export const DECISION_TEXT_HEADER_CLASS =
 
 export const HEADER_LABEL_CLASS = 'font-semibold';
 
-const GUTTER_CLASS = 'pe-8 ps-[max(2rem,calc(var(--sentence-number-digits,0)*1ch+1.25rem))]';
+export const GUTTER_CLASS = 'pe-8 ps-[max(2rem,calc(var(--sentence-number-digits,0)*1ch+1.25rem))]';
 
 export const DECISION_TEXT_BANDS_CLASS = cn(
   'grid grid-cols-[minmax(4rem,auto)_minmax(0,1fr)] items-start gap-2 pt-3 pb-6',
@@ -32,11 +32,7 @@ export const BAND_COLUMN_CLASS = cn(
   MARKED_CHIP_CLASS
 );
 
-export const EMPTY_STATE_FRAME_CLASS = GUTTER_CLASS;
-
 export const EMPTY_STATE_CLASS = 'rounded-lg border border-dashed border-border bg-background p-8';
-
-export const DECISION_TEXT_LIST_CLASS = GUTTER_CLASS;
 
 export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)]';
 
@@ -62,23 +58,19 @@ export const LINE_CLASS = 'flex h-[var(--sentence-line)] items-center gap-2';
 
 export const LINES_CLASS = 'mt-[var(--sentence-lines-gap)]';
 
-export const LINE_FILL_CLASS = 'flex-1';
-
 export const LINE_TEXT_CLASS = 'min-w-0 truncate';
 
 export const CLAMPED_LINE_CLASS = 'flex items-center gap-2';
 
 export const HEADING_TEXT_CLASS = cn(LINE_TEXT_CLASS, 'self-baseline py-[2px] leading-[20px]');
 
-const MUTED_TEXT_CLASS =
+export const MUTED_TEXT_CLASS =
   'text-foreground-de-emp group-data-[tone]/row:text-[color-mix(in_srgb,var(--color-foreground-de-emp)_80%,var(--color-foreground))]';
 
 export const MORE_VALUES_CLASS = cn('shrink-0 font-medium whitespace-nowrap', MUTED_TEXT_CLASS);
 
 export const LINE_BULLET_CLASS =
   'size-1 shrink-0 rounded-full bg-foreground-disable forced-colors:bg-[CanvasText]';
-
-export const WORD_CLASS = MUTED_TEXT_CLASS;
 
 export const TOKEN_KIND_CLASS = {
   input:

@@ -1,7 +1,8 @@
 import { EMPTY_VALUE_DASH } from './constants';
 import type { SentencePart, SentenceToken } from './sentenceTypes';
 
-const isValue = (part: SentencePart): boolean => typeof part !== 'string' && part.kind === 'value';
+export const isValue = (part: SentencePart): part is SentenceToken =>
+  typeof part !== 'string' && part.kind === 'value';
 
 /** A token's text as shown; an empty value reads as the grid's empty cell does. */
 export const tokenText = (token: SentenceToken): string =>

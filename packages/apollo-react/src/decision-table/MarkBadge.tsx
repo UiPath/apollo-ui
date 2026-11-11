@@ -1,7 +1,6 @@
 import type React from 'react';
 import { MarkGlyph } from './MarkGlyph';
-import type { MarkTone } from './marks';
-import { type LineMark, worstTone } from './sentenceMarks';
+import { type GlyphTone, type LineMark, worstTone } from './sentenceMarks';
 import { LINE_MARK_CLASS, MARK_GLYPH_CLASS } from './sentenceStyles';
 
 const markId = (id: string, index: number): string => `${id}-${index}`;
@@ -13,7 +12,7 @@ export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
 /** A badge's strings. */
 export interface MarkBadgeLabels {
   /** One mark as read aloud, e.g. "Warning: Overlaps row 1"; `message` is absent when the mark has none. */
-  markStatus: (tone: Exclude<MarkTone, 'success'>, message: string | undefined) => string;
+  markStatus: (tone: GlyphTone, message: string | undefined) => string;
 }
 
 export interface MarkBadgeProps {
