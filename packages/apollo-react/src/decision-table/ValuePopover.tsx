@@ -204,8 +204,8 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const commitExpression = (next: string, move: CellCommitMove) => {
     const holds = move === 'none' && blurStaysRef.current;
     heldRef.current = holds ? next : null;
-    if (holds) setDraft(next);
-    else commit({ values: [next], operator: undefined }, move);
+    setDraft(next);
+    if (!holds) commit({ values: [next], operator: undefined }, move);
   };
   const editExpression = renderEditor
     ? () => {
