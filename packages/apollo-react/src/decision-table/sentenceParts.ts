@@ -39,6 +39,10 @@ export const stopTokensOf = (rule: SentenceRule): SentenceToken[] => {
   return [...stops.values()];
 };
 
+/** Whether a rule has a keyboard stop for a cell: a value of it, or its input without one. */
+export const hasStop = (rule: SentenceRule | undefined, columnId: string): boolean =>
+  rule !== undefined && stopTokensOf(rule).some((token) => token.columnId === columnId);
+
 /** A column's name as the row words it. */
 export const columnNameOf = (rule: SentenceRule, columnId: string): string =>
   ruleTokens(rule).find((token) => token.kind !== 'value' && token.columnId === columnId)?.text ??

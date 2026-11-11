@@ -87,4 +87,4 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
-export type { SentenceEditorContext } from './ValueEditorOverlay';
+export type { SentenceEditorContext } from './ValuePopover';

@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { GridColumn, GridColumnGroup } from './gridTypes';
 
 /** A column's name inside a sentence; `columnId` is the input's or output's id. */
@@ -40,9 +41,14 @@ export interface SentenceRule {
   lines: readonly SentenceLine[];
 }
 
+interface SentenceBandColumn extends Pick<GridColumn, 'id' | 'name'> {
+  /** The column's type glyph, before its name. */
+  icon?: React.ReactNode;
+}
+
 /** A labelled run of columns shown above the rules. */
 export interface SentenceBand extends Pick<GridColumnGroup, 'id' | 'label'> {
-  columns: readonly Pick<GridColumn, 'id' | 'name'>[];
+  columns: readonly SentenceBandColumn[];
 }
 
 /** A cell, addressed as the grid's marks address it. */

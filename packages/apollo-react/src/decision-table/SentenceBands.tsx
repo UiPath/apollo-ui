@@ -16,6 +16,10 @@ export interface SentenceBandsProps {
   idPrefix: string;
   dataTestId: string;
   labels: BandColumnProps['labels'];
+  onToggleColumn: BandColumnProps['onToggle'];
+  /** The column whose popover is open, or null. */
+  openColumnId: string | null;
+  editorId: string;
 }
 
 /** The inputs and outputs above the rules, one captioned band each. */
@@ -26,6 +30,9 @@ export const SentenceBands: React.FC<SentenceBandsProps> = ({
   idPrefix,
   dataTestId,
   labels,
+  onToggleColumn,
+  openColumnId,
+  editorId,
 }) => (
   <div className={DECISION_TEXT_BANDS_CLASS} style={style} data-testid={`${dataTestId}-bands`}>
     {bands.map((band, bandIndex) => (
@@ -46,6 +53,8 @@ export const SentenceBands: React.FC<SentenceBandsProps> = ({
               mark={marks.get(column.id)}
               badgeId={`${idPrefix}-band-${bandIndex}-${columnIndex}`}
               labels={labels}
+              onToggle={onToggleColumn}
+              editorId={column.id === openColumnId ? editorId : undefined}
             />
           ))}
         </ul>

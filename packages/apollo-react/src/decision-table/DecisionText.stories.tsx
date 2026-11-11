@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Calendar, Hash, Plus, ToggleLeft, Type } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -9,6 +10,7 @@ import {
   manyRulesTable,
   tableBands,
   tableWithClearedRule,
+  tableWithCondition,
   tableWithDuplicate,
   tableWithExpression,
   tableWithMovedRule,
@@ -34,18 +36,24 @@ import {
   manyLinesRule,
 } from './__fixtures__/sentences.fixtures';
 import { CellTextEditor } from './CellTextEditor';
+import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { DecisionText, type DecisionTextEdit, type DecisionTextProps } from './DecisionText';
 import type { GridMenuEntry } from './GridMenu';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { pickedOption } from './PolicyOptionItem';
 import { valueTokenOf } from './sentenceParts';
 import type {
+  SentenceBand,
   SentenceCellId,
+  SentenceLine,
+  SentenceNameToken,
+  SentencePart,
   SentenceRule,
   SentenceSelection,
   SentenceValueId,
+  SentenceValueToken,
 } from './sentenceTypes';
-import type { SentenceEditorContext } from './ValueEditorOverlay';
+import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './ValuePopover';
 
 const selectionText = (selection: SentenceSelection | null) =>
   selection ? [selection.rowId, selection.columnId ?? 'rule'].join(' / ') : 'none';
@@ -76,7 +84,7 @@ const ReadOnlyDemo = ({ caption, ...props }: ReadOnlyDemoProps) => {
     <div className="flex h-[480px] flex-col gap-2">
       <DecisionText
         rules={GRID_SENTENCE_RULES}
-        bands={GRID_SENTENCE_BANDS}
+        bands={TYPED_GRID_BANDS}
         header={GRID_SENTENCE_HEADER}
         labels={DECISION_TEXT_LABELS}
         ariaLabel="Rules"
@@ -143,7 +151,7 @@ const DEMO_MARKS: TableMarks = {
   columns: new Map([['start', { tone: 'warning', title: 'No type', glyph: true }]]),
 };
 
-/** What the story host writes a committed value with. */
+/** What the story host writes a value committed without an operator with. */
 type ValueWrite = (table: EditableTable, target: SentenceValueId, text: string) => EditableTable;
 
 /** How much of the view a host wires: rules only, then selection, then editing. */
@@ -152,6 +160,141 @@ type HostMode = 'read' | 'select' | 'edit';
 const NUMERIC_INPUTS = new Set(['age', 'income']);
 
 const NO_MARKS: TableMarks = { rows: new Map(), columns: new Map() };
+
+/** The words a one-value condition of the story switches between, each its own id. */
+const SINGLE_VALUE_OPERATORS = [
+  'is',
+  'is not',
+  'is less than',
+  'is at most',
+  'is greater than',
+  'is at least',
+].map((label) => ({ id: label, label }));
+
+/** The story's operators: the one-value ones, then a range and two lists. */
+const CONDITION_OPERATORS: readonly ValueOperatorOption[] = [
+  ...SINGLE_VALUE_OPERATORS,
+  { id: 'is between', label: 'is between', shape: 'range' },
+  { id: 'is one of', label: 'is one of', shape: 'list' },
+  { id: 'is none of', label: 'is none of', shape: 'list' },
+];
+
+/** The values the story's columns allow. */
+const ALLOWED_VALUES: Readonly<Record<string, readonly string[]>> = {
+  risk: ['"high"', '"standard"', '"review"'],
+  channel: ['"web"', '"app"', '"branch"'],
+};
+
+const TYPE_ICON_CLASS = 'text-foreground-de-emp';
+
+/** The types the story's column popover offers, each with its glyph and an example of its values. */
+const COLUMN_TYPES: readonly ColumnTypeOption[] = [
+  {
+    id: 'string',
+    label: 'Text',
+    icon: <Type className={TYPE_ICON_CLASS} />,
+    allowedValuesPlaceholder: 'e.g. "web", "app"',
+  },
+  {
+    id: 'number',
+    label: 'Number',
+    icon: <Hash className={TYPE_ICON_CLASS} />,
+    allowedValuesPlaceholder: 'e.g. 10, 20, [30..40]',
+  },
+  {
+    id: 'boolean',
+    label: 'Boolean',
+    icon: <ToggleLeft className={TYPE_ICON_CLASS} />,
+    allowedValuesPlaceholder: 'e.g. true',
+  },
+  {
+    id: 'date',
+    label: 'Date',
+    icon: <Calendar className={TYPE_ICON_CLASS} />,
+    allowedValuesPlaceholder: 'e.g. date("2026-01-01")',
+  },
+];
+
+/** What the story host keeps of a column beyond its name, once the column popover changes it. */
+type ColumnEdits = Readonly<Record<string, Omit<ColumnChange, 'label'>>>;
+
+const NO_COLUMN_EDITS: ColumnEdits = {};
+
+const columnTypeOf = (columnId: string, edits: ColumnEdits = NO_COLUMN_EDITS): string =>
+  edits[columnId]?.typeRef ?? (NUMERIC_INPUTS.has(columnId) ? 'number' : 'string');
+
+const columnIcon = (columnId: string, edits?: ColumnEdits) =>
+  COLUMN_TYPES.find((type) => type.id === columnTypeOf(columnId, edits))?.icon;
+
+const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[] | undefined => {
+  const text = edits[columnId]?.allowedValues;
+  if (text === undefined) return ALLOWED_VALUES[columnId];
+  const values = text.split(',').flatMap((value) => (value.trim() ? [value.trim()] : []));
+  return values.length > 0 ? values : undefined;
+};
+
+/** Bands whose columns carry their type glyph, as a host draws them. */
+const typedBands = (bands: readonly SentenceBand[], edits?: ColumnEdits): SentenceBand[] =>
+  bands.map((band) => ({
+    ...band,
+    columns: band.columns.map((column) => ({ ...column, icon: columnIcon(column.id, edits) })),
+  }));
+
+/** What the story host's column popover edits: the column's name as its label, and what the popover changed. */
+const storyColumnField = (
+  table: EditableTable,
+  edits: ColumnEdits,
+  columnId: string
+): ColumnField => {
+  const output = isOutput(table, columnId);
+  const column = [...table.inputs, ...table.outputs].find((candidate) => candidate.id === columnId);
+  return {
+    kind: output ? 'output' : 'input',
+    label: column?.name ?? columnId,
+    binding: edits[columnId]?.binding ?? columnId,
+    required: !output,
+    typeRef: columnTypeOf(columnId, edits),
+    allowedValues: edits[columnId]?.allowedValues ?? (ALLOWED_VALUES[columnId] ?? []).join(', '),
+  };
+};
+
+/** The table with a column renamed. */
+const tableWithColumnName = (
+  table: EditableTable,
+  columnId: string,
+  name: string
+): EditableTable => {
+  const rename = (columns: EditableTable['inputs']) =>
+    columns.map((column) => (column.id === columnId ? { ...column, name } : column));
+  return { ...table, inputs: rename(table.inputs), outputs: rename(table.outputs) };
+};
+
+const TYPED_GRID_BANDS = typedBands(GRID_SENTENCE_BANDS);
+
+const numberOrder = (low: string, high: string) => Number(low) <= Number(high);
+
+/** What the story host's popover offers: the column's type glyph, a condition's operators, its values and ends, and the column's allowed values. */
+const storyValueField = (
+  table: EditableTable,
+  edits: ColumnEdits,
+  cell: SentenceCellId
+): ValueField => {
+  const condition = table.rules
+    .find((rule) => rule.rowId === cell.rowId)
+    ?.conditions.find((candidate) => candidate.inputId === cell.columnId);
+  const offered = CONDITION_OPERATORS.find((option) => option.id === condition?.operator);
+  const switchable = !isOutput(table, cell.columnId) && (condition === undefined || offered);
+  const multiple = offered?.shape !== undefined && offered.shape !== 'single';
+  return {
+    icon: columnIcon(cell.columnId, edits),
+    operators: switchable ? CONDITION_OPERATORS : undefined,
+    operator: condition?.operator ?? 'is',
+    allowedValues: allowedValuesOf(cell.columnId, edits),
+    values: multiple ? condition?.values : undefined,
+    ends: condition?.ends,
+    inOrder: columnTypeOf(cell.columnId, edits) === 'number' ? numberOrder : undefined,
+  };
+};
 
 /** The host's validation, as the grid's host marks its cells: a number input holding text, and an empty outcome. */
 const validationMarks = (table: EditableTable): TableMarks => {
@@ -232,8 +375,10 @@ const TableHost = ({
   const [refusal, setRefusal] = useState<string | null>(null);
   const [hitPolicy, setHitPolicy] = useState('UNIQUE');
   const [openedDecision, setOpenedDecision] = useState<string | null>(null);
+  const [columnEdits, setColumnEdits] = useState<ColumnEdits>(NO_COLUMN_EDITS);
+  const [moreProperties, setMoreProperties] = useState<string | null>(null);
   const rules = useMemo(() => wordedRules(table), [table]);
-  const bands = useMemo(() => tableBands(table), [table]);
+  const bands = useMemo(() => typedBands(tableBands(table), columnEdits), [table, columnEdits]);
   const marks = useMemo(() => (validate ? validationMarks(table) : NO_MARKS), [table, validate]);
 
   useEffect(() => {
@@ -263,6 +408,7 @@ const TableHost = ({
     const unused = unusedInputs(table, rowId).map(
       (input): GridMenuEntry => ({
         label: input.name,
+        icon: columnIcon(input.id, columnEdits),
         focusesOwnSurface: true,
         onClick: () => open({ rowId, columnId: input.id, index: 0 }),
       })
@@ -275,7 +421,7 @@ const TableHost = ({
     return [
       ...unused,
       ...(unused.length > 0 ? [{ divider: true } as const] : []),
-      { label: 'New input', focusesOwnSurface: true, onClick: addInput },
+      { label: 'New input', icon: <Plus />, focusesOwnSurface: true, onClick: addInput },
     ];
   };
 
@@ -316,17 +462,32 @@ const TableHost = ({
       onStartEdit?.();
       open(value);
     },
-    onCommit: (value, text) => {
+    onCommit: (value, commit) => {
+      const [text = ''] = commit.values;
       if (!isOutput(table, value.columnId) && text.trim() === '') {
         setRefusal(
           `Not saved: the ${columnName(value.columnId)} condition needs a value. Type one, press Escape, or remove the condition.`
         );
         return;
       }
-      setTable(writeValue(table, value, text));
+      setTable(
+        commit.operator === undefined
+          ? writeValue(table, value, text)
+          : tableWithCondition(table, value, commit)
+      );
       open(null);
     },
     onCancel: () => open(null),
+    valueField: (cell) => storyValueField(table, columnEdits, cell),
+    column: {
+      field: (columnId) => storyColumnField(table, columnEdits, columnId),
+      types: COLUMN_TYPES,
+      onCommit: (columnId, { label, ...rest }) => {
+        if (label !== undefined) setTable(tableWithColumnName(table, columnId, label));
+        setColumnEdits({ ...columnEdits, [columnId]: { ...columnEdits[columnId], ...rest } });
+      },
+      onMoreProperties: setMoreProperties,
+    },
     onClearCell: (cell) => setTable(tableWithoutCell(table, cell)),
     conditionEntries,
     ruleEntries,
@@ -374,7 +535,8 @@ const TableHost = ({
       )}
       <StoryCaption>
         Selected: {selectionText(selected)} · Editing: {editingText(editing)} · Hovered:{' '}
-        {cellText(hovered)} · Opened decision: {openedDecision ?? 'none'}
+        {cellText(hovered)} · Opened decision: {openedDecision ?? 'none'} · More properties:{' '}
+        {moreProperties ?? 'none'}
       </StoryCaption>
       <StoryCaption>{caption}</StoryCaption>
     </div>
@@ -403,7 +565,7 @@ export const WithMarks: Story = {
       numbered
       marks={DEMO_MARKS}
       headerMark={{ tone: 'error', title: 'Collect returns a list, not one value', glyph: true }}
-      caption="The grid's marks on values, rules, band columns and the header. Each glyph's message is read with its line; a host shows it on hover from data-mark-title, as the grid's host does."
+      caption="The grid's marks on values, rules, band columns and the header. Each glyph's message is read with its line, and shows as a tooltip on hover or focus."
     />
   ),
 };
@@ -468,51 +630,37 @@ export const Editing: Story = {
   render: () => (
     <TableHost
       initialTable={EDITABLE_TABLE}
-      caption="Click a value, or press Enter on a cell, to edit it. Enter commits and moves down, Tab goes to the next value and then the next cell, Escape cancels. Delete or a ✕ removes a condition or clears an outcome. + adds a condition. ⋯ inserts, duplicates, moves, clears or deletes the rule, and the bin deletes it. The header picks the hit policy; Collect and total opens its totals, Sum refused. income and channel come from other decisions: click either, or press Alt+Enter on its cell, to open it."
+      caption="Click an input or output above the rules to edit its label, expression or name, type and allowed values: Enter applies, Escape cancels, and More properties hands the column to the host. Click a value, or press Enter on a cell, to open its popover: the column, the condition's operator, and the value, a range's two ends or a list's values, or the column's allowed values. Enter applies and moves down, Tab moves through the popover's fields and from its last one to the next cell, Escape cancels, and a click outside applies in place. Delete or a ✕ removes a condition or clears an outcome. + adds a condition: its line waits in the rule until Apply. ⋯ inserts, duplicates, moves, clears or deletes the rule, and the bin deletes it. The header picks the hit policy; Collect and total opens its totals, Sum refused. income and channel come from other decisions: click either, or press Alt+Enter on its cell, to open it."
     />
   ),
 };
 
-interface ExpressionSwitchEditorProps {
+interface ExpressionEditorProps {
   context: SentenceEditorContext;
-  expression: boolean;
-  onSwitch: () => void;
+  onOpen: () => void;
 }
 
-const keepEditorFocus = (event: React.MouseEvent) => event.preventDefault();
-
-/** The story's host editor: the plain input, and a switch that edits the value as an expression in place. */
-const ExpressionSwitchEditor = ({ context, expression, onSwitch }: ExpressionSwitchEditorProps) => (
-  <div className={expression ? 'font-mono' : undefined}>
-    <CellTextEditor
-      value={context.value}
-      ariaLabel={context.ariaLabel}
-      dataTestId="decision-text-host-editor"
-      onCommit={context.onCommit}
-      onCancel={context.onCancel}
-    />
-    <div className="flex items-center justify-between border-t border-border-de-emp px-2 py-1 text-xs text-foreground-de-emp">
-      <span>{expression ? 'FEEL expression' : 'Value'}</span>
-      <button
-        type="button"
-        className="font-medium text-primary"
-        onMouseDown={keepEditorFocus}
-        onClick={onSwitch}
-      >
-        {expression ? 'Edit as value' : 'Edit as expression'}
-      </button>
+/** The story's expression editor: a monospace input that tells the host it opened, so its commit writes an expression. */
+const ExpressionEditor = ({ context, onOpen }: ExpressionEditorProps) => {
+  useEffect(() => onOpen(), [onOpen]);
+  return (
+    <div className="overflow-hidden rounded-md border border-input font-mono">
+      <CellTextEditor
+        value={context.value}
+        ariaLabel={context.ariaLabel}
+        dataTestId="decision-text-host-editor"
+        onCommit={context.onCommit}
+        onCancel={context.onCancel}
+        onDraftChange={context.onDraftChange}
+      />
     </div>
-  </div>
-);
+  );
+};
 
 const HostEditorDemo = () => {
   const [expression, setExpression] = useState(false);
   const renderEditor = (context: SentenceEditorContext) => (
-    <ExpressionSwitchEditor
-      context={context}
-      expression={expression}
-      onSwitch={() => setExpression((current) => !current)}
-    />
+    <ExpressionEditor context={context} onOpen={() => setExpression(true)} />
   );
   return (
     <TableHost
@@ -520,7 +668,7 @@ const HostEditorDemo = () => {
       renderEditor={renderEditor}
       writeValue={expression ? tableWithExpression : tableWithValue}
       onStartEdit={() => setExpression(false)}
-      caption="The host renders its own editor through renderEditor. Its switch flips the mode while the value stays open, and a condition committed as an expression reads as matches."
+      caption="With renderEditor the popover offers Edit expression, which swaps the value for the host's editor; a condition applied from it reads as matches."
     />
   );
 };
@@ -568,4 +716,451 @@ const EndToEndDemo = () => {
 
 export const EndToEnd: Story = {
   render: () => <EndToEndDemo />,
+};
+
+/** A rule-card state: what drives it, and the card it draws. */
+interface CardState {
+  id: string;
+  label: string;
+  source: string;
+  rules: readonly SentenceRule[];
+  marks?: TableMarks;
+  selected?: SentenceSelection;
+  readOnly?: boolean;
+  editing?: SentenceValueId;
+  /** The card's width when not the canvas's 704px. */
+  cardWidth?: number;
+}
+
+interface CardSection {
+  id: string;
+  label: string;
+  states: readonly CardState[];
+}
+
+const stateName = (
+  kind: SentenceNameToken['kind'],
+  columnId: string,
+  text: string
+): SentenceNameToken => ({ kind, columnId, text });
+
+const stateValue = (columnId: string, text: string, index = 0): SentenceValueToken => ({
+  kind: 'value',
+  columnId,
+  index,
+  text,
+});
+
+const SCORE = stateName('input', 'score', 'Score');
+const MONTHS = stateName('input', 'months', 'Months employed');
+const FIELD = stateName('input', 'field', 'Field');
+const DEBT = stateName('input', 'debt', 'Debt ratio');
+const RATE = stateName('output', 'rate', 'Rate');
+const TERM = stateName('output', 'term', 'Term');
+
+const rateIs = (text: string): SentencePart[] => [RATE, ' is ', stateValue('rate', text)];
+const atLeast = (name: SentenceNameToken, text: string): SentenceLine => ({
+  columnId: name.columnId,
+  parts: [name, ' is at least ', stateValue(name.columnId, text)],
+});
+const whenScoreAtLeast = (text: string): SentencePart[] => [
+  'when ',
+  SCORE,
+  ' is at least ',
+  stateValue('score', text),
+];
+const ALL_TRUE = ['when all of these are true:'];
+
+const NAMED: SentenceRule = {
+  rowId: 'named',
+  heading: rateIs('Prime'),
+  lead: ALL_TRUE,
+  lines: [atLeast(SCORE, '700'), atLeast(MONTHS, '12')],
+};
+const SECOND: SentenceRule = {
+  rowId: 'second',
+  heading: rateIs('Standard'),
+  lead: ALL_TRUE,
+  lines: [atLeast(SCORE, '640'), atLeast(MONTHS, '6')],
+};
+const ALWAYS: SentenceRule = {
+  rowId: 'third',
+  heading: rateIs('Refer'),
+  lead: ['in every case'],
+  lines: [],
+};
+const ONE: SentenceRule = {
+  rowId: 'one',
+  heading: rateIs('Prime'),
+  lead: whenScoreAtLeast('700'),
+  lines: [],
+};
+const MANY: SentenceRule = {
+  rowId: 'many',
+  heading: rateIs('Prime'),
+  lead: ALL_TRUE,
+  lines: [
+    atLeast(SCORE, '700'),
+    atLeast(MONTHS, '12'),
+    {
+      columnId: 'field',
+      parts: [
+        FIELD,
+        ' is ',
+        stateValue('field', 'Medicine'),
+        ' or ',
+        stateValue('field', 'Law', 1),
+      ],
+    },
+    { columnId: 'debt', parts: [DEBT, ' is less than ', stateValue('debt', '0.4')] },
+  ],
+};
+const UNSET: SentenceRule = {
+  rowId: 'unset',
+  heading: rateIs(''),
+  lead: whenScoreAtLeast('650'),
+  lines: [],
+};
+const FEEL: SentenceRule = {
+  rowId: 'feel',
+  heading: rateIs('base * 1.2'),
+  lead: whenScoreAtLeast('600'),
+  lines: [],
+};
+const TWO: SentenceRule = {
+  rowId: 'two',
+  heading: [...rateIs('Prime'), ' and ', TERM, ' is ', stateValue('term', '30 years')],
+  lead: whenScoreAtLeast('700'),
+  lines: [],
+};
+const FIELDS = ['Medicine', 'Law', 'Engineering', 'Architecture', 'Accounting'];
+const LONG: SentenceRule = {
+  rowId: 'longsentence',
+  heading: rateIs('Prime'),
+  lead: ALL_TRUE,
+  lines: [
+    {
+      columnId: 'score',
+      parts: [
+        SCORE,
+        ' is between ',
+        stateValue('score', '700'),
+        ' and ',
+        stateValue('score', '850', 1),
+      ],
+    },
+    atLeast(MONTHS, '120'),
+    {
+      columnId: 'field',
+      parts: [
+        FIELD,
+        ' is ',
+        ...FIELDS.flatMap((text, index): SentencePart[] => [
+          ...(index === 0 ? [] : [index === FIELDS.length - 1 ? ' or ' : ', ']),
+          stateValue('field', text, index),
+        ]),
+      ],
+    },
+    { columnId: 'debt', parts: [DEBT, ' is less than ', stateValue('debt', '0.25')] },
+  ],
+};
+
+const rowMarks = (entries: Record<string, RowMark>): TableMarks => ({
+  rows: new Map(Object.entries(entries)),
+  columns: new Map(),
+});
+
+const RULE_WARNING = rowMarks({
+  named: { tone: 'warning', glyph: true, title: 'This rule overlaps rule 2.' },
+});
+const RULE_ERROR = rowMarks({
+  named: { tone: 'error', glyph: true, title: 'This rule can never match.' },
+});
+const FIRED = rowMarks({
+  named: {
+    tone: 'success',
+    cells: {
+      score: { matched: true, title: 'Score: 742' },
+      months: { matched: true, title: 'Months employed: 26' },
+    },
+  },
+});
+
+const RULE_SELECTED = { rowId: 'named' };
+
+const CARD_SECTIONS: readonly CardSection[] = [
+  {
+    id: 'interaction',
+    label: 'Interaction',
+    states: [
+      { id: 'rest', label: 'Rest', source: '—', rules: [NAMED] },
+      {
+        id: 'selected',
+        label: 'Selected',
+        source: 'selected: rule',
+        rules: [NAMED],
+        selected: RULE_SELECTED,
+      },
+      { id: 'read-only', label: 'Read-only', source: 'no edit', rules: [NAMED], readOnly: true },
+      {
+        id: 'read-only-selected',
+        label: 'Read-only, selected',
+        source: 'no edit + selected',
+        rules: [NAMED],
+        readOnly: true,
+        selected: RULE_SELECTED,
+      },
+    ],
+  },
+  {
+    id: 'content',
+    label: 'Content',
+    states: [
+      {
+        id: 'always',
+        label: 'No conditions (last rule)',
+        source: 'every input "-"',
+        rules: [ALWAYS],
+      },
+      { id: 'one', label: 'One condition', source: 'one input set', rules: [ONE] },
+      { id: 'many', label: 'Many conditions', source: 'four inputs set', rules: [MANY] },
+      { id: 'unset', label: 'Result not set', source: 'output ""', rules: [UNSET] },
+      {
+        id: 'unset-ro',
+        label: 'Result not set, read-only',
+        source: 'output "", no edit',
+        rules: [UNSET],
+        readOnly: true,
+      },
+      { id: 'feel', label: 'Expression result', source: 'output base * 1.2', rules: [FEEL] },
+      { id: 'two-outputs', label: 'Two outputs', source: 'two outputs', rules: [TWO] },
+      { id: 'long-sentence', label: 'Long conditions', source: 'wraps', rules: [LONG] },
+      {
+        id: 'long-sentence-narrow',
+        label: 'Long conditions, 420px',
+        source: 'wraps; Field selected',
+        rules: [LONG],
+        selected: { rowId: 'longsentence', columnId: 'field' },
+        cardWidth: 420,
+      },
+    ],
+  },
+  {
+    id: 'validation',
+    label: 'Validation',
+    states: [
+      {
+        id: 'rule-warning',
+        label: 'Rule warning',
+        source: 'rows: warning, glyph',
+        rules: [NAMED],
+        marks: RULE_WARNING,
+      },
+      {
+        id: 'rule-error',
+        label: 'Rule error',
+        source: 'rows: error, glyph',
+        rules: [NAMED],
+        marks: RULE_ERROR,
+      },
+      {
+        id: 'rule-error-selected',
+        label: 'Rule error, selected',
+        source: 'rows: error + selected',
+        rules: [NAMED],
+        marks: RULE_ERROR,
+        selected: RULE_SELECTED,
+      },
+      {
+        id: 'rule-warning-read-only',
+        label: 'Rule warning, read-only',
+        source: 'rows: warning + no edit',
+        rules: [NAMED],
+        marks: RULE_WARNING,
+        readOnly: true,
+      },
+      {
+        id: 'condition-warning',
+        label: 'Condition warning',
+        source: 'cells[score]: warning, glyph',
+        rules: [NAMED],
+        marks: rowMarks({
+          named: {
+            cells: {
+              score: {
+                tone: 'warning',
+                glyph: true,
+                title: "700 is outside Score's allowed values.",
+              },
+            },
+          },
+        }),
+      },
+      {
+        id: 'result-error',
+        label: 'Result error',
+        source: 'rows + cells[rate]: error',
+        rules: [UNSET],
+        marks: rowMarks({
+          unset: {
+            tone: 'error',
+            glyph: true,
+            title: 'Set a result.',
+            cells: { rate: { tone: 'error', glyph: true, title: 'Set a result.' } },
+          },
+        }),
+      },
+    ],
+  },
+  {
+    id: 'execution',
+    label: 'Execution',
+    states: [
+      {
+        id: 'fired',
+        label: 'Fired',
+        source: 'rows: success; cells matched',
+        rules: [NAMED],
+        marks: FIRED,
+      },
+      {
+        id: 'not-fired',
+        label: 'Evaluated, not fired',
+        source: 'cells: success / error',
+        rules: [NAMED],
+        marks: rowMarks({
+          named: {
+            cells: {
+              score: { tone: 'success', matched: true, title: 'Score: 742' },
+              months: { tone: 'error', matched: false, title: 'Months employed: 8' },
+            },
+          },
+        }),
+      },
+      {
+        id: 'not-evaluated',
+        label: 'Not evaluated',
+        source: 'rows: dim',
+        rules: [NAMED],
+        marks: rowMarks({ named: { dim: true, title: 'Not evaluated' } }),
+      },
+      {
+        id: 'not-reached',
+        label: 'Not reached',
+        source: 'rows: dim (after the fired rule)',
+        rules: [SECOND],
+        marks: rowMarks({ second: { dim: true, title: 'Not reached: an earlier rule fired' } }),
+      },
+      {
+        id: 'fired-ro',
+        label: 'Fired, read-only',
+        source: 'no edit + success',
+        rules: [NAMED],
+        marks: FIRED,
+        readOnly: true,
+      },
+    ],
+  },
+  {
+    id: 'editing',
+    label: 'Editing',
+    states: [
+      {
+        id: 'condition-editor',
+        label: 'Condition editor open',
+        source: 'editing: score',
+        rules: [NAMED],
+        selected: { rowId: 'named', columnId: 'score' },
+        editing: { rowId: 'named', columnId: 'score', index: 0 },
+      },
+      {
+        id: 'outcome-editor',
+        label: 'Result editor open',
+        source: 'editing: rate',
+        rules: [NAMED],
+        selected: { rowId: 'named', columnId: 'rate' },
+        editing: { rowId: 'named', columnId: 'rate', index: 0 },
+      },
+    ],
+  },
+];
+
+const STATE_HEADER = { label: 'First', hint: 'Stops at the first matching rule.' };
+
+const ignore = () => undefined;
+
+/** The editing a state tile wires: the open value, its popover and its menus, every action a no-op. */
+const stateEdit = (editing: SentenceValueId | undefined): DecisionTextEdit => ({
+  editing: editing ?? null,
+  onStartEdit: ignore,
+  onCommit: ignore,
+  onCancel: ignore,
+  valueField: (cell) =>
+    cell.columnId === 'rate'
+      ? { icon: <Type className={TYPE_ICON_CLASS} /> }
+      : {
+          icon: <Hash className={TYPE_ICON_CLASS} />,
+          operators: SINGLE_VALUE_OPERATORS,
+          operator: 'is at least',
+        },
+  onClearCell: ignore,
+  conditionEntries: () => [],
+  ruleEntries: () => [],
+  onDeleteRule: ignore,
+  labels: DECISION_TEXT_EDIT_LABELS,
+});
+
+/** The list's side padding, so a tile's card is its stated width. */
+const LIST_GUTTERS_PX = 64;
+const CARD_WIDTH_PX = 704;
+
+interface StateTileProps {
+  state: CardState;
+}
+
+const StateTile = ({ state }: StateTileProps) => {
+  const width = (state.cardWidth ?? CARD_WIDTH_PX) + LIST_GUTTERS_PX;
+  const host = state.readOnly
+    ? { selected: state.selected ?? null }
+    : {
+        selected: state.selected ?? null,
+        onSelect: ignore,
+        edit: stateEdit(state.editing),
+      };
+  return (
+    <figure className="m-0 flex flex-col gap-1" data-state={state.id}>
+      <figcaption className="flex items-baseline gap-2 ps-8 text-xs">
+        <span className="font-semibold text-foreground">{state.label}</span>
+        <span className="font-mono text-[11px] text-foreground-de-emp">{state.source}</span>
+      </figcaption>
+      <div className={`flex flex-col ${state.editing ? 'h-[360px]' : ''}`} style={{ width }}>
+        <DecisionText
+          rules={state.rules}
+          bands={[]}
+          header={STATE_HEADER}
+          numbered
+          marks={state.marks}
+          labels={DECISION_TEXT_LABELS}
+          ariaLabel={state.label}
+          dataTestId={`state-${state.id}`}
+          {...host}
+        />
+      </div>
+    </figure>
+  );
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-10">
+      {CARD_SECTIONS.map((section) => (
+        <section key={section.id} id={`states-${section.id}`} className="flex flex-col gap-4">
+          <h2 className="m-0 text-sm font-semibold text-foreground">{section.label}</h2>
+          {section.states.map((state) => (
+            <StateTile key={state.id} state={state} />
+          ))}
+        </section>
+      ))}
+    </div>
+  ),
 };
