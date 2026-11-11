@@ -159,10 +159,12 @@ export const useValueEditing = ({
   useLayoutEffect(() => {
     const rowId = refocusRef.current;
     refocusRef.current = null;
-    const focused = activeElementOf(container() ?? document);
+    const view = container();
+    const focused = activeElementOf(view ?? document);
     if (rowId === null || !(focused instanceof HTMLElement)) return;
     if (
       focused === document.body ||
+      focused === view ||
       focused.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId === rowId
     ) {
       navigation.refocus();

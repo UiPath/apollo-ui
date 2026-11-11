@@ -1733,6 +1733,19 @@ describe('DecisionText', () => {
       expect(screen.queryByTestId('nl-editor')).toBeNull();
     });
 
+    it('returns focus to the rule after its ✕ removes a condition whose refused blur commit left focus on the view', () => {
+      renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
+        refuse: true,
+      });
+      fireEvent.change(editor(), { target: { value: '' } });
+      fireEvent.blur(editor());
+      act(() => screen.getByTestId('nl').focus());
+      fireEvent.click(button('r1', 'Remove age from rule 1'));
+      expect(card('r1').contains(document.activeElement)).toBe(true);
+    });
+
     it('removes the lead condition whose ✕ was pressed when the blur commit moves the lead into lines', () => {
       render(<TableHost initial={{ rowId: 'r1' }} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
