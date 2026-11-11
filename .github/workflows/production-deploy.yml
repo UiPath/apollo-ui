@@ -11,12 +11,14 @@ permissions: {}
 
 concurrency:
   group: coded-app-production
-  cancel-in-progress: true
+  # Let a running deploy finish; cancelling it between uip-go's delete and
+  # redeploy of a mismatched app would leave production down.
+  cancel-in-progress: false
 
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
-  UIP_GO_VERSION: 0.3.3
+  UIP_GO_VERSION: 0.3.7
 
 jobs:
   deploy:
