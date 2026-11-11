@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, type RenderResult, render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { vi } from 'vitest';
 import {
@@ -7,18 +7,18 @@ import {
   channel,
   country,
   DECISION_TEXT_LABELS,
-  longValueListRule,
   MULTI_SENTENCE_BANDS,
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_RULES,
   manyColumnBands,
   manySentenceRules,
+  valueList,
 } from './__fixtures__/sentences.fixtures';
 import { EMPTY_VALUE_DASH } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
-import type { SentencePart, SentenceRule } from './sentenceTypes';
+import type { SentenceRule, SentenceToken } from './sentenceTypes';
 
 const view = (props: Partial<DecisionTextProps> = {}) => (
   <DecisionText
@@ -54,15 +54,11 @@ const scrollTo = (px: number) => {
 
 describe('DecisionText', () => {
   describe('layout', () => {
-    it('shows the header label and hint above the rules', () => {
+    it('shows the header label and hint, then each band caption followed by its column names', () => {
       renderView();
       expect(screen.getByTestId('nl-header')).toHaveTextContent(
         'CollectReturns the matches as a list.'
       );
-    });
-
-    it('lists each band caption followed by its column names', () => {
-      renderView();
       const bands = screen.getByTestId('nl-bands');
       expect([...bands.querySelectorAll('[data-band-id]')].map((band) => band.textContent)).toEqual(
         [
@@ -248,17 +244,6 @@ describe('DecisionText', () => {
   });
 
   describe('hover', () => {
-    it('reports nothing for a name chip or a band column', () => {
-      const onCellHover = vi.fn();
-      renderView({ onCellHover });
-      const name = card('m3').querySelector('[data-kind="input"][data-column-id="score"]');
-      const column = screen.getByTestId('nl-bands').querySelector('[data-column-id="score"]');
-      if (!name || !column) throw new Error('chips');
-      fireEvent.pointerOver(name);
-      fireEvent.pointerOver(column);
-      expect(onCellHover).not.toHaveBeenCalled();
-    });
-
     it('reports the cell a hovered chip stands for once a re-render rewords it', () => {
       const onCellHover = vi.fn();
       const { rerender } = renderView({ onCellHover });
@@ -275,33 +260,39 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it('reports null when scrolling unmounts the hovered row', () => {
+    const scrolled = manySentenceRules(2000);
+    it.each<[string, readonly SentenceRule[], (view: RenderResult) => void]>([
+      [
+        'scrolling unmounts the hovered row',
+        scrolled,
+        () => act(() => scrollTo(sentenceRuleOffsets(scrolled)[500] ?? 0)),
+      ],
+      ['it unmounts under the pointer', MULTI_SENTENCE_RULES, ({ unmount }) => unmount()],
+    ])('reports null when %s', (_, rules, leave) => {
       const onCellHover = vi.fn();
-      const rules = manySentenceRules(2000);
-      renderView({ rules, onCellHover });
-      fireEvent.pointerOver(valueChip('row-0', 'decision'));
-      act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
-      expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
+      const result = renderView({ rules, onCellHover });
+      const rowId = rules[0]?.rowId ?? '';
+      fireEvent.pointerOver(valueChip(rowId, 'decision'));
+      leave(result);
+      expect(screen.queryByTestId(`nl-row-${rowId}`)).toBeNull();
       expect(onCellHover).toHaveBeenLastCalledWith(null);
     });
 
-    it('reports null when it unmounts under the pointer', () => {
-      const onCellHover = vi.fn();
-      const { unmount } = renderView({ onCellHover });
-      fireEvent.pointerOver(valueChip('m1', 'score'));
-      unmount();
-      expect(onCellHover).toHaveBeenLastCalledWith(null);
-    });
-
-    it("reports the value chip under the pointer by its cell and null when it leaves, keeping the host's own pointer handlers", () => {
+    it("reports the value chip under the pointer by its cell, nothing for a name chip or a band column, and null when it leaves, keeping the host's own pointer handlers", () => {
       const onCellHover = vi.fn();
       const onPointerOver = vi.fn();
       const onPointerOut = vi.fn();
       renderView({ onCellHover, containerProps: { onPointerOver, onPointerOut } });
+      const name = card('m3').querySelector('[data-kind="input"][data-column-id="score"]');
+      const column = screen.getByTestId('nl-bands').querySelector('[data-column-id="score"]');
+      if (!name || !column) throw new Error('chips');
+      fireEvent.pointerOver(name);
+      fireEvent.pointerOver(column);
+      expect(onCellHover).not.toHaveBeenCalled();
       fireEvent.pointerOver(valueChip('m3', 'score'));
       fireEvent.pointerOut(valueChip('m3', 'score'), { relatedTarget: document.body });
       expect(onCellHover.mock.calls).toEqual([[{ rowId: 'm3', columnId: 'score' }], [null]]);
-      expect(onPointerOver).toHaveBeenCalledTimes(1);
+      expect(onPointerOver).toHaveBeenCalledTimes(3);
       expect(onPointerOut).toHaveBeenCalledTimes(1);
     });
   });
@@ -359,60 +350,14 @@ describe('DecisionText', () => {
   });
 
   describe('at scale', () => {
-    it('renders the first 20 values of a 10,000-value line and counts the rest outside the clamp', () => {
-      renderView({ rules: [longValueListRule(10_000)] });
-      const line = card('long-list').querySelector<HTMLElement>('li[data-column-id="country"]');
-      expect(line?.querySelectorAll('[data-kind="value"]')).toHaveLength(20);
-      const more = line?.querySelector<HTMLElement>('[data-more-values]');
-      expect(more).toHaveTextContent('+9,980 more');
-      expect(more?.parentElement?.parentElement).toBe(line);
-      expect(more?.previousElementSibling).toHaveClass('truncate');
-      expect(more?.previousElementSibling?.textContent).toMatch(/"Country 20"$/);
-    });
-
-    const countryThenAge = (count: number): SentenceRule => {
+    it('clamps each run of one column to its first 20 values and a count outside the clamp, keeping the words after it on the line and in its title', () => {
       const [first] = MULTI_SENTENCE_RULES;
       if (!first) throw new Error('fixture');
-      const values = Array.from({ length: count }, (_, index) => `"C${index + 1}"`);
-      return {
-        ...first,
-        lead: [
-          'when ',
-          COUNTRY,
-          ' is one of ',
-          ...values.flatMap((text, index) =>
-            index === 0 ? [country(text)] : [', ', country(text)]
-          ),
-          ' and ',
-          { columnId: 'age', kind: 'input', text: 'Age' },
-          ' is greater than ',
-          { columnId: 'age', kind: 'value', text: '18' },
-        ],
-        lines: [],
-      };
-    };
-    const lead = () => card('m1').querySelector<HTMLElement>('[id$="-lead"]');
-
-    it('keeps the words after a clamped run on the line and in its title', () => {
-      renderView({ rules: [countryThenAge(21)] });
-      expect(lead()?.textContent).toMatch(/"C20"\+1 more and Age is greater than 18$/);
-      const more = card('m1').querySelector<HTMLElement>('[data-more-values]');
-      expect(more?.previousElementSibling?.textContent).toMatch(/"C20"$/);
-      expect(more?.nextElementSibling?.textContent).toBe(' and Age is greater than 18');
-      expect(card('m1').querySelector('[data-more-values]')?.getAttribute('title')).toBe(
-        '"C21" and Age is greater than 18'
-      );
-    });
-
-    it('clamps every oversized run of a line on its own', () => {
-      const [first] = MULTI_SENTENCE_RULES;
-      if (!first) throw new Error('fixture');
-      const run = (value: (text: string) => SentencePart, prefix: string) =>
-        Array.from({ length: 10_000 }, (_, index): SentencePart[] =>
-          index === 0
-            ? [value(`"${prefix}${index + 1}"`)]
-            : [', ', value(`"${prefix}${index + 1}"`)]
-        ).flat();
+      const run = (value: (text: string) => SentenceToken, prefix: string, count: number) =>
+        valueList(
+          value,
+          Array.from({ length: count }, (_, index) => `"${prefix}${index + 1}"`)
+        );
       renderView({
         rules: [
           {
@@ -421,33 +366,43 @@ describe('DecisionText', () => {
               'when ',
               COUNTRY,
               ' is one of ',
-              ...run(country, 'C'),
+              ...run(country, 'C', 10_000),
               ' and ',
               CHANNEL,
               ' is one of ',
-              ...run(channel, 'K'),
+              ...run(channel, 'K', 21),
+              ' and ',
+              { columnId: 'age', kind: 'input', text: 'Age' },
+              ' is greater than ',
+              { columnId: 'age', kind: 'value', text: '18' },
             ],
             lines: [],
           },
         ],
       });
-      const leadLine = lead()?.parentElement;
-      expect(leadLine?.querySelectorAll('[data-kind="value"]')).toHaveLength(40);
-      expect(lead()?.textContent).toMatch(
-        /"C20"\+9,980 more and Channel is one of "K1", .*"K20"\+9,980 more$/
+      const lead = card('m1').querySelector<HTMLElement>('[id$="-lead"]');
+      const leadLine = lead?.parentElement;
+      expect(leadLine?.querySelectorAll('[data-kind="value"]')).toHaveLength(41);
+      expect(lead?.textContent).toMatch(
+        /"C20"\+9,980 more and Channel is one of "K1", .*"K20"\+1 more and Age is greater than 18$/
       );
       const counts = [...(leadLine?.querySelectorAll<HTMLElement>('[data-more-values]') ?? [])];
-      expect(counts.map((count) => count.textContent)).toEqual(['+9,980 more', '+9,980 more']);
-      expect(counts.map((count) => count.title.slice(0, 14))).toEqual([
-        '"C21", "C22", ',
-        '"K21", "K22", ',
+      expect(
+        counts.map((count) => [
+          count.textContent,
+          count.parentElement?.parentElement === leadLine,
+          count.previousElementSibling?.classList.contains('truncate'),
+          count.previousElementSibling?.textContent?.slice(-5),
+        ])
+      ).toEqual([
+        ['+9,980 more', true, true, '"C20"'],
+        ['+1 more', true, true, '"K20"'],
       ]);
-      expect(counts[1]?.title).toMatch(/"K40"…$/);
-      expect(counts[0]?.title).toMatch(/"C40"… and Channel is one of "K1", .*"K20"$/);
-      expect(counts.map((count) => count.previousElementSibling?.textContent?.slice(-5))).toEqual([
-        '"C20"',
-        '"K20"',
-      ]);
+      expect(counts[0]?.title).toMatch(
+        /^"C21", "C22", .*"C40"… and Channel is one of "K1", .*"K20" and Age is greater than 18$/
+      );
+      expect(counts[1]?.title).toBe('"K21" and Age is greater than 18');
+      expect(counts[1]?.nextElementSibling?.textContent).toBe(' and Age is greater than 18');
     });
 
     it('shows a clamped line in full as its title on hover, as a grid cell does', () => {

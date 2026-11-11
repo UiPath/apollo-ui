@@ -36,7 +36,7 @@ const band = (id: string, label: string, names: readonly SentenceToken[]): Sente
 });
 
 /** Values as `{first}, {second}`. */
-const valueList = (value: (text: string) => SentenceToken, texts: readonly string[]) =>
+export const valueList = (value: (text: string) => SentenceToken, texts: readonly string[]) =>
   texts.flatMap((text, index): SentencePart[] =>
     index === 0 ? [value(text)] : [', ', value(text)]
   );
