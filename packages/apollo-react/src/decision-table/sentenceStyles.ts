@@ -62,7 +62,7 @@ export const ROW_SURFACE_CLASS = cn(
   'forced-colors:group-data-[tone]/row:border-s-4',
   'group-data-[dim=true]/row:text-foreground-de-emp',
   STOP_RING_CLASS,
-  'data-[selected=true]:outline-2 group-focus-visible/row:outline-2'
+  'data-[selected=true]:outline-2 group-focus-visible/row:outline-2 group-focus-visible/row:ring-2 group-focus-visible/row:ring-ring'
 );
 
 export const ROW_NUMBER_CLASS =
