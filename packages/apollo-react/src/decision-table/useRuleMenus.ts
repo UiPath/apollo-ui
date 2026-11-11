@@ -54,7 +54,6 @@ const anchorOf = (trigger: HTMLElement): GridContextMenuState['anchor'] => {
 
 /** A menu's new anchor once its mounted button moved, else null. */
 const movedAnchor = ({ trigger, anchor }: RuleMenuState): GridContextMenuState['anchor'] | null => {
-  if (!trigger.isConnected) return null;
   const moved = anchorOf(trigger);
   return moved.x === anchor.x && moved.y === anchor.y ? null : moved;
 };
@@ -76,7 +75,7 @@ export const useRuleMenus = ({
   };
 
   useLayoutEffect(() => {
-    if (state && !open) {
+    if (state && (!open || !state.trigger.isConnected)) {
       close(false);
       return;
     }

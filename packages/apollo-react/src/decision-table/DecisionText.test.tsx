@@ -1984,6 +1984,30 @@ describe('DecisionText', () => {
       expect([before, after]).toEqual(['64px', '104px']);
     });
 
+    it('closes the rule menu when rules inserted above move its rule out of the mounted rules', () => {
+      const rules = manySentenceRules(2000);
+      const props = {
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        selected: null,
+        onSelect: vi.fn(),
+        edit: editWith({ ruleEntries: deleteEntry }),
+      };
+      const { rerender } = render(view({ ...props, rules }));
+      const trigger = card('row-2').querySelector<HTMLElement>('[data-rule-action="rule"]');
+      if (!trigger) throw new Error('no ⋯ in row-2');
+      fireEvent.click(trigger);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      const inserted = manySentenceRules(50).map((rule) => ({
+        ...rule,
+        rowId: `new-${rule.rowId}`,
+      }));
+      rerender(view({ ...props, rules: [...inserted, ...rules] }));
+      expect(screen.queryByTestId('nl-row-row-2')).toBeNull();
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(document.activeElement).toBe(screen.getByTestId('nl'));
+    });
+
     it('leaves the rules where they scrolled when the scroll that closes a menu unmounts its rule', () => {
       renderSelectable({
         rules: manySentenceRules(2000),
