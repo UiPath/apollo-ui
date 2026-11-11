@@ -28,9 +28,11 @@ const markedAt = (target: EventTarget | null): HTMLElement | null =>
 const markedFor = (target: EventTarget | null): HTMLElement | null => {
   const own = markedAt(target);
   if (own || !(target instanceof Element)) return own;
+  const root = target.getRootNode();
+  const scope = root instanceof ShadowRoot ? root : document;
   const ids = target.getAttribute('aria-describedby')?.split(' ') ?? [];
   for (const id of ids) {
-    const badge = markedAt(document.getElementById(id));
+    const badge = markedAt(scope.getElementById(id));
     if (badge) return badge;
   }
   return null;

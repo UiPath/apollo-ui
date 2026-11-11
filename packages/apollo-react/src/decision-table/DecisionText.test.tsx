@@ -10,7 +10,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
-import { type Mock, vi } from 'vitest';
+import { type Mock, onTestFinished, vi } from 'vitest';
 import {
   EDITABLE_TABLE,
   type EditableTable,
@@ -586,6 +586,27 @@ describe('DecisionText', () => {
       expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
       act(() => valueChip('m3', 'score').focus());
       expect(tooltip()).toHaveTextContent('Overlaps row 1');
+    });
+
+    it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
+      const host = document.createElement('div');
+      document.body.append(host);
+      onTestFinished(() => host.remove());
+      const container = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).append(container);
+      render(
+        <Selectable
+          rules={MULTI_SENTENCE_RULES}
+          bands={MULTI_SENTENCE_BANDS}
+          header={MULTI_SENTENCE_HEADER}
+          marks={scoreMarks}
+          initial={{ rowId: 'm5' }}
+        />,
+        { container }
+      );
+      const inShadow = within(container);
+      act(() => inShadow.getByTestId('nl-row-m5').focus());
+      expect(inShadow.queryByTestId('nl-mark-tooltip')).toHaveTextContent('Unreachable');
     });
 
     it('hides the message on Escape until another mark is reached', () => {
