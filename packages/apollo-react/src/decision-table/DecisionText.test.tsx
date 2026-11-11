@@ -972,6 +972,44 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(document.body);
     });
 
+    it('keeps a focused add-rule action in view after the rule it adds', () => {
+      const AddingHost = () => {
+        const [rules, setRules] = useState(() => manySentenceRules(3));
+        const [selected, setSelected] = useState<SentenceSelection | null>(null);
+        const onAdd = () => {
+          setRules(manySentenceRules(rules.length + 1));
+          setSelected({ rowId: `row-${rules.length}` });
+        };
+        return view({
+          rules,
+          selected,
+          onSelect: setSelected,
+          addRule: { label: 'Add rule', onAdd },
+        });
+      };
+      render(<AddingHost />);
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      const add = screen.getByRole('button', { name: 'Add rule' });
+      const footer = add.parentElement;
+      if (!footer) throw new Error('no add-rule footer');
+      vi.spyOn(footer, 'getBoundingClientRect').mockImplementation(() => {
+        const listEnd = sentenceRuleOffsets(manySentenceRules(mountedRows().length)).at(-1) ?? 0;
+        return {
+          ...rect(0, 400),
+          top: listEnd - frame.scrollTop,
+          bottom: listEnd + 48 - frame.scrollTop,
+        };
+      });
+      for (const added of [3, 4]) {
+        add.focus();
+        fireEvent.click(add);
+        expect(card(`row-${added}`)).toHaveAttribute('tabindex', '0');
+        expect(document.activeElement).toBe(add);
+        expect(footer.getBoundingClientRect().bottom).toBeLessThanOrEqual(100);
+      }
+    });
+
     it('scrolls a rule the host selects out from under the sticky header', () => {
       const rules = manySentenceRules(2000);
       const { rerender } = render(view({ rules, onSelect: vi.fn() }));

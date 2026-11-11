@@ -190,7 +190,10 @@ export const useSentenceNavigation = ({
       const element = container();
       const cell =
         element && current?.columnId !== undefined ? stopOf(element, current) : undefined;
-      if (cell) scrollStopIntoView(selectedRow, cell);
+      const addRule = element?.querySelector<HTMLElement>('[data-add-rule]');
+      const focusedAddRule = addRule?.contains(document.activeElement) ? addRule : undefined;
+      const stop = cell ?? focusedAddRule;
+      if (stop) scrollStopIntoView(selectedRow, stop);
       else scrollRowIntoView(selectedRow);
     }
   });
