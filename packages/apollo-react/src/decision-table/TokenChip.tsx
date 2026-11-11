@@ -43,6 +43,11 @@ export interface DecisionLink {
   tabbable: boolean;
 }
 
+const linkTabIndex = (link: DecisionLink, stop: CellStop | undefined, selected: boolean) => {
+  if (stop) return selected ? 0 : -1;
+  return link.tabbable ? undefined : -1;
+};
+
 export interface TokenChipProps {
   token: SentenceToken;
   mark: Mark | undefined;
@@ -67,7 +72,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
     return (
       <button
         type="button"
-        tabIndex={stop ? (selected ? 0 : -1) : link.tabbable ? undefined : -1}
+        tabIndex={linkTabIndex(link, stop, selected)}
         aria-label={link.label}
         aria-describedby={stop?.labelId}
         className={cn(tokenClass(token, output), DECISION_LINK_CLASS, stop && SELECTED_CHIP_CLASS)}
