@@ -1660,6 +1660,29 @@ describe('DecisionText', () => {
       expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
     });
 
+    it('applies an expression a host editor held as focus moved to the footer, once focus leaves from there', () => {
+      const renderEditor = ({ value, ariaLabel, onCommit }: SentenceEditorContext) => (
+        <textarea
+          aria-label={ariaLabel}
+          defaultValue={value}
+          onBlur={(event) => onCommit(event.currentTarget.value, 'none')}
+        />
+      );
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor,
+      });
+      fireEvent.click(action('Edit expression'));
+      const expression = screen.getByRole('textbox', { name: 'age 25, rule 1' });
+      act(() => expression.focus());
+      fireEvent.change(expression, { target: { value: 'x' } });
+      act(() => action('Apply').focus());
+      expect(onCommit).not.toHaveBeenCalled();
+      act(() => screen.getByTestId('nl').focus());
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
     it('returns focus to the value from Apply when the view is in a shadow root', () => {
       const host = document.body.appendChild(document.createElement('div'));
       onTestFinished(() => host.remove());

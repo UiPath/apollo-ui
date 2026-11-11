@@ -138,6 +138,7 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const expressionRef = useRef(false);
   const settledRef = useRef<Settled | null>(null);
   const blurStaysRef = useRef(false);
+  const heldRef = useRef<string | null>(null);
   const shapeDraft = useShapeDraft(field, value, expression);
   const { operators, current, complete } = shapeDraft;
   const holdFocus = (element: HTMLElement | null) => {
@@ -187,16 +188,23 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const onBlurCapture = (event: React.FocusEvent<HTMLElement>) => {
     blurStaysRef.current = staysInside(event);
   };
+  const leavingCommit = (): ValueCommit | null => {
+    if (!expressionRef.current) return complete ? current : null;
+    return heldRef.current === null ? null : { values: [heldRef.current], operator: undefined };
+  };
   const onBlur = (event: React.FocusEvent<HTMLElement>) => {
     blurStaysRef.current = false;
-    if (expressionRef.current || staysInside(event)) return;
+    if (staysInside(event)) return;
+    const next = leavingCommit();
     const settled = settledRef.current;
-    if (settled === 'cancelled' || !complete) return;
-    if (settled && sameCommit(settled, current)) return;
-    commit(current, 'none');
+    if (!next || settled === 'cancelled') return;
+    if (settled && sameCommit(settled, next)) return;
+    commit(next, 'none');
   };
   const commitExpression = (next: string, move: CellCommitMove) => {
-    if (move === 'none' && blurStaysRef.current) setDraft(next);
+    const holds = move === 'none' && blurStaysRef.current;
+    heldRef.current = holds ? next : null;
+    if (holds) setDraft(next);
     else commit({ values: [next], operator: undefined }, move);
   };
   const editExpression = renderEditor
