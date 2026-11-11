@@ -1918,6 +1918,37 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
     });
 
+    it('keeps the rule menu at its button when a rule inserted above moves it', () => {
+      const original = HTMLElement.prototype.getBoundingClientRect;
+      const boxes = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: HTMLElement) {
+          if (this.dataset.ruleAction !== 'rule') return original.call(this);
+          const top = mountedRows().findIndex((row) => row.contains(this)) * 40;
+          return { ...rect(10, 30), top, y: top, bottom: top + 24 };
+        });
+      const edit = editWith({ ruleEntries: deleteEntry });
+      const onSelect = vi.fn();
+      const { rerender } = render(
+        view({ rules: GRID_SENTENCE_RULES, selected: null, onSelect, edit })
+      );
+      fireEvent.click(actions('r2'));
+      const before = screen.getByTestId('nl-context-menu-anchor').style.top;
+      const [first] = GRID_SENTENCE_RULES;
+      if (!first) throw new Error('no first rule');
+      rerender(
+        view({
+          rules: [{ ...first, rowId: 'r0' }, ...GRID_SENTENCE_RULES],
+          selected: null,
+          onSelect,
+          edit,
+        })
+      );
+      const after = screen.getByTestId('nl-context-menu-anchor').style.top;
+      boxes.mockRestore();
+      expect([before, after]).toEqual(['64px', '104px']);
+    });
+
     it('leaves the rules where they scrolled when the scroll that closes a menu unmounts its rule', () => {
       renderSelectable({
         rules: manySentenceRules(2000),

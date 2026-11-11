@@ -46,6 +46,19 @@ const menuLabel = (
     : edit.labels.addCondition(position);
 };
 
+/** Where a menu opens: below the left edge of its button. */
+const anchorOf = (trigger: HTMLElement): GridContextMenuState['anchor'] => {
+  const { left, bottom } = trigger.getBoundingClientRect();
+  return { x: left, y: bottom };
+};
+
+/** A menu's new anchor once its mounted button moved, else null. */
+const movedAnchor = ({ trigger, anchor }: RuleMenuState): GridContextMenuState['anchor'] | null => {
+  if (!trigger.isConnected) return null;
+  const moved = anchorOf(trigger);
+  return moved.x === anchor.x && moved.y === anchor.y ? null : moved;
+};
+
 /** The view's one menu slot for `GridContextMenu`, opened from a card's buttons, as the grid has one menu at a time; closed when anything holding its button scrolls or the window resizes. */
 export const useRuleMenus = ({
   edit,
@@ -65,6 +78,11 @@ export const useRuleMenus = ({
   useLayoutEffect(() => {
     if (state && !open) {
       close(false);
+      return;
+    }
+    const anchor = state && movedAnchor(state);
+    if (state && anchor) {
+      setState({ ...state, anchor });
       return;
     }
     const restore = restoreFocusRef.current;
@@ -104,13 +122,12 @@ export const useRuleMenus = ({
   const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
     const action = edit ? clickedAction(event.target) : null;
     if (action?.action !== 'conditions' && action?.action !== 'rule') return false;
-    const { left, bottom } = action.trigger.getBoundingClientRect();
     setState({
       menu: action.action,
       rowId: action.rowId,
       trigger: action.trigger,
       openedOnRowId: selectedRowId,
-      anchor: { x: left, y: bottom },
+      anchor: anchorOf(action.trigger),
     });
     return true;
   };
