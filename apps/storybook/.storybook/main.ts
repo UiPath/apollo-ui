@@ -30,6 +30,11 @@ try {
 const config: StorybookConfig = {
   stories: [
     {
+      directory: '../../../packages/apollo-react/src/file-viewer',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Apollo React',
+    },
+    {
       directory: '../../../packages/apollo-react/src/decision-table',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
       titlePrefix: 'Apollo React',
@@ -179,6 +184,7 @@ const config: StorybookConfig = {
       [/^@uipath\/apollo-react\/canvas\/(?!xyflow\/.*\.css)(.*)/, `${apolloReactSrc}/canvas/$1`],
       [/^@uipath\/apollo-react\/chat\/(.*)/, `${apolloReactSrc}/chat/$1`],
       [/^@uipath\/apollo-react\/decision-table\/(.*)/, `${apolloReactSrc}/decision-table/$1`],
+      [/^@uipath\/apollo-react\/file-viewer\/(.*)/, `${apolloReactSrc}/file-viewer/$1`],
       [/^@uipath\/apollo-react\/material\/(.*)/, `${apolloReactSrc}/material/$1`],
     ];
     const sourceAliasPlugin = {

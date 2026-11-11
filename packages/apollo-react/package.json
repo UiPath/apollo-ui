@@ -142,6 +142,12 @@
     },
     "./chat/styles/*.css": "./dist/chat/styles/*.css",
     "./decision-table/styles/*.css": "./dist/decision-table/styles/*.css",
+    "./file-viewer": {
+      "types": "./dist/file-viewer/index.d.ts",
+      "import": "./dist/file-viewer/index.js",
+      "require": "./dist/file-viewer/index.cjs"
+    },
+    "./file-viewer/styles/*.css": "./dist/file-viewer/styles/*.css",
     "./chat/service": {
       "types": "./dist/chat/service/index.d.ts",
       "import": "./dist/chat/service/index.js",
@@ -164,7 +170,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run i18n:compile && rslib build && pnpm run build:icons && pnpm run build:css:canvas && pnpm run build:css:chat && pnpm run build:css:decision-table",
+    "build": "pnpm run i18n:compile && rslib build && pnpm run build:icons && pnpm run build:css:canvas && pnpm run build:css:chat && pnpm run build:css:decision-table && pnpm run build:css:file-viewer",
     "build:css:canvas": "tailwindcss -i ./src/canvas/styles/tailwind.canvas.css -o ./dist/canvas/styles/tailwind.canvas.css --minify",
     "build:css:chat": "tailwindcss -i ./src/chat/styles/tailwind.chat.css -o ./dist/chat/styles/tailwind.chat.css --minify",
     "build:analyze": "ANALYZE=true pnpm run build",
@@ -183,7 +189,8 @@
     "i18n:extract:watch": "lingui extract --locale en --watch",
     "i18n:compile": "lingui compile",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "build:css:decision-table": "tailwindcss -i ./src/decision-table/styles/tailwind.decision-table.css -o ./dist/decision-table/styles/tailwind.decision-table.css --minify"
+    "build:css:decision-table": "tailwindcss -i ./src/decision-table/styles/tailwind.decision-table.css -o ./dist/decision-table/styles/tailwind.decision-table.css --minify",
+    "build:css:file-viewer": "tailwindcss -i ./src/file-viewer/styles/tailwind.file-viewer.css -o ./dist/file-viewer/styles/tailwind.file-viewer.css --minify"
   },
   "keywords": [
     "design-system",
@@ -198,7 +205,8 @@
   },
   "peerDependencies": {
     "react": ">=18.3.0",
-    "react-dom": ">=18.3.0"
+    "react-dom": ">=18.3.0",
+    "monaco-editor": ">=0.50.0"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -322,6 +330,7 @@
     "glob": "^13.0.0",
     "happy-dom": "^21.0.4",
     "jest-axe": "^10.0.0",
+    "monaco-editor": "^0.55.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "typescript": "^5.9.3",
@@ -329,5 +338,10 @@
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.1.12",
     "webpack-bundle-analyzer": "^5.3.0"
+  },
+  "peerDependenciesMeta": {
+    "monaco-editor": {
+      "optional": true
+    }
   }
 }
