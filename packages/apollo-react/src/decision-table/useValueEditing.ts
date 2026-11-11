@@ -136,10 +136,7 @@ export const useValueEditing = ({
       onCancel: cancel,
       onClear:
         token?.text && isOutcome(rule, target.columnId)
-          ? () => {
-              cancel();
-              clear({ rowId: target.rowId, columnId: target.columnId });
-            }
+          ? () => clear({ rowId: target.rowId, columnId: target.columnId })
           : undefined,
     };
   };
