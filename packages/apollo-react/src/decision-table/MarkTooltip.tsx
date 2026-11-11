@@ -32,19 +32,18 @@ const isOnTooltip = (target: EventTarget | null): boolean =>
 const markedAt = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>(MARKED) : null;
 
-/** A focused element's own mark, else the mark whose announcement describes it. */
-const markedFor = (target: EventTarget | null): HTMLElement | null => {
+/** A focused element's own mark, else the marks whose announcements describe it. */
+const markedFor = (target: EventTarget | null): HTMLElement[] => {
   const own = markedAt(target);
-  if (own || !(target instanceof Element)) return own;
+  if (own || !(target instanceof Element)) return own ? [own] : [];
   const root = target.getRootNode();
   const scope = root instanceof ShadowRoot ? root : document;
   const ids = target.getAttribute('aria-describedby')?.split(' ') ?? [];
-  for (const id of ids) {
-    const badge = markedAt(scope.getElementById(id));
-    if (badge) return badge;
-  }
-  return null;
+  return ids.map((id) => markedAt(scope.getElementById(id))).filter((badge) => badge !== null);
 };
+
+const titlesOf = (badges: readonly HTMLElement[]): string =>
+  [...new Set(badges.flatMap((badge) => badge.dataset.markTitle?.split('\n') ?? []))].join('\n');
 
 export interface MarkTooltipProps {
   /** The view whose marks it shows, and where it renders, so it reads in the view's type. */
@@ -60,11 +59,10 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     if (!section) return;
     let current: HTMLElement | null = null;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
-    const show = (element: HTMLElement | null) => {
+    const show = (element: HTMLElement | null, title = element?.dataset.markTitle) => {
       clearTimeout(hideTimer);
       if (element === current) return;
       current = element;
-      const title = element?.dataset.markTitle;
       if (!element || !title) {
         setShown(null);
         return;
@@ -79,7 +77,10 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       if (marked || !current) show(marked);
       else if (!isOnTooltip(event.target)) hideTimer = setTimeout(hide, HIDE_DELAY_MS);
     };
-    const onFocusIn = (event: FocusEvent) => show(markedFor(event.target));
+    const onFocusIn = (event: FocusEvent) => {
+      const badges = markedFor(event.target);
+      show(badges[0] ?? null, titlesOf(badges));
+    };
     const onFocusOut = (event: FocusEvent) => {
       if (!(event.relatedTarget instanceof Node && section.contains(event.relatedTarget))) hide();
     };

@@ -600,6 +600,26 @@ describe('DecisionText', () => {
       expect(tooltip()).toHaveTextContent('Overlaps row 1');
     });
 
+    it("shows every message a focused rule's marks on several lines describe it with", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+    });
+
     it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
       const host = document.createElement('div');
       document.body.append(host);
