@@ -1,5 +1,4 @@
 import { cn } from '@uipath/apollo-wind';
-import { CELL_MARK_CLASS, ROW_MARK_OVERLAY_CLASS } from './gridStyles';
 import type { MarkTone } from './marks';
 
 export const DECISION_TEXT_FRAME_CLASS = cn(
@@ -25,7 +24,13 @@ export const BAND_CAPTION_CLASS =
 export const BAND_COLUMNS_CLASS =
   'flex min-h-6 min-w-0 items-start gap-1.5 overflow-x-auto whitespace-nowrap focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden';
 
-export const MARKED_CHIP_CLASS = cn(CELL_MARK_CLASS, 'forced-colors:data-[tone]:outline-1');
+export const MARKED_CHIP_CLASS = cn(
+  'group-data-[dim=true]/row:text-foreground-de-emp',
+  'data-[tone=success]:bg-[color-mix(in_srgb,var(--color-success-icon)_10%,var(--color-background))]',
+  'data-[tone=error]:bg-[color-mix(in_srgb,var(--color-error-icon)_10%,var(--color-background))]',
+  'data-[tone=warning]:bg-[color-mix(in_srgb,var(--color-warning-icon)_10%,var(--color-background))]',
+  'forced-colors:data-[tone]:outline-1'
+);
 
 export const BAND_COLUMN_CLASS = cn(
   'inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-border-de-emp bg-background px-2 text-xs leading-4 font-medium text-foreground',
@@ -38,14 +43,13 @@ export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)]';
 
 /** The card border's colour for each grid tone. */
 const CARD_TONE_CLASS = {
-  success: 'group-data-[tone=success]/row:border-success',
-  error: 'group-data-[tone=error]/row:border-error',
-  warning: 'group-data-[tone=warning]/row:border-warning',
+  success: 'group-data-[tone=success]/row:border-success-icon',
+  error: 'group-data-[tone=error]/row:border-error-icon',
+  warning: 'group-data-[tone=warning]/row:border-warning-icon',
 } satisfies Record<MarkTone, string>;
 
 export const ROW_SURFACE_CLASS = cn(
   'relative flex flex-col rounded-lg border-[length:var(--sentence-row-border)] border-border-de-emp bg-background px-3 py-[var(--sentence-row-padding)] text-sm leading-[var(--sentence-line)] text-foreground shadow-sm not-group-data-[tone]/row:hover:border-border',
-  ROW_MARK_OVERLAY_CLASS,
   Object.values(CARD_TONE_CLASS),
   'forced-colors:group-data-[tone]/row:border-s-4',
   'group-data-[dim=true]/row:text-foreground-de-emp'
@@ -78,12 +82,13 @@ export const LINE_VERDICT_CLASS = {
 } as const;
 
 export const MATCHED_LINE_CLASS =
-  'rounded-md data-[matched=true]:bg-[color-mix(in_srgb,var(--color-success-icon)_10%,transparent)] data-[matched=false]:bg-[color-mix(in_srgb,var(--color-error-icon)_10%,transparent)]';
+  'rounded-md [&[data-matched]_[data-tone]]:bg-transparent data-[matched=true]:bg-[color-mix(in_srgb,var(--color-success-icon)_10%,transparent)] data-[matched=false]:bg-[color-mix(in_srgb,var(--color-error-icon)_10%,transparent)]';
 
 export const TOKEN_KIND_CLASS = {
   input:
-    'font-medium text-info-text group-data-[tone]/row:text-[color-mix(in_srgb,var(--color-info-text)_80%,var(--color-foreground))]',
-  output: 'font-medium text-[var(--sentence-output-hue)]',
+    'font-medium text-info-text group-data-[tone]/row:text-[color-mix(in_srgb,var(--color-info-text)_80%,var(--color-foreground))] group-data-[dim=true]/row:text-foreground-de-emp',
+  output:
+    'font-medium text-[var(--sentence-output-hue)] group-data-[dim=true]/row:text-foreground-de-emp',
   value: 'rounded font-medium text-foreground not-data-[tone]:hover:bg-background-hover',
 } as const;
 
