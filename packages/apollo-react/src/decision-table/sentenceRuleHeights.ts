@@ -3,13 +3,9 @@ import type { SentenceRule } from './sentenceTypes';
 
 /** A sentence line's fixed height; every line of a rule is clamped to one. */
 const SENTENCE_LINE_HEIGHT_PX = 24;
-/** A rule card's border width. */
 const SENTENCE_RULE_BORDER_PX = 1;
-/** A rule card's padding above and below its lines. */
 const SENTENCE_RULE_PADDING_PX = 10;
-/** The space between a rule's lead and its condition lines. */
 const SENTENCE_LINES_GAP_PX = 2;
-/** The gap below each rule. */
 const SENTENCE_RULE_GAP_PX = 8;
 /** A rule with no condition lines: its heading and its lead. */
 export const SENTENCE_MIN_RULE_HEIGHT_PX =

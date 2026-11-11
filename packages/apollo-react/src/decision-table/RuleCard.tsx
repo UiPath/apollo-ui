@@ -13,7 +13,6 @@ import {
 } from './sentenceStyles';
 import type { SentenceRule } from './sentenceTypes';
 
-/** A card's strings: its badges' and its lines'. */
 export interface RuleCardLabels extends MarkBadgeLabels, LineTextLabels {}
 
 export interface RuleCardProps {

@@ -27,7 +27,6 @@ const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePa
 const testsInput = (parts: readonly SentencePart[]): boolean =>
   parts.some((part) => typeof part !== 'string' && part.kind === 'input');
 
-/** A line's strings. */
 export interface LineTextLabels {
   /** The count a line shows in place of the values past its limit, e.g. "+9,980 more". */
   moreValues: (count: number) => string;

@@ -9,7 +9,6 @@ const markId = (id: string, index: number): string => `${id}-${index}`;
 export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
   marks.map((_, index) => markId(id, index));
 
-/** A badge's strings. */
 export interface MarkBadgeLabels {
   /** One mark as read aloud, e.g. "Warning: Overlaps row 1"; `message` is absent when the mark has none. */
   markStatus: (tone: GlyphTone, message: string | undefined) => string;

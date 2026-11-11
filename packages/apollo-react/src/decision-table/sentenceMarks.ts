@@ -15,7 +15,6 @@ const SHOWS_GLYPH = { success: false, error: true, warning: true } satisfies Rec
   boolean
 >;
 
-/** The tones a glyph shows. */
 export type GlyphTone = {
   [T in MarkTone]: (typeof SHOWS_GLYPH)[T] extends true ? T : never;
 }[MarkTone];
@@ -23,14 +22,12 @@ export type GlyphTone = {
 /** How severe each glyph tone is; a tone that starts showing a glyph fails to compile here until it is ranked. */
 const SEVERITY = { warning: 1, error: 2 } satisfies Record<GlyphTone, number>;
 
-/** A mark that ends a line with its glyph. */
 export type LineMark = Pick<Mark, 'title'> & { tone: GlyphTone };
 
 const valueColumnIds = (parts: readonly SentencePart[]): string[] => [
   ...new Set(parts.filter(isValue).map((part) => part.columnId)),
 ];
 
-/** Whether a mark shows a glyph. */
 export const isLineMark = (mark: Mark | undefined): mark is Mark & LineMark =>
   mark?.glyph === true && mark.tone !== undefined && SHOWS_GLYPH[mark.tone];
 

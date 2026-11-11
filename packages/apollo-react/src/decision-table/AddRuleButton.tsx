@@ -7,7 +7,6 @@ export interface AddRuleButtonProps {
   onAdd: () => void;
 }
 
-/** The view's add-rule action. */
 export const AddRuleButton: React.FC<AddRuleButtonProps> = ({ label, onAdd }) => (
   <Button variant="outline" size="sm" onClick={onAdd}>
     <Plus aria-hidden />
