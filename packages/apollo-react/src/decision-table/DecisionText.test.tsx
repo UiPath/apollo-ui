@@ -620,6 +620,34 @@ describe('DecisionText', () => {
       expect(tooltip()).toHaveTextContent('Overlaps row 2');
     });
 
+    it('shows every message of a focused rule whose first mark the pointer is on, until Escape', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
+      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
+      if (!first) throw new Error('m1 first badge');
+      fireEvent.pointerOver(first);
+      expect(tooltip()).not.toHaveTextContent('Overlaps row 2');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+      fireEvent.keyDown(card('m1'), { key: 'Escape' });
+      fireEvent.pointerOver(first);
+      expect(tooltip()).toBeNull();
+    });
+
     it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
       const host = document.createElement('div');
       document.body.append(host);

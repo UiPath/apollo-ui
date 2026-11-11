@@ -58,11 +58,15 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     const section = container();
     if (!section) return;
     let current: HTMLElement | null = null;
+    let currentTitle: string | undefined;
+    let dismissed = false;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
     const show = (element: HTMLElement | null, title = element?.dataset.markTitle) => {
       clearTimeout(hideTimer);
-      if (element === current) return;
+      if (element === current && (dismissed || title === currentTitle)) return;
       current = element;
+      currentTitle = title;
+      dismissed = false;
       if (!element || !title) {
         setShown(null);
         return;
@@ -85,7 +89,9 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       if (!(event.relatedTarget instanceof Node && section.contains(event.relatedTarget))) hide();
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setShown(null);
+      if (event.key !== 'Escape') return;
+      dismissed = true;
+      setShown(null);
     };
     section.addEventListener('pointerover', onPointerOver);
     section.addEventListener('pointerleave', hide);
