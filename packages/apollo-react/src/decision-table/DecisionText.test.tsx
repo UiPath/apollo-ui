@@ -41,6 +41,7 @@ import {
   manySentenceRules,
   valueList,
 } from './__fixtures__/sentences.fixtures';
+import { CellTextEditor } from './CellTextEditor';
 import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextEdit, type DecisionTextProps } from './DecisionText';
@@ -1582,6 +1583,49 @@ describe('DecisionText', () => {
     const inPopover = () => within(popover());
     const operatorSelect = () => inPopover().getByRole('combobox', { name: 'Operator' });
     const action = (name: string) => inPopover().getByRole('button', { name });
+
+    const blurCommittingEditor =
+      (reportsDraft: boolean) =>
+      ({ value, ariaLabel, onCommit, onCancel, onDraftChange }: SentenceEditorContext) => (
+        <CellTextEditor
+          value={value}
+          ariaLabel={ariaLabel}
+          dataTestId="host-editor"
+          onCommit={onCommit}
+          onCancel={onCancel}
+          onDraftChange={reportsDraft ? onDraftChange : undefined}
+        />
+      );
+
+    it('cancels from Cancel an expression typed into a host editor that commits on blur', () => {
+      const { onCommit, onCancel } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: blurCommittingEditor(true),
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      const cancel = action('Cancel');
+      act(() => cancel.focus());
+      fireEvent.click(cancel);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('applies once the text a host editor last held, though it reports no draft', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        refuse: true,
+        renderEditor: blurCommittingEditor(false),
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      const apply = action('Apply');
+      act(() => apply.focus());
+      fireEvent.click(apply);
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
 
     it("titles the popover with the column's type glyph and name, over the cell's operator and value", () => {
       renderEditing({ initialEditing: r1Age, valueField: field });

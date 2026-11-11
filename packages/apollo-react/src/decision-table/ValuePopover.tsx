@@ -105,6 +105,9 @@ const isListKey = (key: string): boolean => key === 'ArrowDown' || key === 'Arro
 /** A range's or list's fields that Tab stops on, so Tab past the last or Shift+Tab before the first applies and moves. */
 const FIELD_STOPS = 'input:not([tabindex="-1"]), [role="checkbox"]';
 
+const staysInside = (event: React.FocusEvent<HTMLElement>): boolean =>
+  event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget);
+
 const leavesFields = (event: React.KeyboardEvent<HTMLElement>): boolean => {
   if (event.key === 'Enter') return true;
   if (event.key !== 'Tab') return false;
@@ -134,6 +137,7 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const focusRef = useRef<HTMLElement | null>(null);
   const expressionRef = useRef(false);
   const settledRef = useRef<Settled | null>(null);
+  const blurStaysRef = useRef(false);
   const shapeDraft = useShapeDraft(field, value, expression);
   const { operators, current, complete } = shapeDraft;
   const holdFocus = (element: HTMLElement | null) => {
@@ -180,13 +184,20 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Escape' && !isComposing(event) && !isInList(event.target)) cancel();
   };
+  const onBlurCapture = (event: React.FocusEvent<HTMLElement>) => {
+    blurStaysRef.current = staysInside(event);
+  };
   const onBlur = (event: React.FocusEvent<HTMLElement>) => {
-    const to = event.relatedTarget;
-    if (expressionRef.current || (to instanceof Node && event.currentTarget.contains(to))) return;
+    blurStaysRef.current = false;
+    if (expressionRef.current || staysInside(event)) return;
     const settled = settledRef.current;
     if (settled === 'cancelled' || !complete) return;
     if (settled && sameCommit(settled, current)) return;
     commit(current, 'none');
+  };
+  const commitExpression = (next: string, move: CellCommitMove) => {
+    if (move === 'none' && blurStaysRef.current) setDraft(next);
+    else commit({ values: [next], operator: undefined }, move);
   };
   const editExpression = renderEditor
     ? () => {
@@ -217,14 +228,20 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   ];
 
   return (
-    <div ref={setRoot} className={POPOVER_CLASS} onKeyDown={onKeyDown} onBlur={onBlur}>
+    <div
+      ref={setRoot}
+      className={POPOVER_CLASS}
+      onKeyDown={onKeyDown}
+      onBlurCapture={onBlurCapture}
+      onBlur={onBlur}
+    >
       <PopoverHeader icon={field.icon} column={column} />
       {expression && renderEditor ? (
         renderEditor({
           target,
           value: draft,
           ariaLabel,
-          onCommit: (next, move) => commit({ values: [next], operator: undefined }, move),
+          onCommit: commitExpression,
           onCancel: cancel,
           onDraftChange: setDraft,
         })
