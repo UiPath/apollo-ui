@@ -1,11 +1,24 @@
 import type { GridColumn, GridColumnGroup } from './gridTypes';
 
-/** A column name or a cell value inside a sentence; `columnId` is the input's or output's id. */
-export interface SentenceToken {
+/** A column's name inside a sentence; `columnId` is the input's or output's id. */
+export interface SentenceNameToken {
+  kind: 'input' | 'output';
   columnId: string;
-  kind: 'input' | 'output' | 'value';
+  text: string;
+  /** The decision whose output this input is; set only on an input. */
+  decisionId?: string;
+}
+
+/** A cell's value inside a sentence, and its `index` among the cell's values, 0 for an outcome. */
+export interface SentenceValueToken {
+  kind: 'value';
+  columnId: string;
+  index: number;
   text: string;
 }
+
+/** A column name or a cell value inside a sentence. */
+export type SentenceToken = SentenceNameToken | SentenceValueToken;
 
 /** A translated sentence: text runs and tokens in reading order. */
 export type SentencePart = string | SentenceToken;
@@ -36,6 +49,11 @@ export interface SentenceBand extends Pick<GridColumnGroup, 'id' | 'label'> {
 export interface SentenceCellId {
   rowId: string;
   columnId: string;
+}
+
+/** One value of a cell: the cell, and the value's `index` among the cell's values, 0 for an outcome. */
+export interface SentenceValueId extends SentenceCellId {
+  index: number;
 }
 
 /** A rule, or one of its cells when `columnId` is set. */

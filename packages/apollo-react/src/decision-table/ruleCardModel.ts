@@ -1,11 +1,18 @@
 import type { MarkBadgeProps } from './MarkBadge';
 import { markIds } from './MarkBadge';
 import type { RowMark } from './marks';
-import type { RuleCardLabels } from './RuleCard';
+import type { RemoveConditionButtonProps } from './RemoveConditionButton';
+import type { RuleCardEditLabels, RuleCardLabels } from './RuleCard';
 import { type LineMark, lineMarksOf, type MarkFields, unplacedColumnIds } from './sentenceMarks';
-import { boundedParts, partsText, SENTENCE_LINE_VALUE_LIMIT } from './sentenceParts';
+import {
+  boundedParts,
+  columnNameOf,
+  partsText,
+  SENTENCE_LINE_VALUE_LIMIT,
+  stopTokensOf,
+} from './sentenceParts';
 import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes';
-import type { CellStop } from './TokenChip';
+import type { CellStop, DecisionLink } from './TokenChip';
 
 /** The `RowMark` fields a card paints; a field added to `RowMark` fails to compile here until the card decides on it. */
 const cardMark = (mark: RowMark | undefined) =>
@@ -17,32 +24,25 @@ const cardMark = (mark: RowMark | undefined) =>
     cells: mark?.cells,
   }) satisfies MarkFields<RowMark>;
 
-/** A cell's first value token and the parts of its line. */
+/** A cell's stop token and the parts of its line. */
 interface FirstValue {
   token: SentenceToken;
   parts: readonly SentencePart[];
 }
 
-/** Each cell's first value token and the parts of its line, in reading order. */
+/** Each cell's stop token and the parts of its line, in reading order. */
 export const firstValuesOf = (rule: SentenceRule) => {
+  const stops = new Set(stopTokensOf(rule));
   const first = new Map<string, FirstValue>();
   for (const parts of [rule.heading, rule.lead, ...rule.lines.map((line) => line.parts)]) {
     for (const part of parts) {
-      if (typeof part !== 'string' && part.kind === 'value' && !first.has(part.columnId)) {
+      if (typeof part !== 'string' && stops.has(part) && !first.has(part.columnId)) {
         first.set(part.columnId, { token: part, parts });
       }
     }
   }
   return first;
 };
-
-const isToken = (part: SentencePart): part is SentenceToken => typeof part !== 'string';
-
-/** A column's name as the row words it. */
-const columnNameOf = (rule: SentenceRule, columnId: string): string =>
-  [...rule.heading, ...rule.lead, ...rule.lines.flatMap((line) => line.parts)]
-    .filter(isToken)
-    .find((token) => token.kind !== 'value' && token.columnId === columnId)?.text ?? '';
 
 /** A cell's values as its line shows them, first to last, then the count of those it clamps. */
 const shownValuesOf = (
@@ -54,6 +54,7 @@ const shownValuesOf = (
   const isCell = (part: SentencePart): boolean =>
     typeof part !== 'string' && part.kind === 'value' && part.columnId === columnId;
   const indexes = shown.flatMap((part, index) => (isCell(part) ? [index] : []));
+  if (indexes.length === 0) return '';
   const text = partsText(shown.slice(indexes[0], (indexes.at(-1) ?? 0) + 1), labels.emptyValue);
   const hidden = clamped.reduce(
     (count, run) => (run.hidden.some(isCell) ? count + run.hiddenValues : count),
@@ -82,14 +83,23 @@ interface RuleBadges {
   lines: (MarkBadgeProps | null)[];
 }
 
+/** The clear actions of a card's heading, per outcome with a value, and the remove actions of its lead, per input it words, and of each condition line. */
+export interface RuleRemovals {
+  heading: RemoveConditionButtonProps[];
+  lead: RemoveConditionButtonProps[];
+  lines: (RemoveConditionButtonProps | null)[];
+}
+
 interface RuleCardModelParams {
   rule: SentenceRule;
   position: number;
   numbered: boolean;
   mark: RowMark | undefined;
   selectable: boolean;
+  decisionLinks: boolean;
   idPrefix: string;
   labels: RuleCardLabels;
+  editLabels: RuleCardEditLabels | undefined;
 }
 
 /** What a rule card renders, derived from its rule, its mark and its strings. */
@@ -98,18 +108,38 @@ interface RuleCardModel extends Pick<RowMark, 'tone' | 'dim' | 'title' | 'cells'
   describedBy: string | undefined;
   stops: CellStop[];
   stopOf: (token: SentenceToken) => CellStop | undefined;
+  linkOf: (token: SentenceToken) => DecisionLink | undefined;
   badges: RuleBadges;
+  removals: RuleRemovals;
 }
 
-/** A rule card's stops, names and badges. */
+const filledColumnIds = (parts: readonly SentencePart[]): string[] => [
+  ...new Set(
+    parts.flatMap((part) =>
+      typeof part !== 'string' && part.kind === 'value' && part.text !== '' ? [part.columnId] : []
+    )
+  ),
+];
+
+const inputColumnIds = (parts: readonly SentencePart[]): string[] => [
+  ...new Set(
+    parts.flatMap((part) =>
+      typeof part !== 'string' && part.kind === 'input' ? [part.columnId] : []
+    )
+  ),
+];
+
+/** A rule card's stops, names, badges and remove actions. */
 export const ruleCardModel = ({
   rule,
   position,
   numbered,
   mark,
   selectable,
+  decisionLinks,
   idPrefix,
   labels,
+  editLabels,
 }: RuleCardModelParams): RuleCardModel => {
   const id = `${idPrefix}-${position}`;
   const { tone, dim, title, cells } = cardMark(mark);
@@ -138,6 +168,10 @@ export const ruleCardModel = ({
       badgeFor(`line-${index}`, lineMarksOf(line.parts, cells))
     ),
   };
+  const removalOf = (columnId: string): RemoveConditionButtonProps | null =>
+    editLabels
+      ? { columnId, label: editLabels.removeCondition(columnNameOf(rule, columnId), position) }
+      : null;
   return {
     tone,
     dim,
@@ -156,6 +190,24 @@ export const ruleCardModel = ({
         .join(' ') || undefined,
     stops,
     stopOf: (token) => stopByToken.get(token),
+    linkOf: (token) =>
+      decisionLinks && token.kind === 'input' && token.decisionId !== undefined
+        ? {
+            decisionId: token.decisionId,
+            label: labels.openDecision(token.text),
+            tabbable: !selectable,
+          }
+        : undefined,
     badges,
+    removals: {
+      heading: editLabels
+        ? filledColumnIds(rule.heading).map((columnId) => ({
+            columnId,
+            label: editLabels.clearOutcome(columnNameOf(rule, columnId), position),
+          }))
+        : [],
+      lead: inputColumnIds(rule.lead).flatMap((columnId) => removalOf(columnId) ?? []),
+      lines: rule.lines.map((line) => removalOf(line.columnId)),
+    },
   };
 };

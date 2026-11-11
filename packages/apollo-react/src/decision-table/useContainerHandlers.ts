@@ -1,7 +1,16 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
-import { clickedSelection, type HoveredToken, valueTokenAt } from './sentenceTargets';
-import type { SentenceNavigation } from './useSentenceNavigation';
+import type { DecisionTextProps } from './DecisionText';
+import {
+  clickedDecision,
+  clickedSelection,
+  type HoveredToken,
+  stopDecisionOf,
+  valueTokenAt,
+} from './sentenceTargets';
+import type { RuleMenus } from './useRuleMenus';
+import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
+import type { ValueEditing } from './useValueEditing';
 
 export type ContainerProps = React.HTMLAttributes<HTMLElement> &
   Record<`data-${string}`, string | undefined>;
@@ -10,6 +19,9 @@ export interface ContainerHandlersParams {
   containerProps: ContainerProps | undefined;
   hoverTo: (next: HoveredToken | null) => void;
   navigation: SentenceNavigation;
+  valueEditing: ValueEditing;
+  ruleMenus: RuleMenus;
+  onOpenDecision: DecisionTextProps['onOpenDecision'];
   container: () => HTMLElement | null;
 }
 
@@ -18,6 +30,9 @@ export const useContainerHandlers = ({
   containerProps,
   hoverTo,
   navigation,
+  valueEditing,
+  ruleMenus,
+  onOpenDecision,
   container,
 }: ContainerHandlersParams) => {
   const focusWithinRef = useRef(false);
@@ -48,8 +63,19 @@ export const useContainerHandlers = ({
     }
     consumerPointerOut?.(event);
   };
+  const openDecision = (event: React.SyntheticEvent, decisionId: string | undefined): boolean => {
+    if (!onOpenDecision || decisionId === undefined) return false;
+    event.preventDefault();
+    onOpenDecision(decisionId);
+    return true;
+  };
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (!navigation.onKeyDown(event)) {
+    const opened =
+      event.key === 'Enter' &&
+      event.altKey &&
+      !isIgnoredKey(event) &&
+      openDecision(event, stopDecisionOf(event.target));
+    if (!opened && !valueEditing.onKeyDown(event) && !navigation.onKeyDown(event)) {
       consumerKeyDown?.(event);
     }
   };
@@ -67,7 +93,11 @@ export const useContainerHandlers = ({
     consumerBlur?.(event);
   };
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
-    const selection = clickedSelection(event.target);
+    const claimed =
+      openDecision(event, clickedDecision(event.target)) ||
+      ruleMenus.onClick(event) ||
+      valueEditing.onClick(event);
+    const selection = claimed ? null : clickedSelection(event.target);
     if (selection) {
       navigation.select(selection);
     }

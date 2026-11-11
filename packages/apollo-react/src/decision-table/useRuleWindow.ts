@@ -6,6 +6,11 @@ import { useVirtualizedAxis } from './useVirtualizedAxis';
 
 const SENTENCE_RULE_OVERSCAN = 10;
 
+const rowIndexOf = (rules: readonly SentenceRule[], rowId: string | undefined): number | null => {
+  const index = rules.findIndex((rule) => rule.rowId === rowId);
+  return index < 0 ? null : index;
+};
+
 const NO_HEIGHTS: ReadonlyMap<string, number> = new Map();
 
 /** `current` with each resized card's height by its row id; the same map when none changed. */
@@ -25,10 +30,11 @@ const measuredHeights = (
   return next ?? current;
 };
 
-/** The window of rules the list mounts, kept on the selected rule, and the scrolls that reveal a rule or a stop. */
+/** The window of rules the list mounts, kept on the retained rule, and the scrolls that reveal a rule or a stop. */
 export const useRuleWindow = (
   rules: readonly SentenceRule[],
-  selectedRowId: string | undefined
+  selectedRowId: string | undefined,
+  retainedRowId: string | undefined
 ) => {
   const listRef = useRef<HTMLUListElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -37,14 +43,12 @@ export const useRuleWindow = (
   const headerHeight = useCallback(() => headerRef.current?.offsetHeight ?? 0, []);
   const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(NO_HEIGHTS);
   const offsetsPx = useMemo(() => sentenceRuleOffsets(rules, measured), [rules, measured]);
-  const selectedRow = useMemo(() => {
-    const index = rules.findIndex((rule) => rule.rowId === selectedRowId);
-    return index < 0 ? null : index;
-  }, [rules, selectedRowId]);
+  const selectedRow = useMemo(() => rowIndexOf(rules, selectedRowId), [rules, selectedRowId]);
+  const retainedRow = useMemo(() => rowIndexOf(rules, retainedRowId), [rules, retainedRowId]);
   const { segments, measureRef, scrollItemIntoView } = useVirtualizedAxis(
     rules.length,
     SENTENCE_MIN_RULE_HEIGHT_PX,
-    selectedRow,
+    retainedRow,
     {
       axis: 'vertical',
       overscanItems: SENTENCE_RULE_OVERSCAN,

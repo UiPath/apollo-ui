@@ -24,6 +24,7 @@ const SEVERITY = { warning: 1, error: 2 } satisfies Record<GlyphTone, number>;
 
 export type LineMark = Pick<Mark, 'title'> & { tone: GlyphTone };
 
+/** The columns of a line's value tokens, once each, in reading order. */
 const valueColumnIds = (parts: readonly SentencePart[]): string[] => [
   ...new Set(parts.filter(isValue).map((part) => part.columnId)),
 ];
