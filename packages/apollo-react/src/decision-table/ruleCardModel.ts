@@ -84,7 +84,7 @@ interface RuleBadges {
 }
 
 /** The clear actions of a card's heading, per outcome with a value, and the remove actions of its lead, per input it words, and of each condition line. */
-export interface RuleRemovals {
+interface RuleRemovals {
   heading: RemoveConditionButtonProps[];
   lead: RemoveConditionButtonProps[];
   lines: (RemoveConditionButtonProps | null)[];
