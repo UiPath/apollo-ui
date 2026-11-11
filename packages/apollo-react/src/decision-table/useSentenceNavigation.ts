@@ -116,6 +116,16 @@ const stopOf = (container: HTMLElement, selection: SentenceSelection): HTMLEleme
   return card && selection.columnId !== undefined ? cellOf(card, selection.columnId) : card;
 };
 
+const movedStopOf = (
+  element: HTMLElement | null,
+  current: SentenceSelection | null
+): HTMLElement | undefined => {
+  const cell = element && current?.columnId !== undefined ? stopOf(element, current) : undefined;
+  const addRule = element?.querySelector<HTMLElement>('[data-add-rule]');
+  const focusedAddRule = addRule?.contains(document.activeElement) ? addRule : undefined;
+  return cell ?? focusedAddRule;
+};
+
 interface SentenceNavigationSource {
   rules: readonly SentenceRule[];
   selected: SentenceSelection | null | undefined;
@@ -187,12 +197,7 @@ export const useSentenceNavigation = ({
     if (pending !== undefined && sameSelection(pending, current)) {
       focusCurrent();
     } else if (moved && selectedRow !== null) {
-      const element = container();
-      const cell =
-        element && current?.columnId !== undefined ? stopOf(element, current) : undefined;
-      const addRule = element?.querySelector<HTMLElement>('[data-add-rule]');
-      const focusedAddRule = addRule?.contains(document.activeElement) ? addRule : undefined;
-      const stop = cell ?? focusedAddRule;
+      const stop = movedStopOf(container(), current);
       if (stop) scrollStopIntoView(selectedRow, stop);
       else scrollRowIntoView(selectedRow);
     }
