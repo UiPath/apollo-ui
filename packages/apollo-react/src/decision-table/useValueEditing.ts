@@ -128,8 +128,8 @@ export const useValueEditing = ({
         : edit.labels.newCondition(column, row + 1),
       column,
       field,
-      onCommit: (commit, move, refocus) => {
-        const whole = field.values !== undefined || commit.values.length > 1;
+      onCommit: (commit, move, refocus, expression) => {
+        const whole = expression || field.values !== undefined || commit.values.length > 1;
         pendingRef.current = { from: target, move, rules, refocus, whole };
         edit.onCommit(target, commit, move);
       },

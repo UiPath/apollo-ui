@@ -75,8 +75,13 @@ export interface ValuePopoverProps
   extends Pick<SentenceEditorContext, 'target' | 'value' | 'ariaLabel' | 'onCancel'> {
   column: string;
   field: ValueField;
-  /** The commit's operator is the picked one of the field's, undefined without operators or from the expression editor; `refocus` when focus was inside the popover, so an in-place commit returns it to the value. */
-  onCommit: (commit: ValueCommit, move: CellCommitMove, refocus: boolean) => void;
+  /** The commit's operator is the picked one of the field's, undefined without operators or from the expression editor; `refocus` when focus was inside the popover, so an in-place commit returns it to the value; `expression` when the expression editor made it, so it is the whole condition. */
+  onCommit: (
+    commit: ValueCommit,
+    move: CellCommitMove,
+    refocus: boolean,
+    expression: boolean
+  ) => void;
   /** The operator the select picks, before it commits. */
   onOperatorChange: (id: string) => void;
   /** Empties an outcome; undefined for a condition or an empty outcome. */
@@ -147,7 +152,7 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
 
   const commit = (next: ValueCommit, move: CellCommitMove) => {
     settledRef.current = next;
-    onCommit(next, move, root?.contains(activeElementOf(root)) ?? false);
+    onCommit(next, move, root?.contains(activeElementOf(root)) ?? false, expressionRef.current);
   };
   const cancel = () => {
     if (settledRef.current === 'cancelled') return;

@@ -1740,6 +1740,22 @@ describe('DecisionText', () => {
       ]);
     });
 
+    it("leaves the cell on Shift+Tab from an expression a host editor submits for a cell's later value", () => {
+      const { onStartEdit, onCommit } = renderEditing({
+        initial: { rowId: 'r2', columnId: 'age' },
+        initialEditing: r2Age(1),
+        renderEditor: blurCommittingEditor(true),
+      });
+      fireEvent.click(action('Edit expression'));
+      const input = screen.getByTestId('host-editor');
+      fireEvent.change(input, { target: { value: '> limit' } });
+      fireEvent.keyDown(input, { key: 'Tab', shiftKey: true });
+      expect(onCommit.mock.calls).toEqual([[r2Age(1), '> limit', 'left']]);
+      expect(onStartEdit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      expect(focusedStop()).not.toBe('r2:age');
+    });
+
     it('applies an expression a host editor held as focus moved to the footer, once focus leaves from there', () => {
       const renderEditor = ({ value, ariaLabel, onCommit }: SentenceEditorContext) => (
         <textarea
