@@ -37,6 +37,7 @@ import '@uipath/apollo-react/canvas/styles/tailwind.canvas.css';
 import '@uipath/apollo-react/canvas/xyflow/style.css';
 import '@uipath/apollo-react/chat/styles/tailwind.chat.css';
 import '@uipath/apollo-react/decision-table/styles/tailwind.decision-table.css';
+import '@uipath/apollo-react/file-viewer/styles/tailwind.file-viewer.css';
 
 // Wind: fonts via the same subpath consumers use, plus source Tailwind CSS
 // (processed by PostCSS/Tailwind at dev time)

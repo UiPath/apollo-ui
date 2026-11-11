@@ -818,6 +818,9 @@ importers:
       jest-axe:
         specifier: ^10.0.0
         version: 10.0.0
+      monaco-editor:
+        specifier: ^0.55.1
+        version: 0.55.1
       react:
         specifier: 19.2.3
         version: 19.2.3

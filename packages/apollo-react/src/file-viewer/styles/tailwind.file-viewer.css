@@ -1,0 +1,19 @@
+/**
+ * File-viewer-specific Tailwind CSS
+ *
+ * Pre-compiles only the Tailwind utility classes the file viewer and its apollo-wind
+ * dependencies use. The build emits the compiled result to
+ * `dist/file-viewer/styles/tailwind.file-viewer.css`, and that is what consumers import —
+ * this source entry is an input to our build, never to theirs. The globs cover the monorepo's
+ * .ts/.tsx source and the published .js/.cjs output alike, so the same file compiles from either.
+ */
+
+@import "@uipath/apollo-wind/tailwind.css";
+
+/* Scan the component's source (or its compiled dist, next to this file's published copy) */
+@source "../**/*.{ts,tsx,js,cjs}";
+@source not "../**/*.stories.{ts,tsx}";
+@source not "../**/*.test.{ts,tsx}";
+
+/* Scan apollo-wind compiled components for CVA class strings */
+@source "../../../node_modules/@uipath/apollo-wind/dist/**/*.js";
