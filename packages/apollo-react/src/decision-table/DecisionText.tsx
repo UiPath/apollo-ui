@@ -166,6 +166,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     onSelect,
     navigation,
     labels,
+    container: ruleWindow.container,
   });
   const ruleMenus = useRuleMenus({
     edit,

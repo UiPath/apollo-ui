@@ -1617,6 +1617,21 @@ describe('DecisionText', () => {
       expect(card(cell.rowId)).toHaveAttribute('tabindex', '0');
     });
 
+    it('keeps focus on the rule after Delete removes its lead condition in a shadow root', () => {
+      const host = document.body.appendChild(document.createElement('div'));
+      const shadow = host.attachShadow({ mode: 'open' });
+      const container = shadow.appendChild(document.createElement('div'));
+      render(<TableHost initial={{ rowId: 'r1', columnId: 'age' }} />, { container });
+      const row = within(container).getByTestId('nl-row-r1');
+      const age = row.querySelector<HTMLElement>('[data-kind="value"][data-column-id="age"]');
+      if (!age) throw new Error('no age value in r1');
+      act(() => age.focus());
+      fireEvent.keyDown(age, { key: 'Delete' });
+      expect(row.querySelector('[data-column-id="age"]')).toBeNull();
+      expect(shadow.activeElement).toBe(row);
+      host.remove();
+    });
+
     it.each<[string, SentenceCellId, KeyboardEventInit, string]>([
       ['Enter to the next rule', { rowId: 'r1', columnId: 'age' }, { key: 'Enter' }, 'r2:age'],
       ['Tab to the next cell', { rowId: 'r1', columnId: 'age' }, { key: 'Tab' }, 'r1:income'],

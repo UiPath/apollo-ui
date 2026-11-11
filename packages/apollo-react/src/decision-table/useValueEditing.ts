@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useLayoutEffect, useRef } from 'react';
 import type { DecisionTextEdit, DecisionTextLabels } from './DecisionText';
+import { activeElementOf } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import {
   bandColumnNameOf,
@@ -28,6 +29,7 @@ export interface ValueEditingParams {
   onSelect: ((selection: SentenceSelection | null) => void) | undefined;
   navigation: SentenceNavigation;
   labels: DecisionTextLabels;
+  container: () => HTMLElement | null;
 }
 
 /** How the open editor was last settled, resolved once the host closes it. */
@@ -81,6 +83,7 @@ export const useValueEditing = ({
   onSelect,
   navigation,
   labels,
+  container,
 }: ValueEditingParams): ValueEditing => {
   const pendingRef = useRef<PendingSettle | null>(null);
   const pressedRef = useRef<Pressed | null>(null);
@@ -149,7 +152,7 @@ export const useValueEditing = ({
   useLayoutEffect(() => {
     const rowId = refocusRef.current;
     refocusRef.current = null;
-    const focused = document.activeElement;
+    const focused = activeElementOf(container() ?? document);
     if (rowId === null || !(focused instanceof HTMLElement)) return;
     if (
       focused === document.body ||
