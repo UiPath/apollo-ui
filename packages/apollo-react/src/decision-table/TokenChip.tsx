@@ -7,6 +7,7 @@ import {
   EMPTY_OUTPUT_VALUE_CLASS,
   MARKED_CHIP_CLASS,
   OUTPUT_VALUE_CLASS,
+  SELECTED_CHIP_CLASS,
   TOKEN_KIND_CLASS,
 } from './sentenceStyles';
 import type { SentenceToken } from './sentenceTypes';
@@ -26,19 +27,37 @@ const tokenClass = (token: SentenceToken, output: boolean): string => {
   return token.text === '' ? EMPTY_OUTPUT_VALUE_CLASS : OUTPUT_VALUE_CLASS;
 };
 
+/** A cell's keyboard stop: its first value token, named by the hidden label `labelId`. */
+export interface CellStop {
+  token: SentenceToken;
+  labelId: string;
+  label: string;
+}
+
 export interface TokenChipProps {
   token: SentenceToken;
   mark: Mark | undefined;
   output: boolean;
+  selected: boolean;
+  stop: CellStop | undefined;
 }
 
 /** One token of a line, painted by its cell's mark. */
-export const TokenChip: React.FC<TokenChipProps> = ({ token, mark, output }) => {
+export const TokenChip: React.FC<TokenChipProps> = ({ token, mark, output, selected, stop }) => {
   const isValue = token.kind === 'value';
   const { tone, title, matched } = chipMark(mark);
   return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: a stop's span is a button whenever it has a label
     <span
-      className={cn(tokenClass(token, output), isValue && MARKED_CHIP_CLASS)}
+      className={cn(
+        tokenClass(token, output),
+        isValue && MARKED_CHIP_CLASS,
+        isValue && SELECTED_CHIP_CLASS
+      )}
+      role={stop && 'button'}
+      tabIndex={stop && (selected ? 0 : -1)}
+      aria-labelledby={stop?.labelId}
+      data-selected={selected || undefined}
       data-kind={token.kind}
       data-column-id={token.columnId}
       data-tone={tone}

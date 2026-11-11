@@ -11,10 +11,16 @@ import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
-import type { SentenceBand, SentenceCellId, SentenceRule } from './sentenceTypes';
+import type {
+  SentenceBand,
+  SentenceCellId,
+  SentenceRule,
+  SentenceSelection,
+} from './sentenceTypes';
 import { useCellHover } from './useCellHover';
 import { type ContainerProps, useContainerHandlers } from './useContainerHandlers';
 import { useRuleWindow } from './useRuleWindow';
+import { useSentenceNavigation } from './useSentenceNavigation';
 
 /** The view's own strings; the consumer passes localized values. */
 export interface DecisionTextLabels extends RuleCardLabels {
@@ -33,6 +39,10 @@ export interface DecisionTextProps {
   addRule?: AddRuleButtonProps;
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
   onCellHover?: (cell: SentenceCellId | null) => void;
+  /** The selected rule or cell, as the grid's `selected` is controlled; one whose row is gone shows nothing selected. */
+  selected?: SentenceSelection | null;
+  /** A click or key asks for this selection, or null on Escape; without it the view claims no key. */
+  onSelect?: (selection: SentenceSelection | null) => void;
   /** The view's own strings; mounted rules re-render when it changes, so memoize it. */
   labels: DecisionTextLabels;
   /** Accessible name of the scroll region. */
@@ -52,6 +62,8 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   marks = EMPTY_MARKS,
   addRule,
   onCellHover,
+  selected,
+  onSelect,
   labels,
   ariaLabel,
   containerProps,
@@ -60,13 +72,20 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const idPrefix = useId();
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
-  const { listRef, segments, measureRef } = useRuleWindow(rules);
-  const sectionProps = useContainerHandlers({ containerProps, hoverTo });
+  const ruleWindow = useRuleWindow(rules, selected?.rowId);
+  const selectable = onSelect !== undefined;
+  const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
+  const sectionProps = useContainerHandlers({
+    containerProps,
+    hoverTo,
+    navigation,
+    container: ruleWindow.container,
+  });
   const listStyle = sentenceListStyle(numbered, rules.length);
 
   return (
     <section
-      ref={measureRef}
+      ref={ruleWindow.attachSection}
       aria-label={ariaLabel}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be reachable by keyboard
       tabIndex={0}
@@ -74,7 +93,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
       data-testid={dataTestId}
       {...sectionProps}
     >
-      <DecisionTextHeader header={header} dataTestId={dataTestId} />
+      <DecisionTextHeader ref={ruleWindow.headerRef} header={header} dataTestId={dataTestId} />
       {bands.length > 0 && (
         <SentenceBands
           bands={bands}
@@ -89,11 +108,14 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         <EmptyRules title={labels.emptyRules} addRule={addRule} dataTestId={dataTestId} />
       ) : (
         <RuleList
-          ref={listRef}
+          ref={ruleWindow.listRef}
           rules={rules}
-          segments={segments}
+          segments={ruleWindow.segments}
           numbered={numbered}
           marks={rowMarks}
+          selectedRow={ruleWindow.selectedRow}
+          selectedColumnId={navigation.selectedColumnId}
+          selectable={selectable}
           style={listStyle}
           idPrefix={idPrefix}
           dataTestId={dataTestId}

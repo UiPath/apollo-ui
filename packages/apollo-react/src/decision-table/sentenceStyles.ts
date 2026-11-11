@@ -39,7 +39,15 @@ export const BAND_COLUMN_CLASS = cn(
 
 export const EMPTY_STATE_CLASS = 'rounded-lg border border-dashed border-border bg-background p-8';
 
-export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)]';
+export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)] focus-visible:outline-none';
+
+/** A selected stop's ring: an inset outline, so it never moves a line and forced colors keep it. */
+const STOP_RING_CLASS = '-outline-offset-2 outline-primary';
+
+export const SELECTED_CHIP_CLASS = cn(
+  STOP_RING_CLASS,
+  'data-[selected=true]:outline-2 focus-visible:outline-2 forced-colors:data-[tone]:data-[selected=true]:outline-2'
+);
 
 /** The card border's colour for each grid tone. */
 const CARD_TONE_CLASS = {
@@ -52,7 +60,9 @@ export const ROW_SURFACE_CLASS = cn(
   'relative flex flex-col rounded-lg border-[length:var(--sentence-row-border)] border-border-de-emp bg-background px-3 py-[var(--sentence-row-padding)] text-sm leading-[var(--sentence-line)] text-foreground shadow-sm not-group-data-[tone]/row:hover:border-border',
   Object.values(CARD_TONE_CLASS),
   'forced-colors:group-data-[tone]/row:border-s-4',
-  'group-data-[dim=true]/row:text-foreground-de-emp'
+  'group-data-[dim=true]/row:text-foreground-de-emp',
+  STOP_RING_CLASS,
+  'data-[selected=true]:outline-2 group-focus-visible/row:outline-2'
 );
 
 export const ROW_NUMBER_CLASS =
@@ -95,7 +105,7 @@ export const TOKEN_KIND_CLASS = {
 export const OUTPUT_VALUE_CLASS =
   'inline-flex items-center rounded-md border border-[color-mix(in_srgb,var(--sentence-output-hue)_35%,transparent)] bg-[color-mix(in_srgb,var(--sentence-output-hue)_8%,var(--color-background))] px-1.5 text-sm leading-[20px] font-medium text-[var(--sentence-output-hue)] hover:border-[var(--sentence-output-hue)]';
 
-export const EMPTY_OUTPUT_VALUE_CLASS = 'italic text-foreground-de-emp';
+export const EMPTY_OUTPUT_VALUE_CLASS = '-mx-1 px-1 py-0.5 italic text-foreground-de-emp';
 
 export const LINE_MARK_CLASS = 'inline-flex shrink-0 items-center';
 

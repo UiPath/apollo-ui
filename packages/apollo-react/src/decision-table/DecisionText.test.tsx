@@ -1,5 +1,6 @@
 import { act, fireEvent, type RenderResult, render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
+import { useState } from 'react';
 import { vi } from 'vitest';
 import {
   CHANNEL,
@@ -7,18 +8,23 @@ import {
   channel,
   country,
   DECISION_TEXT_LABELS,
+  GRID_SENTENCE_BANDS,
+  GRID_SENTENCE_HEADER,
+  GRID_SENTENCE_RULES,
+  longValueListRule,
   MULTI_SENTENCE_BANDS,
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_RULES,
   manyColumnBands,
+  manyLinesRule,
   manySentenceRules,
   valueList,
 } from './__fixtures__/sentences.fixtures';
-import { EMPTY_VALUE_DASH } from './constants';
+import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
-import type { SentenceRule, SentenceToken } from './sentenceTypes';
+import type { SentenceRule, SentenceSelection, SentenceToken } from './sentenceTypes';
 
 const view = (props: Partial<DecisionTextProps> = {}) => (
   <DecisionText
@@ -34,6 +40,7 @@ const view = (props: Partial<DecisionTextProps> = {}) => (
 const renderView = (props: Partial<DecisionTextProps> = {}) => render(view(props));
 
 const card = (rowId: string) => screen.getByTestId(`nl-row-${rowId}`);
+const ruleLine = (rowId: string, index: 0 | 1) => card(rowId).firstElementChild?.children[index];
 const mountedRows = () => [...document.querySelectorAll<HTMLElement>('li[data-row-id]')];
 const rowMarks = (rows: Record<string, RowMark>): TableMarks => ({
   rows: new Map(Object.entries(rows)),
@@ -51,6 +58,57 @@ const scrollTo = (px: number) => {
   frame.scrollTop = px;
   fireEvent.scroll(frame);
 };
+
+interface SelectableProps extends Partial<DecisionTextProps> {
+  initial?: SentenceSelection | null;
+}
+
+const Selectable = ({ initial = null, onSelect, ...props }: SelectableProps) => {
+  const [selected, setSelected] = useState(initial);
+  return view({
+    rules: GRID_SENTENCE_RULES,
+    bands: GRID_SENTENCE_BANDS,
+    header: GRID_SENTENCE_HEADER,
+    ...props,
+    selected,
+    onSelect: (next) => {
+      onSelect?.(next);
+      setSelected(next);
+    },
+  });
+};
+const renderSelectable = (props: SelectableProps = {}) => {
+  const onSelect = vi.fn();
+  const rendered = render(<Selectable onSelect={onSelect} {...props} />);
+  return { onSelect, ...rendered };
+};
+/** Presses a key where focus is, returning whether the view left it unclaimed. */
+const press = (key: string, init: KeyboardEventInit = {}) =>
+  fireEvent.keyDown(document.activeElement ?? document.body, { key, ...init });
+/** The focused stop as `row` (a rule) or `row:column` (a cell), else the focused element's testid. */
+const focusedStop = () => {
+  const element = document.activeElement;
+  if (!(element instanceof HTMLElement)) return null;
+  const rowId = element.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId;
+  if (element.dataset.kind === 'value') return `${rowId}:${element.dataset.columnId}`;
+  return element.dataset.rowId ?? element.dataset.testid ?? element.tagName;
+};
+const walk = (...keys: string[]) =>
+  keys.map((key) => {
+    press(key);
+    return focusedStop();
+  });
+const rect = (left: number, right: number): DOMRect => ({
+  left,
+  right,
+  x: left,
+  width: right - left,
+  top: 0,
+  bottom: 24,
+  y: 0,
+  height: 24,
+  toJSON: () => ({}),
+});
 
 describe('DecisionText', () => {
   describe('layout', () => {
@@ -80,10 +138,10 @@ describe('DecisionText', () => {
         ['start', 'Start Date is 2026-01-01'],
         ['channel', 'Channel is "web"'],
       ]);
-      expect(row.querySelector('[id$="-heading"]')?.textContent).toBe(
+      expect(ruleLine('m1', 0)?.textContent).toBe(
         'Decision is "approve" · Credit Limit is 25000 · Reason is "prime"'
       );
-      expect(row.querySelector('[id$="-lead"]')?.textContent).toBe('when all of these are true:');
+      expect(ruleLine('m1', 1)?.textContent).toBe('when all of these are true:');
     });
 
     it('words a row without lines in its lead alone', () => {
@@ -117,6 +175,51 @@ describe('DecisionText', () => {
       const { container } = renderView();
       expect(screen.getByRole('region', { name: 'Rules' })).toBe(screen.getByTestId('nl'));
       expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it.each<[string, SentenceSelection | undefined]>([
+      ['nothing', undefined],
+      ['a rule', { rowId: 'r1' }],
+      ['a cell', { rowId: 'r2', columnId: 'age' }],
+    ])('stays read-only without onSelect with %s selected', (_, selected) => {
+      renderView({
+        rules: GRID_SENTENCE_RULES,
+        bands: GRID_SENTENCE_BANDS,
+        header: GRID_SENTENCE_HEADER,
+        selected,
+      });
+      const count = (selector: string) => document.querySelectorAll(selector).length;
+      expect({
+        buttons: screen.queryAllByRole('button').length,
+        valuesWithTabindex: count('[data-kind="value"][tabindex]'),
+        valuesWithLabel: count('[data-kind="value"][aria-labelledby]'),
+        rulesWithTabindex: count('li[data-row-id][tabindex]'),
+        hiddenStopLabels: count('li[data-row-id] [hidden]'),
+        painted: count('[data-selected]') > 0,
+      }).toEqual({
+        buttons: 0,
+        valuesWithTabindex: 0,
+        valuesWithLabel: 0,
+        rulesWithTabindex: 0,
+        hiddenStopLabels: 0,
+        painted: selected !== undefined,
+      });
+      expect([...document.querySelectorAll('[tabindex]')]).toEqual([
+        screen.getByTestId('nl'),
+        ...screen.getAllByRole('list', { name: /Inputs|Outputs/ }),
+      ]);
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      vi.spyOn(card('r1'), 'getBoundingClientRect').mockReturnValue({
+        ...rect(0, 400),
+        top: 20,
+        bottom: 370,
+      });
+      fireEvent.click(within(card('r1')).getByText('when'));
+      fireEvent.click(valueChip('r1', 'age'));
+      expect([frame.scrollTop, document.activeElement]).toEqual([0, document.body]);
+      act(() => frame.focus());
+      expect([press('ArrowDown'), press('Escape'), press('Tab')]).toEqual([true, true, true]);
     });
   });
 
@@ -240,8 +343,8 @@ describe('DecisionText', () => {
           },
         }),
       });
-      const heading = card('m3').querySelector('[id$="-heading"]')?.parentElement;
-      const lead = card('m3').querySelector('[id$="-lead"]')?.parentElement;
+      const heading = ruleLine('m3', 0);
+      const lead = ruleLine('m3', 1);
       expect(heading?.querySelector('[data-glyph="error"]')?.parentElement).toHaveAttribute(
         'data-mark-title',
         'Not a number'
@@ -408,10 +511,9 @@ describe('DecisionText', () => {
           },
         ],
       });
-      const lead = card('m1').querySelector<HTMLElement>('[id$="-lead"]');
-      const leadLine = lead?.parentElement;
+      const leadLine = ruleLine('m1', 1);
       expect(leadLine?.querySelectorAll('[data-kind="value"]')).toHaveLength(41);
-      expect(lead?.textContent).toMatch(
+      expect(leadLine?.textContent).toMatch(
         /"C20"\+9,980 more and Channel is one of "K1", .*"K20"\+1 more and Age is greater than 18$/
       );
       const counts = [...(leadLine?.querySelectorAll<HTMLElement>('[data-more-values]') ?? [])];
@@ -435,8 +537,8 @@ describe('DecisionText', () => {
 
     it('shows a clamped line in full as its title on hover, as a grid cell does', () => {
       renderView();
-      const text = card('m3').querySelector<HTMLElement>('[id$="-lead"]');
-      if (!text) throw new Error('lead');
+      const text = ruleLine('m3', 1)?.firstElementChild;
+      if (!(text instanceof HTMLElement)) throw new Error('lead');
       Object.defineProperty(text, 'scrollWidth', { value: 500 });
       Object.defineProperty(text, 'clientWidth', { value: 200 });
       fireEvent.mouseEnter(text);
@@ -449,6 +551,416 @@ describe('DecisionText', () => {
       expect(within(inputs).getAllByRole('listitem')).toHaveLength(50);
       expect(inputs).toHaveAttribute('tabindex', '0');
       expect(inputs.previousElementSibling).toHaveAttribute('aria-hidden', 'true');
+    });
+  });
+  describe('selection', () => {
+    it('selects a value token by its cell, paints every value of it and focuses the first', () => {
+      const { onSelect } = renderSelectable();
+      const [first, second] = card('r2').querySelectorAll<HTMLElement>(
+        '[data-kind="value"][data-column-id="age"]'
+      );
+      if (!first || !second) throw new Error('age values');
+      fireEvent.click(second, { shiftKey: true });
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(document.activeElement).toBe(first);
+      expect([first, second].map((chip) => chip.dataset.selected)).toEqual(['true', 'true']);
+      expect(valueChip('r2', 'income')).not.toHaveAttribute('data-selected');
+    });
+
+    it('selects the rule from a name token, an operator word or the row number', () => {
+      const { onSelect } = renderSelectable({ numbered: true });
+      const name = card('r2').querySelector('[data-kind="input"]');
+      const word = within(card('r1')).getByText('when');
+      const number = within(card('r3')).getByText('3');
+      if (!name) throw new Error('name token');
+      for (const target of [name, word, number]) fireEvent.click(target);
+      expect(onSelect.mock.calls).toEqual([
+        [{ rowId: 'r2' }],
+        [{ rowId: 'r1' }],
+        [{ rowId: 'r3' }],
+      ]);
+      expect(focusedStop()).toBe('r3');
+    });
+
+    it('selects nothing from the header or a band column', () => {
+      const { onSelect } = renderSelectable();
+      fireEvent.click(screen.getByTestId('nl-header'));
+      fireEvent.click(within(screen.getByTestId('nl-bands')).getByText('income'));
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it("selects the clamped run's cell when its count is clicked", () => {
+      const { onSelect } = renderSelectable({ rules: [longValueListRule(10_000)] });
+      const more = card('long-list').querySelector<HTMLElement>('[data-more-values]');
+      if (!more) throw new Error('count');
+      fireEvent.click(more);
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'long-list', columnId: 'country' }]]);
+      expect(focusedStop()).toBe('long-list:country');
+      expect(more).toHaveAttribute('data-selected', 'true');
+      expect(more).not.toHaveAttribute('tabindex');
+    });
+
+    it("paints and tab-stops the host's selection without taking focus", () => {
+      renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const stops = document.querySelectorAll('li[data-row-id][tabindex="0"], li [tabindex="0"]');
+      expect([...stops]).toEqual([valueChip('r2', 'age')]);
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it.each<[string, SentenceSelection, string | null]>([
+      ['a rule', { rowId: 'r2' }, 'r2'],
+      ['a cell its row has no token for, as its rule', { rowId: 'r3', columnId: 'income' }, 'r3'],
+      ['a row that is gone, as nothing', { rowId: 'gone' }, null],
+    ])('paints and tab-stops the selection of %s', (_, initial, rowId) => {
+      renderSelectable({ initial });
+      const rows = rowId === null ? [] : [card(rowId)];
+      const stops = document.querySelectorAll('li[data-row-id][tabindex="0"], li [tabindex="0"]');
+      expect([...stops]).toEqual(rows);
+      expect([...document.querySelectorAll('[data-selected]')]).toEqual(
+        rows.map((row) => row.firstElementChild)
+      );
+    });
+
+    it('follows a selection the host changes', () => {
+      const onSelect = vi.fn();
+      const { rerender } = render(
+        view({ rules: GRID_SENTENCE_RULES, selected: { rowId: 'r1' }, onSelect })
+      );
+      rerender(
+        view({ rules: GRID_SENTENCE_RULES, selected: { rowId: 'r3', columnId: 'risk' }, onSelect })
+      );
+      expect(card('r1')).toHaveAttribute('tabindex', '-1');
+      expect(valueChip('r3', 'risk')).toHaveAttribute('tabindex', '0');
+    });
+
+    it('names each cell stop as a button by its column, values and row', () => {
+      renderSelectable();
+      expect(valueChip('r2', 'age')).toHaveAttribute('role', 'button');
+      expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60, rule 2');
+      expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
+        '"high"',
+        '25',
+        '40000',
+        '"standard"',
+        '25',
+        '40000',
+        '"review"',
+        '60',
+      ]);
+      expect(card('r2')).toHaveAccessibleName(
+        'risk is "standard" when age is between 25 and 60 and income is greater than 40000'
+      );
+    });
+
+    it('names an empty value by its word, never by the dash it shows', () => {
+      render(view({ selected: { rowId: 'm2', columnId: 'reason' }, onSelect: vi.fn() }));
+      expect(valueChip('m2', 'reason')).toHaveTextContent(EMPTY_VALUE_DASH);
+      expect(valueChip('m2', 'reason')).toHaveAccessibleName('Reason empty, rule 2');
+    });
+
+    it('re-renders only the rules a selection leaves and enters', () => {
+      const cell = vi.fn(DECISION_TEXT_LABELS.cell);
+      renderSelectable({
+        rules: manySentenceRules(2000),
+        labels: { ...DECISION_TEXT_LABELS, cell },
+        initial: { rowId: 'row-0' },
+      });
+      act(() => card('row-0').focus());
+      cell.mockClear();
+      press('ArrowDown');
+      const positions = cell.mock.calls.map(([, , position]) => position);
+      expect(positions).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]);
+    });
+
+    it('names a clamped cell by the values it shows and its count', () => {
+      renderSelectable({ rules: [longValueListRule(10_000)] });
+      const shown = Array.from({ length: 20 }, (_, index) => `"Country ${index + 1}"`).join(', ');
+      expect(valueChip('long-list', 'country')).toHaveAccessibleName(
+        `Country ${shown} +9,980 more, rule 1`
+      );
+    });
+
+    it('has no axe violations with a cell selected', async () => {
+      const { container } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('keyboard', () => {
+    const startAt = (initial: SentenceSelection) => {
+      const rendered = renderSelectable({ initial });
+      const { columnId } = initial;
+      act(() => (columnId ? valueChip(initial.rowId, columnId) : card(initial.rowId)).focus());
+      return rendered;
+    };
+
+    it.each<['ltr' | 'rtl', string, string]>([
+      ['ltr', 'ArrowRight', 'ArrowLeft'],
+      ['rtl', 'ArrowLeft', 'ArrowRight'],
+    ])('steps through the stops of a %s row in reading order, clamped', (direction, on, back) => {
+      const { onSelect } = renderSelectable({
+        initial: { rowId: 'r1' },
+        containerProps: { style: { direction } },
+      });
+      act(() => card('r1').focus());
+      expect(walk(on, on, on, on, back)).toEqual([
+        'r1:risk',
+        'r1:age',
+        'r1:income',
+        'r1:income',
+        'r1:age',
+      ]);
+      expect(onSelect.mock.calls.map(([selection]) => selection.columnId)).toEqual([
+        'risk',
+        'age',
+        'income',
+        'age',
+      ]);
+    });
+
+    it('moves a row with ↓ and ↑, keeping the column where the row has it', () => {
+      startAt({ rowId: 'r1', columnId: 'income' });
+      expect(walk('ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowUp', 'ArrowUp')).toEqual([
+        'r2:income',
+        'r3',
+        'r3',
+        'r2',
+        'r1',
+      ]);
+    });
+
+    it.each<[string, KeyboardEventInit, SentenceSelection, string]>([
+      ['ArrowDown', { metaKey: true }, { rowId: 'r1', columnId: 'age' }, 'r3:age'],
+      ['ArrowUp', { ctrlKey: true }, { rowId: 'r3', columnId: 'age' }, 'r1:age'],
+      ['End', {}, { rowId: 'r2', columnId: 'age' }, 'r2:income'],
+      ['Home', {}, { rowId: 'r2', columnId: 'age' }, 'r2'],
+      ['ArrowRight', { ctrlKey: true }, { rowId: 'r2' }, 'r2:income'],
+      ['ArrowLeft', { metaKey: true }, { rowId: 'r2', columnId: 'income' }, 'r2'],
+      ['End', { ctrlKey: true }, { rowId: 'r2', columnId: 'age' }, 'r3:age'],
+      ['Home', { metaKey: true }, { rowId: 'r2', columnId: 'age' }, 'r1'],
+    ])('moves with %s %o from %o to %s', (key, init, from, stop) => {
+      startAt(from);
+      press(key, init);
+      expect(focusedStop()).toBe(stop);
+    });
+
+    it("tabs through a row's stops and lets Tab leave at either end", () => {
+      const { onSelect } = startAt({ rowId: 'r3' });
+      expect(walk('Tab', 'Tab')).toEqual(['r3:risk', 'r3:age']);
+      expect(press('Tab')).toBe(true);
+      press('Tab', { shiftKey: true });
+      press('Tab', { shiftKey: true });
+      expect(focusedStop()).toBe('r3');
+      expect(press('Tab', { shiftKey: true })).toBe(true);
+      expect(press('Tab', { altKey: true })).toBe(true);
+      expect(onSelect).toHaveBeenCalledTimes(4);
+    });
+
+    it('clears with Escape and returns focus to the view, claiming it only when something was selected', () => {
+      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      expect(press('Escape')).toBe(false);
+      expect(onSelect.mock.calls).toEqual([[null]]);
+      expect(document.activeElement).toBe(screen.getByTestId('nl'));
+      expect(press('Escape')).toBe(true);
+      expect(onSelect).toHaveBeenCalledTimes(1);
+    });
+
+    it('selects the first visible rule on the first arrow, Home or End with nothing selected', () => {
+      const rules = manySentenceRules(2000);
+      const { onSelect } = renderSelectable({ rules });
+      act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
+      act(() => screen.getByTestId('nl').focus());
+      expect(press('End')).toBe(false);
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'row-500' }]]);
+      expect(focusedStop()).toBe('row-500');
+    });
+
+    it.each<[string, SentenceSelection | null, string[]]>([
+      ['nothing', null, ['Tab', 'Escape', 'a', 'PageDown', ' ']],
+      ['a cell', { rowId: 'r2', columnId: 'age' }, ['PageUp', 'PageDown', ' ', 'Enter', 'F2', 'a']],
+    ])('leaves keys it has no move for alone with %s selected', (_, initial, keys) => {
+      const { onSelect } = renderSelectable({ initial });
+      act(() => screen.getByTestId('nl').focus());
+      expect(keys.map((key) => press(key))).toEqual(keys.map(() => true));
+      expect(press('a', { metaKey: true })).toBe(true);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('focuses the selected stop on a move that stays put', () => {
+      const { onSelect } = renderSelectable({ initial: { rowId: 'r3', columnId: 'age' } });
+      act(() => screen.getByTestId('nl').focus());
+      expect(press('End')).toBe(false);
+      expect(focusedStop()).toBe('r3:age');
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('tells the host to select the rule when its selected cell has no value in it', () => {
+      const initial = { rowId: 'r3', columnId: 'income' };
+      const { onSelect, unmount } = renderSelectable({ initial });
+      fireEvent.click(card('r3'));
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3' }]]);
+      expect(focusedStop()).toBe('r3');
+      unmount();
+      const home = renderSelectable({ initial });
+      act(() => screen.getByTestId('nl').focus());
+      press('Home');
+      expect(home.onSelect.mock.calls).toEqual([[{ rowId: 'r3' }]]);
+    });
+
+    it('ignores a key mid-composition', () => {
+      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      expect(press('ArrowRight', { isComposing: true })).toBe(true);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('ignores a key from a text field inside a row', () => {
+      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      const field = document.createElement('input');
+      card('r2').append(field);
+      act(() => field.focus());
+      expect(press('ArrowRight')).toBe(true);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('ignores a key something inside a row already claimed', () => {
+      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      valueChip('r2', 'age').addEventListener('keydown', (event) => event.preventDefault());
+      press('ArrowRight');
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('leaves a band list its own arrows', () => {
+      const { onSelect } = renderSelectable({ initial: { rowId: 'r2' } });
+      act(() => screen.getByRole('list', { name: 'Inputs' }).focus());
+      expect([press('ArrowRight'), press('End')]).toEqual([true, true]);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it("hands the host's own handlers what the view leaves alone", () => {
+      const onKeyDown = vi.fn();
+      const onFocus = vi.fn();
+      const onBlur = vi.fn();
+      const onClick = vi.fn();
+      renderSelectable({
+        initial: { rowId: 'r2' },
+        containerProps: { onKeyDown, onFocus, onBlur, onClick },
+      });
+      act(() => card('r2').focus());
+      press('ArrowRight');
+      press('a');
+      fireEvent.click(valueChip('r1', 'risk'));
+      act(() => card('r1').blur());
+      expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual(['a']);
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onFocus).toHaveBeenCalled();
+      expect(onBlur).toHaveBeenCalled();
+    });
+  });
+
+  describe('focus through windowing', () => {
+    it('keeps the selected row and its focus mounted while it scrolls out and back', () => {
+      const rules = manySentenceRules(2000);
+      renderSelectable({ rules });
+      fireEvent.click(valueChip('row-0', 'decision'));
+      const chip = valueChip('row-0', 'decision');
+      act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
+      expect(card('row-500')).toBeInTheDocument();
+      expect(document.activeElement).toBe(chip);
+      act(() => scrollTo(0));
+      expect(document.activeElement).toBe(chip);
+      expect(valueChip('row-0', 'decision')).toBe(chip);
+    });
+
+    it('returns focus to the view when the focused row is removed', () => {
+      const { rerender } = renderSelectable();
+      fireEvent.click(valueChip('r2', 'age'));
+      rerender(<Selectable rules={GRID_SENTENCE_RULES.filter(({ rowId }) => rowId !== 'r2')} />);
+      expect(document.activeElement).toBe(screen.getByTestId('nl'));
+    });
+
+    it('scrolls a rule the host selects into view, without taking focus', () => {
+      const rules = manySentenceRules(2000);
+      const onSelect = vi.fn();
+      const { rerender } = render(view({ rules, selected: { rowId: 'row-0' }, onSelect }));
+      const frame = screen.getByTestId('nl');
+      expect(frame.scrollTop).toBe(0);
+      rerender(view({ rules, selected: { rowId: 'row-1500' }, onSelect }));
+      const offsets = sentenceRuleOffsets(rules);
+      expect(frame.scrollTop).toBe((offsets[1501] ?? 0) - FALLBACK_ROW_VIEWPORT_PX);
+      expect(card('row-1500')).toHaveAttribute('tabindex', '0');
+      expect(document.activeElement).toBe(document.body);
+      rerender(view({ rules, selected: { rowId: 'row-1500', columnId: 'decision' }, onSelect }));
+      act(() => scrollTo(0));
+      rerender(view({ rules, selected: { rowId: 'row-1500', columnId: 'reason' }, onSelect }));
+      expect(frame.scrollTop).toBe(0);
+    });
+
+    it('scrolls on to a cell its row scrolled past, and to the top of a rule taller than the view', () => {
+      renderSelectable();
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      const chip = valueChip('r3', 'age');
+      vi.spyOn(chip, 'getBoundingClientRect').mockReturnValue({
+        ...rect(0, 40),
+        top: 300,
+        bottom: 324,
+      });
+      fireEvent.click(chip);
+      const rowEnd = sentenceRuleOffsets(GRID_SENTENCE_RULES)[3] ?? 0;
+      expect(frame.scrollTop).toBe(rowEnd - 100 + 224);
+      vi.spyOn(card('r1'), 'getBoundingClientRect').mockReturnValue({
+        ...rect(0, 400),
+        top: 20,
+        bottom: 370,
+      });
+      fireEvent.click(within(card('r1')).getByText('when'));
+      expect(frame.scrollTop).toBe(20);
+    });
+
+    it('leaves a visible cell of a rule taller than the view where it is', () => {
+      renderSelectable({ rules: [manyLinesRule(10)] });
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      act(() => scrollTo(150));
+      const chip = valueChip('many-lines', 'input-5');
+      vi.spyOn(chip, 'getBoundingClientRect').mockImplementation(() => ({
+        ...rect(0, 40),
+        top: 181 - frame.scrollTop,
+        bottom: 205 - frame.scrollTop,
+      }));
+      fireEvent.click(chip);
+      expect(frame.scrollTop).toBe(150);
+    });
+
+    it('scrolls the cell the host selects in a rule taller than the view out from under the header', () => {
+      const rules = [...manySentenceRules(3), manyLinesRule(10)];
+      const onSelect = vi.fn();
+      const { rerender } = render(view({ rules, selected: { rowId: 'row-0' }, onSelect }));
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      Object.defineProperty(screen.getByTestId('nl-header'), 'offsetHeight', { value: 33 });
+      const chip = valueChip('many-lines', 'decision');
+      const chipTop = (sentenceRuleOffsets(rules)[3] ?? 0) + 11;
+      vi.spyOn(chip, 'getBoundingClientRect').mockImplementation(() => ({
+        ...rect(0, 40),
+        top: chipTop - frame.scrollTop,
+        bottom: chipTop + 24 - frame.scrollTop,
+      }));
+      rerender(view({ rules, selected: { rowId: 'many-lines', columnId: 'decision' }, onSelect }));
+      const { top, bottom } = chip.getBoundingClientRect();
+      expect(top).toBeGreaterThanOrEqual(33);
+      expect(bottom).toBeLessThanOrEqual(100);
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it('scrolls a rule the host selects out from under the sticky header', () => {
+      const rules = manySentenceRules(2000);
+      const { rerender } = render(view({ rules, onSelect: vi.fn() }));
+      Object.defineProperty(screen.getByTestId('nl-header'), 'offsetHeight', { value: 33 });
+      const top = sentenceRuleOffsets(rules)[100] ?? 0;
+      act(() => scrollTo(top - 10));
+      rerender(view({ rules, selected: { rowId: 'row-100' }, onSelect: vi.fn() }));
+      expect(screen.getByTestId('nl').scrollTop).toBe(top - 33);
     });
   });
 });

@@ -1,16 +1,19 @@
 import { EMPTY_VALUE_DASH } from './constants';
 import type { SentencePart, SentenceToken } from './sentenceTypes';
 
+/** Most value tokens one line renders before the rest collapse into a count. */
+export const SENTENCE_LINE_VALUE_LIMIT = 20;
+
 export const isValue = (part: SentencePart): part is SentenceToken =>
   typeof part !== 'string' && part.kind === 'value';
 
-/** A token's text as shown; an empty value reads as the grid's empty cell does. */
-export const tokenText = (token: SentenceToken): string =>
-  token.kind === 'value' && token.text === '' ? EMPTY_VALUE_DASH : token.text;
+/** A token's text as shown; an empty value reads as the grid's empty cell does, or as `empty`. */
+export const tokenText = (token: SentenceToken, empty = EMPTY_VALUE_DASH): string =>
+  token.kind === 'value' && token.text === '' ? empty : token.text;
 
-/** The text a reader sees for these parts. */
-export const partsText = (parts: readonly SentencePart[]): string =>
-  parts.map((part) => (typeof part === 'string' ? part : tokenText(part))).join('');
+/** The text a reader sees for these parts, an empty value read as `empty`. */
+export const partsText = (parts: readonly SentencePart[], empty = EMPTY_VALUE_DASH): string =>
+  parts.map((part) => (typeof part === 'string' ? part : tokenText(part, empty))).join('');
 
 /** A run of one column's values past the limit: the values it hides, the parts shown after it and how many values it hides. */
 interface ClampedRun {

@@ -37,3 +37,7 @@ export interface SentenceCellId {
   rowId: string;
   columnId: string;
 }
+
+/** A rule, or one of its cells when `columnId` is set. */
+export type SentenceSelection = Pick<SentenceCellId, 'rowId'> &
+  Partial<Pick<SentenceCellId, 'columnId'>>;

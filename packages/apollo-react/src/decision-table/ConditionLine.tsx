@@ -8,7 +8,8 @@ import type { SentenceLine } from './sentenceTypes';
 
 export interface ConditionLineLabels extends LineTextLabels, LineLeadLabels {}
 
-export interface ConditionLineProps extends Pick<LineTextProps, 'cells'> {
+export interface ConditionLineProps
+  extends Pick<LineTextProps, 'cells' | 'selectedColumnId' | 'stopOf'> {
   line: SentenceLine;
   badge: MarkBadgeProps | null;
   labels: ConditionLineLabels;

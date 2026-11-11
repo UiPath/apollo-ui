@@ -1,5 +1,7 @@
 import type React from 'react';
-import { type HoveredToken, valueTokenAt } from './sentenceTargets';
+import { useEffect, useRef } from 'react';
+import { clickedSelection, type HoveredToken, valueTokenAt } from './sentenceTargets';
+import type { SentenceNavigation } from './useSentenceNavigation';
 
 export type ContainerProps = React.HTMLAttributes<HTMLElement> &
   Record<`data-${string}`, string | undefined>;
@@ -7,13 +9,31 @@ export type ContainerProps = React.HTMLAttributes<HTMLElement> &
 export interface ContainerHandlersParams {
   containerProps: ContainerProps | undefined;
   hoverTo: (next: HoveredToken | null) => void;
+  navigation: SentenceNavigation;
+  container: () => HTMLElement | null;
 }
 
 /** The consumer's container props, with the view's own handlers run before the consumer's. */
-export const useContainerHandlers = ({ containerProps, hoverTo }: ContainerHandlersParams) => {
+export const useContainerHandlers = ({
+  containerProps,
+  hoverTo,
+  navigation,
+  container,
+}: ContainerHandlersParams) => {
+  const focusWithinRef = useRef(false);
+  useEffect(() => {
+    if (focusWithinRef.current && document.activeElement === document.body) {
+      container()?.focus();
+    }
+  });
+
   const {
     onPointerOver: consumerPointerOver,
     onPointerOut: consumerPointerOut,
+    onKeyDown: consumerKeyDown,
+    onFocus: consumerFocus,
+    onBlur: consumerBlur,
+    onClick: consumerClick,
     ...restContainerProps
   } = containerProps ?? {};
 
@@ -28,6 +48,39 @@ export const useContainerHandlers = ({ containerProps, hoverTo }: ContainerHandl
     }
     consumerPointerOut?.(event);
   };
+  const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (!navigation.onKeyDown(event)) {
+      consumerKeyDown?.(event);
+    }
+  };
+  const onFocus = (event: React.FocusEvent<HTMLElement>) => {
+    focusWithinRef.current = true;
+    consumerFocus?.(event);
+  };
+  const onBlur = (event: React.FocusEvent<HTMLElement>) => {
+    if (
+      !(event.relatedTarget instanceof Node) ||
+      !event.currentTarget.contains(event.relatedTarget)
+    ) {
+      focusWithinRef.current = false;
+    }
+    consumerBlur?.(event);
+  };
+  const onClick = (event: React.MouseEvent<HTMLElement>) => {
+    const selection = clickedSelection(event.target);
+    if (selection) {
+      navigation.select(selection);
+    }
+    consumerClick?.(event);
+  };
 
-  return { onPointerOver, onPointerOut, ...restContainerProps };
+  return {
+    onPointerOver,
+    onPointerOut,
+    onKeyDown,
+    onFocus,
+    onBlur,
+    onClick,
+    ...restContainerProps,
+  };
 };

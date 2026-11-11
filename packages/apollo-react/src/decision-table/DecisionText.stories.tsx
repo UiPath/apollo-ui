@@ -16,7 +16,10 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { RowMark, TableMarks } from './marks';
-import type { SentenceCellId } from './sentenceTypes';
+import type { SentenceCellId, SentenceSelection } from './sentenceTypes';
+
+const selectionText = (selection: SentenceSelection | null) =>
+  selection ? [selection.rowId, selection.columnId ?? 'rule'].join(' / ') : 'none';
 
 const cellText = (cell: SentenceCellId | null) =>
   cell ? `${cell.rowId} / ${cell.columnId}` : 'none';
@@ -49,6 +52,33 @@ const ReadOnlyDemo = ({ caption, ...props }: ReadOnlyDemoProps) => {
         {...props}
       />
       <StoryCaption>Hovered cell: {cellText(hovered)}</StoryCaption>
+      <StoryCaption>{caption}</StoryCaption>
+    </div>
+  );
+};
+
+interface SelectionDemoProps extends Partial<DecisionTextProps> {
+  caption: string;
+  initialSelected?: SentenceSelection | null;
+}
+
+/** A host that owns the selection, as it owns the grid's. */
+const SelectionDemo = ({ caption, initialSelected = null, ...props }: SelectionDemoProps) => {
+  const [selected, setSelected] = useState(initialSelected);
+  return (
+    <div className="flex h-[480px] flex-col gap-2">
+      <DecisionText
+        rules={GRID_SENTENCE_RULES}
+        bands={GRID_SENTENCE_BANDS}
+        header={GRID_SENTENCE_HEADER}
+        labels={DECISION_TEXT_LABELS}
+        ariaLabel="Rules"
+        dataTestId="decision-text"
+        selected={selected}
+        onSelect={setSelected}
+        {...props}
+      />
+      <StoryCaption>Selected: {selectionText(selected)}</StoryCaption>
       <StoryCaption>{caption}</StoryCaption>
     </div>
   );
@@ -105,6 +135,18 @@ export const WithMarks: Story = {
   ),
 };
 
+export const Selection: Story = {
+  render: () => (
+    <div className="w-[420px]">
+      <SelectionDemo
+        numbered
+        initialSelected={{ rowId: 'r2', columnId: 'income' }}
+        caption="Click a value or a rule. Arrows, Home and End move, Tab walks a rule's values, Escape clears."
+      />
+    </div>
+  ),
+};
+
 export const Empty: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4">
@@ -155,7 +197,7 @@ const MANY_LINES = [manyLinesRule(50)];
 
 export const ManyColumns: Story = {
   render: () => (
-    <ReadOnlyDemo
+    <SelectionDemo
       bands={MANY_COLUMNS}
       rules={MANY_LINES}
       header={MULTI_SENTENCE_HEADER}

@@ -4,6 +4,7 @@ import type { MarkBadgeLabels } from './MarkBadge';
 import type { RowMark } from './marks';
 import { RuleLine } from './RuleLine';
 import { ruleCardModel } from './ruleCardModel';
+import { StopLabels } from './StopLabels';
 import {
   LINES_CLASS,
   ROW_NUMBER_CLASS,
@@ -12,7 +13,12 @@ import {
 } from './sentenceStyles';
 import type { SentenceRule } from './sentenceTypes';
 
-export interface RuleCardLabels extends MarkBadgeLabels, ConditionLineLabels {}
+export interface RuleCardLabels extends MarkBadgeLabels, ConditionLineLabels {
+  /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position. */
+  cell: (column: string, values: string, position: number) => string;
+  /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash. */
+  emptyValue: string;
+}
 
 export interface RuleCardProps {
   rule: SentenceRule;
@@ -21,6 +27,9 @@ export interface RuleCardProps {
   setSize: number;
   numbered: boolean;
   mark: RowMark | undefined;
+  /** The selected cell, null when the rule is selected, undefined when the row is not. */
+  selectedColumnId: string | null | undefined;
+  selectable: boolean;
   idPrefix: string;
   dataTestId: string;
   labels: RuleCardLabels;
@@ -28,17 +37,35 @@ export interface RuleCardProps {
 
 /** One rule as a sentence: its heading, its lead and its condition lines. */
 export const RuleCard = memo<RuleCardProps>(
-  ({ rule, position, setSize, numbered, mark, idPrefix, dataTestId, labels }) => {
-    const card = ruleCardModel({ rule, position, mark, idPrefix, labels });
-    const lineProps = { cells: card.cells, labels };
+  ({
+    rule,
+    position,
+    setSize,
+    numbered,
+    mark,
+    selectedColumnId,
+    selectable,
+    idPrefix,
+    dataTestId,
+    labels,
+  }) => {
+    const card = ruleCardModel({
+      rule,
+      position,
+      numbered,
+      mark,
+      selectable,
+      idPrefix,
+      labels,
+    });
+    const lineProps = { cells: card.cells, selectedColumnId, stopOf: card.stopOf, labels };
 
     return (
       <li
+        tabIndex={selectable ? (selectedColumnId === null ? 0 : -1) : undefined}
         aria-posinset={position}
         aria-setsize={setSize}
-        aria-labelledby={[numbered && `${card.id}-number`, `${card.id}-heading`, `${card.id}-lead`]
-          .filter(Boolean)
-          .join(' ')}
+        aria-label={card.ariaLabel}
         aria-describedby={card.describedBy}
         className={RULE_CARD_CLASS}
         data-row-id={rule.rowId}
@@ -46,26 +73,16 @@ export const RuleCard = memo<RuleCardProps>(
         data-dim={card.dim}
         data-testid={`${dataTestId}-row-${rule.rowId}`}
       >
-        <div className={ROW_SURFACE_CLASS}>
-          {numbered && (
-            <span id={`${card.id}-number`} className={ROW_NUMBER_CLASS}>
-              {position}
-            </span>
-          )}
+        <div className={ROW_SURFACE_CLASS} data-selected={selectedColumnId === null || undefined}>
+          {numbered && <span className={ROW_NUMBER_CLASS}>{position}</span>}
           <RuleLine
-            id={`${card.id}-heading`}
             heading
             parts={rule.heading}
             title={card.title}
             badge={card.badges.heading}
             {...lineProps}
           />
-          <RuleLine
-            id={`${card.id}-lead`}
-            parts={rule.lead}
-            badge={card.badges.lead}
-            {...lineProps}
-          />
+          <RuleLine parts={rule.lead} badge={card.badges.lead} {...lineProps} />
           {rule.lines.length > 0 && (
             <ul className={LINES_CLASS}>
               {rule.lines.map((line, index) => (
@@ -79,6 +96,7 @@ export const RuleCard = memo<RuleCardProps>(
             </ul>
           )}
         </div>
+        {card.stops.length > 0 && <StopLabels stops={card.stops} />}
       </li>
     );
   }

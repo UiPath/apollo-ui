@@ -86,10 +86,17 @@ export interface GridNavigation {
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
-const clamp = (value: number, max: number): number => Math.max(0, Math.min(value, max));
+export const clamp = (value: number, max: number): number => Math.max(0, Math.min(value, max));
 
 /** Keys that establish a selection when the grid has focus but no cell is selected yet. */
-const GRID_ENTRY_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+export const GRID_ENTRY_KEYS: readonly string[] = [
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'Home',
+  'End',
+];
 
 /** Where the selection lands after committing an inline edit. */
 const MOVE_DELTA: Record<CellCommitMove, GridPosition> = {
@@ -130,7 +137,7 @@ const isTypedCharacter = (event: React.KeyboardEvent): boolean => {
   return !event.altKey || isApplePlatform();
 };
 
-const ARROW_DELTAS: Record<string, GridPosition | undefined> = {
+export const ARROW_DELTAS: Readonly<Record<string, GridPosition | undefined>> = {
   ArrowUp: { row: -1, col: 0 },
   ArrowDown: { row: 1, col: 0 },
   ArrowLeft: { row: 0, col: -1 },
