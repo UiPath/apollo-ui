@@ -51,7 +51,7 @@ export interface ValueEditing {
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
   /** Keeps the card action or value a press lands on. */
   onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
-  /** Runs the pressed card action or edits the pressed value once the press's blur commit unmounted it. */
+  /** Runs the pressed card action or edits the pressed value once the press's blur commit unmounted or moved it. */
   onPointerUp: () => void;
 }
 
@@ -60,6 +60,7 @@ interface Pressed {
   action: RuleAction | null;
   value: SentenceValueId | null;
   element: Element;
+  at: DOMRect;
 }
 
 const isStartKey = (event: React.KeyboardEvent): boolean =>
@@ -73,6 +74,12 @@ const hasStop = (rule: SentenceRule | undefined, columnId: string): boolean =>
 
 const valueKey = ({ rowId, columnId, index }: SentenceValueId): string =>
   JSON.stringify([rowId, columnId, index]);
+
+const movedAway = ({ element, at }: Pressed): boolean => {
+  if (!element.isConnected) return true;
+  const { x, y } = element.getBoundingClientRect();
+  return x !== at.x || y !== at.y;
+};
 
 /** The view's value editing: starting an edit, the editor's context, and where a commit or cancel moves. */
 export const useValueEditing = ({
@@ -220,14 +227,14 @@ export const useValueEditing = ({
     const value = edit && !action ? clickedValue(event.target) : null;
     pressedRef.current =
       (action || value) && event.target instanceof Element
-        ? { action, value, element: event.target }
+        ? { action, value, element: event.target, at: event.target.getBoundingClientRect() }
         : null;
   };
 
   const onPointerUp = () => {
     const pressed = pressedRef.current;
     pressedRef.current = null;
-    if (!pressed || pressed.element.isConnected) return;
+    if (!pressed || !movedAway(pressed)) return;
     recoveredRef.current = true;
     if (pressed.action) onAction(pressed.action);
     else if (pressed.value) start(pressed.value);

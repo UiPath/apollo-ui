@@ -1713,6 +1713,26 @@ describe('DecisionText', () => {
       expect(lines.map((line) => line.dataset.columnId)).toEqual(['age', 'income', regionId]);
     });
 
+    it('removes the condition whose ✕ the refused blur commit moved from under the press', () => {
+      const { onClearCell } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
+        refuse: true,
+      });
+      fireEvent.change(editor(), { target: { value: '' } });
+      const remove = button('r1', 'Remove age from rule 1');
+      const position = vi.spyOn(remove, 'getBoundingClientRect').mockReturnValue(rect(791, 811));
+      fireEvent.pointerDown(remove);
+      fireEvent.mouseDown(remove);
+      fireEvent.blur(editor());
+      position.mockReturnValue(rect(776, 796));
+      fireEvent.pointerUp(card('r1'));
+      fireEvent.mouseUp(card('r1'));
+      fireEvent.click(card('r1'));
+      expect(onClearCell).toHaveBeenCalledWith({ rowId: 'r1', columnId: 'age' });
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+    });
+
     it('removes the lead condition whose ✕ was pressed when the blur commit moves the lead into lines', () => {
       render(<TableHost initial={{ rowId: 'r1' }} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
