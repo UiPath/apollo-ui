@@ -218,7 +218,7 @@ const EditingHost = ({
   );
 };
 
-const renderEditing = (props: Omit<EditingHostProps, 'spies'> = {}) => {
+const renderEditing = (props: Omit<EditingHostProps, 'spies'> = {}, container?: HTMLElement) => {
   const spies: EditSpies = {
     onSelect: vi.fn(),
     onStartEdit: vi.fn(),
@@ -227,7 +227,7 @@ const renderEditing = (props: Omit<EditingHostProps, 'spies'> = {}) => {
     onCancel: vi.fn(),
     onClearCell: vi.fn(),
   };
-  const rendered = render(<EditingHost spies={spies} {...props} />);
+  const rendered = render(<EditingHost spies={spies} {...props} />, { container });
   return { ...spies, ...rendered };
 };
 
@@ -1658,6 +1658,25 @@ describe('DecisionText', () => {
       act(() => apply.focus());
       fireEvent.click(apply);
       expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
+    it('returns focus to the value from Apply when the view is in a shadow root', () => {
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const shadow = host.attachShadow({ mode: 'open' });
+      const container = shadow.appendChild(document.createElement('div'));
+      renderEditing(
+        { initial: { rowId: 'r1', columnId: 'age' }, initialEditing: r1Age, valueField: field },
+        container
+      );
+      const inShadow = within(container);
+      fireEvent.click(
+        within(inShadow.getByTestId('nl-value-editor')).getByRole('button', { name: 'Apply' })
+      );
+      expect(inShadow.queryByTestId('nl-value-editor')).toBeNull();
+      expect(shadow.activeElement).toBe(
+        inShadow.getByTestId('nl-row-r1').querySelector('[data-kind="value"][data-column-id="age"]')
+      );
     });
 
     it("titles the popover with the column's type glyph and name, over the cell's operator and value", () => {

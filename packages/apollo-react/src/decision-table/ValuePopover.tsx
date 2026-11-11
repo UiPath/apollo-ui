@@ -2,7 +2,7 @@ import { Braces } from 'lucide-react';
 import type React from 'react';
 import { useRef, useState } from 'react';
 import type { GridCellEditorContext } from './GridCell';
-import { commitMoveFor, isComposing, isInList } from './gridEvents';
+import { activeElementOf, commitMoveFor, isComposing, isInList } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
 import { PopoverHeader } from './PopoverHeader';
@@ -146,7 +146,7 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
 
   const commit = (next: ValueCommit, move: CellCommitMove) => {
     settledRef.current = next;
-    onCommit(next, move, root?.contains(document.activeElement) ?? false);
+    onCommit(next, move, root?.contains(activeElementOf(root)) ?? false);
   };
   const cancel = () => {
     if (settledRef.current === 'cancelled') return;
