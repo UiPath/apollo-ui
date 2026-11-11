@@ -54,27 +54,6 @@ const ReadOnlyDemo = ({ caption, ...props }: ReadOnlyDemoProps) => {
   );
 };
 
-const DemoDecisionText = (props: Partial<DecisionTextProps>) => {
-  const [hovered, setHovered] = useState<SentenceCellId | null>(null);
-  return (
-    <div className="flex h-[480px] flex-col gap-2">
-      <DecisionText
-        rules={GRID_SENTENCE_RULES}
-        bands={GRID_SENTENCE_BANDS}
-        header={GRID_SENTENCE_HEADER}
-        labels={DECISION_TEXT_LABELS}
-        ariaLabel="Rules"
-        dataTestId="decision-text"
-        onCellHover={setHovered}
-        {...props}
-      />
-      <p className="text-xs text-foreground-de-emp">
-        Hovered cell: {hovered ? `${hovered.rowId} / ${hovered.columnId}` : 'none'}
-      </p>
-    </div>
-  );
-};
-
 const DEMO_MARKS: TableMarks = {
   rows: new Map<string, RowMark>([
     [
@@ -129,7 +108,11 @@ export const WithMarks: Story = {
 export const Empty: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4">
-      <DemoDecisionText rules={[]} addRule={{ label: 'Add rule', onAdd: () => {} }} />
+      <ReadOnlyDemo
+        rules={[]}
+        addRule={{ label: 'Add rule', onAdd: () => {} }}
+        caption="With addRule the empty state offers the add action."
+      />
       <ReadOnlyDemo
         rules={[]}
         ariaLabel="Rules without an add action"
@@ -144,10 +127,11 @@ const LONG_LIST = [longValueListRule(10_000)];
 
 export const LongValueList: Story = {
   render: () => (
-    <DemoDecisionText
+    <ReadOnlyDemo
       rules={LONG_LIST}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
+      caption="A 10,000-value line shows its first 20 values and counts the rest."
     />
   ),
 };
@@ -156,11 +140,12 @@ const MANY_RULES = manySentenceRules(50_000);
 
 export const ManyRules: Story = {
   render: () => (
-    <DemoDecisionText
+    <ReadOnlyDemo
       rules={MANY_RULES}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
       numbered
+      caption="50,000 rules, windowed."
     />
   ),
 };
