@@ -1733,6 +1733,33 @@ describe('DecisionText', () => {
       expect(screen.queryByTestId('nl-editor')).toBeNull();
     });
 
+    it.each([
+      'Add condition to rule 2',
+      'Rule 2 actions',
+    ])('opens the %s menu whose button the blur commit moved from under the press', (name) => {
+      render(<TableHost initial={{ rowId: 'r1' }} />);
+      fireEvent.click(button('r1', 'Add condition to rule 1'));
+      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
+      fireEvent.change(editor(), { target: { value: '"web"' } });
+      const trigger = button('r2', name);
+      const position = vi
+        .spyOn(trigger, 'getBoundingClientRect')
+        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
+      fireEvent.pointerDown(trigger);
+      fireEvent.mouseDown(trigger);
+      act(() => trigger.focus());
+      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
+      fireEvent.pointerUp(card('r2'));
+      fireEvent.mouseUp(card('r2'));
+      fireEvent.click(card('r2'));
+      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
+      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
+      expect(screen.getByTestId('nl-context-menu-anchor')).toHaveStyle({
+        top: '178px',
+        left: '300px',
+      });
+    });
+
     it('returns focus to the rule after its ✕ removes a condition whose refused blur commit left focus on the view', () => {
       renderEditing({
         initial: { rowId: 'r1', columnId: 'age' },

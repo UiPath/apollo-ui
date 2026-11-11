@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { DecisionTextEdit } from './DecisionText';
 import type { GridContextMenuState, GridMenuEntry } from './GridMenu';
 import type { OpenRuleMenu } from './RuleList';
-import { clickedAction } from './sentenceTargets';
+import { clickedAction, type RuleAction } from './sentenceTargets';
 import type { SentenceRule } from './sentenceTypes';
 
 export interface RuleMenusParams {
@@ -33,6 +33,8 @@ export interface RuleMenus {
   onClose: () => void;
   /** Opens the menu of a clicked card button, and returns whether it did. */
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
+  /** Opens the menu a card action names, from where its button is now, and returns whether it did. */
+  openFor: (action: RuleAction) => boolean;
 }
 
 const menuLabel = (
@@ -118,9 +120,8 @@ export const useRuleMenus = ({
 
   const onClose = () => close(true);
 
-  const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
-    const action = edit ? clickedAction(event.target) : null;
-    if (action?.action !== 'conditions' && action?.action !== 'rule') return false;
+  const openFor = (action: RuleAction | null): boolean => {
+    if (!edit || (action?.action !== 'conditions' && action?.action !== 'rule')) return false;
     setState({
       menu: action.action,
       rowId: action.rowId,
@@ -131,11 +132,15 @@ export const useRuleMenus = ({
     return true;
   };
 
+  const onClick = (event: React.MouseEvent<HTMLElement>): boolean =>
+    openFor(clickedAction(event.target));
+
   return {
     state: open,
     label: menuLabel(edit, open, position),
     entries,
     onClose,
     onClick,
+    openFor,
   };
 };

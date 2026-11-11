@@ -30,6 +30,8 @@ export interface ValueEditingParams {
   navigation: SentenceNavigation;
   labels: DecisionTextLabels;
   container: () => HTMLElement | null;
+  /** Opens the menu a card action names, and returns whether it did. */
+  openMenu: (action: RuleAction) => boolean;
 }
 
 /** How the open editor was last settled, resolved once the host closes it. */
@@ -91,6 +93,7 @@ export const useValueEditing = ({
   navigation,
   labels,
   container,
+  openMenu,
 }: ValueEditingParams): ValueEditing => {
   const pendingRef = useRef<PendingSettle | null>(null);
   const pressedRef = useRef<Pressed | null>(null);
@@ -233,13 +236,17 @@ export const useValueEditing = ({
         : null;
   };
 
+  const recover = ({ action, value }: Pressed): boolean => {
+    if (action) return onAction(action) || openMenu(action);
+    if (value) start(value);
+    return value !== null;
+  };
+
   const onPointerUp = () => {
     const pressed = pressedRef.current;
     pressedRef.current = null;
     if (!pressed || !movedAway(pressed)) return;
-    recoveredRef.current = true;
-    if (pressed.action) onAction(pressed.action);
-    else if (pressed.value) start(pressed.value);
+    recoveredRef.current = recover(pressed);
   };
 
   return {

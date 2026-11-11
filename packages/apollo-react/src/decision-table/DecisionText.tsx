@@ -158,6 +158,12 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     },
   };
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
+  const ruleMenus = useRuleMenus({
+    edit,
+    rules,
+    selectedRowId: selected?.rowId,
+    refocus: navigation.refocus,
+  });
   const valueEditing = useValueEditing({
     edit,
     rules,
@@ -167,12 +173,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     navigation,
     labels,
     container: ruleWindow.container,
-  });
-  const ruleMenus = useRuleMenus({
-    edit,
-    rules,
-    selectedRowId: selected?.rowId,
-    refocus: navigation.refocus,
+    openMenu: ruleMenus.openFor,
   });
   const sectionProps = useContainerHandlers({
     containerProps,
