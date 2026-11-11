@@ -55,10 +55,8 @@ export const AllowedValueList: React.FC<AllowedValueListProps> = ({
         arrowedRef.current = false;
       }}
       onValueChange={(value) => {
-        const arrowed = arrowedRef.current;
+        if (arrowedRef.current) onChoose(value);
         arrowedRef.current = false;
-        if (arrowed) onChoose(value);
-        else onPick(value);
       }}
     >
       {listed.map((value, index) => (
@@ -72,6 +70,9 @@ export const AllowedValueList: React.FC<AllowedValueListProps> = ({
             aria-describedby={value === notAllowed ? `${idPrefix}-not-allowed` : undefined}
             onFocus={() => {
               if (arrowedRef.current) onChoose(value);
+            }}
+            onClick={() => {
+              if (!arrowedRef.current) onPick(value);
             }}
           />
           <label htmlFor={`${idPrefix}-${index}`} className={ALLOWED_VALUE_LABEL_CLASS}>

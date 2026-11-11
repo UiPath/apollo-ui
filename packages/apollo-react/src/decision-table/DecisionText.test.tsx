@@ -1692,6 +1692,17 @@ describe('DecisionText', () => {
       expect(onCommit.mock.calls).toEqual([[r1Risk, '"standard"', 'down']]);
     });
 
+    it('commits the value an arrow key moved to on Space', async () => {
+      const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+      const user = userEvent.setup();
+      const standard = inPopover().getByRole('radio', { name: '"standard"' });
+      await user.keyboard('{ArrowDown}');
+      await waitFor(() => expect(standard).toBeChecked());
+      expect(document.activeElement).toBe(standard);
+      await user.keyboard(' ');
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"standard"', 'none']]);
+    });
+
     it('shows a value the column does not allow as the checked radio after the allowed ones, marked not allowed', () => {
       const { onCommit } = renderEditing({
         initialEditing: r1Risk,
