@@ -1697,6 +1697,24 @@ describe('DecisionText', () => {
       expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
     });
 
+    it('edits the lead value that was pressed when the blur commit moves the lead into lines', () => {
+      render(<TableHost initial={{ rowId: 'r1' }} />);
+      fireEvent.click(button('r1', 'Add condition to rule 1'));
+      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
+      fireEvent.change(editor(), { target: { value: '"web"' } });
+      const age = valueChip('r1', 'age');
+      fireEvent.pointerDown(age);
+      fireEvent.mouseDown(age);
+      act(() => age.focus());
+      expect(age.isConnected).toBe(false);
+      fireEvent.pointerUp(card('r1'));
+      fireEvent.mouseUp(card('r1'));
+      fireEvent.click(card('r1'));
+      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
+      expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/);
+      expect(valueChip('r1', 'age')).toHaveAttribute('tabindex', '0');
+    });
+
     const noValueLead = [
       'when ',
       { kind: 'input', columnId: 'age', text: 'age' },

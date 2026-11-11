@@ -47,16 +47,17 @@ export interface ValueEditing {
   onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => boolean;
   /** Starts editing a clicked value or clears a clicked condition, and returns whether it did. */
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
-  /** Keeps the card action a press lands on. */
+  /** Keeps the card action or value a press lands on. */
   onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
-  /** Runs the pressed card action once the press's blur commit unmounted its button. */
+  /** Runs the pressed card action or edits the pressed value once the press's blur commit unmounted it. */
   onPointerUp: () => void;
 }
 
-/** A card action and the button a press landed on for it. */
-interface PressedAction {
-  action: RuleAction;
-  button: Element;
+/** A card action or value and the element a press landed on for it. */
+interface Pressed {
+  action: RuleAction | null;
+  value: SentenceValueId | null;
+  element: Element;
 }
 
 const isStartKey = (event: React.KeyboardEvent): boolean =>
@@ -82,7 +83,8 @@ export const useValueEditing = ({
   labels,
 }: ValueEditingParams): ValueEditing => {
   const pendingRef = useRef<PendingSettle | null>(null);
-  const pressedRef = useRef<PressedAction | null>(null);
+  const pressedRef = useRef<Pressed | null>(null);
+  const recoveredRef = useRef(false);
   const refocusRef = useRef<string | null>(null);
   const target = edit?.editing ?? null;
   const openedRef = useRef(target ? valueKey(target) : undefined);
@@ -193,6 +195,10 @@ export const useValueEditing = ({
   };
 
   const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
+    if (recoveredRef.current) {
+      recoveredRef.current = false;
+      return true;
+    }
     const action = edit ? clickedAction(event.target) : null;
     if (action) return onAction(action);
     const value = edit ? clickedValue(event.target) : null;
@@ -202,15 +208,22 @@ export const useValueEditing = ({
   };
 
   const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    recoveredRef.current = false;
     const action = edit ? clickedAction(event.target) : null;
+    const value = edit && !action ? clickedValue(event.target) : null;
     pressedRef.current =
-      action && event.target instanceof Element ? { action, button: event.target } : null;
+      (action || value) && event.target instanceof Element
+        ? { action, value, element: event.target }
+        : null;
   };
 
   const onPointerUp = () => {
     const pressed = pressedRef.current;
     pressedRef.current = null;
-    if (pressed && !pressed.button.isConnected) onAction(pressed.action);
+    if (!pressed || pressed.element.isConnected) return;
+    recoveredRef.current = true;
+    if (pressed.action) onAction(pressed.action);
+    else if (pressed.value) start(pressed.value);
   };
 
   return {
