@@ -292,6 +292,7 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
           commit(expression ? { values: [draft], operator: undefined } : current, 'none')
         }
         applyDisabled={!expression && !complete}
+        applyKeepsFocus={!expression}
         labels={labels}
         dataTestId={dataTestId}
       />

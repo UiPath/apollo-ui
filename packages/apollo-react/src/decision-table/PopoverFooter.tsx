@@ -26,6 +26,7 @@ export interface PopoverFooterProps {
   onCancel: () => void;
   onApply: () => void;
   applyDisabled?: boolean;
+  applyKeepsFocus?: boolean;
   labels: PopoverFooterLabels;
   /** The popover's testid; derived ids: `-cancel`, `-apply`. */
   dataTestId: string;
@@ -39,6 +40,7 @@ export const PopoverFooter: React.FC<PopoverFooterProps> = ({
   onCancel,
   onApply,
   applyDisabled = false,
+  applyKeepsFocus = true,
   labels,
   dataTestId,
 }) => (
@@ -77,7 +79,7 @@ export const PopoverFooter: React.FC<PopoverFooterProps> = ({
         type="button"
         size="sm"
         disabled={applyDisabled}
-        onMouseDown={keepFocus}
+        onMouseDown={applyKeepsFocus ? keepFocus : undefined}
         onClick={onApply}
         data-testid={`${dataTestId}-apply`}
       >

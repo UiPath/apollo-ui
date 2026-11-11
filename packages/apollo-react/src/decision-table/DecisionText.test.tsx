@@ -1660,6 +1660,20 @@ describe('DecisionText', () => {
       expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
     });
 
+    it('applies from a mouse click on Apply the text a host editor holds, though it reports no draft', async () => {
+      const user = userEvent.setup();
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: blurCommittingEditor(false),
+      });
+      await user.click(action('Edit expression'));
+      await user.clear(screen.getByTestId('host-editor'));
+      await user.type(screen.getByTestId('host-editor'), 'x');
+      await user.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
     it('applies an expression a host editor held as focus moved to the footer, once focus leaves from there', () => {
       const renderEditor = ({ value, ariaLabel, onCommit }: SentenceEditorContext) => (
         <textarea
