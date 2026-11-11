@@ -138,6 +138,23 @@ describe('DecisionText', () => {
       expect(name).not.toHaveAttribute('data-mark-title');
     });
 
+    it('shows on a condition line whether its run matched it, in place of its bullet', () => {
+      renderView({
+        marks: rowMarks({
+          m1: { cells: { score: { matched: true }, debt: { tone: 'error', matched: false } } },
+        }),
+      });
+      const line = (columnId: string) =>
+        card('m1').querySelector<HTMLElement>(`li[data-column-id="${columnId}"]`);
+      expect(line('score')).toHaveAttribute('data-matched', 'true');
+      expect(line('score')?.querySelector('[data-verdict="matched"]')).not.toBeNull();
+      expect(line('debt')).toHaveAttribute('data-matched', 'false');
+      expect(line('debt')?.querySelector('[data-verdict="unmatched"]')).not.toBeNull();
+      expect(line('country')).not.toHaveAttribute('data-matched');
+      expect(line('country')?.querySelector('[data-verdict]')).toBeNull();
+      expect(card('m1').querySelectorAll('[data-glyph]')).toHaveLength(0);
+    });
+
     it('ends a condition line with its glyph, announced by status and message', () => {
       renderView({
         marks: rowMarks({

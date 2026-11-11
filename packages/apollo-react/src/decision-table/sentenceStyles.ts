@@ -72,6 +72,14 @@ export const MORE_VALUES_CLASS = cn('shrink-0 font-medium whitespace-nowrap', MU
 export const LINE_BULLET_CLASS =
   'size-1 shrink-0 rounded-full bg-foreground-disable forced-colors:bg-[CanvasText]';
 
+export const LINE_VERDICT_CLASS = {
+  matched: 'size-3.5 shrink-0 text-success-icon forced-colors:text-[CanvasText]',
+  unmatched: 'size-3.5 shrink-0 text-error-icon forced-colors:text-[CanvasText]',
+} as const;
+
+export const MATCHED_LINE_CLASS =
+  'rounded-md data-[matched=true]:bg-[color-mix(in_srgb,var(--color-success-icon)_10%,transparent)] data-[matched=false]:bg-[color-mix(in_srgb,var(--color-error-icon)_10%,transparent)]';
+
 export const TOKEN_KIND_CLASS = {
   input:
     'font-medium text-info-text group-data-[tone]/row:text-[color-mix(in_srgb,var(--color-info-text)_80%,var(--color-foreground))]',
