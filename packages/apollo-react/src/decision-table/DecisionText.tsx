@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useId } from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
 import { DecisionTextHeader, type SentenceHeader } from './DecisionTextHeader';
@@ -74,6 +74,22 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const hoverTo = useCellHover(onCellHover);
   const ruleWindow = useRuleWindow(rules, selected?.rowId);
   const selectable = onSelect !== undefined;
+  const addedFromEmptyRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!addedFromEmptyRef.current || rules.length === 0) return;
+    addedFromEmptyRef.current = false;
+    ruleWindow
+      .container()
+      ?.querySelector<HTMLElement>('[data-add-rule] button')
+      ?.focus({ preventScroll: true });
+  });
+  const emptyAddRule = addRule && {
+    ...addRule,
+    onAdd: () => {
+      addedFromEmptyRef.current = true;
+      addRule.onAdd();
+    },
+  };
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
   const sectionProps = useContainerHandlers({
     containerProps,
@@ -105,7 +121,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         />
       )}
       {rules.length === 0 ? (
-        <EmptyRules title={labels.emptyRules} addRule={addRule} dataTestId={dataTestId} />
+        <EmptyRules title={labels.emptyRules} addRule={emptyAddRule} dataTestId={dataTestId} />
       ) : (
         <RuleList
           ref={ruleWindow.listRef}

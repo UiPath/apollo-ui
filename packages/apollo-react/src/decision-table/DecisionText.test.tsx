@@ -449,6 +449,31 @@ describe('DecisionText', () => {
       fireEvent.click(add);
       expect(onAdd).toHaveBeenCalledTimes(1);
     });
+
+    it('moves focus from the empty state add-rule action to the one after the rule it adds', () => {
+      const FirstRuleHost = () => {
+        const [rules, setRules] = useState<SentenceRule[]>([]);
+        const [selected, setSelected] = useState<SentenceSelection | null>(null);
+        const onAdd = () => {
+          setRules(manySentenceRules(1));
+          setSelected({ rowId: 'row-0' });
+        };
+        return view({
+          rules,
+          selected,
+          onSelect: setSelected,
+          addRule: { label: 'Add rule', onAdd },
+        });
+      };
+      render(<FirstRuleHost />);
+      const empty = within(screen.getByTestId('nl-empty')).getByRole('button', {
+        name: 'Add rule',
+      });
+      act(() => empty.focus());
+      fireEvent.click(empty);
+      expect(card('row-0')).toHaveAttribute('tabindex', '0');
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add rule' }));
+    });
   });
 
   describe('windowing', () => {
