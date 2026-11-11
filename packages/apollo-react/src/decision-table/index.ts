@@ -4,6 +4,7 @@
 // (`GridLabels`). The drag and insert titles are the table's own, from its `decision-table`
 // catalog (see `ApI18nProvider`).
 
+export type { ColumnEdit, ColumnField } from './ColumnPopover';
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
@@ -87,4 +88,4 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
-export type { SentenceEditorContext } from './ValuePopover';
+export type { SentenceEditorContext, ValueCommit, ValueField } from './ValuePopover';
