@@ -546,13 +546,25 @@ describe('DecisionText', () => {
       m5: { tone: 'warning', title: 'Unreachable', glyph: true },
     });
 
-    it("shows a mark's message while the pointer is on it, and hides it off any mark", () => {
+    it("shows a mark's message while the pointer is on it, and hides it off any mark", async () => {
       renderView({ marks: scoreMarks });
       expect(tooltip()).toBeNull();
       fireEvent.pointerOver(valueChip('m3', 'score'));
       expect(tooltip()).toHaveTextContent('Overlaps row 1');
       fireEvent.pointerOver(valueChip('m1', 'score'));
-      expect(tooltip()).toBeNull();
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it('keeps the message open while the pointer crosses onto it, and hides it once the pointer rests off any mark', async () => {
+      renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      fireEvent.pointerOver(card('m3'));
+      const shown = tooltip();
+      if (!shown) throw new Error('no tooltip');
+      fireEvent.pointerOver(shown);
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m3'));
+      await waitFor(() => expect(tooltip()).toBeNull());
     });
 
     it("shows the header's and a band column's mark on hover", () => {

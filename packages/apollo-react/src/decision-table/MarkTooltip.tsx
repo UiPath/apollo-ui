@@ -21,6 +21,14 @@ interface ShownMark {
 
 const MARKED = '[data-mark-title]';
 
+const TOOLTIP = '[data-mark-tooltip]';
+
+/** How long the message stays once the pointer is off its mark, so the pointer can cross onto it. */
+const HIDE_DELAY_MS = 300;
+
+const isOnTooltip = (target: EventTarget | null): boolean =>
+  target instanceof Element && target.closest(TOOLTIP) !== null;
+
 const markedAt = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>(MARKED) : null;
 
@@ -51,7 +59,9 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     const section = container();
     if (!section) return;
     let current: HTMLElement | null = null;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
     const show = (element: HTMLElement | null) => {
+      clearTimeout(hideTimer);
       if (element === current) return;
       current = element;
       const title = element?.dataset.markTitle;
@@ -63,7 +73,12 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       setShown({ rect: { top, left, width, height }, title });
     };
     const hide = () => show(null);
-    const onPointerOver = (event: PointerEvent) => show(markedAt(event.target));
+    const onPointerOver = (event: PointerEvent) => {
+      const marked = markedAt(event.target);
+      clearTimeout(hideTimer);
+      if (marked || !current) show(marked);
+      else if (!isOnTooltip(event.target)) hideTimer = setTimeout(hide, HIDE_DELAY_MS);
+    };
     const onFocusIn = (event: FocusEvent) => show(markedFor(event.target));
     const onFocusOut = (event: FocusEvent) => {
       if (!(event.relatedTarget instanceof Node && section.contains(event.relatedTarget))) hide();
@@ -78,6 +93,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     section.addEventListener('keydown', onKeyDown);
     section.addEventListener('scroll', hide, true);
     return () => {
+      clearTimeout(hideTimer);
       section.removeEventListener('pointerover', onPointerOver);
       section.removeEventListener('pointerleave', hide);
       section.removeEventListener('focusin', onFocusIn);
@@ -101,6 +117,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
             side="bottom"
             align="start"
             className={MARK_TOOLTIP_CLASS}
+            data-mark-tooltip
             data-testid={`${dataTestId}-mark-tooltip`}
           >
             <div className={MARK_TOOLTIP_TEXT_CLASS}>{shown?.title}</div>
