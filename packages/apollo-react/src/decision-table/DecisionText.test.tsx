@@ -478,6 +478,36 @@ describe('DecisionText', () => {
       expect(screen.getAllByTestId('nl-row-spacer')).toHaveLength(2);
       expect(card('row-15')).toBe(before);
     });
+
+    it('lays the rules out at the heights their cards measure once a line wraps', () => {
+      const observers: ResizeObserverCallback[] = [];
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          constructor(callback: ResizeObserverCallback) {
+            observers.push(callback);
+          }
+          observe() {}
+          unobserve() {}
+          disconnect() {}
+        }
+      );
+      const rules = manySentenceRules(2000);
+      renderView({ rules });
+      const wrapped = card('row-2');
+      const estimate = (sentenceRuleOffsets(rules)[3] ?? 0) - (sentenceRuleOffsets(rules)[2] ?? 0);
+      Object.defineProperty(wrapped, 'offsetHeight', { value: estimate + 24 });
+      act(() => {
+        for (const callback of observers) {
+          callback([{ target: wrapped } as unknown as ResizeObserverEntry], {} as ResizeObserver);
+        }
+      });
+      act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
+      const first = Number(mountedRows()[0]?.dataset.rowId?.replace('row-', ''));
+      const [leading] = screen.getAllByTestId('nl-row-spacer');
+      vi.unstubAllGlobals();
+      expect(leading).toHaveStyle({ height: `${(sentenceRuleOffsets(rules)[first] ?? 0) + 24}px` });
+    });
   });
 
   describe('at scale', () => {
@@ -521,28 +551,17 @@ describe('DecisionText', () => {
         counts.map((count) => [
           count.textContent,
           count.parentElement?.parentElement === leadLine,
-          count.previousElementSibling?.classList.contains('truncate'),
           count.previousElementSibling?.textContent?.slice(-5),
         ])
       ).toEqual([
-        ['+9,980 more', true, true, '"C20"'],
-        ['+1 more', true, true, '"K20"'],
+        ['+9,980 more', true, '"C20"'],
+        ['+1 more', true, '"K20"'],
       ]);
       expect(counts[0]?.title).toMatch(
         /^"C21", "C22", .*"C40"… and Channel is one of "K1", .*"K20" and Age is greater than 18$/
       );
       expect(counts[1]?.title).toBe('"K21" and Age is greater than 18');
       expect(counts[1]?.nextElementSibling?.textContent).toBe(' and Age is greater than 18');
-    });
-
-    it('shows a clamped line in full as its title on hover, as a grid cell does', () => {
-      renderView();
-      const text = ruleLine('m3', 1)?.firstElementChild;
-      if (!(text instanceof HTMLElement)) throw new Error('lead');
-      Object.defineProperty(text, 'scrollWidth', { value: 500 });
-      Object.defineProperty(text, 'clientWidth', { value: 200 });
-      fireEvent.mouseEnter(text);
-      expect(text.title).toBe('when Credit Score is less than 600 and Channel is not "branch"');
     });
 
     it('keeps 50 band columns on one keyboard-scrollable list, named once by its caption', () => {

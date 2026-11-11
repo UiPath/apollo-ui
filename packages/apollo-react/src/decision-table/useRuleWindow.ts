@@ -1,10 +1,29 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { SENTENCE_MIN_RULE_HEIGHT_PX, sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentenceRule } from './sentenceTypes';
 import { useVirtualizedAxis } from './useVirtualizedAxis';
 
 const SENTENCE_RULE_OVERSCAN = 10;
+
+const NO_HEIGHTS: ReadonlyMap<string, number> = new Map();
+
+/** `current` with each resized card's height by its row id; the same map when none changed. */
+const measuredHeights = (
+  current: ReadonlyMap<string, number>,
+  entries: readonly ResizeObserverEntry[]
+): ReadonlyMap<string, number> => {
+  let next: Map<string, number> | undefined;
+  for (const { target } of entries) {
+    if (!(target instanceof HTMLElement)) continue;
+    const rowId = target.dataset.rowId;
+    const height = target.offsetHeight;
+    if (rowId === undefined || height === 0 || current.get(rowId) === height) continue;
+    next ??= new Map(current);
+    next.set(rowId, height);
+  }
+  return next ?? current;
+};
 
 /** The window of rules the list mounts, kept on the selected rule, and the scrolls that reveal a rule or a stop. */
 export const useRuleWindow = (
@@ -16,7 +35,8 @@ export const useRuleWindow = (
   const sectionRef = useRef<HTMLElement | null>(null);
   const listStart = useCallback(() => listRef.current?.offsetTop ?? 0, []);
   const headerHeight = useCallback(() => headerRef.current?.offsetHeight ?? 0, []);
-  const offsetsPx = useMemo(() => sentenceRuleOffsets(rules), [rules]);
+  const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(NO_HEIGHTS);
+  const offsetsPx = useMemo(() => sentenceRuleOffsets(rules, measured), [rules, measured]);
   const selectedRow = useMemo(() => {
     const index = rules.findIndex((rule) => rule.rowId === selectedRowId);
     return index < 0 ? null : index;
@@ -34,6 +54,15 @@ export const useRuleWindow = (
       itemOffsetsPx: offsetsPx,
     }
   );
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver((entries) =>
+      setMeasured((current) => measuredHeights(current, entries))
+    );
+    for (const card of list.querySelectorAll(':scope > li[data-row-id]')) observer.observe(card);
+    return () => observer.disconnect();
+  });
   const attachSection = useCallback(
     (element: HTMLElement | null) => {
       sectionRef.current = element;

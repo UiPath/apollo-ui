@@ -1,7 +1,6 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { Fragment } from 'react';
-import { showTitleIfClipped } from './clippedTitle';
 import type { RowMark } from './marks';
 import { boundedParts, partsText, SENTENCE_LINE_VALUE_LIMIT } from './sentenceParts';
 import {
@@ -45,7 +44,7 @@ export interface LineTextProps {
   labels: LineTextLabels;
 }
 
-/** One clamped line: its first values, then a count of the rest that the clamp never hides. */
+/** One line: its first values, then a count of the rest. */
 export const LineText: React.FC<LineTextProps> = ({
   heading = false,
   parts,
@@ -75,11 +74,7 @@ export const LineText: React.FC<LineTextProps> = ({
       )
     );
   if (clamped.length === 0) {
-    return (
-      <span className={textClass} onMouseEnter={showTitleIfClipped}>
-        {text(0)}
-      </span>
-    );
+    return <span className={textClass}>{text(0)}</span>;
   }
   const cuts = clamped.map(({ after }) => shown.length - after.length);
   const tail = cuts.at(-1) ?? shown.length;
@@ -87,9 +82,7 @@ export const LineText: React.FC<LineTextProps> = ({
     <span className={cn(textClass, CLAMPED_LINE_CLASS)}>
       {clamped.map(({ hidden, after, hiddenValues }, index) => (
         <Fragment key={index}>
-          <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
-            {text(cuts[index - 1] ?? 0, cuts[index])}
-          </span>
+          <span className={LINE_TEXT_CLASS}>{text(cuts[index - 1] ?? 0, cuts[index])}</span>
           <span
             className={cn(MORE_VALUES_CLASS, SELECTED_CHIP_CLASS)}
             data-selected={runColumnId(hidden) === selectedColumnId || undefined}
@@ -101,11 +94,7 @@ export const LineText: React.FC<LineTextProps> = ({
           </span>
         </Fragment>
       ))}
-      {tail < shown.length && (
-        <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
-          {text(tail)}
-        </span>
-      )}
+      {tail < shown.length && <span className={LINE_TEXT_CLASS}>{text(tail)}</span>}
     </span>
   );
 };

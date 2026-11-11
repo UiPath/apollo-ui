@@ -68,15 +68,15 @@ export const ROW_SURFACE_CLASS = cn(
 export const ROW_NUMBER_CLASS =
   'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm';
 
-export const LINE_CLASS = 'flex h-[var(--sentence-line)] items-center gap-2';
+export const LINE_CLASS = 'flex min-h-[var(--sentence-line)] items-start gap-2';
 
 export const LINES_CLASS = 'mt-[var(--sentence-lines-gap)]';
 
-export const LINE_TEXT_CLASS = 'min-w-0 truncate';
+export const LINE_TEXT_CLASS = 'min-w-0 break-words';
 
-export const CLAMPED_LINE_CLASS = 'flex items-center gap-2';
+export const CLAMPED_LINE_CLASS = 'flex flex-wrap items-baseline gap-x-2';
 
-export const HEADING_TEXT_CLASS = cn(LINE_TEXT_CLASS, 'self-baseline py-[2px] leading-[20px]');
+export const HEADING_TEXT_CLASS = cn(LINE_TEXT_CLASS, 'py-px leading-[22px]');
 
 export const MUTED_TEXT_CLASS =
   'text-foreground-de-emp group-data-[tone]/row:text-[color-mix(in_srgb,var(--color-foreground-de-emp)_80%,var(--color-foreground))]';
@@ -84,11 +84,11 @@ export const MUTED_TEXT_CLASS =
 export const MORE_VALUES_CLASS = cn('shrink-0 font-medium whitespace-nowrap', MUTED_TEXT_CLASS);
 
 export const LINE_BULLET_CLASS =
-  'size-1 shrink-0 rounded-full bg-foreground-disable forced-colors:bg-[CanvasText]';
+  'mt-2.5 size-1 shrink-0 rounded-full bg-foreground-disable forced-colors:bg-[CanvasText]';
 
 export const LINE_VERDICT_CLASS = {
-  matched: 'size-3.5 shrink-0 text-success-icon forced-colors:text-[CanvasText]',
-  unmatched: 'size-3.5 shrink-0 text-error-icon forced-colors:text-[CanvasText]',
+  matched: 'mt-[5px] size-3.5 shrink-0 text-success-icon forced-colors:text-[CanvasText]',
+  unmatched: 'mt-[5px] size-3.5 shrink-0 text-error-icon forced-colors:text-[CanvasText]',
 } as const;
 
 export const MATCHED_LINE_CLASS =
@@ -107,7 +107,7 @@ export const OUTPUT_VALUE_CLASS =
 
 export const EMPTY_OUTPUT_VALUE_CLASS = '-mx-1 px-1 py-0.5 italic text-foreground-de-emp';
 
-export const LINE_MARK_CLASS = 'inline-flex shrink-0 items-center';
+export const LINE_MARK_CLASS = 'inline-flex h-[var(--sentence-line)] shrink-0 items-center';
 
 export const MARK_GLYPH_CLASS = 'size-3.5 forced-colors:text-[CanvasText]';
 
