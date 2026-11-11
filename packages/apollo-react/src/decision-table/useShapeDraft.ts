@@ -61,7 +61,8 @@ export const useShapeDraft = (
   const shape = shapeOf(picked);
   const [text = '', high = ''] = values;
   const listed = filled([...allowedValues, ...entries]);
-  const checked = listed.filter((option) => values.includes(option));
+  const held = new Set(values);
+  const checked = listed.filter((option) => held.has(option));
   const byShape: Record<Shape, ValueCommit> = {
     single: { values: [text], operator: picked },
     range: { values: [text, high], operator: picked, ends },
@@ -89,9 +90,7 @@ export const useShapeDraft = (
       setEnds(nextEnds);
     },
     toggle: (option: string, on: boolean) =>
-      setValues(
-        listed.filter((candidate) => (candidate === option ? on : values.includes(candidate)))
-      ),
+      setValues(listed.filter((candidate) => (candidate === option ? on : held.has(candidate)))),
     add: (option: string) => {
       setEntries(filled([...entries, option]));
       setValues(filled([...checked, option]));

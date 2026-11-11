@@ -60,12 +60,13 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
     );
   }
   if (shape === 'list') {
+    const allowed = new Set(allowedValues);
     return (
       <div onKeyDown={onFieldsKeyDown}>
         <ValueChecklist
           listed={listed}
           checked={checked}
-          notAllowed={choices ? listed.filter((option) => !allowedValues.includes(option)) : []}
+          notAllowed={choices ? listed.filter((option) => !allowed.has(option)) : []}
           notAllowedLabel={labels.notAllowed}
           onToggle={draft.toggle}
           onAdd={choices ? undefined : draft.add}

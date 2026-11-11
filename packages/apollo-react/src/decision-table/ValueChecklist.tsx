@@ -52,6 +52,8 @@ export const ValueChecklist: React.FC<ValueChecklistProps> = ({
 }) => {
   const idPrefix = useId();
   const [other, setOther] = useState('');
+  const checkedValues = new Set(checked);
+  const notAllowedValues = new Set(notAllowed);
   const focusedValue = focused !== undefined && listed.includes(focused) ? focused : undefined;
   const add = () => {
     const value = other.trim();
@@ -65,14 +67,14 @@ export const ValueChecklist: React.FC<ValueChecklistProps> = ({
         <fieldset aria-label={label} className={ALLOWED_VALUES_CLASS}>
           {listed.map((value, index) => {
             const id = `${idPrefix}-${index}`;
-            const marked = notAllowed.includes(value);
+            const marked = notAllowedValues.has(value);
             return (
               <div key={value} className={ALLOWED_VALUE_CLASS}>
                 <Checkbox
                   ref={value === focusedValue ? focusRef : undefined}
                   autoFocus={value === focusedValue}
                   id={id}
-                  checked={checked.includes(value)}
+                  checked={checkedValues.has(value)}
                   aria-keyshortcuts={keyShortcuts}
                   aria-describedby={marked ? `${id}-not-allowed` : undefined}
                   onCheckedChange={(state) => onToggle(value, state === true)}
