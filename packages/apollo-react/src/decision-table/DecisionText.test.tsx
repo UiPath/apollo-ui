@@ -1679,6 +1679,24 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(card('r2'));
     });
 
+    it.each([
+      ['blur', () => fireEvent.blur(editor())],
+      ['Enter', () => fireEvent.keyDown(editor(), { key: 'Enter' })],
+    ])('closes the editor of the condition its ✕ removes after a refused %s commit, staying on its rule', (_, settle) => {
+      const { onCancel, onClearCell, onSelect } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
+        refuse: true,
+      });
+      fireEvent.change(editor(), { target: { value: '' } });
+      settle();
+      fireEvent.click(button('r1', 'Remove age from rule 1'));
+      expect(onClearCell).toHaveBeenCalledWith({ rowId: 'r1', columnId: 'age' });
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
     it('removes the condition whose ✕ was pressed when the blur commit adds a line before it', () => {
       const start = tableWithoutCell(FOUR_LINES, { rowId: 'r2', columnId: 'income' });
       render(<TableHost initial={{ rowId: 'r2' }} start={start} />);

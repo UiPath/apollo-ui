@@ -172,6 +172,10 @@ export const useValueEditing = ({
   const clear = (cell: SentenceCellId) => {
     refocusRef.current = cell.rowId;
     edit?.onClearCell(cell);
+    if (target?.rowId === cell.rowId && target.columnId === cell.columnId) {
+      pendingRef.current = null;
+      edit?.onCancel();
+    }
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>): boolean => {
