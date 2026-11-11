@@ -49,12 +49,22 @@ export const useContainerHandlers = ({
     onFocus: consumerFocus,
     onBlur: consumerBlur,
     onClick: consumerClick,
+    onPointerDown: consumerPointerDown,
+    onPointerUp: consumerPointerUp,
     ...restContainerProps
   } = containerProps ?? {};
 
   const onPointerOver = (event: React.PointerEvent<HTMLElement>) => {
     hoverTo(valueTokenAt(event.target));
     consumerPointerOver?.(event);
+  };
+  const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    valueEditing.onPointerDown(event);
+    consumerPointerDown?.(event);
+  };
+  const onPointerUp = (event: React.PointerEvent<HTMLElement>) => {
+    valueEditing.onPointerUp();
+    consumerPointerUp?.(event);
   };
   const onPointerOut = (event: React.PointerEvent<HTMLElement>) => {
     const to = event.relatedTarget instanceof Node ? event.relatedTarget : null;
@@ -106,6 +116,8 @@ export const useContainerHandlers = ({
 
   return {
     onPointerOver,
+    onPointerDown,
+    onPointerUp,
     onPointerOut,
     onKeyDown,
     onFocus,

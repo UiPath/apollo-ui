@@ -47,6 +47,16 @@ export interface ValueEditing {
   onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => boolean;
   /** Starts editing a clicked value or clears a clicked condition, and returns whether it did. */
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
+  /** Keeps the card action a press lands on. */
+  onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
+  /** Runs the pressed card action once the press's blur commit unmounted its button. */
+  onPointerUp: () => void;
+}
+
+/** A card action and the button a press landed on for it. */
+interface PressedAction {
+  action: RuleAction;
+  button: Element;
 }
 
 const isStartKey = (event: React.KeyboardEvent): boolean =>
@@ -72,6 +82,7 @@ export const useValueEditing = ({
   labels,
 }: ValueEditingParams): ValueEditing => {
   const pendingRef = useRef<PendingSettle | null>(null);
+  const pressedRef = useRef<PressedAction | null>(null);
   const refocusRef = useRef<string | null>(null);
   const target = edit?.editing ?? null;
   const openedRef = useRef(target ? valueKey(target) : undefined);
@@ -190,10 +201,24 @@ export const useValueEditing = ({
     return true;
   };
 
+  const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    const action = edit ? clickedAction(event.target) : null;
+    pressedRef.current =
+      action && event.target instanceof Element ? { action, button: event.target } : null;
+  };
+
+  const onPointerUp = () => {
+    const pressed = pressedRef.current;
+    pressedRef.current = null;
+    if (pressed && !pressed.button.isConnected) onAction(pressed.action);
+  };
+
   return {
     editor: editorOf(),
     editorKey: target ? valueKey(target) : undefined,
     onKeyDown,
     onClick,
+    onPointerDown,
+    onPointerUp,
   };
 };

@@ -1680,6 +1680,23 @@ describe('DecisionText', () => {
       expect(lines.map((line) => line.dataset.columnId)).toEqual(['age', 'income', regionId]);
     });
 
+    it('removes the lead condition whose ✕ was pressed when the blur commit moves the lead into lines', () => {
+      render(<TableHost initial={{ rowId: 'r1' }} />);
+      fireEvent.click(button('r1', 'Add condition to rule 1'));
+      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
+      fireEvent.change(editor(), { target: { value: '"web"' } });
+      const remove = button('r1', 'Remove age from rule 1');
+      fireEvent.pointerDown(remove);
+      fireEvent.mouseDown(remove);
+      act(() => remove.focus());
+      expect(remove.isConnected).toBe(false);
+      fireEvent.pointerUp(card('r1'));
+      fireEvent.mouseUp(card('r1'));
+      fireEvent.click(card('r1'));
+      expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull();
+      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
+    });
+
     const noValueLead = [
       'when ',
       { kind: 'input', columnId: 'age', text: 'age' },
