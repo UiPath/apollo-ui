@@ -9,7 +9,7 @@ import {
   tokenText,
   valueTokenOf,
 } from './sentenceParts';
-import { addConditionOf, clickedAction, clickedValue } from './sentenceTargets';
+import { addConditionOf, clickedAction, clickedValue, type RuleAction } from './sentenceTargets';
 import type {
   SentenceBand,
   SentenceCellId,
@@ -169,19 +169,22 @@ export const useValueEditing = ({
     return true;
   };
 
-  const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
-    const action = edit ? clickedAction(event.target) : null;
-    if (edit && action?.action === 'clear') {
+  const onAction = (action: RuleAction): boolean => {
+    if (action.action === 'clear') {
       clear(action.cell);
       if (selected?.rowId !== action.cell.rowId) navigation.select({ rowId: action.cell.rowId });
       return true;
     }
-    if (edit && action?.action === 'delete') {
-      refocusRef.current = action.rowId;
-      edit.onDeleteRule(action.rowId);
-      return true;
-    }
-    const value = edit && !action ? clickedValue(event.target) : null;
+    if (action.action !== 'delete') return false;
+    refocusRef.current = action.rowId;
+    edit?.onDeleteRule(action.rowId);
+    return true;
+  };
+
+  const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
+    const action = edit ? clickedAction(event.target) : null;
+    if (action) return onAction(action);
+    const value = edit ? clickedValue(event.target) : null;
     if (!value) return false;
     start(value);
     return true;

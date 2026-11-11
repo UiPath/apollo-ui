@@ -79,7 +79,7 @@ interface RuleDeleteAction {
 }
 
 /** A card's own action, as its `data-rule-action` button names it. */
-type RuleAction = RuleClearAction | RuleMenuAction | RuleDeleteAction;
+export type RuleAction = RuleClearAction | RuleMenuAction | RuleDeleteAction;
 
 /** The card action a click on `target` hit. */
 export const clickedAction = (target: EventTarget | null): RuleAction | null => {
