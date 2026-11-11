@@ -205,6 +205,28 @@ export const useVirtualizedAxis = (
   const tailRef = useRef(tail);
   const viewportRef = useRef(viewportPx);
 
+  const followRange = (range: { startIndex: number; endIndex: number }, viewport: number) => {
+    const lagging = Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold;
+    const nextAnchor = lagging ? range.startIndex : anchorRef.current;
+    const kept = lagging ? 0 : tailRef.current;
+    const end = Math.max(
+      windowEnd(Math.min(nextAnchor, Math.max(0, itemCount - 1)), viewport),
+      kept
+    );
+    const nextTail =
+      end < itemCount && range.endIndex >= end - shiftThreshold
+        ? range.endIndex + 1 + overscanItems
+        : kept;
+    if (nextAnchor !== anchorRef.current) {
+      anchorRef.current = nextAnchor;
+      setAnchor(nextAnchor);
+    }
+    if (nextTail !== tailRef.current) {
+      tailRef.current = nextTail;
+      setTail(nextTail);
+    }
+  };
+
   const scrollElementRef = useRef<HTMLElement | null>(null);
   const measureRef = useCallback((element: HTMLElement | null) => {
     scrollElementRef.current = element;
@@ -293,25 +315,7 @@ export const useVirtualizedAxis = (
       const rect = instance.scrollRect;
       if (range) {
         const viewport = (axis === 'horizontal' ? rect?.width : rect?.height) || fallbackViewportPx;
-        const lagging = Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold;
-        const nextAnchor = lagging ? range.startIndex : anchorRef.current;
-        const kept = lagging ? 0 : tailRef.current;
-        const end = Math.max(
-          windowEnd(Math.min(nextAnchor, Math.max(0, itemCount - 1)), viewport),
-          kept
-        );
-        const nextTail =
-          end < itemCount && range.endIndex >= end - shiftThreshold
-            ? range.endIndex + 1 + overscanItems
-            : kept;
-        if (nextAnchor !== anchorRef.current) {
-          anchorRef.current = nextAnchor;
-          setAnchor(nextAnchor);
-        }
-        if (nextTail !== tailRef.current) {
-          tailRef.current = nextTail;
-          setTail(nextTail);
-        }
+        followRange(range, viewport);
       }
       if (rect) {
         const nextViewport = (axis === 'horizontal' ? rect.width : rect.height) || null;
