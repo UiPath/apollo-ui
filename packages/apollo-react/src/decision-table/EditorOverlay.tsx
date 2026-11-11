@@ -49,7 +49,8 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   useEffect(() => {
     if (!watchesPresses) return;
     const press = (event: PointerEvent) => {
-      const target = event.target instanceof Node ? event.target : null;
+      const [origin] = event.composedPath();
+      const target = origin instanceof Node ? origin : null;
       const section = container();
       if (overlayRef.current?.contains(target)) return;
       if (section && anchorRef.current(section)?.contains(target)) return;
