@@ -997,13 +997,19 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(document.body);
     });
 
-    it('keeps a focused add-rule action in view after the rule it adds', () => {
+    it.each([
+      'the document',
+      'a shadow root',
+    ])('keeps a focused add-rule action in view after the rule it adds, or a cell of it the host selects, in %s', (scope) => {
       const AddingHost = () => {
         const [rules, setRules] = useState(() => manySentenceRules(3));
         const [selected, setSelected] = useState<SentenceSelection | null>(null);
         const onAdd = () => {
           setRules(manySentenceRules(rules.length + 1));
-          setSelected({ rowId: `row-${rules.length}` });
+          setSelected({
+            rowId: `row-${rules.length}`,
+            ...(rules.length > 3 && { columnId: 'decision' }),
+          });
         };
         return view({
           rules,
@@ -1012,14 +1018,19 @@ describe('DecisionText', () => {
           addRule: { label: 'Add rule', onAdd },
         });
       };
-      render(<AddingHost />);
-      const frame = screen.getByTestId('nl');
+      const host = document.body.appendChild(document.createElement('div'));
+      const shadow = scope === 'a shadow root' ? host.attachShadow({ mode: 'open' }) : undefined;
+      const container = (shadow ?? host).appendChild(document.createElement('div'));
+      render(<AddingHost />, { container });
+      const inView = within(container);
+      const frame = inView.getByTestId('nl');
       Object.defineProperty(frame, 'clientHeight', { value: 100 });
-      const add = screen.getByRole('button', { name: 'Add rule' });
+      const add = inView.getByRole('button', { name: 'Add rule' });
       const footer = add.parentElement;
       if (!footer) throw new Error('no add-rule footer');
       vi.spyOn(footer, 'getBoundingClientRect').mockImplementation(() => {
-        const listEnd = sentenceRuleOffsets(manySentenceRules(mountedRows().length)).at(-1) ?? 0;
+        const mounted = container.querySelectorAll('li[data-row-id]').length;
+        const listEnd = sentenceRuleOffsets(manySentenceRules(mounted)).at(-1) ?? 0;
         return {
           ...rect(0, 400),
           top: listEnd - frame.scrollTop,
@@ -1029,10 +1040,14 @@ describe('DecisionText', () => {
       for (const added of [3, 4]) {
         add.focus();
         fireEvent.click(add);
-        expect(card(`row-${added}`)).toHaveAttribute('tabindex', '0');
-        expect(document.activeElement).toBe(add);
+        const row = inView.getByTestId(`nl-row-row-${added}`);
+        const stop =
+          added > 3 ? row.querySelector('[data-kind="value"][data-column-id="decision"]') : row;
+        expect(stop).toHaveAttribute('tabindex', '0');
+        expect((shadow ?? document).activeElement).toBe(add);
         expect(footer.getBoundingClientRect().bottom).toBeLessThanOrEqual(100);
       }
+      host.remove();
     });
 
     it('scrolls a rule the host selects out from under the sticky header', () => {

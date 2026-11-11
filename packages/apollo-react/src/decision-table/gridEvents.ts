@@ -24,6 +24,12 @@ export const isRedoKey = (event: ShortcutKeyEvent): boolean =>
   !event.altKey &&
   (event.shiftKey ? event.key.toLowerCase() === 'z' : event.key.toLowerCase() === 'y');
 
+/** The focused element as a node's own document or shadow root sees it. */
+export const activeElementOf = (node: Node): Element | null => {
+  const root = node.getRootNode();
+  return (root instanceof ShadowRoot ? root.activeElement : null) ?? document.activeElement;
+};
+
 /** Where an inline edit's commit key sends the selection: Enter down, Tab right, Shift+Tab left. */
 export const commitMoveFor = (event: { key: string; shiftKey: boolean }): CellCommitMove =>
   event.key === 'Enter' ? 'down' : event.shiftKey ? 'left' : 'right';

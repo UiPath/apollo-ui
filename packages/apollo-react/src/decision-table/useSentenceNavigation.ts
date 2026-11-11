@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import { isFromTextField } from './gridEvents';
+import { activeElementOf, isFromTextField } from './gridEvents';
 import { firstValuesOf } from './ruleCardModel';
 import type { SentenceRule, SentenceSelection } from './sentenceTypes';
 import { ARROW_DELTAS, clamp, GRID_ENTRY_KEYS } from './useGridNavigation';
@@ -122,8 +122,8 @@ const movedStopOf = (
 ): HTMLElement | undefined => {
   const cell = element && current?.columnId !== undefined ? stopOf(element, current) : undefined;
   const addRule = element?.querySelector<HTMLElement>('[data-add-rule]');
-  const focusedAddRule = addRule?.contains(document.activeElement) ? addRule : undefined;
-  return cell ?? focusedAddRule;
+  const focusedAddRule = addRule?.contains(activeElementOf(addRule)) ? addRule : undefined;
+  return focusedAddRule ?? cell;
 };
 
 interface SentenceNavigationSource {
