@@ -155,6 +155,17 @@ describe('DecisionText', () => {
       expect(card('m1').querySelectorAll('[data-glyph]')).toHaveLength(0);
     });
 
+    it('reads out a condition line’s run verdict', () => {
+      renderView({
+        marks: rowMarks({ m1: { cells: { score: { matched: true }, debt: { matched: false } } } }),
+      });
+      const line = (columnId: string) =>
+        card('m1').querySelector<HTMLElement>(`li[data-column-id="${columnId}"]`);
+      expect(line('score')).toHaveTextContent(/^Matched/);
+      expect(line('debt')).toHaveTextContent(/^Not matched/);
+      expect(line('country')).not.toHaveTextContent(/matched/i);
+    });
+
     it('ends a condition line with its glyph, announced by status and message', () => {
       renderView({
         marks: rowMarks({

@@ -1,6 +1,5 @@
 import { memo } from 'react';
-import { ConditionLine } from './ConditionLine';
-import type { LineTextLabels } from './LineText';
+import { ConditionLine, type ConditionLineLabels } from './ConditionLine';
 import type { MarkBadgeLabels } from './MarkBadge';
 import type { RowMark } from './marks';
 import { RuleLine } from './RuleLine';
@@ -13,7 +12,7 @@ import {
 } from './sentenceStyles';
 import type { SentenceRule } from './sentenceTypes';
 
-export interface RuleCardLabels extends MarkBadgeLabels, LineTextLabels {}
+export interface RuleCardLabels extends MarkBadgeLabels, ConditionLineLabels {}
 
 export interface RuleCardProps {
   rule: SentenceRule;

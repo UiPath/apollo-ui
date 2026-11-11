@@ -186,6 +186,7 @@ export const DECISION_TEXT_LABELS: DecisionTextLabels = {
     return message ? `${status}: ${message}` : status;
   },
   moreValues: (count) => `+${count.toLocaleString('en-US')} more`,
+  conditionVerdict: (matched) => (matched ? 'Matched' : 'Not matched'),
 };
 
 const firstRule = (): SentenceRule => {

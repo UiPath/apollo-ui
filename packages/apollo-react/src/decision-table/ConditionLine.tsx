@@ -1,14 +1,17 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { LineLead } from './LineLead';
-import { LineText, type LineTextProps } from './LineText';
+import { LineLead, type LineLeadLabels } from './LineLead';
+import { LineText, type LineTextLabels, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { LINE_CLASS, MATCHED_LINE_CLASS } from './sentenceStyles';
 import type { SentenceLine } from './sentenceTypes';
 
-export interface ConditionLineProps extends Pick<LineTextProps, 'cells' | 'labels'> {
+export interface ConditionLineLabels extends LineTextLabels, LineLeadLabels {}
+
+export interface ConditionLineProps extends Pick<LineTextProps, 'cells'> {
   line: SentenceLine;
   badge: MarkBadgeProps | null;
+  labels: ConditionLineLabels;
 }
 
 /** One condition line of a card: its bullet or its run's verdict, its text, then its glyph. */
@@ -20,7 +23,7 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({ line, badge, ...li
       data-column-id={line.columnId}
       data-matched={matched}
     >
-      <LineLead matched={matched} />
+      <LineLead matched={matched} labels={lineProps.labels} />
       <LineText parts={line.parts} {...lineProps} />
       {badge && <MarkBadge {...badge} />}
     </li>
