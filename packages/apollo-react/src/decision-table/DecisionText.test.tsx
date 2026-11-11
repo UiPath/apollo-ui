@@ -1693,6 +1693,26 @@ describe('DecisionText', () => {
       rule.rowId === 'r1' ? { ...rule, lead: noValueLead } : rule
     );
 
+    const noValueInput = () => {
+      const input = card('r1').querySelector<HTMLElement>(
+        '[data-kind="input"][data-column-id="income"]'
+      );
+      if (!input) throw new Error('no income input in r1');
+      return input;
+    };
+
+    it('selects a condition with no value by a click on its input', () => {
+      const { onSelect } = renderSelectable({ rules: NO_VALUE_RULES });
+      fireEvent.click(noValueInput());
+      expect(onSelect).toHaveBeenLastCalledWith({ rowId: 'r1', columnId: 'income' });
+    });
+
+    it('edits a condition with no value by a click on its input', () => {
+      const { onStartEdit } = renderEditing({ rules: NO_VALUE_RULES });
+      fireEvent.click(noValueInput());
+      expect(onStartEdit).toHaveBeenCalledWith({ rowId: 'r1', columnId: 'income', index: 0 });
+    });
+
     it('removes a condition with no value by Delete on its input', () => {
       const { onClearCell } = renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1' } });
       act(() => card('r1').focus());

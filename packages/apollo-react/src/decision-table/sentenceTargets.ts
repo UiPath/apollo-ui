@@ -15,23 +15,37 @@ export const valueTokenAt = (target: EventTarget | null): HoveredToken | null =>
   return chip && rowId && columnId ? { chip, cell: { rowId, columnId } } : null;
 };
 
-/** What a click on `target` selects: the cell of a value token or of a `+N more` count, else the rule of its row. */
+/** The input token at `target` that stops for its cell, the rule wording no value for it. */
+const inputStopAt = (target: EventTarget | null): SentenceCellId | null => {
+  const stop =
+    target instanceof Element
+      ? target.closest<HTMLElement>('[data-kind="input"][role="button"]')
+      : null;
+  const rowId = stop?.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId;
+  const columnId = stop?.dataset.columnId;
+  return rowId && columnId ? { rowId, columnId } : null;
+};
+
+/** What a click on `target` selects: the cell of a value token, an input stop or a `+N more` count, else the rule of its row. */
 export const clickedSelection = (target: EventTarget | null): SentenceSelection | null => {
   const element = target instanceof Element ? target : null;
   const rowId = element?.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId;
   const columnId =
     valueTokenAt(target)?.cell.columnId ??
+    inputStopAt(target)?.columnId ??
     element?.closest<HTMLElement>('[data-more-values]')?.dataset.columnId;
   if (rowId === undefined) return null;
   return columnId === undefined ? { rowId } : { rowId, columnId };
 };
 
-/** The value a click on `target` hit: its cell and its place among the cell's values. */
+/** The value a click on `target` hit: its cell and its place among the cell's values, the first for an input stop. */
 export const clickedValue = (target: EventTarget | null): SentenceValueId | null => {
   const chip = target instanceof Element ? target.closest<HTMLElement>('[data-value-index]') : null;
   const hit = valueTokenAt(chip);
   const index = Number(chip?.dataset.valueIndex);
-  return hit && Number.isInteger(index) ? { ...hit.cell, index } : null;
+  if (hit && Number.isInteger(index)) return { ...hit.cell, index };
+  const stop = inputStopAt(target);
+  return stop ? { ...stop, index: 0 } : null;
 };
 
 /** The mounted card of a row. */
