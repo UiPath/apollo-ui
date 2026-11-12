@@ -86,6 +86,8 @@ const rowMarks = (rows: Record<string, RowMark>): TableMarks => ({
   rows: new Map(Object.entries(rows)),
   columns: new Map(),
 });
+const isHiddenFromReaders = (element: Element) =>
+  element.closest('[aria-hidden="true"], [hidden]') !== null;
 const valueChip = (rowId: string, columnId: string) => {
   const chip = card(rowId).querySelector<HTMLElement>(
     `[data-kind="value"][data-column-id="${columnId}"]`
@@ -427,11 +429,33 @@ describe('DecisionText', () => {
       renderView({
         marks: rowMarks({ m1: { cells: { score: { matched: true }, debt: { matched: false } } } }),
       });
-      const line = (columnId: string) =>
-        card('m1').querySelector<HTMLElement>(`li[data-column-id="${columnId}"]`);
-      expect(line('score')).toHaveTextContent(/^Matched/);
-      expect(line('debt')).toHaveTextContent(/^Not matched/);
-      expect(line('country')).not.toHaveTextContent(/matched/i);
+      const verdicts = within(card('m1')).getAllByText(/^(Not )?matched$/i);
+      expect(verdicts.map((verdict) => verdict.closest('li')?.dataset.columnId)).toEqual([
+        'score',
+        'debt',
+      ]);
+      expect(verdicts.map((verdict) => verdict.textContent)).toEqual(['Matched', 'Not matched']);
+      expect(verdicts.filter(isHiddenFromReaders)).toEqual([]);
+    });
+
+    it('reads out the run verdict of each condition a rule words in its lead, before its input', () => {
+      renderView({
+        marks: rowMarks({
+          m3: { cells: { score: { matched: true }, channel: { matched: false } } },
+        }),
+      });
+      const verdicts = within(card('m3')).getAllByText(/^(Not )?matched$/i);
+      expect(
+        verdicts.map((verdict) => [
+          verdict.textContent,
+          verdict.nextElementSibling?.getAttribute('data-column-id'),
+        ])
+      ).toEqual([
+        ['Matched', 'score'],
+        ['Not matched', 'channel'],
+      ]);
+      expect(verdicts.filter(isHiddenFromReaders)).toEqual([]);
+      expect(within(ruleLine('m3', 0) as HTMLElement).queryByText(/matched/i)).toBeNull();
     });
 
     it('ends a condition line with its glyph, announced by status and message', () => {

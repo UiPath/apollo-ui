@@ -118,6 +118,7 @@ export const RuleCard = memo<RuleCardProps>(
             {...lineProps}
           />
           <RuleLine
+            verdicts
             parts={rule.lead}
             badge={card.badges.lead}
             removals={card.removals.lead}

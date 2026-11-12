@@ -1,6 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { Fragment } from 'react';
+import type { LineLeadLabels } from './LineLead';
 import type { RowMark } from './marks';
 import { boundedParts, partsText, SENTENCE_LINE_VALUE_LIMIT } from './sentenceParts';
 import {
@@ -30,13 +31,15 @@ const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePa
 const testsInput = (parts: readonly SentencePart[]): boolean =>
   parts.some((part) => typeof part !== 'string' && part.kind === 'input');
 
-export interface LineTextLabels {
+export interface LineTextLabels extends LineLeadLabels {
   /** The count a line shows in place of the values past its limit, e.g. "+9,980 more". */
   moreValues: (count: number) => string;
 }
 
 export interface LineTextProps {
   heading?: boolean;
+  /** Reads out each worded condition's run verdict before its input, for a line without a lead of its own. */
+  verdicts?: boolean;
   parts: readonly SentencePart[];
   cells: RowMark['cells'];
   selectedColumnId: string | null | undefined;
@@ -48,6 +51,7 @@ export interface LineTextProps {
 /** One line: its first values, then a count of the rest. */
 export const LineText: React.FC<LineTextProps> = ({
   heading = false,
+  verdicts = false,
   parts,
   cells,
   selectedColumnId,
@@ -58,6 +62,13 @@ export const LineText: React.FC<LineTextProps> = ({
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
   const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, 'flex-1');
   const wordClass = testsInput(parts) ? MUTED_TEXT_CLASS : undefined;
+  const verdictOf = (token: SentenceToken) => {
+    const matched =
+      verdicts && token.kind === 'input' ? cells?.[token.columnId]?.matched : undefined;
+    return matched === undefined ? null : (
+      <span className="sr-only">{labels.conditionVerdict(matched)}</span>
+    );
+  };
   const text = (from: number, to = shown.length) =>
     shown.slice(from, to).map((part, offset) =>
       typeof part === 'string' ? (
@@ -65,18 +76,20 @@ export const LineText: React.FC<LineTextProps> = ({
           {part}
         </span>
       ) : (
-        <TokenChip
-          key={from + offset}
-          token={part}
-          mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
-          output={heading}
-          selected={
-            (part.kind === 'value' || stopOf(part) !== undefined) &&
-            part.columnId === selectedColumnId
-          }
-          stop={stopOf(part)}
-          link={linkOf(part)}
-        />
+        <Fragment key={from + offset}>
+          {verdictOf(part)}
+          <TokenChip
+            token={part}
+            mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
+            output={heading}
+            selected={
+              (part.kind === 'value' || stopOf(part) !== undefined) &&
+              part.columnId === selectedColumnId
+            }
+            stop={stopOf(part)}
+            link={linkOf(part)}
+          />
+        </Fragment>
       )
     );
   if (clamped.length === 0) {
