@@ -20,6 +20,12 @@ interface ShownMark {
   title: string;
 }
 
+/** The mark focus is on, and every message its element is described by. */
+interface FocusedMark {
+  element: HTMLElement;
+  title: string;
+}
+
 const MARKED = '[data-mark-title]';
 
 const TOOLTIP = '[data-mark-tooltip]';
@@ -52,7 +58,7 @@ export interface MarkTooltipProps {
   dataTestId: string;
 }
 
-/** One tooltip for the view: the message of the mark the pointer or focus is on, until Escape or another element. */
+/** One tooltip for the view: the message of the mark the pointer is on, else of the one focus is on, until Escape or another element. */
 export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId }) => {
   const [shown, setShown] = useState<ShownMark | null>(null);
   useEffect(() => {
@@ -60,6 +66,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     if (!section) return;
     let current: HTMLElement | null = null;
     let currentTitle: string | undefined;
+    let focused: FocusedMark | null = null;
     let dismissed = false;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
     const show = (element: HTMLElement | null, title = element?.dataset.markTitle) => {
@@ -76,18 +83,25 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       setShown({ rect: { top, left, width, height }, title });
     };
     const hide = () => show(null);
+    const showFocused = () => show(focused?.element ?? null, focused?.title);
     const onPointerOver = (event: PointerEvent) => {
       const marked = markedAt(event.target);
       clearTimeout(hideTimer);
       if (marked || !current) show(marked);
-      else if (!isOnTooltip(event.target)) hideTimer = setTimeout(hide, HIDE_DELAY_MS);
+      else if (current !== focused?.element && !isOnTooltip(event.target)) {
+        hideTimer = setTimeout(showFocused, HIDE_DELAY_MS);
+      }
     };
     const onFocusIn = (event: FocusEvent) => {
       const badges = markedFor(event.target);
-      show(badges[0] ?? null, titlesOf(badges));
+      const [element] = badges;
+      focused = element ? { element, title: titlesOf(badges) } : null;
+      showFocused();
     };
     const onFocusOut = (event: FocusEvent) => {
-      if (!(event.relatedTarget instanceof Node && section.contains(event.relatedTarget))) hide();
+      if (event.relatedTarget instanceof Node && section.contains(event.relatedTarget)) return;
+      focused = null;
+      hide();
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
@@ -95,7 +109,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       setShown(null);
     };
     section.addEventListener('pointerover', onPointerOver);
-    section.addEventListener('pointerleave', hide);
+    section.addEventListener('pointerleave', showFocused);
     section.addEventListener('focusin', onFocusIn);
     section.addEventListener('focusout', onFocusOut);
     section.addEventListener('keydown', onKeyDown);
@@ -103,7 +117,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     return () => {
       clearTimeout(hideTimer);
       section.removeEventListener('pointerover', onPointerOver);
-      section.removeEventListener('pointerleave', hide);
+      section.removeEventListener('pointerleave', showFocused);
       section.removeEventListener('focusin', onFocusIn);
       section.removeEventListener('focusout', onFocusOut);
       section.removeEventListener('keydown', onKeyDown);

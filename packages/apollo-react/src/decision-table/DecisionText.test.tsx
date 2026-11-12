@@ -741,6 +741,34 @@ describe('DecisionText', () => {
       expect(inShadow.queryByTestId('nl-mark-tooltip')).toHaveTextContent('Unreachable');
     });
 
+    it("keeps a focused rule's message once the pointer leaves the view or rests off any mark, back from another mark, until Escape", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      const restOffMarks = () => act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(card('m1'));
+      await restOffMarks();
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(card('m1'));
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      await restOffMarks();
+      expect(tooltip()).toBeNull();
+    });
+
     it('hides the message on Escape until another mark is reached', () => {
       renderView({ marks: scoreMarks });
       const score = valueChip('m3', 'score');
