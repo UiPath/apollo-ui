@@ -8,11 +8,11 @@ import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
 import type { ValueEditing } from './useValueEditing';
 
-export type ContainerProps = React.HTMLAttributes<HTMLElement> &
+export type DecisionTextContainerProps = React.HTMLAttributes<HTMLElement> &
   Record<`data-${string}`, string | undefined>;
 
 export interface ContainerHandlersParams {
-  containerProps: ContainerProps | undefined;
+  containerProps: DecisionTextContainerProps | undefined;
   hoverTo: ReturnType<typeof useCellHover>;
   navigation: SentenceNavigation;
   valueEditing: ValueEditing;

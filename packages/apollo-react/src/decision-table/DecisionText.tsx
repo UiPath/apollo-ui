@@ -29,7 +29,7 @@ import type {
 } from './sentenceTypes';
 import { useCellHover } from './useCellHover';
 import { useColumnEditing } from './useColumnEditing';
-import { type ContainerProps, useContainerHandlers } from './useContainerHandlers';
+import { type DecisionTextContainerProps, useContainerHandlers } from './useContainerHandlers';
 import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
 import { useRuleWindow } from './useRuleWindow';
@@ -103,7 +103,7 @@ interface DecisionTextBaseProps {
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Merged onto the scroll container; a `data-testid` here overrides `dataTestId`. */
-  containerProps?: ContainerProps;
+  containerProps?: DecisionTextContainerProps;
   /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
   dataTestId: string;
   /** Overlays rendered inside the scroll container (menus, notes, dialogs). */

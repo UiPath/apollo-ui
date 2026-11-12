@@ -4,7 +4,8 @@
 // (`GridLabels`). The drag and insert titles are the table's own, from its `decision-table`
 // catalog (see `ApI18nProvider`).
 
-export type { ColumnEdit, ColumnField } from './ColumnPopover';
+export type { AddRuleButtonProps } from './AddRuleButton';
+export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
@@ -69,7 +70,10 @@ export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
 export type { PolicyOption } from './PolicyOptionItem';
+export type { PolicyGroup } from './PolicyPicker';
+export type { GlyphTone } from './sentenceMarks';
 export * from './sentenceTypes';
+export type { DecisionTextContainerProps } from './useContainerHandlers';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {
@@ -88,4 +92,11 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
-export type { SentenceEditorContext, ValueCommit, ValueField } from './ValuePopover';
+export type {
+  RangeEnds,
+  SentenceEditorContext,
+  ValueCommit,
+  ValueField,
+  ValueOperatorOption,
+  ValueShape,
+} from './ValuePopover';

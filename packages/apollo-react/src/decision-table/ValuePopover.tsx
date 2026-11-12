@@ -18,7 +18,7 @@ export interface SentenceEditorContext extends GridCellEditorContext {
 }
 
 /** How many values an operator takes: one, a range's two ends, or a list. */
-type ValueShape = 'single' | 'range' | 'list';
+export type ValueShape = 'single' | 'range' | 'list';
 
 /** An operator a condition can switch to, and how many values it takes; one when unset. */
 export interface ValueOperatorOption extends PopoverSelectOption {

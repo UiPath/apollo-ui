@@ -42,7 +42,7 @@ export interface SentenceRule {
   lines: readonly SentenceLine[];
 }
 
-interface SentenceBandColumn extends Pick<GridColumn, 'id' | 'name'> {
+export interface SentenceBandColumn extends Pick<GridColumn, 'id' | 'name'> {
   /** The column's type glyph, before its name. */
   icon?: React.ReactNode;
 }
