@@ -34,6 +34,21 @@ import { messages as apChatRu } from '../chat/locales/ru';
 import { messages as apChatTr } from '../chat/locales/tr';
 import { messages as apChatZhCN } from '../chat/locales/zh-CN';
 import { messages as apChatZhTW } from '../chat/locales/zh-TW';
+// Pre-import all locales for decision-table component
+import { messages as decisionTableDe } from '../decision-table/locales/de';
+import { messages as decisionTableEn } from '../decision-table/locales/en';
+import { messages as decisionTableEs } from '../decision-table/locales/es';
+import { messages as decisionTableEsMX } from '../decision-table/locales/es-MX';
+import { messages as decisionTableFr } from '../decision-table/locales/fr';
+import { messages as decisionTableJa } from '../decision-table/locales/ja';
+import { messages as decisionTableKo } from '../decision-table/locales/ko';
+import { messages as decisionTablePt } from '../decision-table/locales/pt';
+import { messages as decisionTablePtBR } from '../decision-table/locales/pt-BR';
+import { messages as decisionTableRo } from '../decision-table/locales/ro';
+import { messages as decisionTableRu } from '../decision-table/locales/ru';
+import { messages as decisionTableTr } from '../decision-table/locales/tr';
+import { messages as decisionTableZhCN } from '../decision-table/locales/zh-CN';
+import { messages as decisionTableZhTW } from '../decision-table/locales/zh-TW';
 // Pre-import all locales for ap-tool-call component
 import { messages as apToolCallDe } from '../material/components/ap-tool-call/locales/de';
 import { messages as apToolCallEn } from '../material/components/ap-tool-call/locales/en';
@@ -106,6 +121,22 @@ const localeRegistry: Record<string, Record<SupportedLocale, Messages>> = {
     'pt-BR': canvasPtBR,
     'es-MX': canvasEsMX,
     ro: canvasRo,
+  },
+  'decision-table': {
+    en: decisionTableEn,
+    es: decisionTableEs,
+    pt: decisionTablePt,
+    de: decisionTableDe,
+    fr: decisionTableFr,
+    ja: decisionTableJa,
+    ko: decisionTableKo,
+    ru: decisionTableRu,
+    tr: decisionTableTr,
+    'zh-CN': decisionTableZhCN,
+    'zh-TW': decisionTableZhTW,
+    'pt-BR': decisionTablePtBR,
+    'es-MX': decisionTableEsMX,
+    ro: decisionTableRo,
   },
 };
 

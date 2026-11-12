@@ -1,11 +1,15 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { createRef } from 'react';
+import { vi } from 'vitest';
+import { BODY_ROW_HEIGHT_PX } from './constants';
 import {
   DecisionTable,
   type DecisionTableProps,
   groupBoundsOf,
   groupColumnRuns,
+  type HeaderCellContext,
 } from './DecisionTable';
-import type { GridColumn, GridColumnGroup, VisibleGridColumn } from './gridTypes';
+import type { GridColumn, GridColumnGroup, GridHandle, VisibleGridColumn } from './gridTypes';
 
 const inputs: GridColumnGroup = { id: 'inputs', label: 'Inputs' };
 const outputs: GridColumnGroup = { id: 'outputs', label: 'Outputs' };
@@ -158,6 +162,11 @@ describe('DecisionTable', () => {
     expect(corners()[0]).not.toHaveTextContent('#');
   });
 
+  it('lifts the corner over the scrolled header cells', () => {
+    renderTable();
+    expect(corners()[0]).toHaveClass('z-5');
+  });
+
   it('draws no corner without a leading column', () => {
     renderTable({ leadingColumnWidth: 0 });
     expect(corners()).toHaveLength(0);
@@ -177,6 +186,22 @@ describe('DecisionTable', () => {
     expect(container).toHaveAttribute('data-scrolled', 'false');
   });
 
+  it('hands a pinned header its offset and its layer class, and a scrolling header neither', () => {
+    const contexts = new Map<string, HeaderCellContext>();
+    renderTable({
+      pinnedColumnCount: 1,
+      renderHeaderCell: (column, context) => {
+        contexts.set(column.id, context);
+        return <th key={column.id}>{column.name}</th>;
+      },
+    });
+    expect(contexts.get('a0')).toMatchObject({ pinnedLeftPx: 52, pinnedClassName: 'z-5' });
+    expect(contexts.get('a1')).toMatchObject({
+      pinnedLeftPx: undefined,
+      pinnedClassName: undefined,
+    });
+  });
+
   it("merges a band cell's style, with the pinned offset winning over the consumer's left", () => {
     const pinnedInputs: GridColumnGroup = {
       ...inputs,
@@ -190,5 +215,327 @@ describe('DecisionTable', () => {
     });
     const [pinnedRun] = screen.getAllByTestId('band-inputs');
     expect(pinnedRun).toHaveStyle({ left: '52px', color: 'red' });
+  });
+});
+
+// happy-dom has no `rows` on a table section, which the drag code reads; browsers all have it.
+if (!('rows' in HTMLTableSectionElement.prototype)) {
+  Object.defineProperty(HTMLTableSectionElement.prototype, 'rows', {
+    get(this: HTMLTableSectionElement) {
+      return Array.from(this.children).filter((child) => child instanceof HTMLTableRowElement);
+    },
+  });
+}
+
+// Rows as the `renderRow` contract asks: `aria-rowindex` past the two header rows, and a `data-row` cell.
+const renderContractTable = (props: Partial<DecisionTableProps> = {}) => {
+  const ref = createRef<GridHandle>();
+  const onRowMove = vi.fn();
+  const onColumnMove = vi.fn();
+  render(
+    <DecisionTable
+      ref={ref}
+      columns={columns}
+      rowCount={3}
+      leadingColumnWidth={52}
+      columnGroupSizes={[3, 1]}
+      onRowMove={onRowMove}
+      onColumnMove={onColumnMove}
+      renderHeaderCell={(column) => <th key={column.id}>{column.name}</th>}
+      renderRow={(rowIndex, visibleColumns) => (
+        <tr key={rowIndex} aria-rowindex={rowIndex + 3}>
+          <td data-row={rowIndex} data-testid={`row-${rowIndex}`} />
+          {visibleColumns.map((visible) =>
+            visible.type === 'column' ? (
+              <td key={visible.column.id}>{`${visible.column.id}-${rowIndex}`}</td>
+            ) : (
+              <td key={visible.type} />
+            )
+          )}
+        </tr>
+      )}
+      dataTestId="table"
+      labels={{ resizeColumn: (name) => `Resize ${name}`, resetColumnWidth: 'Reset width' }}
+      {...props}
+    />
+  );
+  return { handle: () => ref.current!, onRowMove, onColumnMove };
+};
+
+const press = (clientX: number, clientY: number) => ({
+  clientX,
+  clientY,
+  preventDefault: () => undefined,
+});
+const pointer = (type: string, clientX = 0, clientY = 0) =>
+  act(() => {
+    document.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX, clientY, buttons: 1 }));
+  });
+const rowAt = (index: number) => screen.getByTestId(`row-${index}`).parentElement!;
+const preview = () => screen.getByTestId('table-drag-preview');
+const overlay = () => screen.getByTestId('table-row-hover');
+// Below the middle of row `index`, which happy-dom draws under a header of no height.
+const yInRow = (index: number) => index * BODY_ROW_HEIGHT_PX + BODY_ROW_HEIGHT_PX * 0.6;
+
+describe('DecisionTable row drag', () => {
+  it('drops the row where the pointer leaves it', () => {
+    const { handle, onRowMove } = renderContractTable();
+
+    act(() => {
+      expect(handle().startRowDrag(0, press(0, yInRow(0)))).toBe(true);
+    });
+    pointer('pointermove', 0, yInRow(1));
+    expect(screen.getByTestId('table-drop-indicator')).toBeInTheDocument();
+    pointer('pointerup');
+
+    expect(onRowMove).toHaveBeenCalledWith(0, 1);
+    expect(screen.queryByTestId('table-drop-indicator')).toBeNull();
+  });
+
+  it('floats a copy of the row, blanks the source and parts the rows it passes, all until the drop', () => {
+    const { handle } = renderContractTable();
+
+    act(() => {
+      handle().startRowDrag(0, press(0, yInRow(0)));
+    });
+    pointer('pointermove', 0, yInRow(1));
+
+    expect(preview().querySelector('tr')).not.toBeNull();
+    expect(rowAt(0)).toHaveAttribute('data-drag-source');
+    expect(rowAt(1).style.transform).toBe(`translateY(${-BODY_ROW_HEIGHT_PX}px)`);
+
+    pointer('pointerup');
+
+    expect(preview().childElementCount).toBe(0);
+    expect(rowAt(0)).not.toHaveAttribute('data-drag-source');
+    expect(rowAt(1).style.transform).toBe('');
+  });
+
+  it.each([
+    ['Escape', () => act(() => void fireEvent.keyDown(document, { key: 'Escape' }))],
+    ['a cancelled pointer', () => pointer('pointercancel')],
+  ])('puts everything back on %s, without moving the row', (_name, cancel) => {
+    const { handle, onRowMove } = renderContractTable();
+    act(() => {
+      handle().startRowDrag(0, press(0, yInRow(0)));
+    });
+    pointer('pointermove', 0, yInRow(2));
+
+    cancel();
+
+    expect(onRowMove).not.toHaveBeenCalled();
+    expect(preview().childElementCount).toBe(0);
+    expect(rowAt(0)).not.toHaveAttribute('data-drag-source');
+    expect(rowAt(1).style.transform).toBe('');
+    expect(rowAt(2).style.transform).toBe('');
+  });
+
+  it('still drops a row whose rows carry no aria-rowindex, with no copy to float', () => {
+    const { handle, onRowMove } = renderContractTable({
+      renderRow: (rowIndex) => (
+        <tr key={rowIndex}>
+          <td data-row={rowIndex} />
+        </tr>
+      ),
+    });
+
+    act(() => {
+      handle().startRowDrag(0, press(0, yInRow(0)));
+    });
+    pointer('pointermove', 0, yInRow(1));
+    expect(preview().childElementCount).toBe(0);
+    pointer('pointerup');
+
+    expect(onRowMove).toHaveBeenCalledWith(0, 1);
+  });
+});
+
+describe('DecisionTable column drag', () => {
+  it('puts the rows back when a column drag replaces a row drag in flight', () => {
+    const { handle } = renderContractTable();
+    act(() => {
+      handle().startRowDrag(0, press(0, yInRow(0)));
+    });
+    pointer('pointermove', 0, yInRow(2));
+    expect(rowAt(1).style.transform).not.toBe('');
+
+    act(() => {
+      handle().startColumnDrag(0, 0, press(60, 10));
+    });
+    pointer('pointerup');
+
+    expect([0, 1, 2].map((index) => rowAt(index).style.transform)).toEqual(['', '', '']);
+  });
+
+  it('parts and floats the dragged header in a flat table, whose label row has the corner', () => {
+    const { handle } = renderContractTable({
+      columns: columns.map(({ group: _group, ...column }) => column),
+      renderRow: (rowIndex, visibleColumns) => (
+        <tr key={rowIndex} aria-rowindex={rowIndex + 2}>
+          <td data-row={rowIndex} />
+          {visibleColumns.map((visible) =>
+            visible.type === 'column' ? <td key={visible.column.id} /> : <td key={visible.type} />
+          )}
+        </tr>
+      ),
+    });
+    const header = (name: string) => screen.getByRole('columnheader', { name });
+
+    act(() => {
+      handle().startColumnDrag(0, 0, press(60, 10));
+    });
+    pointer('pointermove', 5000, 10);
+
+    expect(preview().querySelector('thead')).toHaveTextContent('a0');
+    expect(header('a0').style.transform).toMatch(/^translateX\(\d/);
+    expect(header('a1').style.transform).toMatch(/^translateX\(-/);
+    pointer('pointerup');
+  });
+
+  it.each([
+    ['a column drag when the table declares no groups', 'column', { columnGroupSizes: undefined }],
+    ['a column drag no onColumnMove would apply', 'column', { onColumnMove: undefined }],
+    ['a row drag no onRowMove would apply', 'row', { onRowMove: undefined }],
+  ] as const)('refuses %s', (_case, axis, props) => {
+    const { handle } = renderContractTable(props);
+
+    let began = true;
+    act(() => {
+      began =
+        axis === 'row'
+          ? handle().startRowDrag(0, press(0, yInRow(0)))
+          : handle().startColumnDrag(0, 0, press(60, 10));
+    });
+
+    expect(began).toBe(false);
+    expect(screen.queryByTestId('table-drop-indicator')).toBeNull();
+  });
+
+  it('floats the dragged column under its own header in a grouped table', () => {
+    const { handle } = renderContractTable();
+
+    act(() => {
+      handle().startColumnDrag(0, 1, press(160, 10));
+    });
+    pointer('pointermove', 170, 10);
+
+    expect(preview().querySelector('thead')).toHaveTextContent('a1');
+    expect(preview().querySelector('tbody')).toHaveTextContent('a1-0');
+    pointer('pointerup');
+  });
+
+  it('keeps the copy and its lines off the band row, wherever the table is scrolled', () => {
+    const { handle } = renderContractTable();
+    const container = screen.getByTestId('table');
+    const labelRow = container.querySelector('thead')!.rows[1]!;
+    Object.defineProperty(labelRow, 'offsetTop', { configurable: true, value: 33 });
+
+    act(() => {
+      handle().startColumnDrag(0, 1, press(160, 10));
+    });
+    pointer('pointermove', 170, 10);
+    expect(preview().style.clipPath).toBe('inset(33px -32px -32px)');
+    expect(screen.getByTestId('table-drop-indicator').style.clipPath).toBe(
+      'inset(33px -32px -32px)'
+    );
+
+    container.scrollTop = 200;
+    fireEvent.scroll(container);
+    expect(preview().style.clipPath).toBe('inset(233px -32px -32px)');
+    expect(screen.getByTestId('table-drop-indicator').style.clipPath).toBe(
+      'inset(233px -32px -32px)'
+    );
+
+    pointer('pointerup');
+    expect(preview().style.clipPath).toBe('');
+  });
+
+  it('keeps a column inside its own band, however far it is carried', () => {
+    const { handle, onColumnMove } = renderContractTable();
+
+    act(() => {
+      handle().startColumnDrag(0, 0, press(60, 10));
+    });
+    pointer('pointermove', 5000, 10);
+    pointer('pointerup');
+
+    expect(onColumnMove).toHaveBeenCalledWith(0, 0, 2);
+  });
+});
+
+describe('DecisionTable row hover', () => {
+  it('follows the hovered data row', () => {
+    renderContractTable();
+
+    fireEvent.pointerOver(screen.getByTestId('row-1'), { pointerType: 'mouse' });
+
+    expect(overlay().style.display).toBe('');
+    expect(overlay().style.transform).toBe(`translateY(${BODY_ROW_HEIGHT_PX}px)`);
+  });
+
+  it('stays hidden during a drag, whose rows are out of their places', () => {
+    const { handle } = renderContractTable();
+    act(() => {
+      handle().startRowDrag(0, press(0, yInRow(0)));
+    });
+
+    fireEvent.pointerOver(screen.getByTestId('row-1'), { pointerType: 'mouse' });
+
+    expect(overlay().style.display).toBe('none');
+    pointer('pointerup');
+  });
+});
+
+describe('DecisionTable header edge inserts', () => {
+  const renderResizable = (headerEdgeInserts: boolean) =>
+    renderContractTable({
+      columnsResizable: true,
+      headerEdgeInserts,
+      renderHeaderCell: (column, context) => (
+        <th key={column.id}>
+          {column.name}
+          {context.resizeHandle}
+        </th>
+      ),
+    });
+
+  it('starts the resize handles below the "+" only when the headers carry one', () => {
+    renderResizable(true);
+    expect(screen.getByTestId('table-resize-a0')).toHaveClass('top-6');
+  });
+
+  it('keeps the resize handles full height otherwise', () => {
+    renderResizable(false);
+    expect(screen.getByTestId('table-resize-a0')).not.toHaveClass('top-6');
+  });
+});
+
+describe('DecisionTable table mark', () => {
+  const tableMark = () => screen.queryByTestId('table-table-mark');
+
+  it('draws no mark in the corner without one', () => {
+    renderTable();
+    expect(tableMark()).toBeNull();
+  });
+
+  it("draws the table's mark in the corner, under the corner content, carrying its message", () => {
+    renderTable({
+      topLeftCorner: <span data-testid="policy">U</span>,
+      tableMark: { tone: 'error', title: 'The decision has no rules' },
+    });
+
+    const mark = tableMark()!;
+    expect(corners()[0]).toContainElement(mark);
+    expect(
+      screen.getByTestId('policy').compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(mark).toHaveAttribute('data-mark-title', 'The decision has no rules');
+    expect(mark).toHaveAttribute('aria-label', 'The decision has no rules');
+    expect(mark.querySelector('[data-glyph="error"]')).not.toBeNull();
+  });
+
+  it("shows a warning's own glyph", () => {
+    renderTable({ tableMark: { tone: 'warning', title: 'Unchecked output values' } });
+    expect(tableMark()!.querySelector('[data-glyph="warning"]')).not.toBeNull();
   });
 });
