@@ -412,6 +412,54 @@ describe('QuickFormField', () => {
     expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
   });
 
+  it('grows the box for a rendered expression editor that grows', () => {
+    const { container } = render(
+      <QuickFormField
+        mode="expression"
+        value="$vars.a +\n$vars.b"
+        renderedControlLayout={{ expression: 'grow' }}
+        renderExpressionEditor={() => <div>Custom editor</div>}
+      />
+    );
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
+  });
+
+  it('grows the box for a control from renderModeControl in any mode', () => {
+    const { container } = render(
+      <QuickFormField
+        locked={false}
+        mode="literal"
+        value="a"
+        renderedControlLayout={{ literal: 'grow' }}
+        renderModeControl={(mode) => (mode === 'literal' ? <div>Custom control</div> : null)}
+      />
+    );
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
+  });
+
+  it('keeps a rendered control in the row layout unless it says it grows', () => {
+    const { container } = render(
+      <QuickFormField
+        mode="expression"
+        value="$vars.a"
+        renderExpressionEditor={() => <div>Custom editor</div>}
+      />
+    );
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
+  });
+
+  it('leaves built-in controls to size themselves', () => {
+    const { container } = render(
+      <QuickFormField
+        locked={false}
+        mode="literal"
+        value="a"
+        renderedControlLayout={{ literal: 'grow', expression: 'grow' }}
+      />
+    );
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
+  });
+
   it('does not force the Future overlay background in classic themes', () => {
     const { container } = render(<QuickFormField locked={false} value="INV-2024-0587" />);
     expect(container.querySelector('[role="group"]')).not.toHaveClass('bg-surface-overlay');

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { GripVertical, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Button } from '../button';
+import { InputGroupTextarea } from '../input-group';
 import { Label, RequiredIndicator } from '../label';
 import { QuickFormField } from './quick-form-field';
 import type { QuickFieldType, QuickFormFieldMode, QuickFormFieldStrings } from './types';
@@ -205,6 +206,48 @@ export const Expression: Story = {
       description: {
         story:
           'A focused expression-writing example. Use the Insert variable action above the field to add an available variable to the expression.',
+      },
+    },
+  },
+};
+
+function GrowingExpressionDemo() {
+  const [value, setValue] = useState(
+    '$vars.invoice.subtotal\n  + $vars.invoice.shipping\n  - $vars.invoice.discount'
+  );
+  return (
+    <div className="w-[420px]">
+      <QuickFormField
+        label="Invoice total"
+        fieldType="double"
+        mode="expression"
+        value={value}
+        onValueChange={setValue}
+        renderedControlLayout={{ expression: 'grow' }}
+        // `fieldType` is for the consumer, not a DOM attribute.
+        renderExpressionEditor={({ onValueChange, fieldType: _fieldType, ...props }) => (
+          <InputGroupTextarea
+            {...props}
+            onChange={(event) => onValueChange?.(event.target.value)}
+            rows={1}
+            minRows={1}
+            maxRows={8}
+            className="py-[3px] font-mono future:py-0.5"
+          />
+        )}
+      />
+    </div>
+  );
+}
+
+export const GrowingExpression: Story = {
+  name: 'Growing Expression Editor',
+  render: () => <GrowingExpressionDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "A consumer-rendered expression editor that spans several lines. `renderedControlLayout={{ expression: 'grow' }}` lets the box grow with it, and the lock and mode controls stay on its first line.",
       },
     },
   },

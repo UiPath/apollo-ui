@@ -61,6 +61,7 @@ const DEFAULT_VALUE_MODES: readonly QuickFormFieldMode[] = ['literal', 'expressi
  * - Every mode has a built-in control: `variable` is a picker over
  *   `variables`, `prompt` an agent textarea. `valueModes` chooses which the
  *   menu offers, and `renderModeControl` replaces the control for any mode.
+ *   `renderedControlLayout` lets a rendered control taller than a row grow the box.
  * - `confirmModeChange` asks before a switch the consumer knows is lossy.
  * - `locked` is configuration the author sets, so the value stays editable;
  *   `disabled` is what stops the author editing the field.
@@ -94,6 +95,7 @@ export function QuickFormField({
   confirmModeChange,
   renderExpressionEditor,
   renderModeControl,
+  renderedControlLayout,
   fieldType = 'string',
   fieldTypes,
   onFieldTypeChange,
@@ -242,6 +244,8 @@ export function QuickFormField({
   const modeControl = renderModeControl?.(mode, controlProps) ?? null;
   const builtInVariable = modeControl === null && mode === 'variable';
   const builtInPrompt = modeControl === null && mode === 'prompt';
+  const rendersOwnControl =
+    modeControl !== null || (mode === 'expression' && !!renderExpressionEditor);
 
   // Switching mode is a prelude to writing the value, so focus the control.
   // Skipped on mount so rendering a form cannot steal focus.
@@ -568,12 +572,13 @@ export function QuickFormField({
         error={error}
         errorId={validationId}
         disabled={disabled}
-        // The agent tint marks the value as a prompt. The prompt, the dropzone and a text area
-        // are taller than a row, so the box grows to hold them.
+        // The agent tint marks the value as a prompt. The prompt, the dropzone, a text area and a
+        // rendered control that says it grows are taller than a row, so the box grows to hold them.
         variant={builtInPrompt ? 'agent' : undefined}
         layout={
           builtInPrompt ||
-          (mode === 'literal' && (fieldType === 'file' || fieldType === 'textarea'))
+          (mode === 'literal' && (fieldType === 'file' || fieldType === 'textarea')) ||
+          (rendersOwnControl && renderedControlLayout?.[mode] === 'grow')
             ? 'grow'
             : 'row'
         }
