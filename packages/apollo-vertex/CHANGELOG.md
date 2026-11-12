@@ -1,3 +1,10 @@
+## [@uipath/apollo-vertex-v2.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.7.0...@uipath/apollo-vertex@2.8.0) (2026-11-12)
+
+### Features
+
+* **apollo-vertex:** add a shared Action type ([95710f9](https://github.com/UiPath/apollo-ui/commit/95710f962b16b0d7cb3f54011f02392b36dc8d9f))
+* **apollo-vertex:** add MessageThread pattern ([0bb6d1c](https://github.com/UiPath/apollo-ui/commit/0bb6d1cde7cae1e5e5647b03c35a588377309887))
+
 ## [@uipath/apollo-vertex-v2.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.6.0...@uipath/apollo-vertex@2.7.0) (2026-11-06)
 
 ### Features
