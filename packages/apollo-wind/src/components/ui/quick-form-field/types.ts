@@ -318,6 +318,9 @@ export interface VariableInsertContext {
   caret: { start: number; end: number } | null;
 }
 
+/** How the value box sizes around a consumer-rendered control. See `renderedControlLayout`. */
+export type QuickFormFieldControlLayout = 'row' | 'grow';
+
 /** What a consumer-rendered value control receives from `renderModeControl` or `renderExpressionEditor`. */
 export interface QuickFormFieldControlProps {
   id: string;
@@ -398,6 +401,15 @@ export interface QuickFormFieldProps {
    * returns something for `expression`.
    */
   renderExpressionEditor?: (props: QuickFormFieldControlProps) => ReactNode;
+  /**
+   * How the value box sizes around a control you render, per mode: one from
+   * `renderModeControl`, or from `renderExpressionEditor` in `expression`.
+   * `grow` lets a control taller than one row, such as a multi-line editor,
+   * grow the box, with the addons staying on its first line. Only the consumer
+   * knows whether its control grows. Unlisted modes and the built-in controls
+   * keep their own sizing.
+   */
+  renderedControlLayout?: Partial<Record<QuickFormFieldMode, QuickFormFieldControlLayout>>;
   /**
    * Renders the value control for a given mode, replacing the built-in one,
    * such as a surface that authors its own choices in `literal` mode.
