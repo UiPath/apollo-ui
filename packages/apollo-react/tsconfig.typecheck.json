@@ -9,7 +9,8 @@
   },
   "include": [
     "src/decision-table/**/*.ts",
-    "src/decision-table/**/*.tsx"
+    "src/decision-table/**/*.tsx",
+    "src/i18n/useSafeLingui.ts"
   ],
   "exclude": [
     "node_modules",
