@@ -261,7 +261,7 @@ describe('Wind message list', () => {
     expect(quiet.querySelector('[data-slot="message-actions"]')).toBeNull();
   });
 
-  it('publishes copy and feedback, reflects the rating with aria-pressed and lets it change', async () => {
+  it('publishes copy and feedback, and keeps only the chosen thumb, pressed and inert, by default', async () => {
     const service = createService();
     const events: Array<[string, unknown]> = [];
     service.on(AutopilotChatEvent.Copy, (payload) => events.push(['copy', payload]));
@@ -294,12 +294,39 @@ describe('Wind message list', () => {
     );
     expect(service.getConversation()[0]?.feedback).toEqual({ isPositive: true });
 
-    // The rating can be changed; each change publishes Feedback with the new value.
     const current = () => document.querySelector('[data-chat-message-id="r1"]') as HTMLElement;
+    expect(
+      within(current()).queryByRole('button', { name: 'Needs improvement' })
+    ).not.toBeInTheDocument();
+    const chosen = within(current()).getByRole('button', { name: 'Love this' });
+    expect(chosen).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(chosen);
+    expect(events).toHaveLength(2);
+  });
+
+  it('lets the rating change with allowFeedbackChange, publishing each change', async () => {
+    const service = createService();
+    service.patchConfig({ allowFeedbackChange: true });
+    const events: unknown[] = [];
+    service.on(AutopilotChatEvent.Feedback, (payload) => events.push(payload));
+    render(<ApChat chatServiceInstance={service} />);
+    act(() => service.sendResponse(reply({ id: 'r1', content: 'Answer' })));
+    const current = () => document.querySelector('[data-chat-message-id="r1"]') as HTMLElement;
+
+    await userEvent.click(within(current()).getByRole('button', { name: 'Love this' }));
+    await waitFor(() =>
+      expect(within(current()).getByRole('button', { name: 'Love this' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      )
+    );
+    expect(within(current()).getByRole('button', { name: 'Love this' })).not.toHaveAttribute(
+      'aria-disabled'
+    );
     await userEvent.click(within(current()).getByRole('button', { name: 'Needs improvement' }));
 
-    await waitFor(() => expect(events).toHaveLength(3));
-    expect(events[2]?.[1]).toMatchObject({
+    await waitFor(() => expect(events).toHaveLength(2));
+    expect(events[1]).toMatchObject({
       action: { name: 'autopilot-chat-bad', details: { isPositive: false } },
     });
     await waitFor(() =>
@@ -313,6 +340,74 @@ describe('Wind message list', () => {
       'false'
     );
     expect(service.getConversation()[0]?.feedback).toEqual({ isPositive: false });
+  });
+});
+
+describe('feedback while its pre-hook runs', () => {
+  function setup() {
+    let settle: (proceed: boolean) => void = () => {};
+    const service = AutopilotChatService.Instantiate({
+      instanceName: `wind-message-list-${++instanceCounter}`,
+      config: {
+        mode: AutopilotChatMode.FullScreen,
+        renderer: 'wind',
+        preHooks: {
+          feedback: () =>
+            new Promise<boolean>((resolve) => {
+              settle = resolve;
+            }),
+        },
+      },
+    });
+    const published: unknown[] = [];
+    service.on(AutopilotChatEvent.Feedback, (payload) => published.push(payload));
+    render(<ApChat chatServiceInstance={service} />);
+    act(() => service.sendResponse(reply({ id: 'h1', content: 'Answer' })));
+    const current = () => document.querySelector('[data-chat-message-id="h1"]') as HTMLElement;
+    return { service, published, current, settle: (proceed: boolean) => settle(proceed) };
+  }
+
+  it('locks on the first click, so a quick second rating cannot publish too', async () => {
+    const { service, published, current, settle } = setup();
+
+    await userEvent.click(within(current()).getByRole('button', { name: 'Love this' }));
+    // The pre-hook is still pending, but the other thumb is already gone.
+    expect(
+      within(current()).queryByRole('button', { name: 'Needs improvement' })
+    ).not.toBeInTheDocument();
+    expect(within(current()).getByRole('button', { name: 'Love this' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await userEvent.click(within(current()).getByRole('button', { name: 'Love this' }));
+
+    await act(async () => settle(true));
+    await waitFor(() =>
+      expect(service.getConversation()[0]?.feedback).toEqual({ isPositive: true })
+    );
+    expect(published).toHaveLength(1);
+    expect(
+      within(current()).queryByRole('button', { name: 'Needs improvement' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('restores both thumbs when the pre-hook declines', async () => {
+    const { service, published, current, settle } = setup();
+
+    await userEvent.click(within(current()).getByRole('button', { name: 'Love this' }));
+    await act(async () => settle(false));
+
+    await waitFor(() =>
+      expect(
+        within(current()).getByRole('button', { name: 'Needs improvement' })
+      ).toBeInTheDocument()
+    );
+    expect(within(current()).getByRole('button', { name: 'Love this' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    expect(published).toHaveLength(0);
+    expect(service.getConversation()[0]?.feedback).toBeUndefined();
   });
 });
 
@@ -339,6 +434,22 @@ describe('message actions parity', () => {
     expect(wind.action).toEqual(material.action);
     expect(wind.message.id).toBe(material.message.id);
     expect(wind.group).toHaveLength(material.group.length);
+  }, 40_000);
+
+  it('keeps a Material rating final even with allowFeedbackChange', async () => {
+    const service = createService('material');
+    service.patchConfig({ allowFeedbackChange: true });
+    render(<ApChat chatServiceInstance={service} />);
+    act(() => service.sendResponse(reply({ id: 'm1', content: 'Answer' })));
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Love this' }, { timeout: 25_000 })
+    );
+
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Needs improvement' })).not.toBeInTheDocument()
+    );
+    expect(screen.getByRole('button', { name: 'Love this' })).toBeDisabled();
   }, 40_000);
 });
 

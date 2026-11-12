@@ -147,7 +147,7 @@ Wind matches Material's behaviour and the service contract. These are the intend
 
 **Messages**
 
-- Feedback can be switched after it is given (not cleared); each change publishes `Feedback` with the new value. The buttons report `aria-pressed`.
+- The feedback buttons report `aria-pressed`, and the chosen thumb is outlined in the primary color. Once rated, the chosen thumb stays focusable with its tooltip (`aria-disabled`); Material's is natively disabled.
 - Copy writes the group's text twice (the action bar's own write and the shared Copy handler), with identical content.
 - Sources list all of a group's citations once expanded; Material shows two and a "Show more" button.
 - The drop overlay lists the limits as allowed types, size, then count; Material lists count, size, then types.
@@ -582,7 +582,7 @@ The chat component provides different default actions depending on the message r
   - Thumbs Up - Provides positive feedback for the response
   - Thumbs Down - Provides negative feedback for the response
 
-When feedback has already been given on an assistant message, only the selected feedback action is shown and it becomes disabled.
+When feedback has already been given on an assistant message, only the selected feedback action is shown and it becomes disabled. With the Wind renderer, set `allowFeedbackChange: true` to keep both thumbs actionable instead: the rating can then be switched (not cleared), and each change publishes `Feedback` again. Material ignores it and always keeps a rating final. Leave it off when your feedback store records every rating, since a change would add a second rating rather than replace the first.
 
 ### Feedback Handling
 
@@ -3133,6 +3133,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * @property selectedAgentMode - The currently selected agent mode for the chat
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
  *                      Hooks expose current data for the action **before** the state change is attempted.
+ * @property allowFeedbackChange - Wind renderer only. Whether a rating can be changed after it is given (defaults to false: a rating is final)
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property paginatedHistory - Flag to determine if the history list is paginated
  * @property paginatedResources - Flag to determine if resource fetching uses pagination
@@ -3162,6 +3163,7 @@ export interface AutopilotChatConfiguration {
   agentModes?: AutopilotChatAgentModeInfo[];
   selectedAgentMode?: AutopilotChatAgentModeInfo;
   preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
+  allowFeedbackChange?: boolean;
   paginatedMessages?: boolean;
   paginatedHistory?: boolean;
   paginatedResources?: boolean;

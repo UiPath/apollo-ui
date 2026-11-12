@@ -320,6 +320,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} SetSuggestions - Emitted when the suggestions are set
  * @property {string} SetSpacing - Emitted when the spacing is set for the chat
  * @property {string} SetTheming - Emitted when the theming is set for the chat
+ * @property {string} SetAllowFeedbackChange - Emitted when `allowFeedbackChange` is set
  * @property {string} SetAttachmentsLoading - Emitted when the attachments loading is set
  * @property {string} SetInputFocused - Emitted when the input should be focused
  * @property {string} SetIsLoadingMoreHistory - Emitted when the is loading more history is set
@@ -345,6 +346,7 @@ export enum AutopilotChatInternalEvent {
   SetAttachmentsLoading = 'setAttachmentsLoading',
   SetInputFocused = 'setInputFocused',
   SetTheming = 'setTheming',
+  SetAllowFeedbackChange = 'setAllowFeedbackChange',
   SetLocale = 'setLocale',
   SetTheme = 'setTheme',
   SetIsLoadingMoreHistory = 'setIsLoadingMoreHistory',
@@ -537,6 +539,10 @@ export enum AutopilotChatPreHookAction {
  *                      the chat. Hooks expose current data for the action **before** the
  *                      state change is attempted.
  * @property readOnly - Whether the chat is in read-only mode (hides input area and some action buttons)
+ * @property allowFeedbackChange - Wind renderer only. Whether a rating can be changed after it is
+ *                                 given, each change publishing `Feedback` again. Off (the default),
+ *                                 a rating is final: only the chosen thumb remains, selected and
+ *                                 inert. Material always keeps a rating final.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to
  *                               render the settings page in the chat.
@@ -565,6 +571,7 @@ export interface AutopilotChatConfiguration {
   agentModes?: AutopilotChatAgentModeInfo[];
   selectedAgentMode?: AutopilotChatAgentModeInfo;
   readOnly?: boolean;
+  allowFeedbackChange?: boolean;
   preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
   paginatedMessages?: boolean;
   paginatedHistory?: boolean;

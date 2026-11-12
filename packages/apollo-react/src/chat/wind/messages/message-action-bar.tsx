@@ -5,7 +5,9 @@ import {
   MessageActionFeedback,
   type MessageActionItem,
   MessageActions,
+  type MessageFeedbackValue,
 } from '@uipath/apollo-wind';
+import React from 'react';
 
 import { useIsStreamingMessage } from '../../headless/hooks/use-is-streaming-message';
 import {
@@ -15,12 +17,13 @@ import {
   useDefaultMessageActions,
   useMessageActionHandler,
 } from '../../headless/hooks/use-message-actions';
+import { useChatState } from '../../headless/providers/chat-state-provider';
 import type { AutopilotChatMessage, AutopilotChatMessageAction } from '../../service';
 import { ServiceIcon } from '../common/service-icon';
 
 /**
  * Copy, feedback and the message's own `actions` (those marked `showInOverflow` go in the "More"
- * menu). Unlike Material, a rating can be switched after it is given; it cannot be cleared.
+ * menu). A rating is final unless `allowFeedbackChange` is set; even then it cannot be cleared.
  * Always shown on the latest reply, on hover or focus elsewhere, and hidden while the message
  * streams.
  */
@@ -35,10 +38,14 @@ export function MessageActionBar({
   copyText: string;
 }) {
   const { _ } = useLingui();
-  // A rating can be changed in Wind; each change publishes Feedback with the new value.
-  const defaults = useDefaultMessageActions(message, { allowRatingChange: true });
+  const { allowFeedbackChange } = useChatState();
+  const defaults = useDefaultMessageActions(message, { allowFeedbackChange });
   const runAction = useMessageActionHandler(message);
   const { isStreaming } = useIsStreamingMessage(message);
+  // The rating clicked while its pre-hook runs. Shown as chosen so a locked pair hides the other
+  // thumb at once, rather than once Feedback writes it onto the message; cleared when the action
+  // settles, so a declined pre-hook reverts it.
+  const [pendingRating, setPendingRating] = React.useState<MessageFeedbackValue>(null);
 
   if (isStreaming) {
     return null;
@@ -91,11 +98,16 @@ export function MessageActionBar({
       )}
       {(good || bad) && (
         <MessageActionFeedback
-          value={message.feedback ? (message.feedback.isPositive ? 'up' : 'down') : null}
+          value={
+            pendingRating ??
+            (message.feedback ? (message.feedback.isPositive ? 'up' : 'down') : null)
+          }
+          locked={!allowFeedbackChange}
           onChange={(rating) => {
             const action = rating === 'up' ? good : bad;
             if (action) {
-              runAction(action);
+              setPendingRating(rating);
+              runAction(action).finally(() => setPendingRating(null));
             }
           }}
           strings={{
