@@ -73,6 +73,9 @@ export function useChatMessages() {
       chatService.on(AutopilotChatEvent.Feedback, sendFeedback),
       chatService.on(AutopilotChatEvent.Copy, copy),
     ];
+    // A host can change the conversation between the render that seeded the state and these
+    // subscriptions (for example while React holds a Suspense reveal back), so catch up now.
+    setMessages(withoutFakeStream(chatService.getConversation?.() ?? []));
 
     return () => {
       for (const unsubscribe of unsubscribes) unsubscribe();
