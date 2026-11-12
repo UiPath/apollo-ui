@@ -12,6 +12,12 @@ const offsetsFor = (widths: number[]): number[] =>
     [0]
   );
 
+const mountedCount = (segments: Segments): number =>
+  segments.reduce(
+    (count, segment) => count + (segment.type === 'items' ? segment.to - segment.from : 0),
+    0
+  );
+
 const mountsItem = (segments: Segments, index: number): boolean =>
   segments.some(
     (segment) => segment.type === 'items' && segment.from <= index && index < segment.to
@@ -63,52 +69,91 @@ describe('useVirtualizedAxis (virtual-core binding)', () => {
   });
 });
 
-describe('useVirtualizedAxis coverage while scrolling through tall items', () => {
-  const sweep = (sizes: number[], viewport: number): number[] => {
+describe('useVirtualizedAxis coverage while scrolling', () => {
+  const OVERSCAN = 10;
+  /** The most items past the visible ones the window may mount: the overscan on each side, and the anchor's lag. */
+  const MOST_EXTRA = 2 * OVERSCAN + Math.floor(OVERSCAN / 2);
+
+  interface SweepCase {
+    sizes: number[];
+    viewport: number;
+    axis?: Parameters<typeof useVirtualizedAxis>[3]['axis'];
+    uniform?: boolean;
+  }
+
+  /** Scrolls through every offset, returning where a visible item was unmounted and the most items mounted past the visible ones. */
+  const sweep = ({ sizes, viewport, axis = 'vertical', uniform = false }: SweepCase) => {
     const element = document.createElement('div');
     document.body.appendChild(element);
     const offsets = offsetsFor(sizes);
     const total = offsets[sizes.length] ?? 0;
     const indexAt = (px: number) => offsets.findIndex((_, index) => (offsets[index + 1] ?? 0) > px);
     const gaps: number[] = [];
+    let mostExtra = 0;
     try {
       const { result, rerender } = renderHook(() =>
-        useVirtualizedAxis(sizes.length, 64, null, {
-          axis: 'vertical',
-          overscanItems: 10,
+        useVirtualizedAxis(sizes.length, sizes[0] ?? 64, null, {
+          axis,
+          overscanItems: OVERSCAN,
           fallbackViewportPx: viewport,
-          itemOffsetsPx: offsets,
+          itemOffsetsPx: uniform ? undefined : offsets,
         })
       );
       result.current.measureRef(element);
       rerender();
-      for (let top = 0; top <= total - viewport; top += 8) {
+      for (let at = 0; at <= total - viewport; at += 8) {
         act(() => {
-          element.scrollTop = top;
+          if (axis === 'vertical') element.scrollTop = at;
+          else element.scrollLeft = at;
           element.dispatchEvent(new Event('scroll'));
         });
-        const last = indexAt(Math.min(top + viewport, total) - 1);
-        for (let index = indexAt(top); index <= last; index += 1) {
+        const first = indexAt(at);
+        const last = indexAt(Math.min(at + viewport, total) - 1);
+        for (let index = first; index <= last; index += 1) {
           if (!mountsItem(result.current.segments, index)) {
-            gaps.push(top);
+            gaps.push(at);
             break;
           }
         }
+        mostExtra = Math.max(mostExtra, mountedCount(result.current.segments) - (last - first + 1));
       }
     } finally {
       element.remove();
     }
-    return gaps;
+    return { gaps, withinWindow: mostExtra <= MOST_EXTRA };
   };
   const short = (count: number) => new Array<number>(count).fill(64);
+  const covered = { gaps: [], withinWindow: true };
 
-  it.each([200, 480, 800])('mounts every item in a %ipx viewport at every offset', (viewport) => {
+  it.each([
+    200, 480, 800,
+  ])('mounts every visible item and no more than the window in a %ipx viewport at every offset', (viewport) => {
     expect({
-      leading: sweep([1264, ...short(60)], viewport),
-      middle: sweep([...short(30), 1264, ...short(30)], viewport),
-      backToBack: sweep([...short(20), 1264, 1264, ...short(30)], viewport),
-      taller: sweep([...short(20), 3200, ...short(20), 4000, ...short(20)], viewport),
-    }).toEqual({ leading: [], middle: [], backToBack: [], taller: [] });
+      leading: sweep({ sizes: [1264, ...short(60)], viewport }),
+      middle: sweep({ sizes: [...short(30), 1264, ...short(30)], viewport }),
+      backToBack: sweep({ sizes: [...short(20), 1264, 1264, ...short(30)], viewport }),
+      taller: sweep({ sizes: [...short(20), 3200, ...short(20), 4000, ...short(20)], viewport }),
+      uniform: sweep({ sizes: short(200), viewport, uniform: true }),
+      horizontal: sweep({
+        sizes: [...short(30), 1264, ...short(30)],
+        viewport,
+        axis: 'horizontal',
+      }),
+      uniformHorizontal: sweep({
+        sizes: new Array<number>(200).fill(120),
+        viewport,
+        axis: 'horizontal',
+        uniform: true,
+      }),
+    }).toEqual({
+      leading: covered,
+      middle: covered,
+      backToBack: covered,
+      taller: covered,
+      uniform: covered,
+      horizontal: covered,
+      uniformHorizontal: covered,
+    });
   });
 });
 

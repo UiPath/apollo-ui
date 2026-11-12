@@ -493,6 +493,42 @@ describe('DecisionText', () => {
       );
     });
 
+    it('announces a message two cells of one line share once, apart from another tone or message', () => {
+      renderView({
+        marks: rowMarks({
+          m3: {
+            cells: {
+              score: { tone: 'warning', title: 'Overlaps row 1', glyph: true },
+              channel: { tone: 'warning', title: 'Overlaps row 1', glyph: true },
+            },
+          },
+          m4: {
+            cells: {
+              decision: { tone: 'warning', title: 'Overlaps row 1', glyph: true },
+              limit: { tone: 'error', title: 'Overlaps row 1', glyph: true },
+            },
+          },
+          m2: {
+            cells: {
+              decision: { tone: 'warning', title: 'Overlaps row 1', glyph: true },
+              limit: { tone: 'warning', title: 'Overlaps row 4', glyph: true },
+            },
+          },
+        }),
+      });
+      expect(card('m3')).toHaveAccessibleDescription('Warning: Overlaps row 1');
+      expect(ruleLine('m3', 1)?.querySelector('[data-mark-title]')).toHaveAttribute(
+        'data-mark-title',
+        'Overlaps row 1'
+      );
+      expect(card('m4')).toHaveAccessibleDescription(
+        'Warning: Overlaps row 1 Error: Overlaps row 1'
+      );
+      expect(card('m2')).toHaveAccessibleDescription(
+        'Warning: Overlaps row 1 Warning: Overlaps row 4'
+      );
+    });
+
     it('shows no glyph for a mark without one, or for a success tone', () => {
       renderView({
         marks: rowMarks({
@@ -768,6 +804,7 @@ describe('DecisionText', () => {
       renderView({ rules: [], addRule: { label: 'Add rule', onAdd: onAddRow } });
       const empty = screen.getByTestId('nl-empty');
       expect(empty).toHaveTextContent('No rules yet');
+      expect(screen.getAllByRole('button', { name: 'Add rule' })).toHaveLength(1);
       fireEvent.click(within(empty).getByRole('button', { name: 'Add rule' }));
       expect(onAddRow).toHaveBeenCalledTimes(1);
       expect(screen.getByTestId('nl-header')).toBeInTheDocument();
