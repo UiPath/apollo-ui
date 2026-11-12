@@ -31,6 +31,7 @@ const baseProps = (): ChatPlaygroundProps => ({
   locale: 'en',
   compactMode: false,
   readOnly: false,
+  allowFeedbackChange: false,
   disableClose: 'unset',
   title: '',
   inputPlaceholder: '',

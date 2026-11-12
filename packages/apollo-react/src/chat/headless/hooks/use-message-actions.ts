@@ -21,9 +21,10 @@ export const MESSAGE_ACTION_BAD = 'autopilot-chat-bad';
 export interface DefaultMessageActionsOptions {
   /**
    * Keep both thumbs actionable after a rating so it can be changed, each change publishing
-   * `Feedback` again. Off, a rating is final: only the chosen thumb remains, disabled (Material).
+   * `Feedback` again. Off, a rating is final: only the chosen thumb remains, disabled. Only a
+   * renderer that shows the chosen thumb among actionable ones should set it.
    */
-  allowRatingChange?: boolean;
+  allowFeedbackChange?: boolean;
 }
 
 /**
@@ -32,7 +33,7 @@ export interface DefaultMessageActionsOptions {
  */
 export function useDefaultMessageActions(
   message: AutopilotChatMessage,
-  { allowRatingChange = false }: DefaultMessageActionsOptions = {}
+  { allowFeedbackChange = false }: DefaultMessageActionsOptions = {}
 ) {
   const { _ } = useLingui();
   const { disabledFeatures, readOnly } = useChatState();
@@ -56,7 +57,7 @@ export function useDefaultMessageActions(
     const good = _(msg({ id: 'autopilot-chat.message.actions.good', message: `Good response` }));
     const bad = _(msg({ id: 'autopilot-chat.message.actions.bad', message: `Bad response` }));
 
-    if (message.feedback && !allowRatingChange) {
+    if (message.feedback && !allowFeedbackChange) {
       const { isPositive } = message.feedback;
 
       return [
@@ -87,7 +88,7 @@ export function useDefaultMessageActions(
         details: { isPositive: false, preHookAction: AutopilotChatPreHookAction.Feedback },
       },
     ];
-  }, [message, readOnly, disabledFeatures.feedback, disabledFeatures.copy, allowRatingChange, _]);
+  }, [message, readOnly, disabledFeatures.feedback, disabledFeatures.copy, allowFeedbackChange, _]);
 }
 
 /**

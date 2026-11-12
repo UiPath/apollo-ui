@@ -51,6 +51,8 @@ interface AutopilotChatStateContextType {
   theming?: AutopilotChatConfiguration['theming'];
   portalContainer?: HTMLElement;
   readOnly: boolean;
+  /** A rating can be changed after it is given (Wind only). Off, a rating is final. */
+  allowFeedbackChange: boolean;
   /** The first-run experience shows: it has content and the conversation is empty. */
   firstRunVisible: boolean;
   /** The service's current suggestions (`setSuggestions`), cleared by the service on request. */
@@ -206,6 +208,9 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
   const [readOnly, setReadOnly] = React.useState(chatService?.getReadOnly() ?? false);
   const [spacing, setSpacing] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
   const [theming, setTheming] = React.useState(chatService?.getConfig()?.theming);
+  const [allowFeedbackChange, setAllowFeedbackChange] = React.useState(
+    chatService?.getConfig()?.allowFeedbackChange ?? false
+  );
   // The service keeps them, so a chat mounted after `setSuggestions` shows them. The service's
   // snapshot is held as is: re-reading an unchanged one does not render again.
   const [suggestionsSnapshot, setSuggestionsSnapshot] = React.useState(
@@ -288,6 +293,13 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       }
     );
 
+    const unsubscribeAllowFeedbackChange = chatInternalService.on(
+      AutopilotChatInternalEvent.SetAllowFeedbackChange,
+      (allow: boolean) => {
+        setAllowFeedbackChange(allow);
+      }
+    );
+
     const unsubscribeSuggestions = chatInternalService.on(
       AutopilotChatInternalEvent.SetSuggestions,
       setSuggestionsSnapshot
@@ -319,6 +331,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       unsubscribeAllowedAttachments();
       unsubscribeSpacing();
       unsubscribeTheming();
+      unsubscribeAllowFeedbackChange();
     };
   }, [chatService, chatInternalService]);
 
@@ -352,6 +365,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       theming,
       portalContainer,
       readOnly,
+      allowFeedbackChange,
       firstRunVisible,
       suggestions,
     }),
@@ -374,6 +388,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       theming,
       portalContainer,
       readOnly,
+      allowFeedbackChange,
       firstRunVisible,
       suggestions,
     ]

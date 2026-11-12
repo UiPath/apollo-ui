@@ -91,6 +91,7 @@ export interface PlaygroundArgs extends FeatureFlagArgs {
   locale: SupportedLocale;
   compactMode: boolean;
   readOnly: boolean;
+  allowFeedbackChange: boolean;
   disableClose: PlaygroundCloseFlag;
   title: string;
   inputPlaceholder: string;
@@ -227,6 +228,7 @@ function createSlotService(
       renderer,
       embeddedContainer,
       readOnly: args.readOnly,
+      allowFeedbackChange: args.allowFeedbackChange,
       disabledFeatures: disabledFeaturesFrom(args),
       overrideLabels: overrideLabelsFrom(args),
       firstRunExperience: firstRunExperienceFor(args.firstRunExperience),
@@ -447,6 +449,9 @@ function ChatSlot({
     service.setCustomHeaderActions(customActionsFor(next, argsRef.current.customHeaderActions));
   });
   useOnChange(args.readOnly, (readOnly) => service.setReadOnly(readOnly));
+  useOnChange(args.allowFeedbackChange, (allowFeedbackChange) =>
+    patchConfigInPlace(service, { allowFeedbackChange })
+  );
   useOnChange(JSON.stringify(disabledFeaturesFrom(args)), () =>
     service.setDisabledFeatures(disabledFeaturesFrom(argsRef.current))
   );

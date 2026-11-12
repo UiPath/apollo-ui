@@ -310,6 +310,13 @@ export class AutopilotChatService {
       this._internalService.publish(AutopilotChatInternalEvent.SetTheming, config.theming);
     }
 
+    if (config.allowFeedbackChange !== undefined) {
+      this._internalService.publish(
+        AutopilotChatInternalEvent.SetAllowFeedbackChange,
+        config.allowFeedbackChange
+      );
+    }
+
     if (config.locale) {
       this.setLocale(config.locale);
     }
