@@ -160,6 +160,10 @@ export function useChatHistory({
         }
       }
     );
+    // A host can set history between the render that seeded the state and this subscription
+    // (for example while React holds a Suspense reveal back), so catch up now.
+    setHistory(chatService.getHistory() ?? []);
+    hasMoreRef.current = chatService.__hasMoreHistory__;
 
     return () => {
       unsubscribeSetHistory();
