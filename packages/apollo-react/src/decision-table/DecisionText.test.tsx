@@ -2944,7 +2944,7 @@ describe('DecisionText', () => {
         ]);
       });
 
-      it('keeps a list’s values in their sentence order, adding a checked one after them', () => {
+      it('keeps a list’s values in their sentence order, adding a checked one after them and putting a re-checked one back', () => {
         const { onCommitValues } = renderShaped({
           initialEditing: at('m2', 'country'),
           valueField: (cell) => ({
@@ -2961,7 +2961,26 @@ describe('DecisionText', () => {
         fireEvent.click(action('Apply'));
         expect(onCommitValues.mock.calls.map(([, commit]) => commit.values)).toEqual([
           ['"KP"', '"RU"'],
-          ['"RU"', '"CN"', '"KP"'],
+          ['"KP"', '"RU"', '"CN"'],
+        ]);
+      });
+
+      it.each<[string, string[]]>([
+        ['checking an allowed value', ['"CN"']],
+        ['unchecking and re-checking a held value', ['"KP"', '"KP"']],
+      ])('commits a list in its sentence order after %s', (_, clicks) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({
+            ...shapedField(cell),
+            values: ['"KP"', '"RU"'],
+            allowedValues: ['"RU"', '"CN"'],
+          }),
+        });
+        for (const option of clicks) fireEvent.click(box(option));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => commit.values)).toEqual([
+          clicks.includes('"CN"') ? ['"KP"', '"RU"', '"CN"'] : ['"KP"', '"RU"'],
         ]);
       });
 

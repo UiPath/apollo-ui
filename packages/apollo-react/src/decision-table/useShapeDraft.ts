@@ -60,7 +60,8 @@ export const useShapeDraft = (
 ): ShapeDraft => {
   const [values, setValues] = useState<readonly string[]>(field.values ?? [value]);
   const [ends, setEnds] = useState(field.ends ?? BOTH_INCLUDED);
-  const [entries, setEntries] = useState(() => filled(field.values ?? [value]));
+  const [held] = useState(() => filled(field.values ?? [value]));
+  const [entries, setEntries] = useState(held);
   const [operator, setOperator] = useState(field.operator);
   const operators = operatorsOf(field);
   const allowedValues = field.allowedValues ?? NO_VALUES;
@@ -78,6 +79,14 @@ export const useShapeDraft = (
     list: { values: checked, operator: picked },
   };
   const current = byShape[shape];
+  const withChecked = (option: string): string[] => {
+    const next = filled([...checked, option]);
+    const rank = (candidate: string) => {
+      const index = held.indexOf(candidate);
+      return index < 0 ? held.length + next.indexOf(candidate) : index;
+    };
+    return next.sort((left, right) => rank(left) - rank(right));
+  };
 
   return {
     operators,
@@ -99,12 +108,10 @@ export const useShapeDraft = (
       setEnds(nextEnds);
     },
     toggle: (option: string, on: boolean) =>
-      setValues(
-        on ? filled([...checked, option]) : checked.filter((candidate) => candidate !== option)
-      ),
+      setValues(on ? withChecked(option) : checked.filter((candidate) => candidate !== option)),
     add: (option: string) => {
       setEntries(filled([...entries, option]));
-      setValues(filled([...checked, option]));
+      setValues(withChecked(option));
     },
     changeOperator: (id: string) => {
       if (shapeOf(id) === 'list') setEntries(filled([...entries, ...values]));
