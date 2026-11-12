@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   type RenderResult,
   render,
@@ -1135,15 +1136,31 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it('moves a row with ↓ and ↑, keeping the column where the row has it', () => {
+    it('moves a row with ↓ and ↑, keeping the column across a row without it', () => {
       startAt({ rowId: 'r1', columnId: 'income' });
       expect(walk('ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowUp', 'ArrowUp')).toEqual([
         'r2:income',
         'r3',
         'r3',
-        'r2',
-        'r1',
+        'r2:income',
+        'r1:income',
       ]);
+      const [r1, r2, r3] = GRID_SENTENCE_RULES;
+      if (!r1 || !r2 || !r3) throw new Error('no grid rules');
+      cleanup();
+      const { onSelect } = renderSelectable({
+        rules: [r1, r3, r2],
+        initial: { rowId: 'r1', columnId: 'income' },
+      });
+      act(() => valueChip('r1', 'income').focus());
+      expect(walk('ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'ArrowUp')).toEqual([
+        'r3',
+        'r2:income',
+        'r2:age',
+        'r3:age',
+        'r1:age',
+      ]);
+      expect(onSelect).toHaveBeenCalledTimes(5);
     });
 
     it.each<[string, KeyboardEventInit, SentenceSelection, string]>([
@@ -1201,6 +1218,38 @@ describe('DecisionText', () => {
       expect(keys.map((key) => press(key))).toEqual(keys.map(() => true));
       expect(press('a', { metaKey: true })).toBe(true);
       expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it.each<[string, SentenceSelection]>([
+      ['a rule', { rowId: 'r2' }],
+      ['a cell', { rowId: 'r2', columnId: 'age' }],
+    ])('leaves Tab on the view itself to the browser with %s selected, moving on to the selected stop', async (_, initial) => {
+      const { onSelect } = renderSelectable({ initial });
+      const user = userEvent.setup();
+      act(() => screen.getByTestId('nl').focus());
+      await user.tab();
+      expect(document.activeElement).toBe(screen.getByRole('list', { name: 'Inputs' }));
+      await user.tab();
+      await user.tab();
+      expect(focusedStop()).toBe(initial.columnId ? `r2:${initial.columnId}` : 'r2');
+      act(() => screen.getByTestId('nl').focus());
+      await user.tab({ shift: true });
+      expect(document.activeElement).toBe(document.body);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it("keeps no focus pending from a move the host refused, so the host's own later select of it leaves focus alone", () => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      const onSelect = vi.fn();
+      const props = { rules: GRID_SENTENCE_RULES, bands: GRID_SENTENCE_BANDS, onSelect };
+      const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }));
+      act(() => card('r2').focus());
+      press('ArrowRight');
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'risk' }]]);
+      act(() => outside.focus());
+      rerender(view({ ...props, selected: { rowId: 'r2', columnId: 'risk' } }));
+      expect(document.activeElement).toBe(outside);
     });
 
     it('focuses the selected stop on a move that stays put', () => {
@@ -1312,8 +1361,8 @@ describe('DecisionText', () => {
       expect(frame.scrollTop).toBe(0);
     });
 
-    it('scrolls on to a cell its row scrolled past, and to the top of a rule taller than the view', () => {
-      renderSelectable();
+    it('scrolls on a key to a cell its row scrolled past, and to the top of a rule taller than the view', () => {
+      renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
       const frame = screen.getByTestId('nl');
       Object.defineProperty(frame, 'clientHeight', { value: 100 });
       const chip = valueChip('r3', 'age');
@@ -1322,7 +1371,9 @@ describe('DecisionText', () => {
         top: 300,
         bottom: 324,
       });
-      fireEvent.click(chip);
+      act(() => valueChip('r2', 'age').focus());
+      press('ArrowDown');
+      expect(focusedStop()).toBe('r3:age');
       const rowEnd = sentenceRuleOffsets(GRID_SENTENCE_RULES)[3] ?? 0;
       expect(frame.scrollTop).toBe(rowEnd - 100 + 224);
       vi.spyOn(card('r1'), 'getBoundingClientRect').mockReturnValue({
@@ -1330,8 +1381,24 @@ describe('DecisionText', () => {
         top: 20,
         bottom: 370,
       });
-      fireEvent.click(within(card('r1')).getByText('when'));
+      press('Home', { metaKey: true });
+      expect(focusedStop()).toBe('r1');
       expect(frame.scrollTop).toBe(20);
+    });
+
+    it('leaves a rule taller than the view where it is when a click selects it', () => {
+      renderSelectable({ rules: [manyLinesRule(10)] });
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      act(() => scrollTo(150));
+      vi.spyOn(card('many-lines'), 'getBoundingClientRect').mockImplementation(() => ({
+        ...rect(0, 400),
+        top: -frame.scrollTop,
+        bottom: 400 - frame.scrollTop,
+      }));
+      fireEvent.click(within(card('many-lines')).getAllByText('is')[3] as HTMLElement);
+      expect(focusedStop()).toBe('many-lines');
+      expect(frame.scrollTop).toBe(150);
     });
 
     it('leaves a visible cell of a rule taller than the view where it is', () => {

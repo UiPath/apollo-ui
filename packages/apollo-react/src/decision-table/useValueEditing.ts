@@ -218,7 +218,9 @@ export const useValueEditing = ({
   const onAction = (action: RuleAction): boolean => {
     if (action.action === 'clear') {
       clear(action.cell);
-      if (selected?.rowId !== action.cell.rowId) navigation.select({ rowId: action.cell.rowId });
+      if (selected?.rowId !== action.cell.rowId) {
+        navigation.select({ rowId: action.cell.rowId }, undefined, false);
+      }
       return true;
     }
     if (action.action !== 'delete') return false;

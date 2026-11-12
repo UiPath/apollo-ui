@@ -105,7 +105,7 @@ export const useContainerHandlers = ({
       valueEditing.onClick(event);
     const selection = claimed ? null : clickedSelection(event.target);
     if (selection) {
-      navigation.select(selection);
+      navigation.select(selection, undefined, false);
     }
     consumerClick?.(event);
   };

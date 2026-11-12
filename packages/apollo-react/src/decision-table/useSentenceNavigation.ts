@@ -7,6 +7,7 @@ import { firstValuesOf } from './ruleCardModel';
 import { cardOf, cellOf } from './sentenceTargets';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import { ARROW_DELTAS, clamp, GRID_ENTRY_KEYS } from './useGridNavigation';
+import { useRequestRender } from './useRequestRender';
 import type { RuleWindow } from './useRuleWindow';
 
 /** A row and one of its stops: 0 is its rule, then its cells in reading order. */
@@ -36,16 +37,18 @@ const selectionAt = (
 const sameSelection = (left: SentenceSelection | null, right: SentenceSelection | null): boolean =>
   left?.rowId === right?.rowId && left?.columnId === right?.columnId;
 
+/** A move to another row, onto `columnId` where that row has it, else onto its rule. */
 const verticalMove = (
   delta: number,
   meta: boolean,
   from: StopPosition,
   rowCount: number,
-  stopsAt: (row: number) => Stops
+  stopsAt: (row: number) => Stops,
+  columnId: string | undefined
 ): StopPosition => {
   const last = rowCount - 1;
   const row = meta ? (delta < 0 ? 0 : last) : clamp(from.row + delta, last);
-  return { row, stop: Math.max(0, stopsAt(row).indexOf(stopsAt(from.row)[from.stop])) };
+  return { row, stop: Math.max(0, stopsAt(row).indexOf(columnId)) };
 };
 
 const horizontalMove = (delta: number, meta: boolean, from: StopPosition, stops: Stops) => {
@@ -78,17 +81,20 @@ const stopAfterCommit = (
 ): StopPosition | undefined => {
   const stopsAt = (row: number) => stopsOf(rules[row]);
   if (move === 'none') return undefined;
-  if (move === 'down') return verticalMove(1, false, from, rules.length, stopsAt);
+  if (move === 'down') {
+    return verticalMove(1, false, from, rules.length, stopsAt, stopsAt(from.row)[from.stop]);
+  }
   const next = tabMove(move === 'left', from, stopsAt(from.row));
   return next && next.stop > 0 ? next : from;
 };
 
-/** Where a key moves from `from`, or undefined for a key the view leaves alone. */
+/** Where a key moves from `from`, ↑ and ↓ onto `columnId`, or undefined for a key the view leaves alone. */
 const stopAfterKey = (
   event: React.KeyboardEvent,
   from: StopPosition,
   rules: readonly SentenceRule[],
-  rtl: boolean
+  rtl: boolean,
+  columnId: string | undefined
 ): StopPosition | undefined => {
   const meta = event.metaKey || event.ctrlKey;
   const stopsAt = (row: number) => stopsOf(rules[row]);
@@ -96,12 +102,12 @@ const stopAfterKey = (
   if (delta) {
     return delta.row === 0
       ? horizontalMove(rtl ? -delta.col : delta.col, meta, from, stopsAt(from.row))
-      : verticalMove(delta.row, meta, from, rules.length, stopsAt);
+      : verticalMove(delta.row, meta, from, rules.length, stopsAt, columnId);
   }
   if (event.key === 'Home' || event.key === 'End') {
     return edgeMove(event.key === 'End', meta, from, rules.length, stopsAt);
   }
-  if (event.key === 'Tab' && !meta && !event.altKey) {
+  if (event.key === 'Tab' && !meta && !event.altKey && event.target !== event.currentTarget) {
     return tabMove(event.shiftKey, from, stopsAt(from.row));
   }
   return undefined;
@@ -150,17 +156,33 @@ interface SentenceNavigationSource
 /** The element of a selected card that takes focus in place of its stop, e.g. one of its actions. */
 type CardFocus = (card: HTMLElement) => HTMLElement | null;
 
-/** A selection the view asked for, and what of its card to focus once the host applies it. */
+/** A selection the view asked for, what of its card to focus once the host applies it, and whether to scroll it into view. */
 interface PendingFocus {
   selection: SentenceSelection | null;
   focus: CardFocus | undefined;
+  scroll: boolean;
 }
+
+/** The column ↑ and ↓ keep: the one a run of them started from, while the selection is where the last one landed. */
+interface WantedColumn {
+  columnId: SentenceSelection['columnId'];
+  at: SentenceSelection;
+}
+
+/** The column ↑ and ↓ keep from `current`: the wanted one while the selection is where the last of them landed. */
+const keptColumnOf = (
+  wanted: WantedColumn | undefined,
+  current: SentenceSelection | null
+): SentenceSelection['columnId'] =>
+  wanted && sameSelection(wanted.at, current) ? wanted.columnId : current?.columnId;
+
+const isVerticalKey = (key: string): boolean => (ARROW_DELTAS[key]?.row ?? 0) !== 0;
 
 export interface SentenceNavigation {
   /** The selected row's cell, or null for its rule or a cell it has no value for. */
   selectedColumnId: string | null;
-  /** Selects and focuses, from a click or a key; `focus` picks another element of the selected card. */
-  select: (selection: SentenceSelection | null, focus?: CardFocus) => void;
+  /** Selects and focuses, from a click or a key; `focus` picks another element of the selected card, and `scroll` is false for a pointer's, whose target is in view. */
+  select: (selection: SentenceSelection | null, focus?: CardFocus, scroll?: boolean) => void;
   /** Handles a key the view claims, and returns whether it did. */
   onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => boolean;
   /** Selects and focuses where an edit committed in `from` moves among the rules it committed on, or the current ones for a cell those lacked, as the grid's `commitEdit`. */
@@ -211,7 +233,9 @@ export const useSentenceNavigation = ({
     }
   };
 
+  const requestRender = useRequestRender();
   const pendingFocusRef = useRef<PendingFocus | undefined>(undefined);
+  const wantedRef = useRef<WantedColumn | undefined>(undefined);
   const shownRowIdRef = useRef(selectedRule?.rowId);
   useLayoutEffect(() => {
     const pending = pendingFocusRef.current;
@@ -219,7 +243,7 @@ export const useSentenceNavigation = ({
     const moved = selectedRule?.rowId !== shownRowIdRef.current;
     shownRowIdRef.current = selectedRule?.rowId;
     if (pending !== undefined && sameSelection(pending.selection, current)) {
-      focusCurrent(pending.focus);
+      focusCurrent(pending.focus, pending.scroll);
     } else if (moved && selectedRow !== null) {
       const stop = movedStopOf(container(), current);
       if (stop) scrollStopIntoView(selectedRow, stop);
@@ -227,14 +251,15 @@ export const useSentenceNavigation = ({
     }
   });
 
-  const select = (selection: SentenceSelection | null, focus?: CardFocus) => {
+  const select = (selection: SentenceSelection | null, focus?: CardFocus, scroll = true) => {
     if (!onSelect) return;
     if (sameSelection(selection, selected ?? null)) {
-      focusCurrent(focus);
+      focusCurrent(focus, scroll);
       return;
     }
-    pendingFocusRef.current = { selection, focus };
+    pendingFocusRef.current = { selection, focus, scroll };
     onSelect(selection);
+    requestRender();
   };
 
   const keyTarget = (event: React.KeyboardEvent<HTMLElement>) => {
@@ -245,8 +270,12 @@ export const useSentenceNavigation = ({
         : undefined;
     }
     const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
-    const next = stopAfterKey(event, position, rules, rtl);
-    return next && selectionAt(rules, next);
+    const wanted = keptColumnOf(wantedRef.current, current);
+    const next = stopAfterKey(event, position, rules, rtl, wanted);
+    const target = next && selectionAt(rules, next);
+    wantedRef.current =
+      target && isVerticalKey(event.key) ? { columnId: wanted, at: target } : undefined;
+    return target;
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>): boolean => {
