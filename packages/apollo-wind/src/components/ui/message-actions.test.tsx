@@ -333,6 +333,39 @@ describe('MessageActionFeedback', () => {
     );
   });
 
+  it('offers both thumbs while a locked pair is unrated', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <MessageActions>
+        <MessageActionFeedback locked onChange={onChange} />
+      </MessageActions>
+    );
+    await user.click(screen.getByRole('button', { name: 'Not helpful' }));
+    expect(onChange).toHaveBeenCalledWith('down');
+    expect(screen.queryByRole('button', { name: 'Helpful' })).not.toBeInTheDocument();
+  });
+
+  it('keeps only the chosen thumb, pressed and inert, once a locked pair is rated', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <MessageActions>
+        <MessageActionFeedback locked value="up" onChange={onChange} />
+      </MessageActions>
+    );
+    expect(screen.queryByRole('button', { name: 'Not helpful' })).not.toBeInTheDocument();
+    const up = screen.getByRole('button', { name: 'Helpful' });
+    expect(up).toHaveAttribute('aria-pressed', 'true');
+    expect(up).toHaveAttribute('aria-disabled', 'true');
+    // Not natively disabled, so it keeps its focus and tooltip.
+    expect(up).toBeEnabled();
+
+    await user.click(up);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(up).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('groups the thumbs under an accessible name', () => {
     render(
       <MessageActions>
