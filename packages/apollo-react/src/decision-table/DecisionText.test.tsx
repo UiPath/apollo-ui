@@ -1985,6 +1985,26 @@ describe('DecisionText', () => {
       expect(onCancel).toHaveBeenCalledTimes(1);
     });
 
+    it('hands a host editor the grid editor contract, applying the draft it reports through onDraftChange', () => {
+      const draftOnlyEditor = ({ value, ariaLabel, onDraftChange }: SentenceEditorContext) => (
+        <input
+          aria-label={ariaLabel}
+          data-testid="host-editor"
+          defaultValue={value}
+          onChange={(event) => onDraftChange?.(event.currentTarget.value)}
+        />
+      );
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: draftOnlyEditor,
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
     it('applies once the text a host editor last held, though it reports no draft', () => {
       const { onCommit } = renderEditing({
         initialEditing: r1Age,
