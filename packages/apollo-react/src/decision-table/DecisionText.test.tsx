@@ -339,6 +339,17 @@ describe('DecisionText', () => {
       expect(row).toHaveAttribute('aria-setsize', '5');
     });
 
+    it('names a rule whose lead clamps a list by the values it shows, then its count', () => {
+      const [m3] = MULTI_SENTENCE_RULES.slice(2);
+      if (!m3) throw new Error('no m3');
+      const countries = Array.from({ length: 30 }, (_, index) => `"C${index + 1}"`);
+      const lead = ['when ', COUNTRY, ' is one of ', ...valueList(country, countries), ' today'];
+      renderView({ rules: [{ ...m3, rowId: 'long-lead', lead }] });
+      expect(card('long-lead')).toHaveAccessibleName(
+        `Decision is "decline" · Credit Limit is 0 · Reason is "low score" when Country is one of ${countries.slice(0, 20).join(', ')} +10 more today`
+      );
+    });
+
     it('labels the scroll region and has no axe violations', async () => {
       const { container } = renderView();
       expect(screen.getByRole('region', { name: 'Rules' })).toBe(screen.getByTestId('nl'));

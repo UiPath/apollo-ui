@@ -71,7 +71,7 @@ const shownLineText = (parts: readonly SentencePart[], labels: RuleCardLabels): 
   return [
     ...clamped.map(
       ({ hiddenValues }, index) =>
-        `${partsText(shown.slice(cuts[index - 1] ?? 0, cuts[index]))}${labels.moreValues(hiddenValues)}`
+        `${partsText(shown.slice(cuts[index - 1] ?? 0, cuts[index]))} ${labels.moreValues(hiddenValues)}`
     ),
     partsText(shown.slice(cuts.at(-1) ?? 0)),
   ].join('');
