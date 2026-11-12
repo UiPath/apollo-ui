@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v7.17.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.3...@uipath/apollo-react@7.17.4) (2026-11-12)
+
+### Bug Fixes
+
+* **apollo-react:** keep the Wind chat loading skeleton in the message column ([6b45331](https://github.com/UiPath/apollo-ui/commit/6b45331ea4cbfcf0cfe320f043f6b9ce3ac0922b))
+* **apollo-react:** lock chat feedback once given, opt in with allowFeedbackChange [MST-18214] ([c65e506](https://github.com/UiPath/apollo-ui/commit/c65e506d0e379858eced327390271d7aa37190ba))
+* **apollo-react:** show a conversation the host sets while the chat is mounting [MST-18207] ([8f4cdad](https://github.com/UiPath/apollo-ui/commit/8f4cdad296c0b5efddf4282e555886f1b74c03a7))
+* **apollo-react:** show chat history the host sets while the chat is mounting [MST-18207] ([1730baa](https://github.com/UiPath/apollo-ui/commit/1730baa742684da1bd80137693759534295c4508))
+
 ## [@uipath/apollo-react-v7.17.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.2...@uipath/apollo-react@7.17.3) (2026-11-12)
 
 ### Bug Fixes

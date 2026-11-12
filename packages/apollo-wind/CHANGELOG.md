@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.91.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.90.0...@uipath/apollo-wind@2.91.0) (2026-11-12)
+
+### Features
+
+* **apollo-wind:** add locked MessageActionFeedback and a clearer pressed thumb [MST-18214] ([9857071](https://github.com/UiPath/apollo-ui/commit/98570710dbc9b5355980baf083086e304aa45f59))
+
 ## [@uipath/apollo-wind-v2.90.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.89.0...@uipath/apollo-wind@2.90.0) (2026-11-10)
 
 ### Features
