@@ -24,6 +24,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   useStore: () => ({ edges: [], isConnecting: false }),
   useConnection: () => ({ inProgress: false }),
   useUpdateNodeInternals: () => vi.fn(),
+  useStoreApi: () => ({ getState: vi.fn() }),
   useReactFlow: () => ({
     setNodes: vi.fn(),
     setEdges: vi.fn(),
