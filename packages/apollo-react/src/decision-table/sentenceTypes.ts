@@ -1,5 +1,6 @@
 import type React from 'react';
 import type { GridColumn, GridColumnGroup } from './gridTypes';
+import type { GridNavigation } from './useGridNavigation';
 
 /** A column's name inside a sentence; `columnId` is the input's or output's id. */
 export interface SentenceNameToken {
@@ -52,10 +53,7 @@ export interface SentenceBand extends Pick<GridColumnGroup, 'id' | 'label'> {
 }
 
 /** A cell, addressed as the grid's marks address it. */
-export interface SentenceCellId {
-  rowId: string;
-  columnId: string;
-}
+export type SentenceCellId = NonNullable<GridNavigation['selectedIds']>;
 
 /** One value of a cell: the cell, and the value's `index` among the cell's values, 0 for an outcome. */
 export interface SentenceValueId extends SentenceCellId {

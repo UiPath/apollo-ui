@@ -205,7 +205,10 @@ export const useVirtualizedAxis = (
   const tailRef = useRef(tail);
   const viewportRef = useRef(viewportPx);
 
-  const followRange = (range: { startIndex: number; endIndex: number }, viewport: number) => {
+  const followRange = (
+    range: NonNullable<Virtualizer<HTMLElement, Element>['range']>,
+    viewport: number
+  ) => {
     const lagging = Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold;
     const nextAnchor = lagging ? range.startIndex : anchorRef.current;
     const kept = lagging ? 0 : tailRef.current;

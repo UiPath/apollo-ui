@@ -9,13 +9,11 @@ export interface PopoverSelectOption {
   icon?: React.ReactNode;
 }
 
-export interface PopoverSelectProps {
+export interface PopoverSelectProps
+  extends Pick<React.ComponentProps<typeof Select>, 'open' | 'onOpenChange'> {
   value: string;
   options: readonly PopoverSelectOption[];
   onChange: (id: string) => void;
-  /** Controls the list, for a shortcut that opens it from elsewhere. */
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
   /** Where focus goes once the list closes, in place of the trigger. */
   returnFocus?: () => void;
   /** Where the list renders, so picking from it keeps focus inside the popover. */

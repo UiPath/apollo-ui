@@ -1,29 +1,29 @@
 import { useState } from 'react';
-import type { ColumnChange, ColumnEdit } from './ColumnPopover';
+import type { BandColumnProps } from './BandColumn';
+import type { ColumnEdit, ColumnPopoverProps } from './ColumnPopover';
+import type { EditorOverlayProps } from './EditorOverlay';
 import type { SentenceBand } from './sentenceTypes';
 import type { EditorAnchor } from './useEditorPlacement';
+import type { RuleWindow } from './useRuleWindow';
 
 export interface ColumnEditingParams {
   column: ColumnEdit | undefined;
   bands: readonly SentenceBand[];
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
 }
 
 /** The open pill's column and the actions that settle its popover. */
-export interface OpenColumnEditor {
-  column: SentenceBand['columns'][number];
+export interface OpenColumnEditor
+  extends Pick<ColumnPopoverProps, 'column' | 'onApply' | 'onCancel' | 'onMoreProperties'> {
   anchor: EditorAnchor;
-  onApply: (change: ColumnChange) => void;
-  onCancel: () => void;
-  onDismiss: () => void;
-  onMoreProperties: (() => void) | undefined;
+  onDismiss: NonNullable<EditorOverlayProps['onPressOutside']>;
 }
 
 export interface ColumnEditing {
   /** The column whose popover is open, or null. */
   openId: string | null;
   /** Opens a pill's popover, or closes it from its own pill; undefined while pills are plain. */
-  onToggle: ((columnId: string) => void) | undefined;
+  onToggle: BandColumnProps['onToggle'];
   editor: OpenColumnEditor | undefined;
 }
 

@@ -2,12 +2,13 @@ import type React from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { addConditionOf, cardOf, cellOf, valueChipOf } from './sentenceTargets';
 import type { SentenceValueId } from './sentenceTypes';
+import type { RuleWindow } from './useRuleWindow';
 
 /** What the editor hangs from, found in the scroll container. */
 export type EditorAnchor = (section: HTMLElement) => HTMLElement | undefined;
 
 export interface EditorPlacementParams {
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
   anchor: EditorAnchor;
 }
 

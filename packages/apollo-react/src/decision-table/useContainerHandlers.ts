@@ -1,14 +1,10 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import type { DecisionTextProps } from './DecisionText';
-import {
-  clickedDecision,
-  clickedSelection,
-  type HoveredToken,
-  stopDecisionOf,
-  valueTokenAt,
-} from './sentenceTargets';
+import { clickedDecision, clickedSelection, stopDecisionOf, valueTokenAt } from './sentenceTargets';
+import type { useCellHover } from './useCellHover';
 import type { RuleMenus } from './useRuleMenus';
+import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
 import type { ValueEditing } from './useValueEditing';
 
@@ -17,12 +13,12 @@ export type ContainerProps = React.HTMLAttributes<HTMLElement> &
 
 export interface ContainerHandlersParams {
   containerProps: ContainerProps | undefined;
-  hoverTo: (next: HoveredToken | null) => void;
+  hoverTo: ReturnType<typeof useCellHover>;
   navigation: SentenceNavigation;
   valueEditing: ValueEditing;
   ruleMenus: RuleMenus;
   onOpenDecision: DecisionTextProps['onOpenDecision'];
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
 }
 
 /** The consumer's container props, with the view's own handlers run before the consumer's. */

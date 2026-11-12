@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
+import type { DecisionTextProps } from './DecisionText';
 import { type HoveredToken, valueTokenAt } from './sentenceTargets';
-import type { SentenceCellId } from './sentenceTypes';
 
 /** Tracks the value chip under the pointer and reports its cell whenever that cell changes or goes away. */
-export const useCellHover = (onCellHover: ((cell: SentenceCellId | null) => void) | undefined) => {
+export const useCellHover = (onCellHover: DecisionTextProps['onCellHover']) => {
   const onCellHoverRef = useRef(onCellHover);
   onCellHoverRef.current = onCellHover;
   const hoveredRef = useRef<HoveredToken | null>(null);

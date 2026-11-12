@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import type { AllowedValueListProps } from './AllowedValueList';
+import type { RangeFieldsProps } from './RangeFields';
+import type { ValueChecklistProps } from './ValueChecklist';
 import type { RangeEnds, ValueCommit, ValueField, ValueOperatorOption } from './ValuePopover';
 
 type Shape = NonNullable<ValueOperatorOption['shape']>;
@@ -37,10 +40,10 @@ export interface ShapeDraft {
   checked: readonly string[];
   current: ValueCommit;
   complete: boolean;
-  setText: (text: string) => void;
-  setRange: (low: string, high: string, ends: RangeEnds) => void;
-  toggle: (option: string, on: boolean) => void;
-  add: (option: string) => void;
+  setText: AllowedValueListProps['onChoose'];
+  setRange: RangeFieldsProps['onChange'];
+  toggle: ValueChecklistProps['onToggle'];
+  add: NonNullable<ValueChecklistProps['onAdd']>;
   changeOperator: (id: string) => void;
 }
 

@@ -15,11 +15,11 @@ import {
   POPOVER_CLASS,
   POPOVER_FIELD_CLASS,
 } from './sentenceStyles';
-import type { SentenceBand } from './sentenceTypes';
+import type { SentenceBand, SentenceNameToken } from './sentenceTypes';
 
 /** What a band column's popover edits, from the host's column. */
 export interface ColumnField {
-  kind: 'input' | 'output';
+  kind: SentenceNameToken['kind'];
   label: string;
   /** An input's expression, or an output's name. */
   binding: string;

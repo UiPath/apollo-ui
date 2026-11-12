@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useLayoutEffect, useRef } from 'react';
-import type { DecisionTextEdit, DecisionTextLabels } from './DecisionText';
+import type { DecisionTextEdit, DecisionTextLabels, DecisionTextProps } from './DecisionText';
 import { activeElementOf } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { bandColumnNameOf, columnNameOf, hasStop, tokenText, valueTokenOf } from './sentenceParts';
@@ -12,6 +12,8 @@ import type {
   SentenceSelection,
   SentenceValueId,
 } from './sentenceTypes';
+import type { RuleMenus } from './useRuleMenus';
+import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
 import type { OpenValueEditor } from './ValueEditorOverlay';
 
@@ -20,12 +22,12 @@ export interface ValueEditingParams {
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
   selected: SentenceSelection | null | undefined;
-  onSelect: ((selection: SentenceSelection | null) => void) | undefined;
+  onSelect: DecisionTextProps['onSelect'];
   navigation: SentenceNavigation;
   labels: DecisionTextLabels;
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
   /** Opens the menu a card action names, and returns whether it did. */
-  openMenu: (action: RuleAction) => boolean;
+  openMenu: RuleMenus['openFor'];
 }
 
 /** How the open editor was last settled, resolved once the host closes it. */

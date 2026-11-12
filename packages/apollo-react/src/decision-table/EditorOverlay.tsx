@@ -2,6 +2,7 @@ import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
+import type { RuleWindow } from './useRuleWindow';
 
 /** The overlay's inline style: its placement, and the row height a grid cell editor sizes itself from. */
 type EditorOverlayStyle = React.CSSProperties & Record<'--grid-row-height', string>;
@@ -18,7 +19,7 @@ const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation()
 
 export interface EditorOverlayProps {
   anchor: EditorAnchor;
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
   ariaLabel: string;
   className: string;
   id?: string;

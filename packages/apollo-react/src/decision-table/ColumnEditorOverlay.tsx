@@ -8,12 +8,13 @@ import {
 import { EditorOverlay } from './EditorOverlay';
 import { COLUMN_EDITOR_CLASS } from './sentenceStyles';
 import type { OpenColumnEditor } from './useColumnEditing';
+import type { RuleWindow } from './useRuleWindow';
 
 export interface ColumnEditorOverlayProps {
   editor: OpenColumnEditor;
   edit: ColumnEdit;
   labels: ColumnPopoverLabels;
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
   id: string;
   dataTestId: string;
 }

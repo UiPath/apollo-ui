@@ -1,8 +1,9 @@
+import type React from 'react';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { SENTENCE_MIN_RULE_HEIGHT_PX, sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentenceRule } from './sentenceTypes';
-import { useVirtualizedAxis } from './useVirtualizedAxis';
+import { type AxisSegment, useVirtualizedAxis } from './useVirtualizedAxis';
 
 const SENTENCE_RULE_OVERSCAN = 10;
 
@@ -30,12 +31,29 @@ const measuredHeights = (
   return next ?? current;
 };
 
+export interface RuleWindow {
+  listRef: React.RefObject<HTMLUListElement | null>;
+  headerRef: React.RefObject<HTMLDivElement | null>;
+  segments: AxisSegment[];
+  /** The index of the selected row, or null when no row in the rules is selected. */
+  selectedRow: number | null;
+  attachSection: (element: HTMLElement | null) => void;
+  /** The view's scroll container. */
+  container: () => HTMLElement | null;
+  /** Scrolls a row the host selects into view, as the grid's host does for its selected row. */
+  scrollRowIntoView: (rowIndex: number) => void;
+  /** The first row the sticky header does not cover, where a first key lands. */
+  firstVisibleRow: () => number;
+  /** Scrolls the row into view when it fits below the sticky header, then the stop within it. */
+  scrollStopIntoView: (rowIndex: number, stop: HTMLElement) => void;
+}
+
 /** The window of rules the list mounts, kept on the retained rule, and the scrolls that reveal a rule or a stop. */
 export const useRuleWindow = (
   rules: readonly SentenceRule[],
   selectedRowId: string | undefined,
   retainedRowId: string | undefined
-) => {
+): RuleWindow => {
   const listRef = useRef<HTMLUListElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);

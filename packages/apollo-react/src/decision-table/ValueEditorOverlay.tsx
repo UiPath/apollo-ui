@@ -2,6 +2,7 @@ import type React from 'react';
 import { EditorOverlay } from './EditorOverlay';
 import { VALUE_EDITOR_CLASS } from './sentenceStyles';
 import { valueAnchor } from './useEditorPlacement';
+import type { RuleWindow } from './useRuleWindow';
 import { ValuePopover, type ValuePopoverProps } from './ValuePopover';
 
 /** The open value's editor as the view derives it; the host's editor, the strings and the testid come apart. */
@@ -13,7 +14,7 @@ export type OpenValueEditor = Omit<
 export interface ValueEditorOverlayProps
   extends Pick<ValuePopoverProps, 'renderEditor' | 'labels' | 'onOperatorChange'> {
   editor: OpenValueEditor;
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
   dataTestId: string;
 }
 

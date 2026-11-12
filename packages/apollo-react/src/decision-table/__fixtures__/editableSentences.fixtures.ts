@@ -10,11 +10,8 @@ import type {
 import type { RangeEnds, ValueCommit } from '../ValuePopover';
 
 /** A column of the story table, and the decision that produces it when another one does. */
-interface EditableColumn {
-  id: string;
-  name: string;
-  decisionId?: string;
-}
+type EditableColumn = Pick<SentenceBand['columns'][number], 'id' | 'name'> &
+  Pick<SentenceNameToken, 'decisionId'>;
 
 /** One condition of a rule: its input, its operator words, its values, what joins them, and a range's ends. */
 interface EditableCondition {

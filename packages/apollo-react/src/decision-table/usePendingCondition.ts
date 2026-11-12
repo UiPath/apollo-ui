@@ -3,6 +3,7 @@ import type { DecisionTextEdit } from './DecisionText';
 import { bandColumnNameOf, hasStop } from './sentenceParts';
 import type { SentenceBand, SentenceRule, SentenceValueId } from './sentenceTypes';
 import { valueKey } from './useValueEditing';
+import type { ValuePopoverProps } from './ValuePopover';
 
 export interface PendingConditionParams {
   edit: DecisionTextEdit | undefined;
@@ -16,7 +17,7 @@ export interface PendingCondition {
   /** The condition the open editor adds, which the rule does not have yet, or null. */
   pending: SentenceValueId | null;
   /** The operator its popover picks, which the line words before Apply. */
-  onOperatorChange: (id: string) => void;
+  onOperatorChange: ValuePopoverProps['onOperatorChange'];
 }
 
 /** An operator picked for one pending condition. */

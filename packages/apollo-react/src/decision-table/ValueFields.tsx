@@ -1,5 +1,6 @@
 import { Input } from '@uipath/apollo-wind';
 import type React from 'react';
+import type { AllowedValueListProps } from './AllowedValueList';
 import { AllowedValueList } from './AllowedValueList';
 import { RangeFields } from './RangeFields';
 import { POPOVER_FIELD_CLASS, VALUE_POPOVER_CHOICES_CLASS } from './sentenceStyles';
@@ -14,7 +15,7 @@ export interface ValueFieldsProps {
   values: readonly string[] | undefined;
   column: string;
   ariaLabel: string;
-  onPick: (value: string) => void;
+  onPick: AllowedValueListProps['onPick'];
   onFieldsKeyDown: React.KeyboardEventHandler<HTMLElement>;
   onValueKeyDown: React.KeyboardEventHandler<HTMLElement>;
   focusRef: React.RefCallback<HTMLElement>;

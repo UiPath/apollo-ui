@@ -12,6 +12,7 @@ import {
   MARK_TOOLTIP_CLASS,
   MARK_TOOLTIP_TEXT_CLASS,
 } from './sentenceStyles';
+import type { RuleWindow } from './useRuleWindow';
 
 /** The marked element the tooltip shows, in viewport coordinates. */
 interface ShownMark {
@@ -47,7 +48,7 @@ const titlesOf = (badges: readonly HTMLElement[]): string =>
 
 export interface MarkTooltipProps {
   /** The view whose marks it shows, and where it renders, so it reads in the view's type. */
-  container: () => HTMLElement | null;
+  container: RuleWindow['container'];
   dataTestId: string;
 }
 

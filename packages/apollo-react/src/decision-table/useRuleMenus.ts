@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { DecisionTextEdit } from './DecisionText';
-import type { GridContextMenuState, GridMenuEntry } from './GridMenu';
+import type { GridContextMenuProps, GridContextMenuState, GridMenuEntry } from './GridMenu';
 import type { OpenRuleMenu } from './RuleList';
 import { clickedAction, type RuleAction } from './sentenceTargets';
 import type { SentenceRule } from './sentenceTypes';
@@ -25,12 +25,8 @@ interface RuleMenuState extends GridContextMenuState, OpenRuleMenu {
 /** Where focus returns once a menu closes; `scroll` is false once the rules scrolled or the window resized the menu away. */
 type FocusReturn = Pick<RuleMenuState, 'trigger' | 'openedOnRowId'> & { scroll: boolean };
 
-export interface RuleMenus {
+export interface RuleMenus extends Pick<GridContextMenuProps, 'label' | 'entries' | 'onClose'> {
   state: RuleMenuState | null;
-  /** The open menu's name: its trigger's. */
-  label: string;
-  entries: () => GridMenuEntry[];
-  onClose: () => void;
   /** Opens the menu of a clicked card button, and returns whether it did. */
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
   /** Opens the menu a card action names, from where its button is now, and returns whether it did. */

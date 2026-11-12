@@ -98,9 +98,7 @@ const ReadOnlyDemo = ({ caption, ...props }: ReadOnlyDemoProps) => {
   );
 };
 
-interface SelectionDemoProps
-  extends Partial<Omit<DecisionTextProps, 'selected' | 'onSelect' | 'edit'>> {
-  caption: string;
+interface SelectionDemoProps extends ReadOnlyDemoProps {
   initialSelected?: SentenceSelection | null;
 }
 

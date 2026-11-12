@@ -1,11 +1,13 @@
 import type React from 'react';
 import { useLayoutEffect, useMemo, useRef } from 'react';
+import type { DecisionTextProps } from './DecisionText';
 import { activeElementOf, isFromTextField } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { firstValuesOf } from './ruleCardModel';
 import { cardOf, cellOf } from './sentenceTargets';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import { ARROW_DELTAS, clamp, GRID_ENTRY_KEYS } from './useGridNavigation';
+import type { RuleWindow } from './useRuleWindow';
 
 /** A row and one of its stops: 0 is its rule, then its cells in reading order. */
 interface StopPosition {
@@ -135,19 +137,14 @@ const movedStopOf = (
   return focusedAddRule ?? cell;
 };
 
-interface SentenceNavigationSource {
+interface SentenceNavigationSource
+  extends Pick<
+    RuleWindow,
+    'selectedRow' | 'container' | 'firstVisibleRow' | 'scrollStopIntoView' | 'scrollRowIntoView'
+  > {
   rules: readonly SentenceRule[];
   selected: SentenceSelection | null | undefined;
-  /** The index of `selected`'s row, or null when no row in `rules` is selected. */
-  selectedRow: number | null;
-  onSelect: ((selection: SentenceSelection | null) => void) | undefined;
-  container: () => HTMLElement | null;
-  /** The first row the sticky header does not cover, where a first key lands. */
-  firstVisibleRow: () => number;
-  /** Scrolls the row into view when it fits below the sticky header, then the stop within it. */
-  scrollStopIntoView: (rowIndex: number, stop: HTMLElement) => void;
-  /** Scrolls a row the host selects into view, as the grid's host does for its selected row. */
-  scrollRowIntoView: (rowIndex: number) => void;
+  onSelect: DecisionTextProps['onSelect'];
 }
 
 /** The element of a selected card that takes focus in place of its stop, e.g. one of its actions. */

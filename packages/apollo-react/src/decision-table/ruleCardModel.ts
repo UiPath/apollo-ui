@@ -1,8 +1,9 @@
+import type { LineTextProps } from './LineText';
 import type { MarkBadgeProps } from './MarkBadge';
 import { markIds } from './MarkBadge';
 import type { RowMark } from './marks';
 import type { RemoveConditionButtonProps } from './RemoveConditionButton';
-import type { RuleCardEditLabels, RuleCardLabels } from './RuleCard';
+import type { RuleCardLabels, RuleCardProps } from './RuleCard';
 import { type LineMark, lineMarksOf, type MarkFields, unplacedColumnIds } from './sentenceMarks';
 import {
   boundedParts,
@@ -12,7 +13,7 @@ import {
   stopTokensOf,
 } from './sentenceParts';
 import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes';
-import type { CellStop, DecisionLink } from './TokenChip';
+import type { CellStop } from './TokenChip';
 
 /** The `RowMark` fields a card paints; a field added to `RowMark` fails to compile here until the card decides on it. */
 const cardMark = (mark: RowMark | undefined) =>
@@ -90,25 +91,26 @@ interface RuleRemovals {
   lines: (RemoveConditionButtonProps | null)[];
 }
 
-interface RuleCardModelParams {
-  rule: SentenceRule;
-  position: number;
-  numbered: boolean;
-  mark: RowMark | undefined;
-  selectable: boolean;
-  decisionLinks: boolean;
-  idPrefix: string;
-  labels: RuleCardLabels;
-  editLabels: RuleCardEditLabels | undefined;
-}
+type RuleCardModelParams = Pick<
+  RuleCardProps,
+  | 'rule'
+  | 'position'
+  | 'numbered'
+  | 'mark'
+  | 'selectable'
+  | 'decisionLinks'
+  | 'idPrefix'
+  | 'labels'
+  | 'editLabels'
+>;
 
 /** What a rule card renders, derived from its rule, its mark and its strings. */
-interface RuleCardModel extends Pick<RowMark, 'tone' | 'dim' | 'title' | 'cells'> {
+interface RuleCardModel
+  extends Pick<RowMark, 'tone' | 'dim' | 'title' | 'cells'>,
+    Pick<LineTextProps, 'stopOf' | 'linkOf'> {
   ariaLabel: string;
   describedBy: string | undefined;
   stops: CellStop[];
-  stopOf: (token: SentenceToken) => CellStop | undefined;
-  linkOf: (token: SentenceToken) => DecisionLink | undefined;
   badges: RuleBadges;
   removals: RuleRemovals;
 }

@@ -149,7 +149,7 @@ const rect = (left: number, right: number): DOMRect => ({
 });
 
 interface EditSpies {
-  onSelect: Mock<(selection: SentenceSelection | null) => void>;
+  onSelect: Mock<NonNullable<DecisionTextProps['onSelect']>>;
   onStartEdit: Mock<DecisionTextEdit['onStartEdit']>;
   onCommit: Mock<
     (value: SentenceValueId, text: string, move: CellCommitMove, operator?: string) => void
@@ -3059,7 +3059,7 @@ describe('DecisionText', () => {
       label: string;
       change: RuleChange;
       next: string;
-      onDeleteRule?: (rowId: string) => void;
+      onDeleteRule?: DecisionTextEdit['onDeleteRule'];
     }
     const RuleChangeHost = ({ label, change, next, onDeleteRule }: RuleChangeHostProps) => {
       const [rules, setRules] = useState<readonly SentenceRule[]>(GRID_SENTENCE_RULES);
