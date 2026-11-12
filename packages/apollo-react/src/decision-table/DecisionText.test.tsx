@@ -934,6 +934,37 @@ describe('DecisionText', () => {
       expect(card('row-15')).toBe(before);
     });
 
+    it('observes the mounted cards again only once the window or the rules change', () => {
+      const observed: Element[] = [];
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          observe(target: Element) {
+            if (target.matches('li[data-row-id]')) observed.push(target);
+          }
+          unobserve() {}
+          disconnect() {}
+        }
+      );
+      onTestFinished(() => {
+        vi.unstubAllGlobals();
+      });
+      const rules = manySentenceRules(2000);
+      const onSelect = vi.fn();
+      const { rerender } = render(view({ rules, selected: null, onSelect }));
+      expect(observed).toEqual(mountedRows());
+      rerender(view({ rules, selected: { rowId: 'row-1' }, onSelect }));
+      rerender(view({ rules, selected: { rowId: 'row-1', columnId: 'decision' }, onSelect }));
+      expect(observed).toHaveLength(mountedRows().length);
+      act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
+      expect(mountedRows().filter((row) => !observed.includes(row))).toEqual([]);
+      const [first] = manySentenceRules(1);
+      if (!first) throw new Error('no rule');
+      rerender(view({ rules: [...rules, { ...first, rowId: 'added' }], selected: null, onSelect }));
+      act(() => scrollTo(sentenceRuleOffsets(rules)[1990] ?? 0));
+      expect(observed).toContain(card('added'));
+    });
+
     it('lays the rules out at the heights their cards measure once a line wraps', () => {
       const observers: ResizeObserverCallback[] = [];
       vi.stubGlobal(
