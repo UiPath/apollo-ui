@@ -1,10 +1,5 @@
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  Position,
-  useReactFlow,
-  useStore,
-  useUpdateNodeInternals,
-} from '@uipath/apollo-react/canvas/xyflow/react';
+import { Position, useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_NODE_SIZE,
@@ -61,6 +56,7 @@ import { BaseContainer } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
+import { useBatchedUpdateNodeInternals } from './useBatchedUpdateNodeInternals';
 
 /** Stable predicate used to hard-disable add buttons on read-only nodes. */
 const NEVER_SHOW_ADD_BUTTON = () => false;
@@ -122,7 +118,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const suggestionType =
     suggestionTypeOverride === null ? undefined : (suggestionTypeOverride ?? data.suggestionType);
 
-  const updateNodeInternals = useUpdateNodeInternals();
+  const updateNodeInternals = useBatchedUpdateNodeInternals();
   const { updateNodeData, updateNode, getNode } = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);

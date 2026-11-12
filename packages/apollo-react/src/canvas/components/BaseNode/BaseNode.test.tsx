@@ -14,6 +14,8 @@ const {
   mockUpdateNode,
   mockUpdateNodeData,
   mockGetNode,
+  mockUpdateNodeInternals,
+  mockStoreApi,
   mockNodeState,
   mockHandleConfigs,
   mockManifest,
@@ -30,6 +32,8 @@ const {
   mockUpdateNode: vi.fn(),
   mockUpdateNodeData: vi.fn(),
   mockGetNode: vi.fn(),
+  mockUpdateNodeInternals: vi.fn(),
+  mockStoreApi: { getState: vi.fn() },
   // Simulates React Flow's stored node: updateNode writes height here, getNode reads it.
   mockNodeState: { current: { height: undefined as number | undefined } },
   mockHandleConfigs: { current: undefined as HandleGroupManifest[] | undefined },
@@ -66,7 +70,8 @@ mockUpdateNode.mockImplementation((_id: string, patch: { height?: number }) => {
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
   useStore: () => mockIsConnecting.current,
-  useUpdateNodeInternals: () => vi.fn(),
+  useUpdateNodeInternals: () => mockUpdateNodeInternals,
+  useStoreApi: () => mockStoreApi,
   useReactFlow: () => ({
     updateNodeData: mockUpdateNodeData,
     updateNode: mockUpdateNode,
@@ -194,6 +199,7 @@ describe('BaseNode', () => {
     mockUpdateNode.mockClear();
     mockUpdateNodeData.mockClear();
     mockGetNode.mockClear();
+    mockUpdateNodeInternals.mockClear();
     mockNodeState.current = { height: undefined };
     mockUseButtonHandles.mockClear();
     mockNodeToolbar.mockClear();
@@ -226,6 +232,39 @@ describe('BaseNode', () => {
       const { container } = render(<BaseNode {...defaultProps} data={{ suggestionType: 'add' }} />);
       expect(container.querySelector('[data-suggestion-type]')).toBeNull();
       expect(container.querySelector('.border-success')).toBeNull();
+    });
+  });
+
+  describe('Node internals', () => {
+    it('updates the internals of nodes mounted together in one call', async () => {
+      render(
+        <>
+          <BaseNode {...defaultProps} id="a" />
+          <BaseNode {...defaultProps} id="b" />
+          <BaseNode {...defaultProps} id="c" />
+        </>
+      );
+      await act(async () => {});
+
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledWith(['a', 'b', 'c']);
+    });
+
+    it('updates the internals again when the handles change after mount', async () => {
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      const { rerender } = render(<BaseNode {...defaultProps} />);
+      await act(async () => {});
+      mockUpdateNodeInternals.mockClear();
+
+      mockHandleConfigs.current = [
+        ...makeHandles(Position.Left, 2),
+        ...makeHandles(Position.Right, 1),
+      ];
+      rerender(<BaseNode {...defaultProps} data={{}} />);
+      await act(async () => {});
+
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledWith(['test-node']);
     });
   });
 
