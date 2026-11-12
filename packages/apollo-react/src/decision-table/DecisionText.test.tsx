@@ -1665,6 +1665,79 @@ describe('DecisionText', () => {
       expect(frame.scrollTop).toBe(150);
     });
 
+    it.each([
+      'selectable',
+      'editable',
+    ])('leaves a rule partly in view where it is when a click on its value selects it, %s', (mode) => {
+      const rules = manySentenceRules(30);
+      const props = { rules, initial: { rowId: 'row-0' } };
+      if (mode === 'editable') renderEditing(props);
+      else renderSelectable(props);
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 300 });
+      const at = (sentenceRuleOffsets(rules)[10] ?? 0) - 300 + 40;
+      act(() => scrollTo(at));
+      const chip = valueChip('row-10', 'decision');
+      fireEvent.pointerDown(chip);
+      fireEvent.pointerUp(chip);
+      fireEvent.click(chip, { detail: 1 });
+      expect(screen.queryByTestId('nl-editor') !== null).toBe(mode === 'editable');
+      expect(frame.scrollTop).toBe(at);
+    });
+
+    it.each([
+      ['refuses', false],
+      ['applies', true],
+    ])('leaves a rule taller than the view where it is when the host %s the clear a click on its remove action asks for', (_, applies) => {
+      const ClearingHost = () => {
+        const [rules, setRules] = useState<SentenceRule[]>(() => [manyLinesRule(10)]);
+        const [selected, setSelected] = useState<SentenceSelection | null>({
+          rowId: 'many-lines',
+        });
+        return view({
+          rules,
+          bands: manyColumnBands(10),
+          selected,
+          onSelect: setSelected,
+          edit: editWith({
+            onClearCell: (cell) => {
+              if (!applies) return;
+              setRules((current) =>
+                current.map((rule) => ({
+                  ...rule,
+                  lines: rule.lines.filter((line) => line.columnId !== cell.columnId),
+                }))
+              );
+            },
+          }),
+        });
+      };
+      render(<ClearingHost />);
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      act(() => scrollTo(150));
+      const bounds = HTMLElement.prototype.getBoundingClientRect;
+      const cardBounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect');
+      onTestFinished(() => cardBounds.mockRestore());
+      cardBounds.mockImplementation(function (this: HTMLElement) {
+        if (this.tagName !== 'LI' || this.dataset.rowId !== 'many-lines') return bounds.call(this);
+        return { ...rect(0, 400), top: -frame.scrollTop, bottom: 400 - frame.scrollTop };
+      });
+      const remove = card('many-lines').querySelectorAll<HTMLElement>(
+        '[data-rule-action="clear"]'
+      )[3];
+      if (!remove) throw new Error('no fourth remove action');
+      const columnId = remove.closest<HTMLElement>('li[data-column-id]')?.dataset.columnId;
+      fireEvent.pointerDown(remove);
+      act(() => remove.focus());
+      fireEvent.pointerUp(remove);
+      fireEvent.click(remove, { detail: 1 });
+      expect(card('many-lines').querySelector(`li[data-column-id="${columnId}"]`) === null).toBe(
+        applies
+      );
+      expect(frame.scrollTop).toBe(150);
+    });
+
     it('leaves a visible cell of a rule taller than the view where it is', () => {
       renderSelectable({ rules: [manyLinesRule(10)] });
       const frame = screen.getByTestId('nl');

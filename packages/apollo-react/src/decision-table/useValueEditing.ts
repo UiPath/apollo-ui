@@ -51,10 +51,11 @@ interface PendingSettle {
   focused: Element | null;
 }
 
-/** A cleared cell or deleted rule, and its text when asked, so focus returns to the selected stop once the host applies it. */
+/** A cleared cell or deleted rule, its text when asked, and whether to scroll, so focus returns to the selected stop once the host applies it. */
 interface PendingRefocus {
   cell: SentenceSelection;
   text: string | undefined;
+  scroll: boolean;
 }
 
 export interface ValueEditing {
@@ -143,7 +144,7 @@ export const useValueEditing = ({
     if (!edit) return;
     awaitHost(null);
     if (selected?.rowId !== value.rowId || selected?.columnId !== value.columnId) {
-      onSelect?.({ rowId: value.rowId, columnId: value.columnId });
+      navigation.select({ rowId: value.rowId, columnId: value.columnId }, () => null, false);
     }
     edit.onStartEdit(value);
   };
@@ -173,7 +174,7 @@ export const useValueEditing = ({
       onCancel: cancel,
       onClear:
         token?.text && isOutcome(rule, target.columnId)
-          ? () => clear({ rowId: target.rowId, columnId: target.columnId })
+          ? () => clear({ rowId: target.rowId, columnId: target.columnId }, true, true)
           : undefined,
     };
   };
@@ -220,7 +221,7 @@ export const useValueEditing = ({
     const stayed = staysOn(refocus.cell.rowId);
     if (stayed && textIn(rules, refocus.cell) === refocus.text) return;
     refocusRef.current = null;
-    if (stayed) navigation.refocus();
+    if (stayed) navigation.refocus(refocus.scroll);
   });
 
   useLayoutEffect(() => {
@@ -241,11 +242,11 @@ export const useValueEditing = ({
     edit?.onCancel();
   };
 
-  const clear = (cell: SentenceCellId, refocusNow = true) => {
-    refocusRef.current = { cell, text: textIn(rules, cell) };
+  const clear = (cell: SentenceCellId, refocusNow: boolean, scroll: boolean) => {
+    refocusRef.current = { cell, text: textIn(rules, cell), scroll };
     edit?.onClearCell(cell);
     cancelEditOf(cell);
-    if (refocusNow && staysOn(cell.rowId)) navigation.refocus();
+    if (refocusNow && staysOn(cell.rowId)) navigation.refocus(scroll);
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>): boolean => {
@@ -254,14 +255,14 @@ export const useValueEditing = ({
     if (!edit || !(isStartKey(event) || isClearKey(event)) || isIgnoredKey(event)) return false;
     if (columnId === null || rowId === undefined) return false;
     event.preventDefault();
-    if (isClearKey(event)) clear({ rowId, columnId });
+    if (isClearKey(event)) clear({ rowId, columnId }, true, true);
     else start({ rowId, columnId, index: 0 });
     return true;
   };
 
   const onAction = (action: RuleAction): boolean => {
     if (action.action === 'clear') {
-      clear(action.cell, selected?.rowId === action.cell.rowId);
+      clear(action.cell, selected?.rowId === action.cell.rowId, false);
       if (selected?.rowId !== action.cell.rowId) {
         navigation.select({ rowId: action.cell.rowId }, undefined, false);
       }
@@ -271,6 +272,7 @@ export const useValueEditing = ({
     refocusRef.current = {
       cell: { rowId: action.rowId },
       text: textIn(rules, { rowId: action.rowId }),
+      scroll: true,
     };
     edit?.onDeleteRule(action.rowId);
     cancelEditOf({ rowId: action.rowId });
