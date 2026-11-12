@@ -29,7 +29,7 @@ export interface RuleMenus extends Pick<GridContextMenuProps, 'label' | 'entries
   state: RuleMenuState | null;
   /** Opens the menu of a clicked card button, and returns whether it did. */
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
-  /** Opens the menu a card action names, from where its button is now, and returns whether it did. */
+  /** Opens the menu a card action names, from where its button is now, unless the host has no entries for it, and returns whether it did. */
   openFor: (action: RuleAction) => boolean;
 }
 
@@ -118,6 +118,8 @@ export const useRuleMenus = ({
 
   const openFor = (action: RuleAction | null): boolean => {
     if (!edit || (action?.action !== 'conditions' && action?.action !== 'rule')) return false;
+    const entriesOf = action.action === 'rule' ? edit.ruleEntries : edit.conditionEntries;
+    if (entriesOf(action.rowId).length === 0) return false;
     setState({
       menu: action.action,
       rowId: action.rowId,

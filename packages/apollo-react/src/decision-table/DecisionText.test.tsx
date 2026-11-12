@@ -3045,6 +3045,7 @@ describe('DecisionText', () => {
             setEditing(null);
           },
           onClearCell: (cell) => setTable((current) => tableWithoutCell(current, cell)),
+          ruleEntries: () => [{ label: 'Delete rule', onClick: vi.fn() }],
           conditionEntries: (rowId) =>
             unusedInputs(table, rowId).map((input) => ({
               label: input.name,
@@ -3184,14 +3185,14 @@ describe('DecisionText', () => {
     });
 
     it.each([
-      'Add condition to rule 2',
-      'Rule 2 actions',
+      'Add condition to rule 3',
+      'Rule 3 actions',
     ])('opens the %s menu whose button the blur commit moved from under the press', (name) => {
       render(<TableHost initial={{ rowId: 'r1' }} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
       fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
       fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r2', name);
+      const trigger = button('r3', name);
       const position = vi
         .spyOn(trigger, 'getBoundingClientRect')
         .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
@@ -3199,9 +3200,9 @@ describe('DecisionText', () => {
       fireEvent.mouseDown(trigger);
       act(() => trigger.focus());
       position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(card('r2'));
-      fireEvent.mouseUp(card('r2'));
-      fireEvent.click(card('r2'));
+      fireEvent.pointerUp(card('r3'));
+      fireEvent.mouseUp(card('r3'));
+      fireEvent.click(card('r3'));
       expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
       expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
       expect(screen.getByTestId('nl-context-menu-anchor')).toHaveStyle({
@@ -3426,6 +3427,19 @@ describe('DecisionText', () => {
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(actions('r2'));
+    });
+
+    it('opens no menu from + or ⋯ while the host has no entries for it', () => {
+      const conditionEntries = vi.fn((): GridMenuEntry[] => []);
+      renderMenus({ conditionEntries, ruleEntries: () => [] });
+      const add = within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' });
+      fireEvent.click(add);
+      expect(conditionEntries).toHaveBeenCalledWith('r3');
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(add).not.toHaveAttribute('aria-expanded', 'true');
+      fireEvent.click(actions('r3'));
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(actions('r3')).not.toHaveAttribute('aria-expanded', 'true');
     });
 
     it('marks only the button whose menu is open as expanded', () => {

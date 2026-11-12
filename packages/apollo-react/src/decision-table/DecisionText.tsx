@@ -71,9 +71,9 @@ export interface DecisionTextEdit {
   column?: ColumnEdit;
   /** A condition's remove action, or Delete on a selected value: the grid's clear, for one cell. */
   onClearCell: (cell: SentenceCellId) => void;
-  /** The add-condition menu of a rule; called only while it is open. */
+  /** The add-condition menu of a rule; called only to open it and while it is open, which an empty list skips. */
   conditionEntries: (rowId: string) => GridMenuEntry[];
-  /** The rule's own menu, as the grid's row menu; called only while it is open. */
+  /** The rule's own menu, as the grid's row menu; called only to open it and while it is open, which an empty list skips. */
   ruleEntries: (rowId: string) => GridMenuEntry[];
   /** The rule card's delete action, as the grid row's delete button; the host selects what follows. */
   onDeleteRule: (rowId: string) => void;
