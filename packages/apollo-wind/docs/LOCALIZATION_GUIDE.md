@@ -477,12 +477,14 @@ function LocalizedCombobox({ items, value, onChange }) {
 **Localizable Props:**
 
 - `searchPlaceholder` - Search input placeholder
+- `columnToggleText` - "Columns" dropdown button
+- `strings` - Every other built-in string, overridable key by key (`Partial<DataTableStrings>`): `search`, `noResults`, `loading`, `previous`, `next`, `page(page, pageCount)`, `rowsSelected(selected, total)`, `rowsPerPage`, `selectAll`, `selectRow(rowNumber)`, `resizeColumn(column)`, `editCell(column, rowNumber)`, `toggleCell(column, rowNumber)`, `scrollRegion`
+- `emptyState` - Custom empty-state content, replaces `strings.noResults`
 
 **Additional Localizable Elements:**
 
 - Column headers (via `columns` prop)
-- "Columns" dropdown text (hardcoded)
-- "Previous" / "Next" pagination (rendered via children)
+- Column names in the column menu and in accessible names: taken from a string `header`, else `meta.label`, else the column id. Set `meta.label` on columns whose header is a render function.
 
 **Example:**
 
@@ -502,6 +504,14 @@ const columns = [
   columns={columns}
   data={data}
   searchPlaceholder={t("common.search")}
+  columnToggleText={t("table.columns.toggle")}
+  strings={{
+    noResults: t("table.noResults"),
+    previous: t("table.previous"),
+    next: t("table.next"),
+    page: (page, pageCount) => t("table.page", { page, pageCount }),
+    rowsSelected: (selected, total) => t("table.rowsSelected", { selected, total }),
+  }}
 />;
 ```
 

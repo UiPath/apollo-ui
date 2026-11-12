@@ -336,8 +336,9 @@ export {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from './components/ui/context-menu';
-export type { DataTableProps } from './components/ui/data-table';
+export type { DataTableProps, DataTableStrings } from './components/ui/data-table';
 export {
+  DEFAULT_DATA_TABLE_STRINGS,
   DataTable,
   DataTableColumnHeader,
   DataTableSelectColumn,

@@ -259,3 +259,29 @@ describe('createEditableColumn', () => {
     expect(column.meta).toBeUndefined();
   });
 });
+
+describe('EditableCell date handling', () => {
+  function cellFor(value: unknown) {
+    return {
+      getValue: () => value,
+      column: { id: 'due', columnDef: { meta: { type: 'date' } } },
+    } as never;
+  }
+
+  it('shows a date-only string as that calendar day in any timezone', () => {
+    render(<EditableCell cell={cellFor('2024-12-15')} onUpdate={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Edit due' })).toHaveTextContent('Dec 15, 2024');
+  });
+
+  it('shows an unparseable value as is instead of throwing', () => {
+    render(<EditableCell cell={cellFor('not-a-date')} onUpdate={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Edit due' })).toHaveTextContent('not-a-date');
+  });
+
+  it('opens the calendar on the month of the current value', async () => {
+    const user = userEvent.setup();
+    render(<EditableCell cell={cellFor('2024-12-15')} onUpdate={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'Edit due' }));
+    expect(await screen.findByText(/December 2024/)).toBeInTheDocument();
+  });
+});

@@ -252,6 +252,15 @@ const columns = [
 <DataTable columns={columns} data={data} />
 ```
 
+Guidance:
+
+- Pass `getRowId={(row) => row.id}` whenever rows can be added, removed or reordered. Without it selection is tied to a row's position in `data`.
+- Search with `searchKey="name"` (one column, text or number) or `globalFilterFn={(row, query) => ...}` (whole row).
+- `showPagination={false}` renders every row. Add `pageSizeOptions={[10, 20, 50]}` for a page-size picker. For server-side paging use `manualPagination`, `rowCount`, `pagination` and `onPaginationChange`.
+- Inline editing: `editable` plus `onCellUpdate(rowIndex, columnId, value)`, and `meta: { type: 'text' | 'number' | 'select' | 'date' | 'checkbox' }` on each editable column. `rowIndex` is the index in `data`.
+- Columns whose `header` is a render function should set `meta: { label: 'Name' }` so the column menu and accessible names read well.
+- Other props: `resizable`, `compact`, `allowWrap`, `maxBodyHeight`, `onRowClick`, `loading`, `emptyState`, `className`, and `strings` to translate built-in text.
+
 #### Badge
 
 ```tsx

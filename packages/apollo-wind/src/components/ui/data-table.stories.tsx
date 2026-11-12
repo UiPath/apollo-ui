@@ -25,7 +25,12 @@ import {
 import { Badge } from './badge';
 import { Button } from './button';
 import { Checkbox } from './checkbox';
-import { DataTable, DataTableColumnHeader, DataTableSelectColumn } from './data-table';
+import {
+  DataTable,
+  DataTableColumnHeader,
+  DataTableSelectColumn,
+  type DataTableStrings,
+} from './data-table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1107,8 +1112,8 @@ function StickyHeaderExample() {
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
-        Scroll the table body — the column headers stay pinned. The scrollbar is confined to the
-        body region via <code>maxBodyHeight</code>, so it doesn't run up next to the header row.
+        Scroll the table body. The column headers stay pinned. The scrollbar is confined to the body
+        region via <code>maxBodyHeight</code>, so it doesn't run up next to the header row.
       </p>
       <DataTable
         columns={columns}
@@ -1222,9 +1227,10 @@ function ResizableNarrowColumnsExample() {
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
         Ten columns sized to fill a typical canvas. Long titles start narrower than their text so
-        the ellipsis is visible immediately. Drag any column divider to resize — the handle
-        brightens and thickens on hover and during drag, and narrowing further keeps each label
-        cleanly truncated without bleeding into the next column.
+        the ellipsis is visible immediately. Drag any column divider to resize, or focus a divider
+        and use the arrow keys (Enter or double-click resets the width). The handle brightens and
+        thickens on hover, focus and during drag, and narrowing further keeps each label cleanly
+        truncated without bleeding into the next column.
       </p>
       <DataTable
         columns={columns}
@@ -1485,8 +1491,8 @@ function PersistentViewExample() {
       <div className="flex items-start justify-between gap-4">
         <p className="text-sm text-muted-foreground">
           Sort by clicking column headers, drag column edges to resize, or hide columns from the
-          toggle. Refresh the page — your view is still there. Click <strong>Reset view</strong> to
-          clear saved state.
+          toggle. Refresh the page and your view is still there. Click <strong>Reset view</strong>{' '}
+          to clear saved state.
         </p>
         <Button variant="outline" size="sm" onClick={reset}>
           Reset view
@@ -1607,8 +1613,9 @@ function WrappedContentExample() {
           onCheckedChange={(value) => setAllowWrap(!!value)}
         />
         <Label htmlFor="allow-wrap-toggle" className="text-sm">
-          Enable <code>allowWrap</code> — let cells render multi-line content instead of truncating.
-          Drag the edges of <strong>Input</strong> and <strong>Output</strong> to resize.
+          Enable <code>allowWrap</code> to let cells render multi-line content instead of
+          truncating. Drag the edges of <strong>Input</strong> and <strong>Output</strong> to
+          resize.
         </Label>
       </div>
       <DataTable
@@ -1626,6 +1633,210 @@ function WrappedContentExample() {
 export const WrappedContent = {
   name: 'Multi-line cell content',
   render: () => <WrappedContentExample />,
+};
+
+// ============================================================================
+// Editing with paging, selection and stable row ids
+// ============================================================================
+
+type Employee = {
+  id: string;
+  name: string;
+  team: string;
+  age: number | null;
+  startDate: string;
+  remote: boolean;
+};
+
+const employeeTeams = ['Platform', 'Growth', 'Data', 'Runtime'];
+const initialEmployees: Employee[] = Array.from({ length: 27 }, (_, i) => ({
+  id: `emp-${i + 1}`,
+  name: `Employee ${String(i + 1).padStart(2, '0')}`,
+  team: employeeTeams[i % employeeTeams.length],
+  age: i === 3 ? null : 24 + ((i * 7) % 30),
+  startDate: `2024-${String((i % 12) + 1).padStart(2, '0')}-15`,
+  remote: i % 3 === 0,
+}));
+
+const employeeColumns: ColumnDef<Employee, unknown>[] = [
+  DataTableSelectColumn<Employee>() as ColumnDef<Employee, unknown>,
+  {
+    accessorKey: 'name',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+    meta: { type: 'text', label: 'Name' } as EditableCellMeta,
+  },
+  {
+    accessorKey: 'team',
+    header: 'Team',
+    meta: {
+      type: 'select',
+      options: employeeTeams.map((team) => ({ value: team, label: team })),
+    } as EditableCellMeta,
+  },
+  {
+    accessorKey: 'age',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Age" />,
+    meta: { type: 'number', min: 18, max: 70, nullable: true, label: 'Age' } as EditableCellMeta,
+  },
+  {
+    accessorKey: 'startDate',
+    header: 'Start date',
+    meta: { type: 'date' } as EditableCellMeta,
+  },
+  {
+    accessorKey: 'remote',
+    header: 'Remote',
+    meta: { type: 'checkbox' } as EditableCellMeta,
+  },
+];
+
+function EditingWithPagingExample() {
+  const [data, setData] = React.useState<Employee[]>(initialEmployees);
+  const [selection, setSelection] = React.useState<Record<string, boolean>>({});
+  const selectedIds = Object.keys(selection).filter((id) => selection[id]);
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Every editor type, with paging. Editing a row on a later page keeps you on that page. Rows
+        carry a stable id through <code>getRowId</code>, so deleting selected rows never moves the
+        selection onto a neighbour. Age accepts 18 to 70 and can be cleared.
+      </p>
+      <DataTable
+        columns={employeeColumns}
+        data={data}
+        getRowId={(row) => row.id}
+        editable
+        onCellUpdate={(rowIndex, columnId, value) =>
+          setData((prev) =>
+            prev.map((row, index) => (index === rowIndex ? { ...row, [columnId]: value } : row))
+          )
+        }
+        rowSelection={selection}
+        onRowSelectionChange={setSelection}
+        searchKey="name"
+        searchPlaceholder="Search by name..."
+        pageSizeOptions={[5, 10, 20]}
+        toolbarContent={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={selectedIds.length === 0}
+            onClick={() => {
+              setData((prev) => prev.filter((row) => !selection[row.id]));
+              setSelection({});
+            }}
+          >
+            Delete selected ({selectedIds.length})
+          </Button>
+        }
+      />
+    </div>
+  );
+}
+
+export const EditingWithPaging = {
+  name: 'Editing with paging and selection',
+  render: () => <EditingWithPagingExample />,
+};
+
+// ============================================================================
+// Loading, empty state and row click
+// ============================================================================
+
+function LoadingAndEmptyExample() {
+  const [mode, setMode] = React.useState<'loading' | 'empty' | 'data' | 'refreshing'>('loading');
+  const [lastClicked, setLastClicked] = React.useState<string | null>(null);
+  const rows = mode === 'data' || mode === 'refreshing' ? sampleUsers : [];
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {(['loading', 'empty', 'data', 'refreshing'] as const).map((value) => (
+          <Button
+            key={value}
+            size="sm"
+            variant={mode === value ? 'default' : 'outline'}
+            onClick={() => setMode(value)}
+          >
+            {value}
+          </Button>
+        ))}
+        <span className="text-sm text-muted-foreground">
+          Last row clicked: {lastClicked ?? 'none'}
+        </span>
+      </div>
+      <DataTable
+        columns={basicColumns}
+        data={rows}
+        loading={mode === 'loading' || mode === 'refreshing'}
+        onRowClick={(row) => setLastClicked(row.name)}
+        emptyState={
+          <div className="space-y-1 py-4">
+            <p className="font-medium">No users yet</p>
+            <p className="text-sm text-muted-foreground">Invite a teammate to get started.</p>
+          </div>
+        }
+        showColumnToggle={false}
+      />
+    </div>
+  );
+}
+
+export const LoadingAndEmpty = {
+  name: 'Loading, empty state and row click',
+  render: () => <LoadingAndEmptyExample />,
+};
+
+// ============================================================================
+// Localization
+// ============================================================================
+
+const frenchStrings: Partial<DataTableStrings> = {
+  search: 'Rechercher un utilisateur',
+  noResults: 'Aucun résultat.',
+  previous: 'Précédent',
+  next: 'Suivant',
+  page: (page, pageCount) => `Page ${page} sur ${pageCount}`,
+  rowsSelected: (selected, total) => `${selected} sur ${total} ligne(s) sélectionnée(s).`,
+  rowsPerPage: 'Lignes par page',
+  selectAll: 'Tout sélectionner',
+  selectRow: (rowNumber) => `Sélectionner la ligne ${rowNumber}`,
+  resizeColumn: (column) => `Redimensionner la colonne ${column}`,
+};
+
+const frenchColumns: ColumnDef<User, unknown>[] = [
+  DataTableSelectColumn<User>() as ColumnDef<User, unknown>,
+  {
+    accessorKey: 'name',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Nom" />,
+    meta: { label: 'Nom' },
+  },
+  { accessorKey: 'email', header: 'E-mail' },
+  { accessorKey: 'role', header: 'Rôle' },
+];
+
+export const Localization = {
+  name: 'Localization',
+  render: () => (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        All built-in text, including accessible names, is replaced through the <code>strings</code>{' '}
+        prop. Column names come from each column header or <code>meta.label</code>.
+      </p>
+      <DataTable
+        columns={frenchColumns}
+        data={sampleUsers}
+        strings={frenchStrings}
+        searchKey="name"
+        searchPlaceholder="Rechercher..."
+        columnToggleText="Colonnes"
+        pageSizeOptions={[5, 10]}
+        pageSize={5}
+        resizable
+      />
+    </div>
+  ),
 };
 
 export const Examples = {
