@@ -38,11 +38,12 @@ import { ThinkingRow } from './thinking-row';
 const ANCHOR_PEEK = 12;
 const COMPACT_ANCHOR_PEEK = 0;
 
-function InitialLoading() {
+// Takes the transcript's column classes and padding, so it fills the column the messages will.
+function InitialLoading({ className }: { className?: string }) {
   return (
     <div
       data-slot="wind-chat-messages-skeleton"
-      className="flex flex-col gap-3 p-4"
+      className={cn('flex flex-col gap-3 px-6 pt-3 pb-4', className)}
       aria-hidden="true"
     >
       <Skeleton className="ml-auto h-9 w-2/3" />
@@ -288,7 +289,7 @@ export function MessageList({
       className={cn('relative flex min-h-0 flex-1 flex-col', className)}
     >
       {skeletonLoader ? (
-        <InitialLoading />
+        <InitialLoading className={contentClassName} />
       ) : (
         <MessageScrollerProvider
           autoScroll={autoScroll}
