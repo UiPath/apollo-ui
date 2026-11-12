@@ -223,6 +223,39 @@ describe('useChatHistory', () => {
     expect(events).toEqual([]);
   });
 
+  it('picks up history the host set after the list rendered but before it subscribed', async () => {
+    const service = AutopilotChatService.Instantiate({
+      instanceName: `use-chat-history-${++instanceCounter}`,
+      config: { paginatedHistory: true },
+    });
+    const loadMore = vi.fn();
+    service.on(AutopilotChatEvent.HistoryLoadMore, loadMore);
+    let resolved = false;
+    // Renders after Probe and before effects run, as a host fetch can land while React holds a
+    // Suspense reveal back.
+    function HostResolves() {
+      if (!resolved) {
+        resolved = true;
+        service.setHistory(entries(3), true);
+      }
+      return null;
+    }
+
+    render(
+      <ApI18nProvider component="chat">
+        <AutopilotChatServiceProvider chatServiceInstance={service}>
+          <Probe scrollContainer={scroller(300, 400)} />
+          <HostResolves />
+        </AutopilotChatServiceProvider>
+      </ApI18nProvider>
+    );
+
+    expect(state?.history).toHaveLength(3);
+    // The host's "done" arrived in the same gap, so the short list does not ask for more.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(loadMore).not.toHaveBeenCalled();
+  });
+
   it('starts a new chat when the open conversation is deleted, whatever is shown', () => {
     const { service } = setup(false);
     const newChats: unknown[] = [];
