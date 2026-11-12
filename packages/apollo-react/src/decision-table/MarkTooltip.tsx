@@ -66,6 +66,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     if (!section) return;
     let current: HTMLElement | null = null;
     let currentTitle: string | undefined;
+    let hovered: HTMLElement | null = null;
     let focused: FocusedMark | null = null;
     let dismissed = false;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
@@ -86,6 +87,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     const showFocused = () => show(focused?.element ?? null, focused?.title);
     const onPointerOver = (event: PointerEvent) => {
       const marked = markedAt(event.target);
+      hovered = marked;
       clearTimeout(hideTimer);
       if (marked || !current) show(marked);
       else if (current !== focused?.element && !isOnTooltip(event.target)) {
@@ -96,7 +98,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       const badges = markedFor(event.target);
       const [element] = badges;
       focused = element ? { element, title: titlesOf(badges) } : null;
-      showFocused();
+      if (focused || !hovered) showFocused();
     };
     const onFocusOut = (event: FocusEvent) => {
       if (event.relatedTarget instanceof Node && section.contains(event.relatedTarget)) return;
@@ -105,11 +107,16 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
+      focused = null;
       dismissed = true;
       setShown(null);
     };
     section.addEventListener('pointerover', onPointerOver);
-    section.addEventListener('pointerleave', showFocused);
+    const onPointerLeave = () => {
+      hovered = null;
+      showFocused();
+    };
+    section.addEventListener('pointerleave', onPointerLeave);
     section.addEventListener('focusin', onFocusIn);
     section.addEventListener('focusout', onFocusOut);
     section.addEventListener('keydown', onKeyDown);
@@ -117,7 +124,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     return () => {
       clearTimeout(hideTimer);
       section.removeEventListener('pointerover', onPointerOver);
-      section.removeEventListener('pointerleave', showFocused);
+      section.removeEventListener('pointerleave', onPointerLeave);
       section.removeEventListener('focusin', onFocusIn);
       section.removeEventListener('focusout', onFocusOut);
       section.removeEventListener('keydown', onKeyDown);

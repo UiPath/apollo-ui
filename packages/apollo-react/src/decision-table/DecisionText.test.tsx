@@ -774,6 +774,39 @@ describe('DecisionText', () => {
       expect(tooltip()).toBeNull();
     });
 
+    it("keeps a focused rule's message dismissed after Escape once the pointer leaves another mark", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toBeNull();
+    });
+
+    it('keeps the message of the mark under the pointer when focus moves to a rule with none', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm1' },
+      });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
     it('hides the message on Escape until another mark is reached', () => {
       renderView({ marks: scoreMarks });
       const score = valueChip('m3', 'score');
