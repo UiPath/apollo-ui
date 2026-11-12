@@ -131,7 +131,7 @@ const inputColumnIds = (parts: readonly SentencePart[]): string[] => [
   ),
 ];
 
-/** A rule card's stops, names, badges and remove actions. */
+/** A rule card's mark, name and description, cell stops and decision links, glyph badges and remove actions. */
 export const ruleCardModel = ({
   rule,
   position,
