@@ -56,6 +56,23 @@ const movedAnchor = ({ trigger, anchor }: RuleMenuState): GridContextMenuState['
   return moved.x === anchor.x && moved.y === anchor.y ? null : moved;
 };
 
+/** Whether `node` is `ancestor` or inside it, crossing shadow roots to their hosts. */
+const holds = (ancestor: Node, node: Node): boolean => {
+  for (let at: Node | null = node; at; at = at instanceof ShadowRoot ? at.host : at.parentNode) {
+    if (at === ancestor) return true;
+  }
+  return false;
+};
+
+/** The shadow roots holding `node`, innermost first, then its document: where a scroll of anything holding it reaches. */
+const scrollRootsOf = (node: Node): Node[] => {
+  const roots: Node[] = [];
+  for (let root = node.getRootNode(); ; root = root.host.getRootNode()) {
+    if (!(root instanceof ShadowRoot)) return [...roots, root];
+    roots.push(root);
+  }
+};
+
 /** The view's one menu slot for `GridContextMenu`, opened from a card's buttons, as the grid has one menu at a time; closed when anything holding its button scrolls or the window resizes. */
 export const useRuleMenus = ({
   edit,
@@ -99,12 +116,16 @@ export const useRuleMenus = ({
       setState(null);
     };
     const closeOnScroll = (event: Event) => {
-      if (event.target instanceof Node && event.target.contains(state.trigger)) close();
+      if (event.target instanceof Node && holds(event.target, state.trigger)) close();
     };
-    document.addEventListener('scroll', closeOnScroll, { capture: true, passive: true });
+    const roots = scrollRootsOf(state.trigger);
+    for (const root of roots) {
+      root.addEventListener('scroll', closeOnScroll, { capture: true, passive: true });
+    }
     window.addEventListener('resize', close);
     return () => {
-      document.removeEventListener('scroll', closeOnScroll, { capture: true });
+      for (const root of roots)
+        root.removeEventListener('scroll', closeOnScroll, { capture: true });
       window.removeEventListener('resize', close);
     };
   }, [state]);

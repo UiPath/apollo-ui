@@ -3560,6 +3560,40 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(actions('r2'));
     });
 
+    it.each([
+      'the rules scroll',
+      'a container outside the shadow root scrolls',
+    ])('closes the rule menu of a view in a shadow root when %s, not when the menu scrolls', (scroller) => {
+      const outer = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => outer.remove());
+      const shadow = outer
+        .appendChild(document.createElement('div'))
+        .attachShadow({ mode: 'open' });
+      const container = shadow.appendChild(document.createElement('div'));
+      render(
+        view({
+          rules: GRID_SENTENCE_RULES,
+          selected: null,
+          onSelect: vi.fn(),
+          edit: editWith({ ruleEntries: deleteEntry }),
+        }),
+        { container }
+      );
+      const inView = within(container);
+      fireEvent.click(
+        within(inView.getByTestId('nl-row-r2')).getByRole('button', { name: 'Rule 2 actions' })
+      );
+      const menu = () => inView.queryByRole('menu') ?? screen.queryByRole('menu');
+      const open = menu();
+      if (!open) throw new Error('no rule menu');
+      fireEvent.scroll(open);
+      expect(menu()).not.toBeNull();
+      act(() => {
+        fireEvent.scroll(scroller === 'the rules scroll' ? inView.getByTestId('nl') : outer);
+      });
+      expect(menu()).toBeNull();
+    });
+
     it.each<[string, readonly SentenceRule[], boolean]>([
       ['its rule is gone', GRID_SENTENCE_RULES.filter((rule) => rule.rowId !== 'r2'), true],
       ['editing is gone', GRID_SENTENCE_RULES, false],
