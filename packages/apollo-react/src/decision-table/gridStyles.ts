@@ -256,6 +256,59 @@ export const CELL_MARK_CLASS = [
   'data-[tone=warning]:bg-[color-mix(in_srgb,var(--color-warning-icon)_10%,var(--color-background))]',
 ].join(' ');
 
+/**
+ * A change under review, from the row's `data-change` or the cell's own: green for an added row or
+ * column, red and struck through for a deleted one, amber for each cell an update rewrote. The hues
+ * match the agent-diff review on the process canvases, so a table reads like the diagrams around it.
+ */
+export const CELL_CHANGE_CLASS = [
+  'group-data-[change=add]/row:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'group-data-[change=delete]/row:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]',
+  'group-data-[change=delete]/row:text-foreground-de-emp group-data-[change=delete]/row:line-through',
+  'data-[change=update]:bg-[color-mix(in_srgb,var(--color-warning-icon)_18%,var(--color-background))]',
+  // A cell of an added or deleted column; its row's own wash, for a row added or deleted whole, wins.
+  'data-[change=add]:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'data-[change=delete]:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]',
+  'data-[change=delete]:text-foreground-de-emp data-[change=delete]:line-through',
+  // A moved row and its ghost, outlined together while either is hovered: in grey, as blue means selected.
+  'group-data-[link-hover]/row:shadow-[inset_0_1px_0_var(--color-foreground-de-emp),inset_0_-1px_0_var(--color-foreground-de-emp)]',
+  // A replaced row's old and new halves read as one block, with no grid line between them.
+  'group-data-[pair=old]/row:border-b-transparent',
+].join(' ');
+
+/** A changed column's header, in the same hues as its cells. */
+export const HEADER_CHANGE_CLASS = [
+  'data-[change=add]:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'data-[change=update]:bg-[color-mix(in_srgb,var(--color-warning-icon)_18%,var(--color-background))]',
+  'data-[change=delete]:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))] data-[change=delete]:line-through',
+].join(' ');
+
+/** A changed row's rail and number, in the gutter beside it. */
+export const ROW_GUTTER_CHANGE_CLASS = [
+  'group-data-[change=add]/row:border-l-2 group-data-[change=add]/row:border-l-success group-data-[change=add]/row:text-success',
+  'group-data-[change=add]/row:font-semibold',
+  'group-data-[change=update]/row:border-l-2 group-data-[change=update]/row:border-l-warning-icon group-data-[change=update]/row:text-warning-text',
+  'group-data-[change=update]/row:font-semibold',
+  'group-data-[change=delete]/row:border-l-2 group-data-[change=delete]/row:border-l-error group-data-[change=delete]/row:text-error',
+  'group-data-[change=delete]/row:line-through',
+  'group-data-[pair=old]/row:border-b-transparent',
+].join(' ');
+
+/** A short note under a cell's text, such as how far a moved row went, as small as an updated cell's old value. */
+export const CELL_BADGE_CLASS =
+  'block max-w-full truncate text-xs leading-4 font-normal text-foreground-de-emp';
+
+/** A renamed column's old name, struck through above its new one. */
+export const PREVIOUS_HEADER_LABEL_CLASS =
+  'block truncate text-xs font-normal text-foreground-de-emp line-through decoration-foreground-de-emp';
+
+/** An updated cell's two lines, what it held over what it holds, in the one-line row's height. */
+export const PREVIOUS_CELL_SURFACE_CLASS = 'flex-col items-start justify-center py-0';
+
+/** The text an updated cell held, struck through above what it holds now, at the cell's own size. */
+export const PREVIOUS_CELL_TEXT_CLASS =
+  'block max-w-full truncate text-sm leading-[17px] font-normal text-foreground-de-emp line-through decoration-foreground-de-emp';
+
 /** A marked row's rail and number, in the gutter beside it. */
 export const ROW_GUTTER_MARK_CLASS = [
   'group-data-[tone=success]/row:border-l-2 group-data-[tone=success]/row:border-l-success',

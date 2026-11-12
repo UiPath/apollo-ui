@@ -34,6 +34,8 @@ export {
   BAND_LABEL_ROW_CLASS,
   BODY_CELL_CLASS,
   BREADCRUMB_POINT_STYLE,
+  CELL_BADGE_CLASS,
+  CELL_CHANGE_CLASS,
   CELL_SURFACE_CLASS,
   DELETE_ROW_BUTTON_CLASS,
   DELETE_ROW_CLASS,
@@ -43,6 +45,7 @@ export {
   FROZEN_RIGHT_HEADER_CELL_CLASS,
   GROUP_TONE_CLASS,
   HEADER_CELL_CLASS,
+  HEADER_CHANGE_CLASS,
   HEADER_LABEL_ROW_CLASS,
   IN_RANGE_CLASS,
   LIVE_NOTE_CLASS,
@@ -51,6 +54,10 @@ export {
   OUTPUT_BAND_DOT_CLASS,
   OUTPUT_CELL_TINT_CLASS,
   OUTPUT_HUE_CLASS,
+  PREVIOUS_CELL_SURFACE_CLASS,
+  PREVIOUS_CELL_TEXT_CLASS,
+  PREVIOUS_HEADER_LABEL_CLASS,
+  ROW_GUTTER_CHANGE_CLASS,
   ROW_GUTTER_MARK_CLASS,
   ROW_MARK_OVERLAY_CLASS,
   ROW_NUMBER_CELL_CLASS,
@@ -58,7 +65,14 @@ export {
 } from './gridStyles';
 export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
-export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
+export {
+  EMPTY_MARKS,
+  type Mark,
+  type MarkChange,
+  type MarkTone,
+  type RowMark,
+  type TableMarks,
+} from './marks';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {

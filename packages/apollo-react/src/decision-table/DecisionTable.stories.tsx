@@ -23,11 +23,15 @@ import {
   BAND_LABEL_ROW_CLASS,
   BODY_CELL_CLASS,
   BREADCRUMB_POINT_STYLE,
+  CELL_CHANGE_CLASS,
   FOOTER_ACTION_CLASS,
   GROUP_TONE_CLASS,
   HEADER_CELL_CLASS,
+  HEADER_CHANGE_CLASS,
   HEADER_LABEL_ROW_CLASS,
   OUTPUT_CELL_TINT_CLASS,
+  PREVIOUS_HEADER_LABEL_CLASS,
+  ROW_GUTTER_CHANGE_CLASS,
   ROW_GUTTER_MARK_CLASS,
   ROW_MARK_OVERLAY_CLASS,
   ROW_NUMBER_CELL_CLASS,
@@ -294,6 +298,10 @@ export const ReadOnly: Story = {
 
 export const Errors: Story = {
   render: () => <ErrorsGrid />,
+};
+
+export const Changes: Story = {
+  render: () => <ChangesGrid />,
 };
 
 export const FixedColumns: Story = {
@@ -713,6 +721,304 @@ const ErrorsGrid = () => {
         Each rule's name says which state it shows. Hover a marked cell, row number or column header
         for its message. A cell being edited drops its mark until the edit ends. The mark in the
         corner is the table's own, for issues with no rule, cell or column to sit on.
+      </p>
+    </div>
+  );
+};
+
+const CHANGES_COLUMNS: RuleColumn[] = [
+  { id: 'annotation', name: 'Rule name', kind: 'annotation' },
+  { id: 'age', name: 'age', kind: 'input' },
+  { id: 'income', name: 'income', kind: 'input' },
+  { id: 'segment', name: 'segment', kind: 'input' },
+  { id: 'risk', name: 'risk', kind: 'output' },
+];
+
+/** Header marks, by column id: one column renamed, one added. */
+const CHANGES_COLUMN_MARKS: Record<string, Mark> = {
+  income: { change: 'update', previous: 'salary', title: 'Was: salary' },
+  segment: { change: 'add', title: 'Added column' },
+};
+
+/** Each cell of the added column, in a rule not added or deleted whole. */
+const ADDED_COLUMN_CELL: Record<string, Mark> = { segment: { change: 'add' } };
+
+interface ChangesRow extends RuleRow {
+  mark?: RowMark;
+}
+
+/**
+ * The table after a change, with what it replaced drawn between the rest, as a code diff draws it:
+ * each rule's name says which change it shows.
+ */
+const CHANGES_ROWS: ChangesRow[] = [
+  {
+    id: 'c1',
+    cells: {
+      annotation: 'Unchanged rule',
+      age: '< 25',
+      income: '<= 40000',
+      segment: '-',
+      risk: '"high"',
+    },
+    mark: { cells: ADDED_COLUMN_CELL },
+  },
+  {
+    id: 'c2',
+    cells: {
+      annotation: 'Updated rule',
+      age: '[25..60]',
+      income: '> 50000',
+      segment: '-',
+      risk: '"low"',
+    },
+    mark: {
+      change: 'update',
+      title: 'Updated: income, risk',
+      cells: {
+        ...ADDED_COLUMN_CELL,
+        income: { change: 'update', previous: '> 40000', title: 'Was: > 40000' },
+        risk: { change: 'update', previous: '"standard"', title: 'Was: "standard"' },
+      },
+    },
+  },
+  {
+    id: 'c3',
+    cells: {
+      annotation: 'Added rule',
+      age: '< 25',
+      income: '-',
+      segment: '"student"',
+      risk: '"review"',
+    },
+    mark: { change: 'add', title: 'Added' },
+  },
+  {
+    id: 'c-deleted',
+    cells: { annotation: 'Deleted rule', age: '> 60', income: '-', risk: '"review"' },
+    mark: { change: 'delete', number: '', wasNumber: '3', title: 'Deleted. Was rule 3' },
+  },
+  {
+    id: 'c-moved-ghost',
+    cells: { annotation: 'Moved rule', age: '> 80', income: '-', risk: '"decline"' },
+    mark: {
+      change: 'delete',
+      number: '',
+      wasNumber: '4',
+      link: 'c-moved',
+      title: 'Moved to 8',
+      cells: { annotation: { title: 'Moved to 8', badge: 'Moved to 8' } },
+    },
+  },
+  {
+    id: 'c-replaced',
+    cells: { annotation: 'Replaced rule, old', age: '-', income: '> 100000', risk: '"standard"' },
+    mark: {
+      change: 'delete',
+      number: '',
+      wasNumber: '5',
+      pair: 'old',
+      title: 'Replaced. Was rule 5',
+    },
+  },
+  {
+    id: 'c4',
+    cells: {
+      annotation: 'Replaced rule, new',
+      age: '-',
+      income: '> 100000',
+      segment: '"premium"',
+      risk: '"low"',
+    },
+    mark: { change: 'add', number: '4', pair: 'new', title: 'Replacement' },
+  },
+  {
+    id: 'c-fold',
+    cells: {},
+    mark: { fold: 3, foldRange: { from: '5', to: '7' } },
+  },
+  {
+    id: 'c-moved',
+    cells: { annotation: 'Moved rule', age: '> 80', income: '-', segment: '-', risk: '"decline"' },
+    mark: {
+      change: 'add',
+      number: '8',
+      link: 'c-moved',
+      title: 'Moved down 4',
+      cells: { annotation: { title: 'Moved down 4', badge: 'Moved down 4' } },
+    },
+  },
+];
+
+/**
+ * Every change mark the table paints: an updated cell's old value over its new one, a rule added,
+ * deleted or replaced whole, a moved rule and the place it left (hover either to outline both), a
+ * fold standing in for unchanged rules, and a column added and one renamed. The rows, header and
+ * gutter are the consumer's, as always; the marks and the classes that paint them are the table's.
+ */
+const ChangesGrid = () => {
+  const table = useSelectionStore();
+  const rowIds = useMemo(() => CHANGES_ROWS.map((row) => row.id), []);
+  const colIds = useMemo(() => CHANGES_COLUMNS.map((column) => column.id), []);
+  const nav = useGridNavigation({ table, rowIds, colIds });
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+
+  const columns: GridColumn[] = useMemo(() => {
+    const groups = {
+      annotation: {
+        id: 'annotations',
+        label: 'Annotation',
+        toneClassName: GROUP_TONE_CLASS.annotation,
+      },
+      input: { id: 'inputs', label: 'Inputs', toneClassName: GROUP_TONE_CLASS.inputs },
+      output: { id: 'outputs', label: 'Outputs', toneClassName: GROUP_TONE_CLASS.outputs },
+    } satisfies Record<'annotation' | Kind, GridColumnGroup>;
+    return CHANGES_COLUMNS.map((column) => ({
+      id: column.id,
+      name: column.name,
+      defaultWidth: column.kind === 'annotation' ? 220 : 140,
+      group: groups[column.kind],
+    }));
+  }, []);
+
+  const rect = nav.range ? normalizedRect(nav.range) : null;
+
+  return (
+    <div>
+      <DecisionTable
+        labels={labels}
+        columns={columns}
+        rowCount={CHANGES_ROWS.length}
+        leadingColumnWidth={ROW_NUMBER_WIDTH}
+        pinnedColumnCount={0}
+        initialColumnWidths={{}}
+        tableAriaLabel="Decision grid with changes under review"
+        dataTestId="changes-grid"
+        containerProps={{
+          onKeyDown: nav.onKeyDown,
+          onPointerOver: (event) => {
+            const target = event.target as Element;
+            const marked = target.closest('[data-mark-title]');
+            if (marked instanceof HTMLElement) {
+              marked.title = marked.dataset.markTitle ?? '';
+            }
+            setHoveredLink(target.closest('tr[data-link]')?.getAttribute('data-link') ?? null);
+          },
+          onPointerLeave: () => setHoveredLink(null),
+        }}
+        renderHeaderCell={(column, { resizeHandle }) => {
+          const mark = CHANGES_COLUMN_MARKS[column.id];
+          return (
+            <th
+              key={column.id}
+              scope="col"
+              className={cn(HEADER_CELL_CLASS, HEADER_CHANGE_CLASS)}
+              aria-label={[column.name, mark?.title].filter(Boolean).join('. ')}
+              data-change={mark?.change}
+              data-mark-title={mark?.title}
+            >
+              {mark?.previous !== undefined && (
+                <del className={PREVIOUS_HEADER_LABEL_CLASS}>{mark.previous}</del>
+              )}
+              <div className={HEADER_LABEL_ROW_CLASS}>
+                <span className="min-w-0 truncate">{column.name}</span>
+              </div>
+              {column.id !== ANNOTATION_COLUMN_ID && <VarsLine columnId={column.id} />}
+              {resizeHandle}
+            </th>
+          );
+        }}
+        renderRow={(rowIndex, visibleColumns) => {
+          const row = CHANGES_ROWS[rowIndex];
+          const mark = row?.mark;
+          if (!row) return null;
+          if (mark?.fold !== undefined) {
+            return (
+              <tr
+                key={row.id}
+                aria-rowindex={rowIndex + 3}
+                style={{ height: 'var(--grid-row-height)' }}
+              >
+                <td aria-hidden className={cn(ROW_NUMBER_CELL_CLASS, 'bg-background-secondary')} />
+                <td
+                  colSpan={visibleColumns.length}
+                  className="border-b border-b-border-de-emp/60 bg-background-secondary px-2 text-xs text-foreground-de-emp"
+                >
+                  {`${mark.fold} unchanged rules, ${mark.foldRange?.from} to ${mark.foldRange?.to}`}
+                </td>
+              </tr>
+            );
+          }
+          const number = mark?.number || mark?.wasNumber || (mark?.number ?? String(rowIndex + 1));
+          return (
+            <tr
+              key={row.id}
+              className="group/row"
+              aria-rowindex={rowIndex + 3}
+              data-change={mark?.change}
+              data-pair={mark?.pair}
+              data-link={mark?.link}
+              data-link-hover={mark?.link && mark.link === hoveredLink ? '' : undefined}
+              style={{ height: 'var(--grid-row-height)' }}
+            >
+              <td
+                className={cn(ROW_NUMBER_CELL_CLASS, ROW_GUTTER_CHANGE_CLASS, CELL_CHANGE_CLASS)}
+                data-row={rowIndex}
+                aria-label={[`Rule ${number}`, mark?.title].filter(Boolean).join('. ')}
+                data-mark-title={mark?.title}
+              >
+                {number}
+              </td>
+              {visibleColumns.map((visible) => {
+                if (visible.type !== 'column') {
+                  return renderFillerCell(visible);
+                }
+                const col = visible.flexIndex;
+                const isFocus = nav.focus?.row === rowIndex && nav.focus?.col === col;
+                const inRange =
+                  !!rect &&
+                  rowIndex >= rect.top &&
+                  rowIndex <= rect.bottom &&
+                  col >= rect.left &&
+                  col <= rect.right;
+                const columnId = visible.column.id;
+                return (
+                  <GridCell
+                    key={columnId}
+                    value={row.cells[columnId] ?? ''}
+                    mono={columnId !== ANNOTATION_COLUMN_ID}
+                    readOnly
+                    row={rowIndex}
+                    col={col}
+                    selected={isFocus}
+                    inRange={inRange && !isFocus}
+                    editing={false}
+                    focusable
+                    tabStop={isFocus || (rowIndex === 0 && col === 0 && !nav.focus)}
+                    className={cn(visible.column.group?.id === 'outputs' && OUTPUT_CELL_TINT_CLASS)}
+                    mark={mark?.cells?.[columnId]}
+                    dataTestId={`changes-cell-${rowIndex}-${col}`}
+                    ariaLabel={`${visible.column.name}, rule ${number}`}
+                    onSelect={(extend) =>
+                      extend
+                        ? nav.extendTo({ row: rowIndex, col })
+                        : nav.select({ row: rowIndex, col })
+                    }
+                    onStartEdit={() => undefined}
+                    onCommit={() => undefined}
+                    onCancel={nav.cancelEdit}
+                  />
+                );
+              })}
+            </tr>
+          );
+        }}
+      />
+      <p className="mt-2 text-sm text-foreground-de-emp">
+        Each rule's name says which change it shows. An updated cell shows what it held, struck
+        through, above what it holds. A deleted rule keeps the number it had, struck through. Hover
+        either end of the moved rule to outline both. Hover a marked cell, row number or header for
+        its message.
       </p>
     </div>
   );
