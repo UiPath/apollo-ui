@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.17.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.2...@uipath/apollo-react@7.17.3) (2026-11-12)
+
+### Bug Fixes
+
+* **apollo-react:** port decision table drag and inserts, add stories [MST-17527] [MST-17755] ([a9a3581](https://github.com/UiPath/apollo-ui/commit/a9a358117b0071256311ca38cd98e9a65a42ef35))
+
 ## [@uipath/apollo-react-v7.17.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.1...@uipath/apollo-react@7.17.2) (2026-11-10)
 
 ### Bug Fixes
