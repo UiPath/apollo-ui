@@ -2624,7 +2624,28 @@ describe('DecisionText', () => {
         fireEvent.click(box('"CN"'));
         fireEvent.click(action('Apply'));
         expect(onCommitValues.mock.calls).toEqual([
-          [at('m2', 'country'), { values: ['"RU"', '"CN"', '"KP"'], operator: 'noneOf' }, 'none'],
+          [at('m2', 'country'), { values: ['"RU"', '"KP"', '"CN"'], operator: 'noneOf' }, 'none'],
+        ]);
+      });
+
+      it('keeps a list’s values in their sentence order, adding a checked one after them', () => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({
+            ...shapedField(cell),
+            values: ['"KP"', '"RU"'],
+            allowedValues: ['"RU"', '"CN"'],
+          }),
+        });
+        fireEvent.click(action('Apply'));
+        fireEvent.click(valueChip('m2', 'country'));
+        fireEvent.click(box('"CN"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => commit.values)).toEqual([
+          ['"KP"', '"RU"'],
+          ['"RU"', '"CN"', '"KP"'],
         ]);
       });
 
