@@ -12,6 +12,7 @@ import type {
   SentenceSelection,
   SentenceValueId,
 } from './sentenceTypes';
+import { useRequestRender } from './useRequestRender';
 import type { RuleMenus } from './useRuleMenus';
 import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
@@ -95,6 +96,7 @@ export const useValueEditing = ({
   container,
   openMenu,
 }: ValueEditingParams): ValueEditing => {
+  const requestRender = useRequestRender();
   const pendingRef = useRef<PendingSettle | null>(null);
   const pressedRef = useRef<Pressed | null>(null);
   const recoveredRef = useRef(false);
@@ -121,6 +123,7 @@ export const useValueEditing = ({
     const cancel = () => {
       pendingRef.current = { from: target, move: 'cancel', rules, refocus: true, whole: false };
       edit.onCancel();
+      requestRender();
     };
     return {
       target,
@@ -134,6 +137,7 @@ export const useValueEditing = ({
         const whole = expression || field.values !== undefined || commit.values.length > 1;
         pendingRef.current = { from: target, move, rules, refocus, whole };
         edit.onCommit(target, commit, move);
+        requestRender();
       },
       onCancel: cancel,
       onClear:
@@ -191,18 +195,22 @@ export const useValueEditing = ({
 
   useLayoutEffect(() => {
     const pending = pendingRef.current;
-    if (!pending || target) return;
     pendingRef.current = null;
-    resolve(pending);
+    if (pending && !target) resolve(pending);
   });
+
+  const cancelEditOf = (cell: SentenceSelection) => {
+    if (target?.rowId !== cell.rowId || (cell.columnId && target.columnId !== cell.columnId))
+      return;
+    pendingRef.current = null;
+    edit?.onCancel();
+  };
 
   const clear = (cell: SentenceCellId) => {
     refocusRef.current = cell.rowId;
     edit?.onClearCell(cell);
-    if (target?.rowId === cell.rowId && target.columnId === cell.columnId) {
-      pendingRef.current = null;
-      edit?.onCancel();
-    }
+    cancelEditOf(cell);
+    requestRender();
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>): boolean => {
@@ -227,6 +235,8 @@ export const useValueEditing = ({
     if (action.action !== 'delete') return false;
     refocusRef.current = action.rowId;
     edit?.onDeleteRule(action.rowId);
+    cancelEditOf({ rowId: action.rowId });
+    requestRender();
     return true;
   };
 

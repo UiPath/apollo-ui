@@ -1782,6 +1782,65 @@ describe('DecisionText', () => {
       expect(focusedStop()).toBe('r2:income');
     });
 
+    it("tabs back from a cell's later value to its previous one", () => {
+      const { onCommit, onStartEdit } = renderEditing({
+        initial: { rowId: 'r2', columnId: 'age' },
+        initialEditing: r2Age(1),
+      });
+      fireEvent.keyDown(editor(), { key: 'Tab', shiftKey: true });
+      expect(onCommit.mock.calls).toEqual([[r2Age(1), '60', 'left']]);
+      expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
+      expect(editor()).toHaveValue('25');
+    });
+
+    it.each([
+      'with a render',
+      'silently',
+    ])('drops a Tab the host refused %s, so closing the editor later opens no other value', (refusal) => {
+      const onStartEdit = vi.fn();
+      const RefusingHost = () => {
+        const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
+        const [, setRefusals] = useState(0);
+        return (
+          <>
+            <button type="button" onClick={() => setEditing(null)}>
+              Close
+            </button>
+            {view({
+              rules: GRID_SENTENCE_RULES,
+              bands: GRID_SENTENCE_BANDS,
+              selected: { rowId: 'r2', columnId: 'age' },
+              onSelect: vi.fn(),
+              edit: editWith({
+                editing,
+                onStartEdit,
+                onCommit: () => {
+                  if (refusal === 'with a render') setRefusals((count) => count + 1);
+                },
+              }),
+            })}
+          </>
+        );
+      };
+      render(<RefusingHost />);
+      fireEvent.keyDown(editor(), { key: 'Tab' });
+      expect(editor()).toHaveValue('25');
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+      expect(onStartEdit).not.toHaveBeenCalled();
+    });
+
+    it('cancels the edit of a rule its delete action removes, as a clear of the edited cell does', () => {
+      const { onCancel } = renderEditing({
+        initial: { rowId: 'r2', columnId: 'age' },
+        initialEditing: r2Age(0),
+        refuse: true,
+      });
+      fireEvent.click(within(card('r2')).getByRole('button', { name: 'Delete rule 2' }));
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+    });
+
     it('cancels on Escape back to the chip, and commits in place on a click outside', () => {
       const { onCancel, onCommit } = renderEditing({
         initial: { rowId: 'r2', columnId: 'age' },
@@ -3549,6 +3608,22 @@ describe('DecisionText', () => {
       expect(screen.queryByTestId('nl-row-r2')).toBeNull();
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(card('r3'));
+    });
+
+    it('leaves no refocus pending from a delete the host refused, so its later select of another rule takes no focus', () => {
+      const props = {
+        rules: GRID_SENTENCE_RULES,
+        onSelect: vi.fn(),
+        edit: editWith({ onDeleteRule: vi.fn() }),
+      };
+      const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }));
+      const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
+      act(() => remove.focus());
+      fireEvent.click(remove);
+      expect(props.edit.onDeleteRule).toHaveBeenCalledWith('r2');
+      expect(document.activeElement).toBe(card('r2'));
+      rerender(view({ ...props, selected: { rowId: 'r1' } }));
+      expect(document.activeElement).toBe(card('r2'));
     });
 
     it('focuses the rule the host selects after the delete action removes its rule in a shadow root', () => {
