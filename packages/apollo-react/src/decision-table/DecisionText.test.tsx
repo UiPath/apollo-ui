@@ -1426,11 +1426,23 @@ describe('DecisionText', () => {
       expect(valueChip('row-0', 'decision')).toBe(chip);
     });
 
-    it('returns focus to the view when the focused row is removed', () => {
-      const { rerender } = renderSelectable();
-      fireEvent.click(valueChip('r2', 'age'));
+    it.each([
+      'the document',
+      'a shadow root',
+    ])('returns focus to the view when the focused row is removed, in %s', (scope) => {
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const shadow = scope === 'a shadow root' ? host.attachShadow({ mode: 'open' }) : undefined;
+      const container = (shadow ?? host).appendChild(document.createElement('div'));
+      const { rerender } = render(<Selectable />, { container });
+      const inView = within(container);
+      fireEvent.click(
+        inView
+          .getByTestId('nl-row-r2')
+          .querySelector('[data-kind="value"][data-column-id="age"]') ?? container
+      );
       rerender(<Selectable rules={GRID_SENTENCE_RULES.filter(({ rowId }) => rowId !== 'r2')} />);
-      expect(document.activeElement).toBe(screen.getByTestId('nl'));
+      expect((shadow ?? document).activeElement).toBe(inView.getByTestId('nl'));
     });
 
     it('scrolls a rule the host selects into view, without taking focus', () => {
@@ -3537,6 +3549,22 @@ describe('DecisionText', () => {
       expect(screen.queryByTestId('nl-row-r2')).toBeNull();
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(card('r3'));
+    });
+
+    it('focuses the rule the host selects after the delete action removes its rule in a shadow root', () => {
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const shadow = host.attachShadow({ mode: 'open' });
+      const container = shadow.appendChild(document.createElement('div'));
+      render(<RuleChangeHost label="Delete rule" change={removeRule} next="r3" />, { container });
+      const inView = within(container);
+      const remove = within(inView.getByTestId('nl-row-r2')).getByRole('button', {
+        name: 'Delete rule 2',
+      });
+      act(() => remove.focus());
+      fireEvent.click(remove);
+      expect(inView.queryByTestId('nl-row-r2')).toBeNull();
+      expect(shadow.activeElement).toBe(inView.getByTestId('nl-row-r3'));
     });
   });
 

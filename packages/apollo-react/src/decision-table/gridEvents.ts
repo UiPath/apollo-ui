@@ -30,6 +30,13 @@ export const activeElementOf = (node: Node): Element | null => {
   return (root instanceof ShadowRoot ? root.activeElement : null) ?? document.activeElement;
 };
 
+/** Whether no element of a node's document or shadow root has focus, as once the focused one is removed. */
+export const hasLostFocus = (node: Node): boolean => {
+  const root = node.getRootNode();
+  if (root instanceof ShadowRoot) return root.activeElement === null;
+  return (document.activeElement ?? document.body) === document.body;
+};
+
 /** Where an inline edit's commit key sends the selection: Enter down, Tab right, Shift+Tab left. */
 export const commitMoveFor = (event: { key: string; shiftKey: boolean }): CellCommitMove =>
   event.key === 'Enter' ? 'down' : event.shiftKey ? 'left' : 'right';

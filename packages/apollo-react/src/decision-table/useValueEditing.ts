@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useLayoutEffect, useRef } from 'react';
 import type { DecisionTextEdit, DecisionTextLabels, DecisionTextProps } from './DecisionText';
-import { activeElementOf } from './gridEvents';
+import { activeElementOf, hasLostFocus } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { bandColumnNameOf, columnNameOf, hasStop, tokenText, valueTokenOf } from './sentenceParts';
 import { addConditionOf, clickedAction, clickedValue, type RuleAction } from './sentenceTargets';
@@ -177,12 +177,13 @@ export const useValueEditing = ({
     const rowId = refocusRef.current;
     refocusRef.current = null;
     const view = container();
-    const focused = activeElementOf(view ?? document);
-    if (rowId === null || !(focused instanceof HTMLElement)) return;
+    if (rowId === null || !view) return;
+    const focused = activeElementOf(view);
     if (
-      focused === document.body ||
+      hasLostFocus(view) ||
       focused === view ||
-      focused.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId === rowId
+      (focused instanceof HTMLElement &&
+        focused.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId === rowId)
     ) {
       navigation.refocus();
     }

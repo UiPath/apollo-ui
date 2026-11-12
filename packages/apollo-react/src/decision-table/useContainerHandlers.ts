@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import type { DecisionTextProps } from './DecisionText';
+import { hasLostFocus } from './gridEvents';
 import { clickedDecision, clickedSelection, stopDecisionOf, valueTokenAt } from './sentenceTargets';
 import type { useCellHover } from './useCellHover';
 import type { RuleMenus } from './useRuleMenus';
@@ -33,9 +34,8 @@ export const useContainerHandlers = ({
 }: ContainerHandlersParams) => {
   const focusWithinRef = useRef(false);
   useEffect(() => {
-    if (focusWithinRef.current && document.activeElement === document.body) {
-      container()?.focus();
-    }
+    const view = container();
+    if (focusWithinRef.current && view && hasLostFocus(view)) view.focus();
   });
 
   const {
