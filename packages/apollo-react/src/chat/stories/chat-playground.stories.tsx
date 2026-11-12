@@ -202,6 +202,8 @@ export const FullScreen: Story = {
 export const CompareRenderers: Story = {
   name: 'Compare renderers',
   args: { renderer: 'both' },
+  // Material mounts after the story reports rendered.
+  parameters: { sbdiff: { delayMs: 1500 } },
 };
 
 /** Code blocks with HTML preview turned on, compared across both renderers. */
