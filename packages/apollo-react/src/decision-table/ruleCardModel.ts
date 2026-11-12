@@ -196,7 +196,7 @@ export const ruleCardModel = ({
       decisionLinks && token.kind === 'input' && token.decisionId !== undefined
         ? {
             decisionId: token.decisionId,
-            label: labels.openDecision(token.text),
+            label: labels.openDecision?.(token.text),
             tabbable: !selectable,
           }
         : undefined,

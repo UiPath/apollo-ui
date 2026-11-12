@@ -21,8 +21,8 @@ export interface RuleCardLabels extends MarkBadgeLabels, ConditionLineLabels {
   cell: (column: string, values: string, position: number) => string;
   /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash. */
   emptyValue: string;
-  /** An input's link to the decision that produces it, e.g. "Open the income decision". */
-  openDecision: (input: string) => string;
+  /** An input's link to the decision that produces it, e.g. "Open the income decision"; without it a link is named by its input. */
+  openDecision?: (input: string) => string;
 }
 
 /** A card's editing strings: its actions', and its remove and clear buttons'. */

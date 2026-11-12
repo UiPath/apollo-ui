@@ -3915,6 +3915,16 @@ describe('DecisionText', () => {
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
     });
 
+    it('takes no links’ label from a view without onOpenDecision, and names a link by its input without one', () => {
+      const { openDecision: _, ...unlinked } = DECISION_TEXT_LABELS;
+      const { rerender } = renderView({ rules: linkedRules, labels: unlinked });
+      expect(within(card('r1')).queryAllByRole('button')).toEqual([]);
+      const onOpenDecision = vi.fn();
+      rerender(view({ rules: linkedRules, labels: unlinked, onOpenDecision }));
+      fireEvent.click(within(card('r1')).getByRole('button', { name: 'income' }));
+      expect(onOpenDecision).toHaveBeenCalledWith('income-decision');
+    });
+
     it('keeps a read-only link in the tab order, and the input plain without onOpenDecision', () => {
       const props = { rules: linkedRules, onOpenDecision: vi.fn() };
       const { rerender } = renderView(props);
