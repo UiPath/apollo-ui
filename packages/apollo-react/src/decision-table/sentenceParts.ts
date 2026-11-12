@@ -43,6 +43,13 @@ export const stopTokensOf = (rule: SentenceRule): SentenceToken[] => {
 export const hasStop = (rule: SentenceRule | undefined, columnId: string): boolean =>
   rule !== undefined && stopTokensOf(rule).some((token) => token.columnId === columnId);
 
+/** The text of every token a rule words for a cell, its input's and its values'. */
+export const cellTextOf = (rule: SentenceRule, columnId: string): string =>
+  ruleTokens(rule)
+    .filter((token) => token.columnId === columnId)
+    .map((token) => `${token.kind}:${token.text}`)
+    .join('\n');
+
 /** A column's name as the row words it. */
 export const columnNameOf = (rule: SentenceRule, columnId: string): string =>
   ruleTokens(rule).find((token) => token.kind !== 'value' && token.columnId === columnId)?.text ??

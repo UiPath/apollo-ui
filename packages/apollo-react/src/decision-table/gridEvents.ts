@@ -37,6 +37,22 @@ export const hasLostFocus = (node: Node): boolean => {
   return (document.activeElement ?? document.body) === document.body;
 };
 
+const GESTURES = ['pointerdown', 'keydown', 'click'] as const;
+
+/** Calls `onGesture` once on the next press, key or click anywhere in a node's document, and returns what stops waiting for it. */
+export const onNextGesture = (node: Node, onGesture: () => void): (() => void) => {
+  const target = node.ownerDocument ?? document;
+  const stop = () => {
+    for (const type of GESTURES) target.removeEventListener(type, listener, true);
+  };
+  const listener = () => {
+    stop();
+    onGesture();
+  };
+  for (const type of GESTURES) target.addEventListener(type, listener, true);
+  return stop;
+};
+
 /** Where an inline edit's commit key sends the selection: Enter down, Tab right, Shift+Tab left. */
 export const commitMoveFor = (event: { key: string; shiftKey: boolean }): CellCommitMove =>
   event.key === 'Enter' ? 'down' : event.shiftKey ? 'left' : 'right';

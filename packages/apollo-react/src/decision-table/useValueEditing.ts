@@ -1,9 +1,16 @@
 import type React from 'react';
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { DecisionTextEdit, DecisionTextLabels, DecisionTextProps } from './DecisionText';
-import { activeElementOf, hasLostFocus } from './gridEvents';
+import { activeElementOf, hasLostFocus, onNextGesture } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
-import { bandColumnNameOf, columnNameOf, hasStop, tokenText, valueTokenOf } from './sentenceParts';
+import {
+  bandColumnNameOf,
+  cellTextOf,
+  columnNameOf,
+  hasStop,
+  tokenText,
+  valueTokenOf,
+} from './sentenceParts';
 import { addConditionOf, clickedAction, clickedValue, type RuleAction } from './sentenceTargets';
 import type {
   SentenceBand,
@@ -12,7 +19,6 @@ import type {
   SentenceSelection,
   SentenceValueId,
 } from './sentenceTypes';
-import { useRequestRender } from './useRequestRender';
 import type { RuleMenus } from './useRuleMenus';
 import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
@@ -41,6 +47,14 @@ interface PendingSettle {
   refocus: boolean;
   /** Whether the editor edited all the condition's values, so Tab leaves the cell instead of opening its next value. */
   whole: boolean;
+  /** Where focus was when it settled, so a close that finds focus moved elsewhere leaves it there. */
+  focused: Element | null;
+}
+
+/** A cleared cell or deleted rule, and its text when asked, so focus returns to the selected stop once the host applies it. */
+interface PendingRefocus {
+  cell: SentenceSelection;
+  text: string | undefined;
 }
 
 export interface ValueEditing {
@@ -84,6 +98,17 @@ const movedAway = ({ element, at }: Pressed): boolean => {
 const isOutcome = (rule: SentenceRule, columnId: string): boolean =>
   rule.heading.some((part) => typeof part !== 'string' && part.columnId === columnId);
 
+/** A cell's text, or an empty one for a rule, as the rules hold it; undefined once its rule is gone. */
+const textIn = (rules: readonly SentenceRule[], cell: SentenceSelection): string | undefined => {
+  const rule = rules.find((candidate) => candidate.rowId === cell.rowId);
+  return rule && (cell.columnId === undefined ? '' : cellTextOf(rule, cell.columnId));
+};
+
+const rowIdOf = (element: Element | null): string | undefined =>
+  element instanceof HTMLElement
+    ? element.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId
+    : undefined;
+
 /** The view's value editing: starting an edit, the editor's context, and where a commit or cancel moves. */
 export const useValueEditing = ({
   edit,
@@ -96,19 +121,27 @@ export const useValueEditing = ({
   container,
   openMenu,
 }: ValueEditingParams): ValueEditing => {
-  const requestRender = useRequestRender();
   const pendingRef = useRef<PendingSettle | null>(null);
+  const stopAwaitingRef = useRef<(() => void) | null>(null);
   const pressedRef = useRef<Pressed | null>(null);
   const recoveredRef = useRef(false);
-  const refocusRef = useRef<string | null>(null);
+  const refocusRef = useRef<PendingRefocus | null>(null);
   const target = edit?.editing ?? null;
   const openedRef = useRef(target ? valueKey(target) : undefined);
   const row = target ? rules.findIndex((rule) => rule.rowId === target.rowId) : -1;
   const rule = rules[row];
 
+  const awaitHost = (pending: Omit<PendingSettle, 'focused'> | null) => {
+    stopAwaitingRef.current?.();
+    const view = container();
+    pendingRef.current = pending && { ...pending, focused: view && activeElementOf(view) };
+    stopAwaitingRef.current = pending && view ? onNextGesture(view, () => awaitHost(null)) : null;
+  };
+  useEffect(() => () => stopAwaitingRef.current?.(), []);
+
   const start = (value: SentenceValueId) => {
     if (!edit) return;
-    pendingRef.current = null;
+    awaitHost(null);
     if (selected?.rowId !== value.rowId || selected?.columnId !== value.columnId) {
       onSelect?.({ rowId: value.rowId, columnId: value.columnId });
     }
@@ -121,9 +154,8 @@ export const useValueEditing = ({
     const column = columnNameOf(rule, target.columnId) || bandColumnNameOf(bands, target.columnId);
     const field = edit.valueField?.(target) ?? {};
     const cancel = () => {
-      pendingRef.current = { from: target, move: 'cancel', rules, refocus: true, whole: false };
+      awaitHost({ from: target, move: 'cancel', rules, refocus: true, whole: false });
       edit.onCancel();
-      requestRender();
     };
     return {
       target,
@@ -135,9 +167,8 @@ export const useValueEditing = ({
       field,
       onCommit: (commit, move, refocus, expression) => {
         const whole = expression || field.values !== undefined || commit.values.length > 1;
-        pendingRef.current = { from: target, move, rules, refocus, whole };
+        awaitHost({ from: target, move, rules, refocus, whole });
         edit.onCommit(target, commit, move);
-        requestRender();
       },
       onCancel: cancel,
       onClear:
@@ -177,40 +208,44 @@ export const useValueEditing = ({
     }
   });
 
-  useLayoutEffect(() => {
-    const rowId = refocusRef.current;
-    refocusRef.current = null;
+  const staysOn = (rowId: string): boolean => {
     const view = container();
-    if (rowId === null || !view) return;
-    const focused = activeElementOf(view);
-    if (
-      hasLostFocus(view) ||
-      focused === view ||
-      (focused instanceof HTMLElement &&
-        focused.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId === rowId)
-    ) {
-      navigation.refocus();
-    }
+    const focused = view && activeElementOf(view);
+    return view !== null && (hasLostFocus(view) || focused === view || rowIdOf(focused) === rowId);
+  };
+
+  useLayoutEffect(() => {
+    const refocus = refocusRef.current;
+    if (refocus === null) return;
+    const stayed = staysOn(refocus.cell.rowId);
+    if (stayed && textIn(rules, refocus.cell) === refocus.text) return;
+    refocusRef.current = null;
+    if (stayed) navigation.refocus();
   });
 
   useLayoutEffect(() => {
     const pending = pendingRef.current;
-    pendingRef.current = null;
-    if (pending && !target) resolve(pending);
+    if (!pending || (target && valueKey(target) === valueKey(pending.from))) return;
+    awaitHost(null);
+    const view = container();
+    const focused = view && activeElementOf(view);
+    const stayed =
+      view !== null && (hasLostFocus(view) || focused === view || focused === pending.focused);
+    if (!target && stayed) resolve(pending);
   });
 
   const cancelEditOf = (cell: SentenceSelection) => {
     if (target?.rowId !== cell.rowId || (cell.columnId && target.columnId !== cell.columnId))
       return;
-    pendingRef.current = null;
+    awaitHost(null);
     edit?.onCancel();
   };
 
-  const clear = (cell: SentenceCellId) => {
-    refocusRef.current = cell.rowId;
+  const clear = (cell: SentenceCellId, refocusNow = true) => {
+    refocusRef.current = { cell, text: textIn(rules, cell) };
     edit?.onClearCell(cell);
     cancelEditOf(cell);
-    requestRender();
+    if (refocusNow && staysOn(cell.rowId)) navigation.refocus();
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>): boolean => {
@@ -226,17 +261,20 @@ export const useValueEditing = ({
 
   const onAction = (action: RuleAction): boolean => {
     if (action.action === 'clear') {
-      clear(action.cell);
+      clear(action.cell, selected?.rowId === action.cell.rowId);
       if (selected?.rowId !== action.cell.rowId) {
         navigation.select({ rowId: action.cell.rowId }, undefined, false);
       }
       return true;
     }
     if (action.action !== 'delete') return false;
-    refocusRef.current = action.rowId;
+    refocusRef.current = {
+      cell: { rowId: action.rowId },
+      text: textIn(rules, { rowId: action.rowId }),
+    };
     edit?.onDeleteRule(action.rowId);
     cancelEditOf({ rowId: action.rowId });
-    requestRender();
+    if (staysOn(action.rowId)) navigation.refocus();
     return true;
   };
 

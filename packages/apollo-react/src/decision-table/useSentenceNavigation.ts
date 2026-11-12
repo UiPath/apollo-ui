@@ -1,13 +1,12 @@
 import type React from 'react';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import type { DecisionTextProps } from './DecisionText';
-import { activeElementOf, isFromTextField } from './gridEvents';
+import { activeElementOf, hasLostFocus, isFromTextField } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { firstValuesOf } from './ruleCardModel';
 import { cardOf, cellOf } from './sentenceTargets';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import { ARROW_DELTAS, clamp, GRID_ENTRY_KEYS } from './useGridNavigation';
-import { useRequestRender } from './useRequestRender';
 import type { RuleWindow } from './useRuleWindow';
 
 /** A row and one of its stops: 0 is its rule, then its cells in reading order. */
@@ -156,11 +155,12 @@ interface SentenceNavigationSource
 /** The element of a selected card that takes focus in place of its stop, e.g. one of its actions. */
 type CardFocus = (card: HTMLElement) => HTMLElement | null;
 
-/** A selection the view asked for, what of its card to focus once the host applies it, and whether to scroll it into view. */
+/** A selection the view asked for, what of its card to focus once the host applies it, whether to scroll it into view, and where focus was when it asked. */
 interface PendingFocus {
   selection: SentenceSelection | null;
   focus: CardFocus | undefined;
   scroll: boolean;
+  from: Element | null;
 }
 
 /** The column ↑ and ↓ keep: the one a run of them started from, while the selection is where the last one landed. */
@@ -233,16 +233,20 @@ export const useSentenceNavigation = ({
     }
   };
 
-  const requestRender = useRequestRender();
   const pendingFocusRef = useRef<PendingFocus | undefined>(undefined);
   const wantedRef = useRef<WantedColumn | undefined>(undefined);
   const shownRowIdRef = useRef(selectedRule?.rowId);
   useLayoutEffect(() => {
     const pending = pendingFocusRef.current;
-    pendingFocusRef.current = undefined;
     const moved = selectedRule?.rowId !== shownRowIdRef.current;
     shownRowIdRef.current = selectedRule?.rowId;
-    if (pending !== undefined && sameSelection(pending.selection, current)) {
+    const view = container();
+    const focused = view && activeElementOf(view);
+    const stayed =
+      view !== null && (hasLostFocus(view) || focused === view || focused === pending?.from);
+    const applied = pending !== undefined && sameSelection(pending.selection, current);
+    if (!stayed || applied) pendingFocusRef.current = undefined;
+    if (pending !== undefined && applied && stayed) {
       focusCurrent(pending.focus, pending.scroll);
     } else if (moved && selectedRow !== null) {
       const stop = movedStopOf(container(), current);
@@ -257,9 +261,9 @@ export const useSentenceNavigation = ({
       focusCurrent(focus, scroll);
       return;
     }
-    pendingFocusRef.current = { selection, focus, scroll };
+    const view = container();
+    pendingFocusRef.current = { selection, focus, scroll, from: view && activeElementOf(view) };
     onSelect(selection);
-    requestRender();
   };
 
   const keyTarget = (event: React.KeyboardEvent<HTMLElement>) => {

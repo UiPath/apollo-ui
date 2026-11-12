@@ -139,6 +139,11 @@ const walk = (...keys: string[]) =>
     press(key);
     return focusedStop();
   });
+/** Runs a host's answer a moment after the call that asked for it, as a host that saves first does. */
+const later = (answer: () => void) => {
+  void Promise.resolve().then(answer);
+};
+const settleLater = () => act(async () => {});
 const rect = (left: number, right: number): DOMRect => ({
   left,
   right,
@@ -898,18 +903,40 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(outside);
     });
 
+    it('keeps focus where it is when rules arrive after an add-rule action a host answered a moment later with none', async () => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      const props = {
+        addRule: { label: 'Add rule', onAdd: vi.fn() },
+        selected: null,
+        onSelect: vi.fn(),
+      };
+      const { rerender } = render(view({ ...props, rules: [] }));
+      const add = screen.getByRole('button', { name: 'Add rule' });
+      act(() => add.focus());
+      fireEvent.click(add);
+      await settleLater();
+      rerender(view({ ...props, rules: [] }));
+      act(() => outside.focus());
+      rerender(view({ ...props, rules: manySentenceRules(1) }));
+      expect(document.activeElement).toBe(outside);
+    });
+
     it.each([
-      ['the empty state, adding a rule taller than the view', 0, () => [manyLinesRule(10)]],
-      ['the footer', 3, (count: number) => manySentenceRules(count + 1)],
-    ])('keeps the focused add-rule action in view after a rule it adds from %s that the host leaves unselected', (_, initialCount, added) => {
+      ['the empty state, adding a rule taller than the view', 0, () => [manyLinesRule(10)], false],
+      ['the footer', 3, (count: number) => manySentenceRules(count + 1), false],
+      ['the empty state, a moment later', 0, () => [manyLinesRule(10)], true],
+      ['the footer, a moment later', 3, (count: number) => manySentenceRules(count + 1), true],
+    ])('keeps the focused add-rule action in view after a rule it adds from %s that the host leaves unselected', async (_, initialCount, added, late) => {
       const AddingHost = () => {
         const [rules, setRules] = useState<SentenceRule[]>(() => manySentenceRules(initialCount));
         currentRules = rules;
+        const add = () => setRules(added(rules.length));
         return view({
           rules,
           selected: null,
           onSelect: vi.fn(),
-          addRule: { label: 'Add rule', onAdd: () => setRules(added(rules.length)) },
+          addRule: { label: 'Add rule', onAdd: () => (late ? later(add) : add()) },
         });
       };
       let currentRules: readonly SentenceRule[] = [];
@@ -928,6 +955,7 @@ describe('DecisionText', () => {
       const add = screen.getByRole('button', { name: 'Add rule' });
       act(() => add.focus());
       fireEvent.click(add);
+      await settleLater();
       const footer = screen.getByRole('button', { name: 'Add rule' });
       expect(document.activeElement).toBe(footer);
       expect(footer.parentElement?.getBoundingClientRect().bottom).toBeLessThanOrEqual(100);
@@ -1364,6 +1392,46 @@ describe('DecisionText', () => {
       act(() => card('r2').focus());
       press('ArrowRight');
       expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'risk' }]]);
+      act(() => outside.focus());
+      rerender(view({ ...props, selected: { rowId: 'r2', columnId: 'risk' } }));
+      expect(document.activeElement).toBe(outside);
+    });
+
+    it.each([
+      ['ArrowRight', { rowId: 'r2', columnId: 'risk' }, 'r2:risk'],
+      ['ArrowDown', { rowId: 'r3' }, 'r3'],
+    ])('focuses where %s moves once the host applies the select a moment later', async (key, expected, stop) => {
+      const onSelect = vi.fn();
+      const LateHost = () => {
+        const [selected, setSelected] = useState<SentenceSelection | null>({ rowId: 'r2' });
+        return view({
+          rules: GRID_SENTENCE_RULES,
+          bands: GRID_SENTENCE_BANDS,
+          header: GRID_SENTENCE_HEADER,
+          selected,
+          onSelect: (next) => {
+            onSelect(next);
+            later(() => setSelected(next));
+          },
+        });
+      };
+      render(<LateHost />);
+      act(() => card('r2').focus());
+      press(key);
+      await settleLater();
+      expect(onSelect.mock.calls).toEqual([[expected]]);
+      expect(focusedStop()).toBe(stop);
+    });
+
+    it("keeps no focus pending from a move a host refused a moment later, so the host's own later select of it leaves focus alone", async () => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      const props = { rules: GRID_SENTENCE_RULES, bands: GRID_SENTENCE_BANDS, onSelect: vi.fn() };
+      const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }));
+      act(() => card('r2').focus());
+      press('ArrowRight');
+      await settleLater();
+      rerender(view({ ...props, selected: { rowId: 'r2' } }));
       act(() => outside.focus());
       rerender(view({ ...props, selected: { rowId: 'r2', columnId: 'risk' } }));
       expect(document.activeElement).toBe(outside);
@@ -1824,7 +1892,8 @@ describe('DecisionText', () => {
     it.each([
       'with a render',
       'silently',
-    ])('drops a Tab the host refused %s, so closing the editor later opens no other value', (refusal) => {
+      'a moment later',
+    ])('drops a Tab the host refused %s, so closing the editor later opens no other value', async (refusal) => {
       const onStartEdit = vi.fn();
       const RefusingHost = () => {
         const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
@@ -1844,6 +1913,7 @@ describe('DecisionText', () => {
                 onStartEdit,
                 onCommit: () => {
                   if (refusal === 'with a render') setRefusals((count) => count + 1);
+                  if (refusal === 'a moment later') later(() => setRefusals((count) => count + 1));
                 },
               }),
             })}
@@ -1852,10 +1922,88 @@ describe('DecisionText', () => {
       };
       render(<RefusingHost />);
       fireEvent.keyDown(editor(), { key: 'Tab' });
+      await settleLater();
       expect(editor()).toHaveValue('25');
       fireEvent.click(screen.getByRole('button', { name: 'Close' }));
       expect(screen.queryByTestId('nl-editor')).toBeNull();
       expect(onStartEdit).not.toHaveBeenCalled();
+    });
+
+    const LateEditingHost = ({ refuse = false }: { refuse?: boolean }) => {
+      const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
+      const [selected, setSelected] = useState<SentenceSelection | null>({
+        rowId: 'r2',
+        columnId: 'age',
+      });
+      const close = () => later(() => setEditing(refuse ? (current) => current : null));
+      return (
+        <>
+          <button type="button" onClick={() => setEditing(null)}>
+            Close
+          </button>
+          {view({
+            rules: GRID_SENTENCE_RULES,
+            bands: GRID_SENTENCE_BANDS,
+            selected,
+            onSelect: setSelected,
+            edit: editWith({ editing, onStartEdit: setEditing, onCommit: close, onCancel: close }),
+          })}
+        </>
+      );
+    };
+
+    it.each<[string, KeyboardEventInit, string, string]>([
+      ['Tab', { key: 'Tab' }, '60', 'nl-editor'],
+      ['Enter', { key: 'Enter' }, '', 'r3:age'],
+      ['Escape', { key: 'Escape' }, '', 'r2:age'],
+    ])('moves on from %s once the host closes the editor a moment later', async (_, key, opened, stop) => {
+      render(<LateEditingHost />);
+      fireEvent.keyDown(editor(), key);
+      await settleLater();
+      expect(screen.queryByTestId('nl-editor') === null ? '' : editor().value).toBe(opened);
+      expect(focusedStop()).toBe(stop);
+    });
+
+    it('leaves focus where the host moves it as it closes the editor a moment after Enter', async () => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      const onSelect = vi.fn();
+      const MovingHost = () => {
+        const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
+        return view({
+          rules: GRID_SENTENCE_RULES,
+          bands: GRID_SENTENCE_BANDS,
+          selected: { rowId: 'r2', columnId: 'age' },
+          onSelect,
+          edit: editWith({
+            editing,
+            onCommit: () =>
+              later(() => {
+                outside.focus();
+                setEditing(null);
+              }),
+          }),
+        });
+      };
+      render(<MovingHost />);
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      await settleLater();
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(outside);
+    });
+
+    it.each<[string, KeyboardEventInit]>([
+      ['Tab', { key: 'Tab' }],
+      ['Escape', { key: 'Escape' }],
+    ])('neither moves nor reopens when the host closes the editor after a click, having refused %s a moment later', async (_, key) => {
+      render(<LateEditingHost refuse />);
+      fireEvent.keyDown(editor(), key);
+      await settleLater();
+      expect(screen.getByTestId('nl-editor')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+      expect(document.activeElement).toBe(screen.getByTestId('nl'));
     });
 
     it('cancels the edit of a rule its delete action removes, as a clear of the edited cell does', () => {
@@ -3091,9 +3239,11 @@ describe('DecisionText', () => {
     const TableHost = ({
       initial,
       start = EDITABLE_TABLE,
+      late = false,
     }: {
       initial: SentenceSelection | null;
       start?: EditableTable;
+      late?: boolean;
     }) => {
       const [table, setTable] = useState(start);
       const [selected, setSelected] = useState(initial);
@@ -3113,7 +3263,11 @@ describe('DecisionText', () => {
             );
             setEditing(null);
           },
-          onClearCell: (cell) => setTable((current) => tableWithoutCell(current, cell)),
+          onClearCell: (cell) => {
+            const clear = () => setTable((current) => tableWithoutCell(current, cell));
+            if (late) later(clear);
+            else clear();
+          },
           ruleEntries: () => [{ label: 'Delete rule', onClick: vi.fn() }],
           conditionEntries: (rowId) =>
             unusedInputs(table, rowId).map((input) => ({
@@ -3125,13 +3279,16 @@ describe('DecisionText', () => {
       });
     };
 
-    it.each<[string, SentenceCellId]>([
-      ['its last line', { rowId: 'r2', columnId: 'channel' }],
-      ['its lead', { rowId: 'r1', columnId: 'age' }],
-    ])('keeps focus on the rule after Delete removes its condition from %s', (_, cell) => {
-      render(<TableHost initial={cell} />);
+    it.each<[string, SentenceCellId, boolean]>([
+      ['its last line', { rowId: 'r2', columnId: 'channel' }, false],
+      ['its lead', { rowId: 'r1', columnId: 'age' }, false],
+      ['its last line, a moment later', { rowId: 'r2', columnId: 'channel' }, true],
+      ['its lead, a moment later', { rowId: 'r1', columnId: 'age' }, true],
+    ])('keeps focus on the rule after Delete removes its condition from %s', async (_, cell, late) => {
+      render(<TableHost initial={cell} late={late} />);
       act(() => valueChip(cell.rowId, cell.columnId).focus());
       press('Delete');
+      await settleLater();
       expect(card(cell.rowId).querySelector(`[data-column-id="${cell.columnId}"]`)).toBeNull();
       expect(document.activeElement).toBe(card(cell.rowId));
       expect(card(cell.rowId)).toHaveAttribute('tabindex', '0');
@@ -3437,8 +3594,9 @@ describe('DecisionText', () => {
       change: RuleChange;
       next: string;
       onDeleteRule?: DecisionTextEdit['onDeleteRule'];
+      late?: boolean;
     }
-    const RuleChangeHost = ({ label, change, next, onDeleteRule }: RuleChangeHostProps) => {
+    const RuleChangeHost = ({ label, change, next, onDeleteRule, late }: RuleChangeHostProps) => {
       const [rules, setRules] = useState<readonly SentenceRule[]>(GRID_SENTENCE_RULES);
       const [selected, setSelected] = useState<SentenceSelection | null>({ rowId: 'r2' });
       const apply = (rowId: string) => {
@@ -3453,7 +3611,8 @@ describe('DecisionText', () => {
           ruleEntries: (rowId) => [{ label, onClick: () => apply(rowId) }],
           onDeleteRule: (rowId) => {
             onDeleteRule?.(rowId);
-            apply(rowId);
+            if (late) later(() => apply(rowId));
+            else apply(rowId);
           },
         }),
       });
@@ -3756,6 +3915,33 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(card('r2'));
       rerender(view({ ...props, selected: { rowId: 'r1' } }));
       expect(document.activeElement).toBe(card('r2'));
+    });
+
+    it('leaves no refocus pending from a clear the host refused, so its later select of another rule takes no focus', () => {
+      const props = {
+        rules: GRID_SENTENCE_RULES,
+        bands: GRID_SENTENCE_BANDS,
+        onSelect: vi.fn(),
+        edit: editWith({ onClearCell: vi.fn() }),
+      };
+      const { rerender } = render(view({ ...props, selected: { rowId: 'r2', columnId: 'age' } }));
+      const chip = valueChip('r2', 'age');
+      act(() => chip.focus());
+      press('Delete');
+      expect(props.edit.onClearCell).toHaveBeenCalledWith({ rowId: 'r2', columnId: 'age' });
+      expect(document.activeElement).toBe(chip);
+      rerender(view({ ...props, selected: { rowId: 'r1' } }));
+      expect(document.activeElement).toBe(chip);
+    });
+
+    it('focuses the rule the host selects after the delete action removes its rule a moment later', async () => {
+      render(<RuleChangeHost label="Delete rule" change={removeRule} next="r3" late />);
+      const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
+      act(() => remove.focus());
+      fireEvent.click(remove);
+      await settleLater();
+      expect(screen.queryByTestId('nl-row-r2')).toBeNull();
+      expect(document.activeElement).toBe(card('r3'));
     });
 
     it('focuses the rule the host selects after the delete action removes its rule in a shadow root', () => {

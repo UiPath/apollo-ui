@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
-import { useRequestRender } from './useRequestRender';
+import { activeElementOf, hasLostFocus } from './gridEvents';
 import type { RuleWindow } from './useRuleWindow';
 
 export interface AddRuleParams extends Pick<RuleWindow, 'container' | 'scrollStopIntoView'> {
@@ -15,13 +15,14 @@ export const useAddRule = ({
   container,
   scrollStopIntoView,
 }: AddRuleParams): AddRuleButtonProps | undefined => {
-  const requestRender = useRequestRender();
-  const addedFromRef = useRef<number | null>(null);
+  const addedFromRef = useRef<{ count: number; from: Element | null } | null>(null);
   useLayoutEffect(() => {
     const addedFrom = addedFromRef.current;
+    if (addedFrom === null || ruleCount <= addedFrom.count) return;
     addedFromRef.current = null;
-    if (addedFrom === null || ruleCount <= addedFrom) return;
-    const footer = container()?.querySelector<HTMLElement>('[data-add-rule]');
+    const view = container();
+    if (!view || !(hasLostFocus(view) || activeElementOf(view) === addedFrom.from)) return;
+    const footer = view.querySelector<HTMLElement>('[data-add-rule]');
     footer?.querySelector('button')?.focus({ preventScroll: true });
     if (footer) scrollStopIntoView(ruleCount - 1, footer);
   });
@@ -29,9 +30,9 @@ export const useAddRule = ({
     addRule && {
       ...addRule,
       onAdd: () => {
-        addedFromRef.current = ruleCount;
+        const view = container();
+        addedFromRef.current = { count: ruleCount, from: view && activeElementOf(view) };
         addRule.onAdd();
-        requestRender();
       },
     }
   );
