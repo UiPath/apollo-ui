@@ -30,11 +30,16 @@ export const activeElementOf = (node: Node): Element | null => {
   return (root instanceof ShadowRoot ? root.activeElement : null) ?? document.activeElement;
 };
 
-/** Whether no element of a node's document or shadow root has focus, as once the focused one is removed. */
+/** Whether nothing on the page has focus, as once the focused element is removed: focus rests on the body, or on the host of a node's shadow root. */
 export const hasLostFocus = (node: Node): boolean => {
   const root = node.getRootNode();
-  if (root instanceof ShadowRoot) return root.activeElement === null;
-  return (document.activeElement ?? document.body) === document.body;
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+  return (
+    active === null ||
+    active === document.body ||
+    (root instanceof ShadowRoot && active === root.host)
+  );
 };
 
 const GESTURES = ['pointerdown', 'keydown', 'click'] as const;

@@ -10,7 +10,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { type Mock, onTestFinished, vi } from 'vitest';
 import {
   EDITABLE_TABLE,
@@ -1539,6 +1539,40 @@ describe('DecisionText', () => {
       );
       rerender(<Selectable rules={GRID_SENTENCE_RULES.filter(({ rowId }) => rowId !== 'r2')} />);
       expect((shadow ?? document).activeElement).toBe(inView.getByTestId('nl'));
+    });
+
+    it.each([
+      'the document',
+      'a shadow root',
+    ])('leaves focus where the host moves it out of the view as it removes the focused rule, in %s', (scope) => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const shadow = scope === 'a shadow root' ? host.attachShadow({ mode: 'open' }) : undefined;
+      const container = (shadow ?? host).appendChild(document.createElement('div'));
+      const RemovingHost = ({ removed }: { removed: boolean }) => {
+        useLayoutEffect(() => {
+          if (removed) outside.focus();
+        }, [removed]);
+        return (
+          <Selectable
+            rules={
+              removed
+                ? GRID_SENTENCE_RULES.filter(({ rowId }) => rowId !== 'r2')
+                : GRID_SENTENCE_RULES
+            }
+          />
+        );
+      };
+      const { rerender } = render(<RemovingHost removed={false} />, { container });
+      fireEvent.click(
+        within(container)
+          .getByTestId('nl-row-r2')
+          .querySelector('[data-kind="value"][data-column-id="age"]') ?? container
+      );
+      rerender(<RemovingHost removed />);
+      expect(document.activeElement).toBe(outside);
     });
 
     it('scrolls a rule the host selects into view, without taking focus', () => {
@@ -3942,6 +3976,31 @@ describe('DecisionText', () => {
       await settleLater();
       expect(screen.queryByTestId('nl-row-r2')).toBeNull();
       expect(document.activeElement).toBe(card('r3'));
+    });
+
+    it.each([
+      'the document',
+      'a shadow root',
+    ])('leaves focus on the confirmation the host moves it to from the delete action, in %s', (scope) => {
+      const confirm = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => confirm.remove());
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const shadow = scope === 'a shadow root' ? host.attachShadow({ mode: 'open' }) : undefined;
+      const container = (shadow ?? host).appendChild(document.createElement('div'));
+      render(
+        view({
+          rules: GRID_SENTENCE_RULES,
+          selected: { rowId: 'r2' },
+          onSelect: vi.fn(),
+          edit: editWith({ onDeleteRule: () => confirm.focus() }),
+        }),
+        { container }
+      );
+      const remove = within(container).getByRole('button', { name: 'Delete rule 2' });
+      act(() => remove.focus());
+      fireEvent.click(remove);
+      expect(document.activeElement).toBe(confirm);
     });
 
     it('focuses the rule the host selects after the delete action removes its rule in a shadow root', () => {
