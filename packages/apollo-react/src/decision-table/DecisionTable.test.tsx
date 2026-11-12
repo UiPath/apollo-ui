@@ -392,12 +392,19 @@ describe('DecisionTable column drag', () => {
     pointer('pointerup');
   });
 
-  it('refuses a column drag when the table declares no groups', () => {
-    const { handle } = renderContractTable({ columnGroupSizes: undefined });
+  it.each([
+    ['a column drag when the table declares no groups', 'column', { columnGroupSizes: undefined }],
+    ['a column drag no onColumnMove would apply', 'column', { onColumnMove: undefined }],
+    ['a row drag no onRowMove would apply', 'row', { onRowMove: undefined }],
+  ] as const)('refuses %s', (_case, axis, props) => {
+    const { handle } = renderContractTable(props);
 
     let began = true;
     act(() => {
-      began = handle().startColumnDrag(0, 0, press(60, 10));
+      began =
+        axis === 'row'
+          ? handle().startRowDrag(0, press(0, yInRow(0)))
+          : handle().startColumnDrag(0, 0, press(60, 10));
     });
 
     expect(began).toBe(false);
@@ -530,18 +537,5 @@ describe('DecisionTable table mark', () => {
   it("shows a warning's own glyph", () => {
     renderTable({ tableMark: { tone: 'warning', title: 'Unchecked output values' } });
     expect(tableMark()!.querySelector('[data-glyph="warning"]')).not.toBeNull();
-  });
-
-  it.each([
-    ['a success, which has no glyph', { tone: 'success' as const, title: 'All rules pass' }],
-    ['a mark with no message', { tone: 'error' as const }],
-  ])('draws nothing for %s', (_case, mark) => {
-    renderTable({ tableMark: mark });
-    expect(tableMark()).toBeNull();
-  });
-
-  it('draws nothing for a mark with no tone', () => {
-    renderTable({ tableMark: { title: 'Nothing to flag' } });
-    expect(tableMark()).toBeNull();
   });
 });

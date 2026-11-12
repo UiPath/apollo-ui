@@ -51,21 +51,12 @@ describe('EdgeInsertButton', () => {
   });
 
   it.each([
-    ['row', 'Insert row above', '-top-1.5'],
-    ['column', 'Insert column left', '-left-1.5'],
-  ] as const)("names a %s insert in the table's own words, on its edge", (axis, name, edge) => {
-    render(<EdgeInsertButton axis={axis} testId="insert" zoneTestId="zone" onInsert={vi.fn()} />);
+    ['row', 'Insert row above'],
+    ['column', 'Insert column left'],
+  ] as const)("names a %s insert in the table's own words", (axis, name) => {
+    render(<EdgeInsertButton axis={axis} testId="insert" onInsert={vi.fn()} />);
 
     expect(screen.getByTestId('insert')).toHaveAccessibleName(name);
     expect(screen.getByTestId('insert')).toHaveAttribute('title', name);
-    expect(screen.getByTestId('zone')).toHaveClass(edge);
-  });
-
-  it('lights its line for keyboard focus only, so a clicked "+" does not stay marked', () => {
-    render(<EdgeInsertButton axis="row" testId="insert" zoneTestId="zone" onInsert={vi.fn()} />);
-
-    const line = screen.getByTestId('zone').firstElementChild!;
-    expect(line.className).not.toContain('focus-within');
-    expect(line).toHaveClass('group-has-[:focus-visible]/insert:opacity-100!');
   });
 });

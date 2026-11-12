@@ -315,6 +315,60 @@ describe('DecisionTable drag: ways it ends', () => {
     pointer('pointerup');
   });
 
+  it('ends the drag even when the drop handler throws, so a later release moves nothing', () => {
+    const onRowMove = vi.fn(() => {
+      throw new Error('rejected');
+    });
+    const { handle } = setup({ onRowMove });
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => {
+      errors.push(event.error);
+      event.preventDefault();
+    };
+    window.addEventListener('error', onError);
+    act(() => {
+      handle().startRowDrag(0, press(0, H * 0.6));
+    });
+    pointer('pointermove', 0, H * 1.6);
+    try {
+      pointer('pointerup', 0, H * 1.6);
+    } catch (error) {
+      errors.push(error);
+    }
+    window.removeEventListener('error', onError);
+    expect(errors).toHaveLength(1);
+    pointer('pointermove', 0, H * 2.6);
+    pointer('pointerup', 0, H * 2.6);
+    expect(onRowMove).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('table-drop-indicator')).toBeNull();
+  });
+
+  it('cancels the drag on a move with no button held, whose release was missed', () => {
+    const { handle, onRowMove } = setup();
+    act(() => {
+      handle().startRowDrag(0, press(0, H * 0.6));
+    });
+    pointer('pointermove', 0, H * 1.6);
+    pointer('pointermove', 0, H * 2.6, { buttons: 0 });
+    pointer('pointerup', 0, H * 2.6);
+    expect(onRowMove).not.toHaveBeenCalled();
+  });
+
+  it('blurs a focused editor as the drag starts, so its draft commits before the move', () => {
+    const { handle } = setup();
+    const editor = document.createElement('input');
+    container().appendChild(editor);
+    const onBlur = vi.fn();
+    editor.addEventListener('blur', onBlur);
+    editor.focus();
+    act(() => {
+      handle().startRowDrag(0, press(0, H * 0.6));
+    });
+    expect(onBlur).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).not.toBe(editor);
+    pointer('pointerup');
+  });
+
   it('cancels the drag when the window loses focus', () => {
     const { handle, onRowMove } = setup();
     act(() => {

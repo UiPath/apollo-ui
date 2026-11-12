@@ -39,7 +39,6 @@ import type {
   VisibleGridColumn,
 } from './gridTypes';
 import { MarkGlyph } from './MarkGlyph';
-import type { Mark } from './marks';
 import {
   bandGeometry,
   buildColumnPreview,
@@ -141,10 +140,9 @@ export interface DecisionTableProps {
    * A mark on the table as a whole, for issues with no row, cell or column to sit on (a decision
    * with no rules, an output type its hit policy cannot return). Drawn in the top-left corner under
    * `topLeftCorner`, its tone's glyph carrying `title` as `data-mark-title` and as its accessible
-   * name, as every mark does. Drawn only for an error or a warning with a `title`, and only with a
-   * leading column.
+   * name, as every mark does. Drawn only with a leading column.
    */
-  tableMark?: Mark;
+  tableMark?: { tone: 'error' | 'warning'; title: string };
   /** The trailing fixed column's header `<th>` (rendered only when the layout reserves its width). */
   trailingHeaderCell?: React.ReactNode;
   /** The trailing fixed column's group-row cell; defaults to a pinned empty gutter. */
@@ -515,7 +513,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
         scope="col"
         data-testid={`${dataTestId}-top-left-corner`}
       >
-        {(tableMark?.tone === 'error' || tableMark?.tone === 'warning') && tableMark.title ? (
+        {tableMark ? (
           // The content and the mark centred in the corner as one group.
           <div className="flex flex-col items-center justify-center gap-1">
             {topLeftCorner}
@@ -678,8 +676,11 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
         scrollRowIntoView: (rowIndex: number) => layoutRef.current?.scrollRowIntoView(rowIndex),
         scrollColumnIntoView: (windowIndex: number) =>
           layoutRef.current?.scrollColumnIntoView(windowIndex),
-        startRowDrag,
-        startColumnDrag,
+        // Refused with nothing to apply the drop, which would snap the rows home instead of sliding them.
+        startRowDrag: (rowIndex, event) =>
+          onRowMoveRef.current !== undefined && startRowDrag(rowIndex, event),
+        startColumnDrag: (groupIndex, indexInGroup, event) =>
+          onColumnMoveRef.current !== undefined && startColumnDrag(groupIndex, indexInGroup, event),
         clipboard: gridClipboard.actions,
       }),
       [

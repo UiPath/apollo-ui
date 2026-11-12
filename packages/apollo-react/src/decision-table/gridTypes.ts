@@ -108,14 +108,15 @@ export interface GridHandle {
   scrollColumnIntoView: (windowIndex: number) => void;
   /**
    * Starts a row drag-reorder from a press the consumer took on the row; returns whether it began,
-   * refusing a row the table does not have. The press surface needs `touch-none`, or the browser
-   * takes a touch drag for a scroll and cancels it.
+   * refusing a row the table does not have, and every row without an `onRowMove`. The press surface
+   * needs `touch-none`, or the browser takes a touch drag for a scroll and cancels it.
    */
   startRowDrag: (rowIndex: number, event: DragStartEvent) => boolean;
   /**
    * Starts a column drag-reorder inside one column group (see `columnGroupSizes`). `indexInGroup`
    * is the column's position within its group. Refused, returning `false`, when the grid declares no
-   * groups or the group or column is out of range. The press surface needs `touch-none`, as for rows.
+   * groups or no `onColumnMove`, or the group or column is out of range. The press surface needs
+   * `touch-none`, as for rows.
    */
   startColumnDrag: (groupIndex: number, indexInGroup: number, event: DragStartEvent) => boolean;
   /** The clipboard operations; every one a no-op unless a `clipboard` prop is configured. */

@@ -1125,10 +1125,7 @@ const EditingGrid = ({
               onPointerDown={(event) =>
                 headerPressDrag.press(
                   event,
-                  // The resize handle keeps its own presses.
-                  !draggable ||
-                    event.button > 0 ||
-                    (event.target as Element).closest("[role='separator']")
+                  !draggable || event.button > 0
                     ? null
                     : (move) =>
                         gridRef.current?.startColumnDrag(

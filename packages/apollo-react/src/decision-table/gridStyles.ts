@@ -42,9 +42,9 @@ export const DRAG_SOURCE_CLASS = cn(
 );
 
 /**
- * The dragged unit's floating copy, under the drop line. Unclipped: an overflow boundary would
- * unstick its pinned cells. Its body is opaque, as plain body cells are not, so the cells it passes
- * over don't show through.
+ * The dragged unit's floating copy, under the drop line. No overflow boundary, which would unstick
+ * its pinned cells: the drag cuts it at the header's foot with a clip-path instead. Its body is
+ * opaque, as plain body cells are not, so the cells it passes over don't show through.
  */
 export const DRAG_PREVIEW_CLASS =
   'pointer-events-none absolute top-0 left-0 z-4 empty:hidden shadow-[var(--shadow-dp-8,0_6px_20px_rgb(0_0_0/18%))] ring-1 ring-primary/40 [&_tbody]:bg-background';

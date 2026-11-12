@@ -34,7 +34,10 @@ export interface EdgeInsertButtonProps {
   onHoverChange?: (hovered: boolean) => void;
 }
 
-/** The hover "+" for inserting a row or column where it goes: a zone, its line, and the button. */
+/**
+ * The hover "+" for inserting a row or column where it goes: a zone, its line, and the button. It
+ * is out of the tab order, so a consumer offers keyboard users the same insert as a menu item.
+ */
 export const EdgeInsertButton = ({
   axis,
   testId,
