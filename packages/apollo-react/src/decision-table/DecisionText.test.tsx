@@ -846,6 +846,53 @@ describe('DecisionText', () => {
       expect(card('row-0')).toHaveAttribute('tabindex', '0');
       expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add rule' }));
     });
+    it('keeps focus where it is when rules arrive after an add-rule action that added none', () => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      const onAdd = vi.fn();
+      const props = { addRule: { label: 'Add rule', onAdd }, selected: null, onSelect: vi.fn() };
+      const { rerender } = render(view({ ...props, rules: [] }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
+      expect(onAdd).toHaveBeenCalledTimes(1);
+      act(() => outside.focus());
+      rerender(view({ ...props, rules: manySentenceRules(1) }));
+      expect(document.activeElement).toBe(outside);
+    });
+
+    it.each([
+      ['the empty state, adding a rule taller than the view', 0, () => [manyLinesRule(10)]],
+      ['the footer', 3, (count: number) => manySentenceRules(count + 1)],
+    ])('keeps the focused add-rule action in view after a rule it adds from %s that the host leaves unselected', (_, initialCount, added) => {
+      const AddingHost = () => {
+        const [rules, setRules] = useState<SentenceRule[]>(() => manySentenceRules(initialCount));
+        currentRules = rules;
+        return view({
+          rules,
+          selected: null,
+          onSelect: vi.fn(),
+          addRule: { label: 'Add rule', onAdd: () => setRules(added(rules.length)) },
+        });
+      };
+      let currentRules: readonly SentenceRule[] = [];
+      const bounds = HTMLElement.prototype.getBoundingClientRect;
+      const footerBounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect');
+      onTestFinished(() => footerBounds.mockRestore());
+      footerBounds.mockImplementation(function (this: HTMLElement) {
+        if (!this.hasAttribute('data-add-rule')) return bounds.call(this);
+        const listEnd = sentenceRuleOffsets(currentRules).at(-1) ?? 0;
+        const top = listEnd - (this.parentElement?.scrollTop ?? 0);
+        return { ...rect(0, 400), top, bottom: top + 48 };
+      });
+      render(<AddingHost />);
+      const frame = screen.getByTestId('nl');
+      Object.defineProperty(frame, 'clientHeight', { value: 100 });
+      const add = screen.getByRole('button', { name: 'Add rule' });
+      act(() => add.focus());
+      fireEvent.click(add);
+      const footer = screen.getByRole('button', { name: 'Add rule' });
+      expect(document.activeElement).toBe(footer);
+      expect(footer.parentElement?.getBoundingClientRect().bottom).toBeLessThanOrEqual(100);
+    });
   });
 
   describe('windowing', () => {

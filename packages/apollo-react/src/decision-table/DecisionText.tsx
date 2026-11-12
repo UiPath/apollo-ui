@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useId, useLayoutEffect, useRef } from 'react';
+import { useId } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
@@ -27,6 +27,7 @@ import type {
   SentenceSelection,
   SentenceValueId,
 } from './sentenceTypes';
+import { useAddRule } from './useAddRule';
 import { useCellHover } from './useCellHover';
 import { useColumnEditing } from './useColumnEditing';
 import { type DecisionTextContainerProps, useContainerHandlers } from './useContainerHandlers';
@@ -161,22 +162,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     edit?.editing?.rowId ?? selected?.rowId
   );
   const selectable = onSelect !== undefined;
-  const addedFromEmptyRef = useRef(false);
-  useLayoutEffect(() => {
-    if (!addedFromEmptyRef.current || rules.length === 0) return;
-    addedFromEmptyRef.current = false;
-    ruleWindow
-      .container()
-      ?.querySelector<HTMLElement>('[data-add-rule] button')
-      ?.focus({ preventScroll: true });
-  });
-  const emptyAddRule = addRule && {
-    ...addRule,
-    onAdd: () => {
-      addedFromEmptyRef.current = true;
-      addRule.onAdd();
-    },
-  };
+  const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
   const ruleMenus = useRuleMenus({
     edit,
@@ -244,7 +230,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         />
       )}
       {rules.length === 0 ? (
-        <EmptyRules title={labels.emptyRules} addRule={emptyAddRule} dataTestId={dataTestId} />
+        <EmptyRules title={labels.emptyRules} addRule={addRuleAction} dataTestId={dataTestId} />
       ) : (
         <RuleList
           ref={ruleWindow.listRef}
@@ -265,7 +251,9 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           labels={labels}
         />
       )}
-      {addRule && rules.length > 0 && <AddRuleFooter addRule={addRule} style={listStyle} />}
+      {addRuleAction && rules.length > 0 && (
+        <AddRuleFooter addRule={addRuleAction} style={listStyle} />
+      )}
       {valueEditing.editor && edit && (
         <ValueEditorOverlay
           key={valueEditing.editorKey}
