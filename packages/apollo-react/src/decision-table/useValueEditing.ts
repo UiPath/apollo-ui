@@ -66,7 +66,7 @@ interface Pressed {
 }
 
 const isStartKey = (event: React.KeyboardEvent): boolean =>
-  event.key === 'Enter' || event.key === 'F2';
+  event.key === 'Enter' || event.key === ' ' || event.key === 'F2';
 
 const isClearKey = (event: React.KeyboardEvent): boolean =>
   event.key === 'Delete' || event.key === 'Backspace';

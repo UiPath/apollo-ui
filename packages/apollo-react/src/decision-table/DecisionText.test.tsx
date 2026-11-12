@@ -1598,20 +1598,24 @@ describe('DecisionText', () => {
       expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual(['Enter', 'F2', 'Delete']);
     });
 
-    it('starts editing the first value of a selected cell on Enter or F2, never on a rule or mid-composition', () => {
+    it('starts editing the first value of a selected cell on Enter, Space or F2, never on a rule or mid-composition', () => {
       const { onStartEdit } = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
       act(() => valueChip('r2', 'age').focus());
       expect(press('Enter')).toBe(false);
       press('Escape');
+      expect(press(' ')).toBe(false);
+      press('Escape');
       expect(press('F2')).toBe(false);
-      expect(onStartEdit.mock.calls).toEqual([[r2Age(0)], [r2Age(0)]]);
+      expect(onStartEdit.mock.calls).toEqual([[r2Age(0)], [r2Age(0)], [r2Age(0)]]);
       press('Escape');
       press('Enter', { isComposing: true });
+      press(' ', { isComposing: true });
       press('Home');
       expect(focusedStop()).toBe('r2');
       press('Enter');
+      press(' ');
       press('F2');
-      expect(onStartEdit).toHaveBeenCalledTimes(2);
+      expect(onStartEdit).toHaveBeenCalledTimes(3);
     });
 
     it('opens one editor outside the card, seeded with the value, named by its cell and without axe violations', async () => {
