@@ -100,7 +100,7 @@ export const useContainerHandlers = ({
   };
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
     const claimed =
-      openDecision(event, clickedDecision(event.target)) ||
+      openDecision(event, clickedDecision(event.target, event.detail > 0)) ||
       ruleMenus.onClick(event) ||
       valueEditing.onClick(event);
     const selection = claimed ? null : clickedSelection(event.target);

@@ -77,6 +77,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
         aria-describedby={stop?.labelId}
         className={cn(tokenClass(token, output), DECISION_LINK_CLASS, stop && SELECTED_CHIP_CLASS)}
         data-selected={selected || undefined}
+        data-stop={stop && ''}
         data-rule-action="decision"
         data-decision-id={link.decisionId}
         data-kind={token.kind}
@@ -98,6 +99,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
       tabIndex={stop && (selected ? 0 : -1)}
       aria-labelledby={stop?.labelId}
       data-selected={selected || undefined}
+      data-stop={stop && ''}
       data-kind={token.kind}
       data-column-id={token.columnId}
       data-value-index={token.kind === 'value' ? token.index : undefined}

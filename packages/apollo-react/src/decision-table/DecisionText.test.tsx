@@ -3851,6 +3851,38 @@ describe('DecisionText', () => {
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
     });
 
+    it.each([
+      'selectable',
+      'editable',
+    ])('selects, and edits when editable, a linked input with no value from a pointer click in a %s view', async (mode) => {
+      const onOpenDecision = vi.fn();
+      const rules = GRID_SENTENCE_RULES.map((rule) => ({
+        ...rule,
+        lead: [
+          'when ',
+          { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
+          ' is not empty',
+        ] satisfies SentencePart[],
+      }));
+      const onStartEdit = vi.fn();
+      const edit = mode === 'editable' ? editWith({ onStartEdit }) : undefined;
+      const { onSelect } = renderSelectable({
+        rules,
+        onOpenDecision,
+        edit,
+        initial: { rowId: 'r1' },
+      });
+      const user = userEvent.setup();
+      await user.click(link('r2'));
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'income' }]]);
+      expect(onStartEdit.mock.calls).toEqual(
+        edit ? [[{ rowId: 'r2', columnId: 'income', index: 0 }]] : []
+      );
+      expect(onOpenDecision).not.toHaveBeenCalled();
+      press('Enter', { altKey: true });
+      expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
+    });
+
     it('stops on each input with no value in reading order, and opens its decision by Alt+Enter', async () => {
       const onOpenDecision = vi.fn();
       const lead = [
