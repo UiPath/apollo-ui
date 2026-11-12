@@ -246,6 +246,19 @@ describe('Wind message list', () => {
     expect(document.querySelector('[data-slot="wind-chat-messages-skeleton"]')).not.toBeNull();
   });
 
+  it('keeps the initial skeleton in the full-screen column', () => {
+    const service = createService();
+    render(<ApChat chatServiceInstance={service} />);
+
+    act(() =>
+      service.__internalService__.publish(AutopilotChatInternalEvent.ShowLoadingState, true)
+    );
+    expect(document.querySelector('[data-slot="wind-chat-messages-skeleton"]')).toHaveClass(
+      'mx-auto',
+      'max-w-[var(--chat-column-max-width)]'
+    );
+  });
+
   it('hides actions while streaming and keeps them off a lone message with disableActions', () => {
     const service = createService();
     render(<ApChat chatServiceInstance={service} />);
