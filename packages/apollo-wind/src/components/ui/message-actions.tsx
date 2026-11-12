@@ -261,12 +261,18 @@ export interface MessageActionFeedbackProps
   /** Called with the new rating. Never `null`, since a rating cannot be cleared. */
   onChange?: (value: Exclude<MessageFeedbackValue, null>) => void;
   disabled?: boolean;
+  /**
+   * Once rated, the rating is final: only the chosen thumb remains, pressed and inert. For services
+   * that record every rating, where a change would add a second one rather than replace the first.
+   */
+  locked?: boolean;
   strings?: Partial<MessageActionFeedbackStrings>;
 }
 
 // The tooltip trigger overwrites the toggle's data-state, so the pressed look keys off aria-pressed.
+// The primary stroke tells pressed from hovered, since several themes use the hover surface as accent.
 const feedbackToggleClass =
-  'size-6 min-w-6 px-0 aria-pressed:bg-accent aria-pressed:text-accent-foreground future:aria-pressed:text-foreground';
+  'size-6 min-w-6 px-0 aria-pressed:bg-accent aria-pressed:text-accent-foreground aria-pressed:hover:bg-accent aria-pressed:hover:text-accent-foreground aria-pressed:[&_svg]:stroke-primary future:aria-pressed:text-foreground future:aria-pressed:hover:text-foreground aria-disabled:cursor-default';
 
 /**
  * Thumbs up and down as two toggles, so each reports `aria-pressed`. Requires an ancestor
@@ -279,6 +285,7 @@ const MessageActionFeedback = React.forwardRef<HTMLDivElement, MessageActionFeed
       defaultValue = null,
       onChange,
       disabled,
+      locked = false,
       strings,
       className,
       'aria-label': ariaLabel,
@@ -289,9 +296,10 @@ const MessageActionFeedback = React.forwardRef<HTMLDivElement, MessageActionFeed
     const text = { ...DEFAULT_MESSAGE_ACTION_FEEDBACK_STRINGS, ...strings };
     const [uncontrolled, setUncontrolled] = React.useState<MessageFeedbackValue>(defaultValue);
     const value = valueProp === undefined ? uncontrolled : valueProp;
+    const final = locked && value !== null;
 
     const set = (next: Exclude<MessageFeedbackValue, null>) => {
-      if (next === value) return;
+      if (final || next === value) return;
       if (valueProp === undefined) setUncontrolled(next);
       onChange?.(next);
     };
@@ -299,7 +307,7 @@ const MessageActionFeedback = React.forwardRef<HTMLDivElement, MessageActionFeed
     const thumbs = [
       { rating: 'up' as const, label: text.helpful, icon: <ThumbsUp /> },
       { rating: 'down' as const, label: text.notHelpful, icon: <ThumbsDown /> },
-    ];
+    ].filter(({ rating }) => !final || rating === value);
 
     return (
       // biome-ignore lint/a11y/useSemanticElements: role="group" names the pair without fieldset chrome
@@ -309,6 +317,7 @@ const MessageActionFeedback = React.forwardRef<HTMLDivElement, MessageActionFeed
         aria-label={ariaLabel ?? text.label}
         data-slot="message-action-feedback"
         data-value={value ?? undefined}
+        data-locked={final || undefined}
         className={cn('flex items-center gap-0.5', className)}
         {...props}
       >
@@ -323,6 +332,8 @@ const MessageActionFeedback = React.forwardRef<HTMLDivElement, MessageActionFeed
                 pressed={value === rating}
                 onPressedChange={() => set(rating)}
                 disabled={disabled}
+                // Not `disabled`: that would fade the rating and drop its tooltip and focus.
+                aria-disabled={final || undefined}
               >
                 {icon}
               </Toggle>

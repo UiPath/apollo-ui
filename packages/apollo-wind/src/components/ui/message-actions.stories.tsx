@@ -139,6 +139,31 @@ export const WithFeedback: Story = {
   },
 };
 
+export const WithLockedFeedback: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With locked, a rating is final. Once given, only the chosen thumb remains, pressed and inert, and it keeps its tooltip. Use it when the service records every rating, so a change would add a second one rather than replace the first.',
+      },
+    },
+  },
+  render: function WithLockedFeedbackStory() {
+    const [value, setValue] = useState<MessageFeedbackValue>(null);
+    return (
+      <div className="flex flex-col gap-3">
+        <AssistantTurn>
+          <MessageActions>
+            <MessageActionCopy text={ANSWER} />
+            <MessageActionFeedback locked value={value} onChange={setValue} />
+          </MessageActions>
+        </AssistantTurn>
+        <p className="text-xs text-muted-foreground">Rating: {value ?? 'none'}</p>
+      </div>
+    );
+  },
+};
+
 export const WithOverflow: Story = {
   parameters: {
     docs: {
