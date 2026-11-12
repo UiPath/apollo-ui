@@ -66,7 +66,7 @@ export const PolicyPicker: React.FC<PolicyPickerProps> = ({
               <span aria-hidden>·</span>
             </>
           )}
-          <span>{picked?.label}</span>
+          <span>{picked?.label ?? value}</span>
           <ChevronDown aria-hidden />
         </Button>
       </DropdownMenuTrigger>

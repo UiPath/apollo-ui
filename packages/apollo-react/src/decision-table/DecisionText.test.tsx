@@ -2134,6 +2134,21 @@ describe('DecisionText', () => {
       expect(editor()).toBeInTheDocument();
     });
 
+    it("shows an operator the host's operators lack as it is, and keeps it offered once another is picked", async () => {
+      const user = userEvent.setup();
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({ operators: AGE_OPERATORS, operator: '!=' }),
+      });
+      expect(operatorSelect()).toHaveTextContent('!=');
+      await user.click(operatorSelect());
+      await user.click(screen.getByRole('option', { name: 'is greater than' }));
+      await user.click(operatorSelect());
+      await user.click(screen.getByRole('option', { name: '!=' }));
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '!=']]);
+    });
+
     it('commits the picked operator with the value on Enter, and moves down as before', () => {
       const { onCommit, onSelect } = renderEditing({
         initial: { rowId: 'r1', columnId: 'age' },
@@ -3657,6 +3672,7 @@ describe('DecisionText', () => {
     it.each<[string, Policy | undefined, string]>([
       ['the picked option', policyWith(), 'F·First'],
       ['a picked submenu option', policyWith({ value: 'COLLECT:MIN' }), 'C<·Minimum'],
+      ['a value no option holds as it is', policyWith({ value: 'RULE ORDER' }), 'RULE ORDER'],
       ['the plain label without a policy', undefined, 'Unique'],
     ])('shows %s in place of the label, then the hint', (_, policy, label) => {
       renderView({ header: GRID_SENTENCE_HEADER, policy });

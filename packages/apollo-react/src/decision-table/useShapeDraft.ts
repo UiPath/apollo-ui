@@ -16,6 +16,12 @@ const filled = (values: readonly string[]): string[] => [
   ...new Set(values.filter((value) => value.trim() !== '')),
 ];
 
+/** The host's operators, after the condition's own when they lack it, so it shows and stays offered. */
+const operatorsOf = ({ operators = NO_OPERATORS, operator }: ValueField) =>
+  operator === undefined || operators.length === 0 || operators.some(({ id }) => id === operator)
+    ? operators
+    : [{ id: operator, label: operator }, ...operators];
+
 const isComplete = (shape: Shape, { values }: ValueCommit, field: ValueField): boolean => {
   const [low = '', high = ''] = values;
   if (shape === 'range') {
@@ -56,7 +62,7 @@ export const useShapeDraft = (
   const [ends, setEnds] = useState(field.ends ?? BOTH_INCLUDED);
   const [entries, setEntries] = useState(() => filled(field.values ?? [value]));
   const [operator, setOperator] = useState(field.operator);
-  const operators = field.operators ?? NO_OPERATORS;
+  const operators = operatorsOf(field);
   const allowedValues = field.allowedValues ?? NO_VALUES;
   const picked = expression || operators.length === 0 ? undefined : operator;
   const shapeOf = (id: string | undefined): Shape =>
