@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.92.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.91.0...@uipath/apollo-wind@2.92.0) (2026-11-13)
+
+### Features
+
+* **apollo-wind:** let a rendered Quick Form control grow its value box [MST-18212] ([f107a80](https://github.com/UiPath/apollo-ui/commit/f107a80750b55724367045ce87df7a2998a10da9))
+
 ## [@uipath/apollo-wind-v2.91.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.90.0...@uipath/apollo-wind@2.91.0) (2026-11-12)
 
 ### Features
