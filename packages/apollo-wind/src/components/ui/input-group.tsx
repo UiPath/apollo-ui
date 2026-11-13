@@ -89,13 +89,14 @@ const inputGroupVariants = cva(
         // minimum, so a one-line editor is as tall as the fields around it.
         fill: 'h-auto min-h-9 items-stretch py-0 pl-0 pr-0 future:h-auto future:min-h-10 future:py-0 future:pl-0 future:pr-0',
       },
-      // `default` and `ghost` mirror Input's own treatment exactly. `outline` keeps its border under
-      // future, where the theme's own colour out-ranks a bare one, so its invalid colour is restated.
+      // `default` and `ghost` mirror Input's own treatment exactly. Under future `outline` draws its
+      // edge as an inset ring, as `agent` does, so the edge takes no height and the box stays as tall
+      // as the other variants. The theme's own colour out-ranks a bare one, so invalid is restated.
       variant: {
         default: 'border border-input bg-transparent future:border-0 future:bg-surface-overlay',
         ghost: 'border-0 bg-surface-overlay',
         outline:
-          'border border-input bg-transparent shadow-none future:border future:border-input future:bg-transparent future:has-[[data-slot][aria-invalid=true]]:border-error',
+          'border border-input bg-transparent shadow-none future:border-0 future:inset-ring-1 future:inset-ring-input future:bg-transparent future:has-[[data-slot][aria-invalid=true]]:inset-ring-error',
         none: 'border-0 bg-transparent shadow-none future:bg-transparent',
         // From the agent gradient tokens. Future drops the border, as `default` does, so the edge is
         // an inset ring, which the focus ring draws over rather than replaces.
@@ -135,7 +136,7 @@ const inputGroupVariants = cva(
       // for `block` too, which only skips the FOCUS ring.
       { variant: BOXED, class: 'has-[[data-slot][aria-invalid=true]]:border-error' },
       { variant: BOXED, invalid: true, class: 'border-error' },
-      { variant: 'outline', invalid: true, class: 'future:border-error' },
+      { variant: 'outline', invalid: true, class: 'future:inset-ring-error' },
       {
         variant: FILLED,
         class:

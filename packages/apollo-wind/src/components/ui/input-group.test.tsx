@@ -279,15 +279,23 @@ describe('InputGroup', () => {
       expect(group).not.toHaveClass('px-3', 'pr-3');
     });
 
+    it('draws the outline edge under future as an inset ring, which takes no height', () => {
+      render(<InputGroup data-testid="group" variant="outline" layout="grow" />);
+      const group = screen.getByTestId('group');
+      expect(group).toHaveClass(
+        'future:border-0',
+        'future:inset-ring-1',
+        'future:inset-ring-input'
+      );
+      expect(group).not.toHaveClass('future:border');
+      // No padding compensation: the growing box keeps the row's future padding.
+      expect(group).toHaveClass('future:py-2');
+    });
+
     it('draws a plain border with no fill as outline', () => {
       render(<InputGroup data-testid="group" variant="outline" />);
       const group = screen.getByTestId('group');
-      expect(group).toHaveClass(
-        'border',
-        'bg-transparent',
-        'future:border',
-        'future:bg-transparent'
-      );
+      expect(group).toHaveClass('border', 'bg-transparent', 'future:bg-transparent');
       expect(group).not.toHaveClass('future:bg-surface-overlay');
     });
   });
@@ -428,12 +436,12 @@ describe('InputGroup', () => {
       expect(screen.getByTestId('group')).toHaveClass('future:ring-1', 'future:ring-error/40');
     });
 
-    it('keeps an outline group red under future, where it keeps its border', () => {
+    it('keeps an outline group red under future, where its edge is an inset ring', () => {
       render(<InputGroup data-testid="group" variant="outline" invalid />);
       const group = screen.getByTestId('group');
-      expect(group).toHaveClass('border-error', 'future:border-error');
-      expect(group).not.toHaveClass('future:border-input');
-      expect(group).toHaveClass('future:has-[[data-slot][aria-invalid=true]]:border-error');
+      expect(group).toHaveClass('border-error', 'future:inset-ring-error');
+      expect(group).not.toHaveClass('future:inset-ring-input');
+      expect(group).toHaveClass('future:has-[[data-slot][aria-invalid=true]]:inset-ring-error');
     });
 
     it('paints no invalid edge when unboxed', () => {

@@ -88,6 +88,43 @@ describe('PromptEditor', () => {
     });
   });
 
+  describe('single-line sizing', () => {
+    it('keeps its own 36px padded box when bordered', () => {
+      render(<PromptEditor multiline={false} placeholder="Type here…" ariaLabel="Prompt" />);
+      const editor = screen.getByRole('textbox', { name: 'Prompt' });
+      expect(editor.style.padding).toBe('8px 12px');
+      expect(editor.style.height).toBe('36px');
+      expect(editor.style.maxHeight).toBe('36px');
+      const placeholder = screen.getByText('Type here…');
+      expect(placeholder.style.top).toBe('8px');
+      expect(placeholder.style.left).toBe('12px');
+      expect(placeholder.style.right).toBe('12px');
+    });
+
+    it('leaves the padding to the parent box and is one line tall when borderless', () => {
+      render(
+        <PromptEditor borderless multiline={false} placeholder="Type here…" ariaLabel="Prompt" />
+      );
+      const editor = screen.getByRole('textbox', { name: 'Prompt' });
+      expect(editor.style.padding).toBe('0px');
+      expect(editor.style.height).toBe('20px');
+      expect(editor.style.maxHeight).toBe('20px');
+      expect(editor.style.lineHeight).toBe('20px');
+      expect(editor.style.overflowY).toBe('hidden');
+      const placeholder = screen.getByText('Type here…');
+      expect(placeholder.style.top).toBe('0px');
+      expect(placeholder.style.left).toBe('0px');
+      expect(placeholder.style.right).toBe('0px');
+    });
+
+    it('keeps its padding when borderless and multiline', () => {
+      render(<PromptEditor borderless ariaLabel="Prompt" />);
+      const editor = screen.getByRole('textbox', { name: 'Prompt' });
+      expect(editor.style.padding).toBe('8px 12px');
+      expect(editor.style.minHeight).toBe('96px');
+    });
+  });
+
   describe('toolbar', () => {
     it('renders the formatting toolbar when showToolbar is set', () => {
       render(<PromptEditor showToolbar />);
