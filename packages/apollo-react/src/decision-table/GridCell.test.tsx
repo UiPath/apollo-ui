@@ -142,6 +142,49 @@ describe('GridCell', () => {
       expect(document.activeElement).toBe(outside);
     });
 
+    it.each([
+      ['while the editor stays open', false],
+      ['once focus leaves before the host closes the editor a moment later', true],
+    ])('commits nothing on a blur after Escape cancels the draft, %s', async (_, late) => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      const onCommit = vi.fn();
+      const SlowCancelCell = () => {
+        const [editing, setEditing] = useState(true);
+        return (
+          <table>
+            <tbody>
+              <tr>
+                <GridCell
+                  value="42"
+                  row={0}
+                  col={0}
+                  selected
+                  editing={editing}
+                  focusable
+                  dataTestId="cell"
+                  ariaLabel="Amount, row 1"
+                  onSelect={vi.fn()}
+                  onStartEdit={vi.fn()}
+                  onCommit={onCommit}
+                  onCancel={() => {
+                    if (late) void Promise.resolve().then(() => setEditing(false));
+                  }}
+                />
+              </tr>
+            </tbody>
+          </table>
+        );
+      };
+      render(<SlowCancelCell />);
+      const editor = screen.getByTestId('cell-editor');
+      fireEvent.change(editor, { target: { value: 'cancelled' } });
+      fireEvent.keyDown(editor, { key: 'Escape' });
+      act(() => outside.focus());
+      await act(async () => {});
+      expect(onCommit).not.toHaveBeenCalled();
+    });
+
     it('labels itself for a screen reader', () => {
       renderCell({ editing: true });
       expect(screen.getByTestId('cell-editor')).toHaveAttribute('aria-label', 'Amount, row 1');

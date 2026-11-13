@@ -28,8 +28,8 @@ export const CellTextEditor: React.FC<CellTextEditorProps> = ({
   // Set when a key commit/cancel already handled this edit session, so the
   // following native blur doesn't commit a second time.
   const settledByKeyRef = useRef(false);
-  /** What the last key-settled commit carried, so a blur can tell a stale draft from a new one. */
-  const keyCommittedValueRef = useRef<string | null>(null);
+  /** What the input held when a key settled the edit, so a blur can tell a stale draft from a new one. */
+  const keySettledValueRef = useRef<string | null>(null);
 
   const handleEditorKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     // Enter/Escape during an IME composition confirm or dismiss the composition, not the edit —
@@ -43,13 +43,14 @@ export const CellTextEditor: React.FC<CellTextEditorProps> = ({
       event.preventDefault();
       settledByKeyRef.current = true;
       onKeySettle?.(true);
-      keyCommittedValueRef.current = event.currentTarget.value;
+      keySettledValueRef.current = event.currentTarget.value;
       onCommit(event.currentTarget.value, commitMoveFor(event));
       return;
     }
     if (event.key === 'Escape') {
       settledByKeyRef.current = true;
       onKeySettle?.(true);
+      keySettledValueRef.current = event.currentTarget.value;
       onCancel();
     }
   };
@@ -66,7 +67,7 @@ export const CellTextEditor: React.FC<CellTextEditorProps> = ({
       onFocus={(event) => {
         settledByKeyRef.current = false;
         onKeySettle?.(false);
-        keyCommittedValueRef.current = null;
+        keySettledValueRef.current = null;
         // Select the existing text so typing replaces it instead of appending (e.g. a
         // default "-" would otherwise end up prefixed onto the new value).
         event.currentTarget.select();
@@ -77,10 +78,7 @@ export const CellTextEditor: React.FC<CellTextEditorProps> = ({
         // A key-settled commit already carried this text, so blurring must not send it twice.
         // A consumer that refuses the commit keeps the editor open, though, and anything typed
         // after that is a draft this blur is the last chance to keep.
-        if (
-          !settledByKeyRef.current ||
-          event.currentTarget.value !== keyCommittedValueRef.current
-        ) {
+        if (!settledByKeyRef.current || event.currentTarget.value !== keySettledValueRef.current) {
           onCommit(event.currentTarget.value, 'none');
         }
       }}
