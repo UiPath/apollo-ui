@@ -128,6 +128,12 @@ export const LINE_MARK_CLASS = 'inline-flex h-[var(--sentence-line)] shrink-0 it
 
 export const MARK_GLYPH_CLASS = 'size-3.5 forced-colors:text-[CanvasText]';
 
+export const MARK_TOOLTIP_ANCHOR_CLASS = 'pointer-events-none fixed';
+
+export const MARK_TOOLTIP_CLASS = 'max-w-[320px] data-[state=closed]:animate-none!';
+
+export const MARK_TOOLTIP_TEXT_CLASS = 'flex items-center gap-1.5 whitespace-pre-line text-xs';
+
 export const VALUE_EDITOR_CLASS =
   'absolute z-3 m-0 mt-1 w-72 min-w-0 max-w-full rounded-md border border-border-de-emp bg-popover p-3 text-sm text-popover-foreground shadow-md future:rounded-lg';
 
