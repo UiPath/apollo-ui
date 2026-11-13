@@ -1585,6 +1585,61 @@ describe('DecisionText', () => {
       expect(onSelect).not.toHaveBeenCalled();
     });
 
+    it.each([
+      ['a mouse click', ['pointerdown', 'mousedown', 'focus', 'pointerup', 'mouseup', 'click']],
+      ['a touch tap', ['pointerdown', 'pointerup', 'mousedown', 'focus', 'mouseup', 'click']],
+    ] as const)('leaves focus on the view %s on its header gives it with a stop selected', (_, order) => {
+      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const view = screen.getByTestId('nl');
+      const header = screen.getByTestId('nl-header');
+      const fire = {
+        pointerdown: () => fireEvent.pointerDown(header),
+        pointerup: () => fireEvent.pointerUp(header),
+        mousedown: () => fireEvent.mouseDown(header),
+        focus: () => act(() => view.focus()),
+        mouseup: () => fireEvent.mouseUp(header),
+        click: () => fireEvent.click(header),
+      };
+      for (const step of order) fire[step]();
+      expect(document.activeElement).toBe(view);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it.each<[string, (view: HTMLElement, header: HTMLElement) => void]>([
+      [
+        'a click on its header that moves no focus',
+        (_, header) => {
+          fireEvent.pointerDown(header);
+          fireEvent.pointerUp(header);
+          fireEvent.click(header);
+        },
+      ],
+      [
+        'a press on its header released outside the view',
+        (view, header) => {
+          fireEvent.pointerDown(header);
+          act(() => view.focus());
+          fireEvent.pointerUp(document.body);
+          fireEvent.click(document.body);
+        },
+      ],
+      [
+        'a touch on its header the browser cancels to scroll',
+        (_, header) => {
+          fireEvent.pointerDown(header);
+          fireEvent.pointerCancel(header);
+        },
+      ],
+    ])('lands Tab into the view on the selected stop after %s', async (_, gesture) => {
+      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { before } = aroundView();
+      gesture(screen.getByTestId('nl'), screen.getByTestId('nl-header'));
+      act(() => before.focus());
+      await tabs(1);
+      expect(focusedStop()).toBe('r2:age');
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
     it('lands Tab into the view on the view itself with nothing selected', async () => {
       const { onSelect } = renderSelectable({ bands: [] });
       const { before, after } = aroundView();
@@ -1703,17 +1758,20 @@ describe('DecisionText', () => {
       const onFocus = vi.fn();
       const onBlur = vi.fn();
       const onClick = vi.fn();
+      const onPointerCancel = vi.fn();
       renderSelectable({
         initial: { rowId: 'r2' },
-        containerProps: { onKeyDown, onFocus, onBlur, onClick },
+        containerProps: { onKeyDown, onFocus, onBlur, onClick, onPointerCancel },
       });
       act(() => card('r2').focus());
       press('ArrowRight');
       press('a');
       fireEvent.click(valueChip('r1', 'risk'));
       act(() => card('r1').blur());
+      fireEvent.pointerCancel(card('r1'));
       expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual(['a']);
       expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onPointerCancel).toHaveBeenCalledTimes(1);
       expect(onFocus).toHaveBeenCalled();
       expect(onBlur).toHaveBeenCalled();
     });

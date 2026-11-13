@@ -52,6 +52,7 @@ export const useContainerHandlers = ({
     onClick: consumerClick,
     onPointerDown: consumerPointerDown,
     onPointerUp: consumerPointerUp,
+    onPointerCancel: consumerPointerCancel,
     ...restContainerProps
   } = containerProps ?? {};
 
@@ -65,9 +66,12 @@ export const useContainerHandlers = ({
     consumerPointerDown?.(event);
   };
   const onPointerUp = (event: React.PointerEvent<HTMLElement>) => {
-    pressedRef.current = false;
     valueEditing.onPointerUp();
     consumerPointerUp?.(event);
+  };
+  const onPointerCancel = (event: React.PointerEvent<HTMLElement>) => {
+    pressedRef.current = false;
+    consumerPointerCancel?.(event);
   };
   const onPointerOut = (event: React.PointerEvent<HTMLElement>) => {
     const to = event.relatedTarget instanceof Node ? event.relatedTarget : null;
@@ -111,6 +115,7 @@ export const useContainerHandlers = ({
     consumerBlur?.(event);
   };
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
+    pressedRef.current = false;
     const claimed =
       openDecision(event, clickedDecision(event.target)) ||
       ruleMenus.onClick(event) ||
@@ -127,6 +132,7 @@ export const useContainerHandlers = ({
     onPointerOver,
     onPointerDown,
     onPointerUp,
+    onPointerCancel,
     onPointerOut,
     onKeyDown,
     onFocus,
