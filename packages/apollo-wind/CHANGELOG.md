@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.93.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.92.0...@uipath/apollo-wind@2.93.0) (2026-11-13)
+
+### Features
+
+* **apollo-wind:** harden DataTable and add paging, loading and strings props ([0cb8e3e](https://github.com/UiPath/apollo-ui/commit/0cb8e3eccb4d315ff44c74cca19fb1d784deff69))
+
 ## [@uipath/apollo-wind-v2.92.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.91.0...@uipath/apollo-wind@2.92.0) (2026-11-13)
 
 ### Features
