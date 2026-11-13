@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.19.0...@uipath/apollo-react@7.19.1) (2026-11-13)
+
+### Bug Fixes
+
+* **apollo-react:** copy the whole streamed reply in the Wind chat [JAR-10393] ([727f765](https://github.com/UiPath/apollo-ui/commit/727f76522e155487b64907d50dffd607ad2899e8))
+
 ## [@uipath/apollo-react-v7.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.18.0...@uipath/apollo-react@7.19.0) (2026-11-13)
 
 ### Features
