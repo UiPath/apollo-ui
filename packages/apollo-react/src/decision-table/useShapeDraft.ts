@@ -8,7 +8,7 @@ import type {
   ValueField,
   ValueOperatorOption,
   ValueShape,
-} from './ValuePopover';
+} from './valueTypes';
 
 const NO_OPERATORS: readonly ValueOperatorOption[] = [];
 

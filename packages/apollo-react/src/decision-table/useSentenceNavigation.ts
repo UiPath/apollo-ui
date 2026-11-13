@@ -1,6 +1,5 @@
 import type React from 'react';
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import type { DecisionTextProps } from './DecisionText';
 import { activeElementOf, focusStays, isFromTextField } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { firstValuesOf } from './ruleCardModel';
@@ -139,14 +138,14 @@ const movedStopOf = (
   return focusedAddRule ?? cell;
 };
 
-interface SentenceNavigationSource
+export interface SentenceNavigationSource
   extends Pick<
     RuleWindow,
     'selectedRow' | 'container' | 'firstVisibleRow' | 'scrollStopIntoView' | 'scrollRowIntoView'
   > {
   rules: readonly SentenceRule[];
   selected: SentenceSelection | null | undefined;
-  onSelect: DecisionTextProps['onSelect'];
+  onSelect: ((selection: SentenceSelection | null) => void) | undefined;
 }
 
 /** The element of a selected card that takes focus in place of its stop, e.g. one of its actions. */

@@ -11,25 +11,9 @@ import {
   MONO_CELL_TEXT_CLASS,
   OMIT_BORDER_CLASS,
 } from './gridStyles';
-import type { CellCommitMove, CellEdge } from './gridTypes';
+import type { CellCommitMove, CellEdge, GridCellEditorContext } from './gridTypes';
 import { MarkGlyph } from './MarkGlyph';
 import type { Mark } from './marks';
-
-/**
- * What a custom cell editor receives: the value to seed from and the cell's commit contract.
- * A custom editor owns its own blur/commit dedup — the cell's key-then-blur double-commit guard
- * covers only the built-in input, so a plain editor that commits on both Enter and blur would
- * land two commits (and two undo entries) per edit.
- */
-export interface GridCellEditorContext {
-  value: string;
-  /** Typing opened the editor, and the browser is about to deliver that keystroke into it. */
-  openedByTyping?: boolean;
-  ariaLabel: string;
-  onCommit: (text: string, move: CellCommitMove) => void;
-  onCancel: () => void;
-  onDraftChange?: (text: string) => void;
-}
 
 export interface GridCellProps {
   value: string;

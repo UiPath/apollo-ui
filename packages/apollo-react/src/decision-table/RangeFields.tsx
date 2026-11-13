@@ -7,9 +7,17 @@ import {
   RANGE_FIELDS_CLASS,
   RANGE_INCLUDED_CLASS,
 } from './sentenceStyles';
-import type { RangeEnds, ValuePopoverLabels } from './ValuePopover';
+import type { RangeEnds } from './valueTypes';
 
 type RangeEnd = 'low' | 'high';
+
+export interface RangeFieldsLabels {
+  /** A range's two ends, e.g. "From" and "To". */
+  rangeLow: string;
+  rangeHigh: string;
+  /** The checkbox beside each end, e.g. "Included". */
+  included: string;
+}
 
 export interface RangeFieldsProps {
   low: string;
@@ -19,7 +27,7 @@ export interface RangeFieldsProps {
   /** The end whose field takes focus on mount and back from the operator list. */
   focused: RangeEnd;
   focusRef: React.RefCallback<HTMLElement>;
-  labels: Pick<ValuePopoverLabels, 'rangeLow' | 'rangeHigh' | 'included'>;
+  labels: RangeFieldsLabels;
   keyShortcuts: string | undefined;
   /** The popover's testid; derived ids: `-low`, `-high`. */
   dataTestId: string;

@@ -1,9 +1,9 @@
 import type React from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import type { DecisionTextEdit, DecisionTextLabels, DecisionTextProps } from './DecisionText';
+import type { DecisionTextEdit } from './decisionTextTypes';
 import { activeElementOf, focusStays, hasLostFocus, onNextGesture } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
-import { cellName } from './ruleCardModel';
+import { cellName, type RuleCardLabels } from './ruleCardModel';
 import {
   bandColumnNameOf,
   cellTextOf,
@@ -29,7 +29,11 @@ import type {
 } from './sentenceTypes';
 import type { RuleMenus } from './useRuleMenus';
 import type { RuleWindow } from './useRuleWindow';
-import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
+import {
+  isIgnoredKey,
+  type SentenceNavigation,
+  type SentenceNavigationSource,
+} from './useSentenceNavigation';
 import type { OpenValueEditor } from './ValueEditorOverlay';
 
 export interface ValueEditingParams {
@@ -37,9 +41,9 @@ export interface ValueEditingParams {
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
   selected: SentenceSelection | null | undefined;
-  onSelect: DecisionTextProps['onSelect'];
+  onSelect: SentenceNavigationSource['onSelect'];
   navigation: SentenceNavigation;
-  labels: DecisionTextLabels;
+  labels: Pick<RuleCardLabels, 'cell' | 'emptyValue'>;
   container: RuleWindow['container'];
   /** Opens the menu a card action names, and returns whether it did. */
   openMenu: RuleMenus['openFor'];

@@ -45,7 +45,8 @@ import {
 import { CellTextEditor } from './CellTextEditor';
 import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
-import { DecisionText, type DecisionTextEdit, type DecisionTextProps } from './DecisionText';
+import { DecisionText, type DecisionTextProps } from './DecisionText';
+import type { DecisionTextEdit } from './decisionTextTypes';
 import type { GridMenuEntry } from './GridMenu';
 import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
@@ -59,7 +60,7 @@ import type {
   SentenceValueId,
   SentenceValueToken,
 } from './sentenceTypes';
-import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './ValuePopover';
+import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 

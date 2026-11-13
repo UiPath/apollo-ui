@@ -1,9 +1,9 @@
+import type { ConditionLineLabels } from './ConditionLine';
 import type { LineTextProps } from './LineText';
-import type { MarkBadgeProps } from './MarkBadge';
+import type { MarkBadgeLabels, MarkBadgeProps } from './MarkBadge';
 import { markIds } from './MarkBadge';
 import type { RowMark } from './marks';
 import type { RemoveConditionButtonProps } from './RemoveConditionButton';
-import type { RuleCardLabels, RuleCardProps } from './RuleCard';
 import { type LineMark, lineMarksOf, type MarkFields, unplacedColumnIds } from './sentenceMarks';
 import {
   boundedParts,
@@ -15,6 +15,23 @@ import {
 } from './sentenceParts';
 import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes';
 import type { CellStop } from './TokenChip';
+
+export interface RuleCardLabels extends MarkBadgeLabels, ConditionLineLabels {
+  /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position; without it a stop is named by its column and values. */
+  cell?: (column: string, values: string, position: number) => string;
+  /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash; without it the dash is read. */
+  emptyValue?: string;
+  /** An input's link to the decision that produces it, e.g. "Open the income decision"; without it a link is named by its input. */
+  openDecision?: (input: string) => string;
+}
+
+/** A card's remove and clear buttons' strings. */
+export interface RuleRemovalLabels {
+  /** A condition's remove action, e.g. "Remove age from rule 2". */
+  removeCondition: (column: string, position: number) => string;
+  /** An outcome's clear action, e.g. "Clear risk in rule 2"; the output stays, its value empty. */
+  clearOutcome: (column: string, position: number) => string;
+}
 
 /** The `RowMark` fields a card paints; a field added to `RowMark` fails to compile here until the card decides on it. */
 const cardMark = (mark: RowMark | undefined) =>
@@ -111,18 +128,19 @@ interface RuleRemovals {
   lines: (RemoveConditionButtonProps | null)[];
 }
 
-type RuleCardModelParams = Pick<
-  RuleCardProps,
-  | 'rule'
-  | 'position'
-  | 'numbered'
-  | 'mark'
-  | 'selectable'
-  | 'decisionLinks'
-  | 'idPrefix'
-  | 'labels'
-  | 'editLabels'
->;
+export interface RuleCardModelParams {
+  rule: SentenceRule;
+  /** 1-based, as announced and as numbered. */
+  position: number;
+  numbered: boolean;
+  mark: RowMark | undefined;
+  selectable: boolean;
+  /** Whether an input another decision produces links to that decision. */
+  decisionLinks: boolean;
+  editLabels: RuleRemovalLabels | undefined;
+  idPrefix: string;
+  labels: RuleCardLabels;
+}
 
 /** What a rule card renders, derived from its rule, its mark and its strings. */
 interface RuleCardModel

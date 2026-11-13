@@ -7,7 +7,7 @@ import type {
   SentenceRule,
   SentenceValueId,
 } from '../sentenceTypes';
-import type { RangeEnds, ValueCommit } from '../ValuePopover';
+import type { RangeEnds, ValueCommit } from '../valueTypes';
 
 /** A column of the story table, and the decision that produces it when another one does. */
 type EditableColumn = Pick<SentenceBand['columns'][number], 'id' | 'name'> &

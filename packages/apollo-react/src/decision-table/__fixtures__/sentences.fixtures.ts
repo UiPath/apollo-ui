@@ -1,5 +1,6 @@
-import type { DecisionTextEditLabels, DecisionTextLabels } from '../DecisionText';
+import type { DecisionTextLabels } from '../DecisionText';
 import type { SentenceHeader } from '../DecisionTextHeader';
+import type { DecisionTextEditLabels } from '../decisionTextTypes';
 import type { PolicyGroup } from '../PolicyPicker';
 import type {
   SentenceBand,

@@ -1,6 +1,5 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { DecisionTextProps } from './DecisionText';
 import { hasLostFocus } from './gridEvents';
 import { clickedDecision, clickedSelection, stopDecisionOf, valueTokenAt } from './sentenceTargets';
 import type { useCellHover } from './useCellHover';
@@ -18,7 +17,7 @@ export interface ContainerHandlersParams {
   navigation: SentenceNavigation;
   valueEditing: ValueEditing;
   ruleMenus: RuleMenus;
-  onOpenDecision: DecisionTextProps['onOpenDecision'];
+  onOpenDecision: ((decisionId: string) => void) | undefined;
   container: RuleWindow['container'];
   /** Whether a selected stop takes Tab into the view in place of the view itself. */
   stopTabbable: boolean;

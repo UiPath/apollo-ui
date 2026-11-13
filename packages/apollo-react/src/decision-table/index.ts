@@ -9,22 +9,12 @@ export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
-export {
-  DecisionText,
-  type DecisionTextEdit,
-  type DecisionTextEditLabels,
-  type DecisionTextLabels,
-  type DecisionTextProps,
-} from './DecisionText';
+export { DecisionText, type DecisionTextLabels, type DecisionTextProps } from './DecisionText';
 export type { SentenceHeader } from './DecisionTextHeader';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
+export type { DecisionTextEdit, DecisionTextEditLabels } from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
-export {
-  GridCell,
-  type GridCellEditorContext,
-  type GridCellProps,
-  renderRestingCellContent,
-} from './GridCell';
+export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
   GridContextMenu,
   type GridContextMenuProps,
@@ -99,4 +89,4 @@ export type {
   ValueField,
   ValueOperatorOption,
   ValueShape,
-} from './ValuePopover';
+} from './valueTypes';

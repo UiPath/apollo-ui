@@ -2,11 +2,17 @@ import { Input } from '@uipath/apollo-wind';
 import type React from 'react';
 import type { AllowedValueListProps } from './AllowedValueList';
 import { AllowedValueList } from './AllowedValueList';
-import { RangeFields } from './RangeFields';
+import { RangeFields, type RangeFieldsLabels } from './RangeFields';
 import { POPOVER_FIELD_CLASS, VALUE_POPOVER_CHOICES_CLASS } from './sentenceStyles';
 import type { ShapeDraft } from './useShapeDraft';
 import { ValueChecklist } from './ValueChecklist';
-import type { ValuePopoverLabels } from './ValuePopover';
+
+export interface ValueFieldsLabels extends RangeFieldsLabels {
+  /** A held value the allowed values leave out, as its mark is read. */
+  notAllowed: string;
+  /** The field and button that add a value to a list, e.g. "Add value". */
+  addValue: string;
+}
 
 export interface ValueFieldsProps {
   draft: ShapeDraft;
@@ -20,7 +26,7 @@ export interface ValueFieldsProps {
   onValueKeyDown: React.KeyboardEventHandler<HTMLElement>;
   focusRef: React.RefCallback<HTMLElement>;
   keyShortcuts: string | undefined;
-  labels: ValuePopoverLabels;
+  labels: ValueFieldsLabels;
   /** The popover's testid; derived ids: `-low`, `-high`, `-add`. */
   dataTestId: string;
 }

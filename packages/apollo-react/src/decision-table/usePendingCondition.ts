@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { DecisionTextEdit } from './DecisionText';
+import type { DecisionTextEdit } from './decisionTextTypes';
 import { bandColumnNameOf, hasStop } from './sentenceParts';
 import type { SentenceBand, SentenceRule, SentenceValueId } from './sentenceTypes';
 import { valueKey } from './useValueEditing';

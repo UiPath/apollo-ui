@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { DecisionTextEdit } from './DecisionText';
+import type { DecisionTextEdit } from './decisionTextTypes';
 import type { GridContextMenuProps, GridContextMenuState, GridMenuEntry } from './GridMenu';
 import type { OpenRuleMenu } from './RuleList';
 import { clickedAction, type RuleAction } from './sentenceTargets';

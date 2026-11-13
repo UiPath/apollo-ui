@@ -1,10 +1,8 @@
 import { memo } from 'react';
-import { ConditionLine, type ConditionLineLabels } from './ConditionLine';
-import type { MarkBadgeLabels } from './MarkBadge';
-import type { RowMark } from './marks';
+import { ConditionLine } from './ConditionLine';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
 import { RuleLine } from './RuleLine';
-import { ruleCardModel } from './ruleCardModel';
+import { type RuleCardModelParams, type RuleRemovalLabels, ruleCardModel } from './ruleCardModel';
 import { StopLabels } from './StopLabels';
 import {
   HEADING_ACTIONS_SPACE_CLASS,
@@ -14,46 +12,21 @@ import {
   RULE_CARD_CLASS,
 } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
-import type { SentenceRule } from './sentenceTypes';
-
-export interface RuleCardLabels extends MarkBadgeLabels, ConditionLineLabels {
-  /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position; without it a stop is named by its column and values. */
-  cell?: (column: string, values: string, position: number) => string;
-  /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash; without it the dash is read. */
-  emptyValue?: string;
-  /** An input's link to the decision that produces it, e.g. "Open the income decision"; without it a link is named by its input. */
-  openDecision?: (input: string) => string;
-}
 
 /** A card's editing strings: its actions', and its remove and clear buttons'. */
-export interface RuleCardEditLabels extends RuleActionsLabels {
-  /** A condition's remove action, e.g. "Remove age from rule 2". */
-  removeCondition: (column: string, position: number) => string;
-  /** An outcome's clear action, e.g. "Clear risk in rule 2"; the output stays, its value empty. */
-  clearOutcome: (column: string, position: number) => string;
-}
+export interface RuleCardEditLabels extends RuleActionsLabels, RuleRemovalLabels {}
 
-export interface RuleCardProps {
-  rule: SentenceRule;
-  /** 1-based, as announced and as numbered. */
-  position: number;
+export interface RuleCardProps extends RuleCardModelParams {
   setSize: number;
-  numbered: boolean;
-  mark: RowMark | undefined;
   /** The selected cell, null when the rule is selected, undefined when the row is not. */
   selectedColumnId: string | null | undefined;
-  selectable: boolean;
-  /** Whether an input another decision produces links to that decision. */
-  decisionLinks: boolean;
   /** The editing strings, or undefined for a read-only card. */
   editLabels: RuleCardEditLabels | undefined;
   /** The card's menu that is open, if any. */
   openMenu: RuleMenuKind | undefined;
   /** The line of the condition the open editor adds, if any. */
   pendingColumnId: string | undefined;
-  idPrefix: string;
   dataTestId: string;
-  labels: RuleCardLabels;
 }
 
 /** One rule as a sentence: its heading, its lead and its condition lines. */

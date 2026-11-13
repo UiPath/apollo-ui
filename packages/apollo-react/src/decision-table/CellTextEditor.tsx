@@ -1,8 +1,8 @@
 import type React from 'react';
 import { useRef } from 'react';
-import type { GridCellEditorContext } from './GridCell';
 import { commitMoveFor } from './gridEvents';
 import { CELL_EDITOR_CLASS } from './gridStyles';
+import type { GridCellEditorContext } from './gridTypes';
 
 export interface CellTextEditorProps
   extends Pick<

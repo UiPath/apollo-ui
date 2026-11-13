@@ -37,7 +37,8 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import { CellTextEditor } from './CellTextEditor';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
-import { DecisionText, type DecisionTextEdit, type DecisionTextProps } from './DecisionText';
+import { DecisionText, type DecisionTextProps } from './DecisionText';
+import type { DecisionTextEdit } from './decisionTextTypes';
 import type { GridMenuEntry } from './GridMenu';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { pickedOption } from './PolicyOptionItem';
@@ -53,7 +54,7 @@ import type {
   SentenceValueId,
   SentenceValueToken,
 } from './sentenceTypes';
-import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './ValuePopover';
+import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './valueTypes';
 
 const selectionText = (selection: SentenceSelection | null) =>
   selection ? [selection.rowId, selection.columnId ?? 'rule'].join(' / ') : 'none';

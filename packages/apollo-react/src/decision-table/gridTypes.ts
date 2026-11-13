@@ -3,6 +3,22 @@ import type React from 'react';
 /** Where the selection goes once an edit commits: Enter goes down, Tab right, Shift+Tab left. */
 export type CellCommitMove = 'down' | 'right' | 'left' | 'none';
 
+/**
+ * What a custom cell editor receives: the value to seed from and the cell's commit contract.
+ * A custom editor owns its own blur/commit dedup — the cell's key-then-blur double-commit guard
+ * covers only the built-in input, so a plain editor that commits on both Enter and blur would
+ * land two commits (and two undo entries) per edit.
+ */
+export interface GridCellEditorContext {
+  value: string;
+  /** Typing opened the editor, and the browser is about to deliver that keystroke into it. */
+  openedByTyping?: boolean;
+  ariaLabel: string;
+  onCommit: (text: string, move: CellCommitMove) => void;
+  onCancel: () => void;
+  onDraftChange?: (text: string) => void;
+}
+
 /** A cell edge, for the borders a band's body cells opt out of. */
 export type CellEdge = 'top' | 'right' | 'bottom' | 'left';
 
