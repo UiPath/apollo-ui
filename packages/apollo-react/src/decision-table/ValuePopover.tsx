@@ -1,9 +1,10 @@
 import { Braces } from 'lucide-react';
 import type React from 'react';
-import { useId, useRef, useState } from 'react';
-import { activeElementOf, commitMoveFor, isComposing, isInList } from './gridEvents';
+import { useEffect, useId, useRef, useState } from 'react';
+import { activeElementOf, isComposing, isInList } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
+import { moveFocusIn } from './popoverFocus';
 import { PopoverHeader } from './PopoverHeader';
 import { PopoverSelect } from './PopoverSelect';
 import { POPOVER_CLASS, POPOVER_ERROR_CLASS } from './sentenceStyles';
@@ -60,18 +61,8 @@ const OPERATOR_SHORTCUTS = 'Alt+ArrowDown Alt+ArrowUp';
 
 const isListKey = (key: string): boolean => key === 'ArrowDown' || key === 'ArrowUp';
 
-/** A range's or list's fields that Tab stops on, so Tab past the last or Shift+Tab before the first applies and moves. */
-const FIELD_STOPS = 'input:not([tabindex="-1"]), [role="checkbox"]';
-
 const staysInside = (event: React.FocusEvent<HTMLElement>): boolean =>
   event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget);
-
-const leavesFields = (event: React.KeyboardEvent<HTMLElement>): boolean => {
-  if (event.key === 'Enter') return true;
-  if (event.key !== 'Tab') return false;
-  const stops = [...event.currentTarget.querySelectorAll<HTMLElement>(FIELD_STOPS)];
-  return event.target === (event.shiftKey ? stops[0] : stops.at(-1));
-};
 
 /** The footer's links: Edit expression while the popover's own fields show, and an outcome's Clear. */
 const footerLinks = (
@@ -95,7 +86,7 @@ const footerLinks = (
     : []),
 ];
 
-/** One condition's or outcome's editor: its column, its operator, its value, range or list, and the actions that settle it. Enter applies and moves down; Tab and Shift+Tab apply and move from its last and first field; Escape cancels; focus leaving the popover applies in place. An expression applied as it opened applies the popover's draft, unless the fields changed from the condition the host's expression words. */
+/** One condition's or outcome's editor: its column, its operator, its value, range or list, and the actions that settle it. Enter applies and moves down; Tab and Shift+Tab move through its controls without leaving it; Escape cancels; focus leaving the popover applies in place. An expression applied as it opened applies the popover's draft, unless the fields changed from the condition the host's expression words. */
 export const ValuePopover: React.FC<ValuePopoverProps> = ({
   target,
   value,
@@ -169,24 +160,30 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   };
 
   const onFieldKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (isComposing(event) || (event.key !== 'Enter' && event.key !== 'Tab')) return;
-    if (event.key === 'Enter' || problem === null) event.preventDefault();
-    settle(commitMoveFor(event));
+    if (isComposing(event) || event.key !== 'Enter') return;
+    event.preventDefault();
+    settle('down');
   };
   const onValueKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (!openOperators(event)) onFieldKeyDown(event);
   };
   const onFieldsKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (isComposing(event) || openOperators(event) || !leavesFields(event)) return;
-    if (event.key === 'Enter' || problem === null) event.preventDefault();
-    settle(commitMoveFor(event));
+    if (isComposing(event) || openOperators(event) || event.key !== 'Enter') return;
+    event.preventDefault();
+    settle('down');
   };
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Escape' && !isComposing(event) && !isInList(event.target)) cancel();
   };
-  const onBlurCapture = (event: React.FocusEvent<HTMLElement>) => {
-    blurStaysRef.current = staysInside(event);
-  };
+  useEffect(() => {
+    if (!root) return;
+    const blurring = (event: FocusEvent) => {
+      blurStaysRef.current =
+        event.relatedTarget instanceof Node && root.contains(event.relatedTarget);
+    };
+    root.addEventListener('blur', blurring, true);
+    return () => root.removeEventListener('blur', blurring, true);
+  }, [root]);
   const onBlur = (event: React.FocusEvent<HTMLElement>) => {
     blurStaysRef.current = false;
     if (staysInside(event)) return;
@@ -199,7 +196,10 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const commitExpression = (next: string, move: CellCommitMove) => {
     if (move === 'none' && settledRef.current === 'cancelled') return;
     changeDraft(next);
-    if (move !== 'none' || !blurStaysRef.current) settle(move);
+    const from = root && activeElementOf(root);
+    if (move === 'left' || move === 'right') {
+      if (root && from) moveFocusIn(root, from, move === 'left');
+    } else if (move !== 'none' || !blurStaysRef.current) settle(move);
   };
   const editExpression =
     renderEditor && (field.expression !== undefined || operators.length === 0)
@@ -212,13 +212,7 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
       : undefined;
 
   return (
-    <div
-      ref={setRoot}
-      className={POPOVER_CLASS}
-      onKeyDown={onKeyDown}
-      onBlurCapture={onBlurCapture}
-      onBlur={onBlur}
-    >
+    <div ref={setRoot} className={POPOVER_CLASS} onKeyDown={onKeyDown} onBlur={onBlur}>
       <PopoverHeader icon={field.icon} column={column} />
       {expression && renderEditor ? (
         <div data-owns-presses>
