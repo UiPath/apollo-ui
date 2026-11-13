@@ -1,7 +1,8 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
-import { isFromTextField } from './gridEvents';
+import { isComposing, isFromTextField } from './gridEvents';
+import { moveFocusIn, stopAfter } from './popoverFocus';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
 
@@ -19,6 +20,15 @@ const overlayStyle = ({ top, left }: EditorPlacement): EditorOverlayStyle => ({
 const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation();
 
 const PRESSED_CONTROL = 'label, button:not(:disabled), [role="checkbox"], [role="radio"]';
+
+/** Keeps Tab inside: Tab past the last control or Shift+Tab before the first wraps to the other end. */
+const wrapTab = (event: React.KeyboardEvent<HTMLElement>) => {
+  if (event.key !== 'Tab' || event.defaultPrevented || isComposing(event)) return;
+  const { currentTarget, target, shiftKey } = event;
+  if (!(target instanceof Element) || stopAfter(currentTarget, target, shiftKey)) return;
+  event.preventDefault();
+  moveFocusIn(currentTarget, target, shiftKey);
+};
 
 const OWN_FOCUS_CONTROL =
   'select, a[href], [tabindex], [contenteditable]:not([contenteditable="false"])';
@@ -106,6 +116,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
       style={overlayStyle(placement ?? UNPLACED)}
       data-testid={dataTestId}
       onMouseDown={focusPressedControl}
+      onKeyDown={wrapTab}
       onClick={stopPropagation}
     >
       {placement && children}

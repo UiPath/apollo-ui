@@ -90,8 +90,6 @@ export const columnTitle = (
   labels: ColumnPopoverLabels
 ): string => (kind === 'input' ? labels.inputColumn(name) : labels.outputColumn(name));
 
-const FOCUSABLE = 'input:not(:disabled), button:not(:disabled)';
-
 /** The fields a draft changed from the column's, trimmed. */
 const changeOf = (field: ColumnField, draft: Required<ColumnChange>): ColumnChange => {
   const change: ColumnChange = {};
@@ -139,18 +137,9 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
     if (!missing && !missingLabel) onApply(changeOf(field, draft));
   };
 
-  const trapTab = (event: React.KeyboardEvent<HTMLElement>) => {
-    const focusables = [...(root?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])];
-    const edge = event.shiftKey ? focusables[0] : focusables.at(-1);
-    const wrapTo = event.shiftKey ? focusables.at(-1) : focusables[0];
-    if (event.target !== edge || !wrapTo) return;
-    event.preventDefault();
-    wrapTo.focus();
-  };
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (isComposing(event)) return;
-    if (event.key === 'Tab') trapTab(event);
-    else if (event.key === 'Escape' && !isInList(event.target)) onCancel();
+    if (event.key === 'Escape' && !isInList(event.target)) onCancel();
     else if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
       event.preventDefault();
       apply();
