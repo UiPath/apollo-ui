@@ -1,3 +1,9 @@
+## [@uipath/apollo-vertex-v2.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.8.0...@uipath/apollo-vertex@2.8.1) (2026-11-13)
+
+### Bug Fixes
+
+* **apollo-vertex:** raise status colour contrast to WCAG AA ([a174e70](https://github.com/UiPath/apollo-ui/commit/a174e705adcc3c7549bce17525c1d76754e0e0ab))
+
 ## [@uipath/apollo-vertex-v2.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.7.0...@uipath/apollo-vertex@2.8.0) (2026-11-12)
 
 ### Features
