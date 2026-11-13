@@ -1,5 +1,5 @@
 import { EdgeLabelRenderer } from '@uipath/apollo-react/canvas/xyflow/react';
-import { type MouseEventHandler, memo, useMemo } from 'react';
+import { type CSSProperties, type MouseEventHandler, memo, useMemo } from 'react';
 import { CanvasTooltip } from '../../../CanvasTooltip';
 
 export type EdgeLabelProps = {
@@ -14,14 +14,67 @@ export type EdgeLabelProps = {
 
 // Falls back to core color tokens when canvas-specific tokens are unavailable,
 // such as in a host that doesn't import canvas/styles/variables.css.
-const EDGE_LABEL_BASE_CLASS =
-  'react-flow__edge-label nodrag nopan absolute top-0 left-0 max-w-48 overflow-hidden text-ellipsis ' +
-  'whitespace-nowrap pointer-events-auto cursor-default ' +
+// Truncation lives on the pill, so callers that own their positioning clip the same way.
+const EDGE_LABEL_VISUAL_CLASS =
+  'react-flow__edge-label nodrag nopan whitespace-nowrap max-w-48 overflow-hidden text-ellipsis ' +
   'px-2 py-1 rounded text-xs font-medium border shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] ' +
   'text-[var(--canvas-foreground,var(--color-foreground))] ' +
   'bg-[var(--canvas-background,var(--color-background))]';
 
 export const EDGE_LABEL_DEFAULT_BORDER_COLOR = 'var(--canvas-border,var(--color-border))';
+
+const EDGE_LABEL_PILL_CLASS = `${EDGE_LABEL_VISUAL_CLASS} border-[var(--canvas-border,var(--color-border))]`;
+const EDGE_LABEL_PILL_SELECTED_CLASS = `${EDGE_LABEL_VISUAL_CLASS} border-[var(--canvas-primary,var(--color-primary))]`;
+const EDGE_LABEL_TOOLTIP_CLASS = ' pointer-events-auto cursor-default';
+
+export type EdgeLabelContentProps = Pick<
+  EdgeLabelProps,
+  'text' | 'onClick' | 'onMouseEnter' | 'onMouseLeave'
+> & {
+  selected?: boolean;
+  /**
+   * Full-text tooltip when truncated. Opts the pill into pointer events, so leave
+   * it off when the pill must stay click-through.
+   */
+  tooltip?: boolean;
+  /** Positioning classes from a caller that owns the pill's placement. */
+  className?: string;
+  style?: CSSProperties;
+};
+
+/** The label pill. `EdgeLabel` positions it on the path; a branch header positions it on a row. */
+export function EdgeLabelContent({
+  text,
+  selected,
+  tooltip,
+  className,
+  style,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}: EdgeLabelContentProps) {
+  const pillClass =
+    (selected ? EDGE_LABEL_PILL_SELECTED_CLASS : EDGE_LABEL_PILL_CLASS) +
+    (tooltip ? EDGE_LABEL_TOOLTIP_CLASS : '') +
+    (className ? ` ${className}` : '');
+  const pill = (
+    <div
+      className={pillClass}
+      style={style}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {text}
+    </div>
+  );
+  if (!tooltip) return pill;
+  return (
+    <CanvasTooltip content={text} smartTooltip delay disableHoverableContent>
+      {pill}
+    </CanvasTooltip>
+  );
+}
 
 /**
  * Portals into xyflow's `edgelabel-renderer` div, which is a DOM sibling that
@@ -43,21 +96,22 @@ export const EdgeLabel = memo(function EdgeLabel({
   onMouseEnter,
   onMouseLeave,
 }: EdgeLabelProps) {
-  const transform = useMemo(() => `translate(-50%, -50%) translate(${x}px, ${y}px)`, [x, y]);
+  const style = useMemo(
+    () => ({ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`, borderColor }),
+    [x, y, borderColor]
+  );
 
   return (
     <EdgeLabelRenderer>
-      <CanvasTooltip content={text} smartTooltip delay disableHoverableContent>
-        <div
-          className={EDGE_LABEL_BASE_CLASS}
-          style={{ transform, borderColor }}
-          onClick={onClick}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-        >
-          {text}
-        </div>
-      </CanvasTooltip>
+      <EdgeLabelContent
+        text={text}
+        tooltip
+        className="absolute top-0 left-0"
+        style={style}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      />
     </EdgeLabelRenderer>
   );
 });
