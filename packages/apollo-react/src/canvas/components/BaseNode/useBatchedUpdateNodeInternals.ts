@@ -5,7 +5,7 @@ type StoreGetState = ReturnType<typeof useStoreApi>['getState'];
 
 const pendingIdsByStore = new WeakMap<StoreGetState, Set<string>>();
 
-/** `useUpdateNodeInternals`, but calls in the same task reach each React Flow store as one update. */
+/** `useUpdateNodeInternals`, but calls in the same synchronous run reach each React Flow store as one update. */
 export function useBatchedUpdateNodeInternals(): (id: string) => void {
   const { getState } = useStoreApi();
   const updateNodeInternals = useUpdateNodeInternals();
