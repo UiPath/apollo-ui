@@ -10,6 +10,7 @@ import {
   cellTextOf,
   columnNameOf,
   hasStop,
+  isOutcome,
   tokenText,
   valueTokenOf,
 } from './sentenceParts';
@@ -35,7 +36,7 @@ import {
   type SentenceNavigation,
   type SentenceNavigationSource,
 } from './useSentenceNavigation';
-import type { SentenceEditorContext } from './valueTypes';
+import type { OpenValueEditor } from './ValueEditorOverlay';
 
 export interface ValueEditingParams {
   edit: DecisionTextEdit | undefined;
@@ -60,6 +61,10 @@ interface PendingSettle {
   move: CellCommitMove | 'cancel';
   /** The rules as they were when it settled, before the host applied the edit. */
   rules: readonly SentenceRule[];
+  /** Whether focus was in the editor, so settling in place returns it to the value. */
+  refocus: boolean;
+  /** Whether the editor edited all the condition's values, so Tab leaves the cell instead of opening its next value. */
+  whole: boolean;
   /** Where focus was when it settled, so a close that finds focus moved elsewhere leaves it there. */
   focused: Element | null;
 }
@@ -72,8 +77,8 @@ interface PendingRefocus {
 }
 
 export interface ValueEditing {
-  /** The open editor's context, or null when no value is being edited. */
-  editor: SentenceEditorContext | null;
+  /** The open value's editor, or null when no value is being edited. */
+  editor: OpenValueEditor | null;
   /** Identifies the edited value, so each value mounts its own editor. */
   editorKey: string | undefined;
   /** Handles an editing or clearing key on a stop, and returns whether it did. */
@@ -112,7 +117,7 @@ const isStartKey = (event: React.KeyboardEvent): boolean =>
 const isClearKey = (event: React.KeyboardEvent): boolean =>
   event.key === 'Delete' || event.key === 'Backspace';
 
-const valueKey = ({ rowId, columnId, index }: SentenceValueId): string =>
+export const valueKey = ({ rowId, columnId, index }: SentenceValueId): string =>
   JSON.stringify([rowId, columnId, index]);
 
 const pressTargetOf = (target: EventTarget | null): PressTarget | null => {
@@ -184,37 +189,54 @@ export const useValueEditing = ({
     edit.onStartEdit(value);
   };
 
-  const editorOf = (): SentenceEditorContext | null => {
+  const editorOf = (): OpenValueEditor | null => {
     if (!edit || !target || !rule) return null;
     const token = valueTokenOf(rule, target);
     const column = columnNameOf(rule, target.columnId) || bandColumnNameOf(bands, target.columnId);
+    const field = edit.valueField?.(target) ?? {};
+    const held = hasStop(rule, target.columnId);
+    const cancel = () => {
+      awaitHost({ from: target, move: 'cancel', rules, refocus: true, whole: false });
+      edit.onCancel();
+    };
     return {
       target,
       value: token?.text ?? '',
-      ariaLabel: hasStop(rule, target.columnId)
+      ariaLabel: held
         ? cellName(labels, column, token ? tokenText(token, labels.emptyValue) : '', row + 1)
         : edit.labels.newCondition(column, row + 1),
-      onCommit: (text, move) => {
-        awaitHost({ from: target, move, rules });
-        edit.onCommit(target, text, move);
+      column,
+      field,
+      adds: !held,
+      onCommit: (commit, move, refocus) => {
+        const whole =
+          commit.kind === 'expression' || field.values !== undefined || commit.values.length > 1;
+        awaitHost({ from: target, move, rules, refocus, whole });
+        edit.onCommit(target, commit, move);
       },
-      onCancel: () => {
-        awaitHost({ from: target, move: 'cancel', rules });
-        edit.onCancel();
-      },
+      onCancel: cancel,
+      onClear:
+        token?.text && isOutcome(rule, target.columnId)
+          ? () => clear({ rowId: target.rowId, columnId: target.columnId }, true, true)
+          : undefined,
     };
   };
 
-  const resolve = ({ from, move, rules: before }: PendingSettle) => {
+  const resolve = ({ from, move, rules: before, refocus, whole }: PendingSettle) => {
     const cell = { rowId: from.rowId, columnId: from.columnId };
     const rowRule = rules.find((candidate) => candidate.rowId === from.rowId);
-    if (move === 'cancel') {
+    if (move === 'cancel' || (move === 'none' && refocus)) {
       if (hasStop(rowRule, cell.columnId)) navigation.select(cell);
       else navigation.select({ rowId: from.rowId }, addConditionOf);
       return;
     }
     const sibling = { ...from, index: from.index + (move === 'left' ? -1 : 1) };
-    if ((move === 'left' || move === 'right') && rowRule && valueTokenOf(rowRule, sibling)) {
+    if (
+      (move === 'left' || move === 'right') &&
+      !whole &&
+      rowRule &&
+      valueTokenOf(rowRule, sibling)
+    ) {
       start(sibling);
       return;
     }

@@ -11,17 +11,29 @@ export interface BandListProps {
   /** Prefix of its columns' badge ids, each followed by the column's index. */
   badgeIdPrefix: string;
   labels: BandColumnProps['labels'];
+  onToggleColumn: BandColumnProps['onToggle'];
+  /** The column whose popover is open, or null. */
+  openColumnId: string | null;
+  editorId: string;
 }
 
-/** A band's columns on one line, a tab stop while they overflow it so the keyboard can scroll it. */
-export const BandList: React.FC<BandListProps> = ({ band, marks, badgeIdPrefix, labels }) => {
+/** A band's columns on one line, a tab stop while they overflow it and are no buttons, so the keyboard can scroll it. */
+export const BandList: React.FC<BandListProps> = ({
+  band,
+  marks,
+  badgeIdPrefix,
+  labels,
+  onToggleColumn,
+  openColumnId,
+  editorId,
+}) => {
   const { ref, overflows } = useHorizontalOverflow<HTMLUListElement>();
   return (
     <ul
       ref={ref}
       className={BAND_COLUMNS_CLASS}
       aria-label={band.label}
-      tabIndex={overflows ? 0 : undefined}
+      tabIndex={overflows && !onToggleColumn ? 0 : undefined}
     >
       {band.columns.map((column, columnIndex) => (
         <BandColumn
@@ -30,6 +42,8 @@ export const BandList: React.FC<BandListProps> = ({ band, marks, badgeIdPrefix, 
           mark={marks.get(column.id)}
           badgeId={`${badgeIdPrefix}-${columnIndex}`}
           labels={labels}
+          onToggle={onToggleColumn}
+          editorId={column.id === openColumnId ? editorId : undefined}
         />
       ))}
     </ul>

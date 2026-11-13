@@ -4,7 +4,8 @@ import type { SentenceListStyle } from './sentenceRuleHeights';
 import { BAND_CAPTION_CLASS, DECISION_TEXT_BANDS_CLASS } from './sentenceStyles';
 import type { SentenceBand } from './sentenceTypes';
 
-export interface SentenceBandsProps extends Pick<BandListProps, 'marks' | 'labels'> {
+export interface SentenceBandsProps
+  extends Pick<BandListProps, 'marks' | 'labels' | 'onToggleColumn' | 'openColumnId' | 'editorId'> {
   bands: readonly SentenceBand[];
   style: SentenceListStyle;
   idPrefix: string;
@@ -19,6 +20,9 @@ export const SentenceBands: React.FC<SentenceBandsProps> = ({
   idPrefix,
   dataTestId,
   labels,
+  onToggleColumn,
+  openColumnId,
+  editorId,
 }) => (
   <div className={DECISION_TEXT_BANDS_CLASS} style={style} data-testid={`${dataTestId}-bands`}>
     {bands.map((band, bandIndex) => (
@@ -31,6 +35,9 @@ export const SentenceBands: React.FC<SentenceBandsProps> = ({
           marks={marks}
           badgeIdPrefix={`${idPrefix}-band-${bandIndex}`}
           labels={labels}
+          onToggleColumn={onToggleColumn}
+          openColumnId={openColumnId}
+          editorId={editorId}
         />
       </div>
     ))}
