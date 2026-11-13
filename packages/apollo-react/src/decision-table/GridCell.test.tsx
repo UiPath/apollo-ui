@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { onTestFinished, vi } from 'vitest';
 import { GridCell, type GridCellProps } from './GridCell';
 
 const renderCell = (props: Partial<GridCellProps> = {}) => {
@@ -30,6 +31,33 @@ const renderCell = (props: Partial<GridCellProps> = {}) => {
     </table>
   );
   return handlers;
+};
+
+const EditingCell = () => {
+  const [editing, setEditing] = useState(true);
+  const settle = () => setEditing(false);
+  return (
+    <table>
+      <tbody>
+        <tr>
+          <GridCell
+            value="42"
+            row={0}
+            col={0}
+            selected
+            editing={editing}
+            focusable
+            dataTestId="cell"
+            ariaLabel="Amount, row 1"
+            onSelect={vi.fn()}
+            onStartEdit={vi.fn()}
+            onCommit={settle}
+            onCancel={settle}
+          />
+        </tr>
+      </tbody>
+    </table>
+  );
 };
 
 describe('GridCell', () => {
@@ -92,6 +120,26 @@ describe('GridCell', () => {
 
       fireEvent.keyDown(editor, { key: 'Enter' });
       expect(onCommit).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      'Enter',
+      'Tab',
+      'Escape',
+    ])('returns focus to the cell once %s settles the edit', (key) => {
+      render(<EditingCell />);
+      fireEvent.keyDown(screen.getByTestId('cell-editor'), { key });
+      expect(screen.queryByTestId('cell-editor')).toBeNull();
+      expect(document.activeElement).toBe(screen.getByTestId('cell'));
+    });
+
+    it('leaves focus where it went once a blur settles the edit', () => {
+      const outside = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => outside.remove());
+      render(<EditingCell />);
+      act(() => outside.focus());
+      expect(screen.queryByTestId('cell-editor')).toBeNull();
+      expect(document.activeElement).toBe(outside);
     });
 
     it('labels itself for a screen reader', () => {
