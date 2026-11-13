@@ -1,9 +1,9 @@
 import { type ReactFlowState, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
+import { useBatchedUpdateNodeInternals } from '../../hooks/useBatchedUpdateNodeInternals';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { type ContainerResizeMinimums, getContainerResizeMinimums } from '../../utils/container';
-import { useBatchedUpdateNodeInternals } from '../BaseNode/useBatchedUpdateNodeInternals';
 import { DEFAULT_RESIZE_MINIMUMS } from './ContainerNode.constants';
 import type { ContainerHandleGroup } from './ContainerNode.helpers';
 
