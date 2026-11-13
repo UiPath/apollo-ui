@@ -62,10 +62,26 @@ export function useChatMessages() {
       }
     };
 
+    // Chunks don't update the transcript (the streamed text lives in the message's own state), so
+    // once a stream ends, take the finished message from the service. Otherwise the transcript
+    // keeps the first chunk, and so does anything computed from it, like the copy text.
+    const settleStream = (chunk: AutopilotChatMessage) => {
+      if (!chunk.done) {
+        return;
+      }
+
+      const settled = chatService.getConversation?.().find((item) => item.id === chunk.id);
+
+      if (settled) {
+        upsert({ ...settled });
+      }
+    };
+
     const unsubscribes = [
       // An interceptor, so the user's message shows without waiting for the host to confirm it.
       chatService.intercept(AutopilotChatInterceptableEvent.Request, upsert),
       chatService.on(AutopilotChatEvent.Response, upsert),
+      chatService.on(AutopilotChatEvent.SendChunk, settleStream),
       chatService.on(AutopilotChatEvent.NewChat, () => setMessages([])),
       chatService.on(AutopilotChatEvent.SetConversation, (conversation: AutopilotChatMessage[]) =>
         setMessages(withoutFakeStream(conversation))

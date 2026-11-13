@@ -274,6 +274,27 @@ describe('Wind message list', () => {
     expect(quiet.querySelector('[data-slot="message-actions"]')).toBeNull();
   });
 
+  it('copies the whole reply streamed as content-part chunks, not just its first chunk', async () => {
+    const service = createService();
+    render(<ApChat chatServiceInstance={service} />);
+    act(() => {
+      service.sendResponse(reply({ id: 's1', contentPartChunk: { index: 0, text: '#' } }));
+      service.sendResponse(reply({ id: 's1', contentPartChunk: { index: 0, text: ' Title\n\n' } }));
+      service.sendResponse(
+        reply({ id: 's1', contentPartChunk: { index: 0, text: '**Bold** body' }, done: true })
+      );
+    });
+    const message = document.querySelector('[data-chat-message-id="s1"]') as HTMLElement;
+
+    await userEvent.click(await within(message).findByRole('button', { name: 'Copy' }));
+
+    expect(await within(message).findByRole('button', { name: 'Copied' })).toBeInTheDocument();
+    expect(writeText.mock.calls).toEqual([
+      ['# Title\n\n**Bold** body'],
+      ['# Title\n\n**Bold** body'],
+    ]);
+  });
+
   it('publishes copy and feedback, and keeps only the chosen thumb, pressed and inert, by default', async () => {
     const service = createService();
     const events: Array<[string, unknown]> = [];
