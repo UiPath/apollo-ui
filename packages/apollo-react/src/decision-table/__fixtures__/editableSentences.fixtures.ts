@@ -7,17 +7,19 @@ import type {
   SentenceRule,
   SentenceValueId,
 } from '../sentenceTypes';
+import type { RangeEnds, ValueCommit } from '../valueTypes';
 
 /** A column of the story table, and the decision that produces it when another one does. */
 type EditableColumn = Pick<SentenceBand['columns'][number], 'id' | 'name'> &
   Pick<SentenceNameToken, 'decisionId'>;
 
-/** One condition of a rule: its input, its operator words, its values and what joins them. */
+/** One condition of a rule: its input, its operator words, its values, what joins them, and a range's ends. */
 interface EditableCondition {
   inputId: string;
   operator: string;
   values: string[];
   joiner: string;
+  ends?: RangeEnds;
 }
 
 /** One rule of the story table: its outcome per output and its conditions. */
@@ -134,6 +136,31 @@ export const tableWithValue = (
       conditions: rule.conditions.map((condition) =>
         condition === existing ? { ...condition, values } : condition
       ),
+    };
+  });
+
+/** The table with a condition's committed values, operator and range ends written, the condition added when the rule has none. */
+export const tableWithCondition = (
+  table: EditableTable,
+  target: SentenceValueId,
+  { values, operator, ends }: Extract<ValueCommit, { kind: 'values' }>
+): EditableTable =>
+  mapRule(table, target.rowId, (rule) => {
+    const written: EditableCondition = {
+      inputId: target.columnId,
+      operator: operator ?? 'is',
+      values: [...values],
+      joiner: ends ? ' and ' : ', ',
+      ends,
+    };
+    const held = rule.conditions.some((condition) => condition.inputId === target.columnId);
+    return {
+      ...rule,
+      conditions: held
+        ? rule.conditions.map((condition) =>
+            condition.inputId === target.columnId ? written : condition
+          )
+        : [...rule.conditions, written],
     };
   });
 

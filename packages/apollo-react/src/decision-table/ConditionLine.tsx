@@ -4,12 +4,14 @@ import { LineLead } from './LineLead';
 import { LineText, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { RemoveConditionButton, type RemoveConditionButtonProps } from './RemoveConditionButton';
-import { LINE_CLASS, MATCHED_LINE_CLASS } from './sentenceStyles';
+import { LINE_CLASS, MATCHED_LINE_CLASS, PENDING_LINE_CLASS } from './sentenceStyles';
 import type { SentenceLine } from './sentenceTypes';
 
 export interface ConditionLineProps
   extends Pick<LineTextProps, 'cells' | 'selectedColumnId' | 'stopOf' | 'linkOf' | 'labels'> {
   line: SentenceLine;
+  /** A condition the open editor adds, its value a placeholder. */
+  pending: boolean;
   badge: MarkBadgeProps | null;
   removal: RemoveConditionButtonProps | null;
 }
@@ -17,6 +19,7 @@ export interface ConditionLineProps
 /** One condition line of a card: its bullet or its run's verdict, its text, its remove action, then its glyph. */
 export const ConditionLine: React.FC<ConditionLineProps> = ({
   line,
+  pending,
   badge,
   removal,
   ...lineProps
@@ -24,8 +27,9 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
   const matched = lineProps.cells?.[line.columnId]?.matched;
   return (
     <li
-      className={cn(LINE_CLASS, MATCHED_LINE_CLASS)}
+      className={cn(LINE_CLASS, MATCHED_LINE_CLASS, pending && PENDING_LINE_CLASS)}
       data-column-id={line.columnId}
+      data-pending={pending || undefined}
       data-matched={matched}
     >
       <LineLead matched={matched} labels={lineProps.labels} />
