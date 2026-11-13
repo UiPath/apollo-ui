@@ -4205,6 +4205,34 @@ describe('DecisionText', () => {
       expect(menu()).toBeNull();
     });
 
+    it('closes the rule menu of a view slotted into a scrolling shadow-root panel when the panel scrolls', () => {
+      const panel = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => panel.remove());
+      const scroller = panel
+        .attachShadow({ mode: 'open' })
+        .appendChild(document.createElement('div'));
+      const slot = scroller.appendChild(document.createElement('slot'));
+      const container = panel.appendChild(document.createElement('div'));
+      Object.defineProperty(container, 'assignedSlot', { configurable: true, value: slot });
+      render(
+        view({
+          rules: GRID_SENTENCE_RULES,
+          selected: null,
+          onSelect: vi.fn(),
+          edit: editWith({ ruleEntries: deleteEntry }),
+        }),
+        { container }
+      );
+      fireEvent.click(actions('r2'));
+      fireEvent.scroll(screen.getByRole('menu'));
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      act(() => {
+        fireEvent.scroll(scroller);
+      });
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(document.activeElement).toBe(actions('r2'));
+    });
+
     it.each<[string, readonly SentenceRule[], boolean]>([
       ['its rule is gone', GRID_SENTENCE_RULES.filter((rule) => rule.rowId !== 'r2'), true],
       ['editing is gone', GRID_SENTENCE_RULES, false],

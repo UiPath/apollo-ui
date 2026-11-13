@@ -56,21 +56,25 @@ const movedAnchor = ({ trigger, anchor }: RuleMenuState): GridContextMenuState['
   return moved.x === anchor.x && moved.y === anchor.y ? null : moved;
 };
 
-/** Whether `node` is `ancestor` or inside it, crossing shadow roots to their hosts. */
+/** What holds `node` where it renders: the slot it is assigned to, a shadow root's host, else its parent. */
+const renderedParentOf = (node: Node): Node | null => {
+  if (node instanceof ShadowRoot) return node.host;
+  return (node instanceof Element ? node.assignedSlot : null) ?? node.parentNode;
+};
+
+/** Whether `node` is `ancestor` or rendered inside it, through slots and shadow roots. */
 const holds = (ancestor: Node, node: Node): boolean => {
-  for (let at: Node | null = node; at; at = at instanceof ShadowRoot ? at.host : at.parentNode) {
+  for (let at: Node | null = node; at; at = renderedParentOf(at)) {
     if (at === ancestor) return true;
   }
   return false;
 };
 
-/** The shadow roots holding `node`, innermost first, then its document: where a scroll of anything holding it reaches. */
+/** The document and shadow roots of everything `node` is rendered inside: where a scroll of anything holding it reaches. */
 const scrollRootsOf = (node: Node): Node[] => {
-  const roots: Node[] = [];
-  for (let root = node.getRootNode(); ; root = root.host.getRootNode()) {
-    if (!(root instanceof ShadowRoot)) return [...roots, root];
-    roots.push(root);
-  }
+  const roots = new Set<Node>();
+  for (let at: Node | null = node; at; at = renderedParentOf(at)) roots.add(at.getRootNode());
+  return [...roots];
 };
 
 /** The view's one menu slot for `GridContextMenu`, opened from a card's buttons, as the grid has one menu at a time; closed when anything holding its button scrolls or the window resizes. */
