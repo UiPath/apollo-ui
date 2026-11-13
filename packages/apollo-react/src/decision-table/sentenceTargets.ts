@@ -110,15 +110,11 @@ export const clickedAction = (target: EventTarget | null): RuleAction | null => 
   return action === 'conditions' || action === 'rule' ? { action, rowId, trigger: button } : null;
 };
 
-/** The decision a click on `target` opens: its linked input's, unless a pointer pressed an input that is its cell's stop, which that selects. */
-export const clickedDecision = (
-  target: EventTarget | null,
-  byPointer: boolean
-): string | undefined => {
-  const link =
-    target instanceof Element ? target.closest<HTMLElement>('[data-rule-action="decision"]') : null;
-  return byPointer && link?.dataset.stop !== undefined ? undefined : link?.dataset.decisionId;
-};
+/** The decision a click on `target` opens: its linked input's. */
+export const clickedDecision = (target: EventTarget | null): string | undefined =>
+  target instanceof Element
+    ? target.closest<HTMLElement>('[data-rule-action="decision"]')?.dataset.decisionId
+    : undefined;
 
 /** The decision a cell stop opens: the one its input links to in the same card. */
 export const stopDecisionOf = (target: EventTarget | null): string | undefined => {

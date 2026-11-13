@@ -4486,9 +4486,10 @@ describe('DecisionText', () => {
     });
 
     it.each([
+      'read-only',
       'selectable',
       'editable',
-    ])('selects, and edits when editable, a linked input with no value from a pointer click in a %s view', async (mode) => {
+    ])('opens the decision of a linked input with no value on a click in the %s view, which arrow keys select', async (mode) => {
       const onOpenDecision = vi.fn();
       const rules = GRID_SENTENCE_RULES.map((rule) => ({
         ...rule,
@@ -4500,21 +4501,24 @@ describe('DecisionText', () => {
       }));
       const onStartEdit = vi.fn();
       const edit = mode === 'editable' ? editWith({ onStartEdit }) : undefined;
-      const { onSelect } = renderSelectable({
-        rules,
-        onOpenDecision,
-        edit,
-        initial: { rowId: 'r1' },
-      });
+      const { onSelect } =
+        mode === 'read-only'
+          ? { onSelect: vi.fn(), ...renderView({ rules, onOpenDecision }) }
+          : renderSelectable({ rules, onOpenDecision, edit, initial: { rowId: 'r2' } });
       const user = userEvent.setup();
       await user.click(link('r2'));
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'income' }]]);
-      expect(onStartEdit.mock.calls).toEqual(
-        edit ? [[{ rowId: 'r2', columnId: 'income', index: 0 }]] : []
-      );
-      expect(onOpenDecision).not.toHaveBeenCalled();
-      press('Enter', { altKey: true });
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onStartEdit).not.toHaveBeenCalled();
+      if (mode === 'read-only') return;
+      act(() => card('r2').focus());
+      expect(walk('ArrowRight', 'ArrowRight')).toEqual(['r2:risk', 'r2:income']);
+      expect(document.activeElement).toBe(link('r2'));
+      expect(onSelect.mock.calls).toEqual([
+        [{ rowId: 'r2', columnId: 'risk' }],
+        [{ rowId: 'r2', columnId: 'income' }],
+      ]);
+      expect(onStartEdit).not.toHaveBeenCalled();
     });
 
     it('stops on each input with no value in reading order, and opens its decision by Alt+Enter', async () => {
