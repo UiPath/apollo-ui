@@ -10,6 +10,7 @@ export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './consta
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DecisionText, type DecisionTextLabels, type DecisionTextProps } from './DecisionText';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
+export type { DecisionTextEdit, DecisionTextEditLabels } from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
@@ -56,6 +57,8 @@ export {
 export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
+export type { PolicyOption } from './PolicyOptionItem';
+export type { PolicyGroup, PolicyPickerProps } from './PolicyPicker';
 export type { GlyphTone } from './sentenceMarks';
 export type {
   SentenceBand,
@@ -63,10 +66,13 @@ export type {
   SentenceCellId,
   SentenceHeader,
   SentenceLine,
+  SentenceNameToken,
   SentencePart,
   SentenceRule,
   SentenceSelection,
   SentenceToken,
+  SentenceValueId,
+  SentenceValueToken,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
 export { usePressDrag } from './useDragReorder';
@@ -87,3 +93,5 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
+export type { ValueEditorOverlayProps } from './ValueEditorOverlay';
+export type { SentenceEditorContext } from './valueTypes';

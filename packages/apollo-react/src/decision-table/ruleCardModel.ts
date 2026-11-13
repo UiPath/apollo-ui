@@ -1,7 +1,8 @@
-import type { LineTextLabels } from './LineText';
+import type { LineTextLabels, LineTextProps } from './LineText';
 import type { MarkBadgeLabels, MarkBadgeProps } from './MarkBadge';
 import { markIds } from './MarkBadge';
 import type { RowMark } from './marks';
+import type { RemoveConditionButtonProps } from './RemoveConditionButton';
 import { type LineMarks, lineMarksOf, type MarkFields, unplacedColumnIds } from './sentenceMarks';
 import {
   boundedParts,
@@ -9,6 +10,7 @@ import {
   isOutcome,
   partsText,
   SENTENCE_LINE_VALUE_LIMIT,
+  stopTokensOf,
 } from './sentenceParts';
 import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes';
 import type { CellStop } from './TokenChip';
@@ -18,6 +20,16 @@ export interface RuleCardLabels extends MarkBadgeLabels, LineTextLabels {
   cell?: (column: string, values: string, position: number) => string;
   /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash; without it the dash is read. */
   emptyValue?: string;
+  /** An input's link to the decision that produces it, e.g. "Open the income decision"; without it a link is named by its input. */
+  openDecision?: (input: string) => string;
+}
+
+/** A card's remove and clear buttons' strings. */
+export interface RuleRemovalLabels {
+  /** A condition's remove action, e.g. "Remove age from rule 2". */
+  removeCondition: (column: string, position: number) => string;
+  /** An outcome's clear action, e.g. "Clear risk in rule 2"; the output stays, its value empty. */
+  clearOutcome: (column: string, position: number) => string;
 }
 
 /** The `RowMark` fields a card paints; a field added to `RowMark` fails to compile here until the card decides on it. */
@@ -30,18 +42,19 @@ const cardMark = (mark: RowMark | undefined) =>
     cells: mark?.cells,
   }) satisfies MarkFields<RowMark>;
 
-/** A cell's first value token and the parts of its line. */
+/** A cell's stop token and the parts of its line. */
 interface FirstValue {
   token: SentenceToken;
   parts: readonly SentencePart[];
 }
 
-/** Each cell's first value token and the parts of its line, in reading order. */
+/** Each cell's stop token and the parts of its line, in reading order. */
 export const firstValuesOf = (rule: SentenceRule) => {
+  const stops = new Set(stopTokensOf(rule));
   const first = new Map<string, FirstValue>();
   for (const parts of [rule.heading, rule.lead, ...rule.lines.map((line) => line.parts)]) {
     for (const part of parts) {
-      if (typeof part !== 'string' && part.kind === 'value' && !first.has(part.columnId)) {
+      if (typeof part !== 'string' && stops.has(part) && !first.has(part.columnId)) {
         first.set(part.columnId, { token: part, parts });
       }
     }
@@ -49,8 +62,8 @@ export const firstValuesOf = (rule: SentenceRule) => {
   return first;
 };
 
-/** A cell's name as a stop reads it: the host's `cell` label, else its column and values. */
-const cellName = (
+/** A cell's name as a stop or an editor reads it: the host's `cell` label, else its column and values. */
+export const cellName = (
   { cell }: Pick<RuleCardLabels, 'cell'>,
   column: string,
   values: string,
@@ -78,6 +91,7 @@ const shownValuesOf = (
   const isCell = (part: SentencePart): boolean =>
     typeof part !== 'string' && part.kind === 'value' && part.columnId === columnId;
   const indexes = shown.flatMap((part, index) => (isCell(part) ? [index] : []));
+  if (indexes.length === 0) return '';
   const text = partsText(shown.slice(indexes[0], (indexes.at(-1) ?? 0) + 1), labels.emptyValue);
   const hidden = clamped.reduce(
     (count, run) => (run.hidden.some(isCell) ? count + run.hiddenValues : count),
@@ -106,6 +120,13 @@ interface RuleBadges {
   lines: (MarkBadgeProps | null)[];
 }
 
+/** The clear actions of a card's heading, per outcome with a value, and the remove actions of its lead, per input it words, and of each condition line. */
+interface RuleRemovals {
+  heading: RemoveConditionButtonProps[];
+  lead: RemoveConditionButtonProps[];
+  lines: (RemoveConditionButtonProps | null)[];
+}
+
 export interface RuleCardModelParams {
   rule: SentenceRule;
   /** 1-based, as announced and as numbered. */
@@ -113,28 +134,51 @@ export interface RuleCardModelParams {
   numbered: boolean;
   mark: RowMark | undefined;
   selectable: boolean;
+  /** Whether an input another decision produces links to that decision. */
+  decisionLinks: boolean;
+  editLabels: RuleRemovalLabels | undefined;
   idPrefix: string;
   labels: RuleCardLabels;
 }
 
 /** What a rule card renders, derived from its rule, its mark and its strings. */
-interface RuleCardModel extends Pick<RowMark, 'tone' | 'dim' | 'title' | 'cells'> {
+interface RuleCardModel
+  extends Pick<RowMark, 'tone' | 'dim' | 'title' | 'cells'>,
+    Pick<LineTextProps, 'stopOf' | 'linkOf'> {
   ariaLabel: string;
   describedBy: string | undefined;
   stops: CellStop[];
-  stopOf: (token: SentenceToken) => CellStop | undefined;
   badges: RuleBadges;
+  removals: RuleRemovals;
 }
 
-/** A rule card's mark, name and description, cell stops and glyph badges. */
+const filledColumnIds = (parts: readonly SentencePart[]): string[] => [
+  ...new Set(
+    parts.flatMap((part) =>
+      typeof part !== 'string' && part.kind === 'value' && part.text !== '' ? [part.columnId] : []
+    )
+  ),
+];
+
+const inputColumnIds = (parts: readonly SentencePart[]): string[] => [
+  ...new Set(
+    parts.flatMap((part) =>
+      typeof part !== 'string' && part.kind === 'input' ? [part.columnId] : []
+    )
+  ),
+];
+
+/** A rule card's mark, name and description, cell stops and decision links, glyph badges and remove actions. */
 export const ruleCardModel = ({
   rule,
   position,
   numbered,
   mark,
   selectable,
+  decisionLinks,
   idPrefix,
   labels,
+  editLabels,
 }: RuleCardModelParams): RuleCardModel => {
   const id = `${idPrefix}-${position}`;
   const { tone, dim, title, cells } = cardMark(mark);
@@ -153,6 +197,7 @@ export const ruleCardModel = ({
         ]
           .filter(Boolean)
           .join(' '),
+        editable: editLabels !== undefined,
       }))
     : [];
   const stopByToken = new Map(stops.map((stop) => [stop.token, stop]));
@@ -169,6 +214,10 @@ export const ruleCardModel = ({
       badgeFor(`line-${index}`, lineMarksOf(line.parts, cells))
     ),
   };
+  const removalOf = (columnId: string): RemoveConditionButtonProps | null =>
+    editLabels
+      ? { columnId, label: editLabels.removeCondition(columnNameOf(rule, columnId), position) }
+      : null;
   return {
     tone,
     dim,
@@ -187,6 +236,24 @@ export const ruleCardModel = ({
         .join(' ') || undefined,
     stops,
     stopOf: (token) => stopByToken.get(token),
+    linkOf: (token) =>
+      decisionLinks && token.kind === 'input' && token.decisionId !== undefined
+        ? {
+            decisionId: token.decisionId,
+            label: labels.openDecision?.(token.text),
+            tabbable: !selectable,
+          }
+        : undefined,
     badges,
+    removals: {
+      heading: editLabels
+        ? filledColumnIds(rule.heading).map((columnId) => ({
+            columnId,
+            label: editLabels.clearOutcome(columnNameOf(rule, columnId), position),
+          }))
+        : [],
+      lead: inputColumnIds(rule.lead).flatMap((columnId) => removalOf(columnId) ?? []),
+      lines: rule.lines.map((line) => removalOf(line.columnId)),
+    },
   };
 };

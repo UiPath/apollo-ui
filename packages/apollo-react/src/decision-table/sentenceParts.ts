@@ -1,5 +1,12 @@
 import { EMPTY_VALUE_DASH } from './constants';
-import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes';
+import type {
+  SentenceBand,
+  SentencePart,
+  SentenceRule,
+  SentenceToken,
+  SentenceValueId,
+  SentenceValueToken,
+} from './sentenceTypes';
 
 /** Most value tokens one line renders before the rest collapse into a count. */
 export const SENTENCE_LINE_VALUE_LIMIT = 20;
@@ -17,6 +24,32 @@ const isToken = (part: SentencePart): part is SentenceToken => typeof part !== '
 const ruleTokens = (rule: SentenceRule): SentenceToken[] =>
   [...rule.heading, ...rule.lead, ...rule.lines.flatMap((line) => line.parts)].filter(isToken);
 
+/** Each cell's keyboard stop in reading order: its first value token, or its input token when the rule words no value for it. */
+export const stopTokensOf = (rule: SentenceRule): SentenceToken[] => {
+  const tokens = ruleTokens(rule);
+  const valued = new Set(
+    tokens.flatMap((token) => (token.kind === 'value' ? [token.columnId] : []))
+  );
+  const stops = new Map<string, SentenceToken>();
+  for (const token of tokens) {
+    const isStop =
+      token.kind === 'value' || (token.kind === 'input' && !valued.has(token.columnId));
+    if (isStop && !stops.has(token.columnId)) stops.set(token.columnId, token);
+  }
+  return [...stops.values()];
+};
+
+/** Whether a rule has a keyboard stop for a cell: a value of it, or its input without one. */
+export const hasStop = (rule: SentenceRule | undefined, columnId: string): boolean =>
+  rule !== undefined && stopTokensOf(rule).some((token) => token.columnId === columnId);
+
+/** The text of every token a rule words for a cell, its input's and its values'. */
+export const cellTextOf = (rule: SentenceRule, columnId: string): string =>
+  ruleTokens(rule)
+    .filter((token) => token.columnId === columnId)
+    .map((token) => `${token.kind}:${token.text}`)
+    .join('\n');
+
 /** Whether a rule words a cell in its heading, as an outcome. */
 export const isOutcome = (rule: SentenceRule, columnId: string): boolean =>
   rule.heading.some((part) => typeof part !== 'string' && part.columnId === columnId);
@@ -25,6 +58,20 @@ export const isOutcome = (rule: SentenceRule, columnId: string): boolean =>
 export const columnNameOf = (rule: SentenceRule, columnId: string): string =>
   ruleTokens(rule).find((token) => token.kind !== 'value' && token.columnId === columnId)?.text ??
   '';
+
+/** A column's name as the bands list it, for a cell its row does not word. */
+export const bandColumnNameOf = (bands: readonly SentenceBand[], columnId: string): string =>
+  bands.flatMap((band) => band.columns).find((column) => column.id === columnId)?.name ?? '';
+
+/** The token of one value of a rule's cell. */
+export const valueTokenOf = (
+  rule: SentenceRule,
+  value: SentenceValueId
+): SentenceValueToken | undefined =>
+  ruleTokens(rule).find(
+    (token): token is SentenceValueToken =>
+      token.kind === 'value' && token.columnId === value.columnId && token.index === value.index
+  );
 
 /** The text a reader sees for these parts, an empty value read as `empty`. */
 export const partsText = (parts: readonly SentencePart[], empty = EMPTY_VALUE_DASH): string =>

@@ -1,44 +1,44 @@
 import type { DecisionTextLabels } from '../DecisionText';
+import type { DecisionTextEditLabels } from '../decisionTextTypes';
+import type { PolicyGroup } from '../PolicyPicker';
 import type {
   SentenceBand,
   SentenceHeader,
   SentenceLine,
+  SentenceNameToken,
   SentencePart,
   SentenceRule,
-  SentenceToken,
+  SentenceValueToken,
 } from '../sentenceTypes';
 
-const token = (columnId: string, kind: SentenceToken['kind'], text: string): SentenceToken => ({
-  columnId,
-  kind,
-  text,
-});
+/** Makes a cell's value token from its text and its place among the cell's values. */
+type ValueMaker = (text: string, index?: number) => SentenceValueToken;
 
 /** A column's name token and a maker for its value tokens. */
 const column = (
   columnId: string,
-  kind: 'input' | 'output',
+  kind: SentenceNameToken['kind'],
   name: string
-): [SentenceToken, (text: string) => SentenceToken] => [
-  token(columnId, kind, name),
-  (text) => token(columnId, 'value', text),
+): [SentenceNameToken, ValueMaker] => [
+  { kind, columnId, text: name },
+  (text, index = 0) => ({ kind: 'value', columnId, index, text }),
 ];
 
-const line = (name: SentenceToken, ...parts: SentencePart[]): SentenceLine => ({
+const line = (name: SentenceNameToken, ...parts: SentencePart[]): SentenceLine => ({
   columnId: name.columnId,
   parts: [name, ...parts],
 });
 
-const band = (id: string, label: string, names: readonly SentenceToken[]): SentenceBand => ({
+const band = (id: string, label: string, names: readonly SentenceNameToken[]): SentenceBand => ({
   id,
   label,
   columns: names.map(({ columnId, text }) => ({ id: columnId, name: text })),
 });
 
 /** Values as `{first}, {second}`. */
-export const valueList = (value: (text: string) => SentenceToken, texts: readonly string[]) =>
+export const valueList = (value: ValueMaker, texts: readonly string[]) =>
   texts.flatMap((text, index): SentencePart[] =>
-    index === 0 ? [value(text)] : [', ', value(text)]
+    index === 0 ? [value(text, index)] : [', ', value(text, index)]
   );
 
 const [AGE, age] = column('age', 'input', 'age');
@@ -71,7 +71,7 @@ export const GRID_SENTENCE_RULES: SentenceRule[] = [
       ' is between ',
       age('25'),
       ' and ',
-      age('60'),
+      age('60', 1),
       ' and ',
       INCOME,
       ' is greater than ',
@@ -99,6 +99,37 @@ export const GRID_SENTENCE_HEADER: SentenceHeader = {
   hint: 'Exactly one rule may match. Overlaps are errors.',
 };
 
+/** The hit policies a host offers in the header, with Sum refused as for a text output. */
+export const HIT_POLICY_GROUPS: readonly PolicyGroup[] = [
+  {
+    id: 'single',
+    label: 'One result',
+    options: [
+      { value: 'UNIQUE', code: 'U', label: 'Unique', hint: GRID_SENTENCE_HEADER.hint },
+      { value: 'FIRST', code: 'F', label: 'First', hint: 'Stops at the first matching rule.' },
+      {
+        value: 'COLLECT-TOTAL',
+        label: 'Collect and total',
+        options: [
+          {
+            value: 'COLLECT:SUM',
+            code: 'C+',
+            label: 'Sum',
+            disabledReason: 'Needs a number output.',
+          },
+          { value: 'COLLECT:MIN', code: 'C<', label: 'Minimum' },
+          { value: 'COLLECT:MAX', code: 'C>', label: 'Maximum' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'multiple',
+    label: 'Several results',
+    options: [{ value: 'COLLECT', code: 'C', label: 'Collect', hint: 'Returns the matches.' }],
+  },
+];
+
 const [SCORE, score] = column('score', 'input', 'Credit Score');
 const [DEBT, debt] = column('debt', 'input', 'Debt Ratio');
 export const [COUNTRY, country] = column('country', 'input', 'Country');
@@ -121,8 +152,8 @@ export const MULTI_SENTENCE_RULES: SentenceRule[] = [
     heading: outputs('"approve"', '25000', '"prime"'),
     lead: ['when all of these are true:'],
     lines: [
-      line(SCORE, ' is between ', score('700'), ' and ', score('850')),
-      line(DEBT, ' is greater than ', debt('0'), ' and less than ', debt('0.4')),
+      line(SCORE, ' is between ', score('700'), ' and ', score('850', 1)),
+      line(DEBT, ' is greater than ', debt('0'), ' and less than ', debt('0.4', 1)),
       line(COUNTRY, ' is one of ', ...valueList(country, ['"US"', '"CA"', '"MX"', '"GB"', '"DE"'])),
       line(START, ' is ', start('2026-01-01')),
       line(CHANNEL, ' is ', channel('"web"')),
@@ -133,8 +164,8 @@ export const MULTI_SENTENCE_RULES: SentenceRule[] = [
     heading: outputs('"review"', '5000', ''),
     lead: ['when all of these are true:'],
     lines: [
-      line(SCORE, ' is greater than ', score('600'), ' and at most ', score('700')),
-      line(DEBT, ' is at least ', debt('0.4'), ' and less than ', debt('0.6')),
+      line(SCORE, ' is greater than ', score('600'), ' and at most ', score('700', 1)),
+      line(DEBT, ' is at least ', debt('0.4'), ' and less than ', debt('0.6', 1)),
       line(COUNTRY, ' is none of ', ...valueList(country, ['"RU"', '"KP"'])),
     ],
   },
@@ -179,7 +210,7 @@ export const MULTI_SENTENCE_HEADER: SentenceHeader = {
   hint: 'Returns the matches as a list.',
 };
 
-export const DECISION_TEXT_LABELS: DecisionTextLabels = {
+export const DECISION_TEXT_LABELS = {
   emptyRules: 'No rules yet',
   markStatus: (tone, message) => {
     const status = tone === 'error' ? 'Error' : 'Warning';
@@ -189,6 +220,16 @@ export const DECISION_TEXT_LABELS: DecisionTextLabels = {
   conditionVerdict: (matched) => (matched ? 'Matched' : 'Not matched'),
   cell: (column, values, position) => `${column} ${values}, rule ${position}`,
   emptyValue: 'empty',
+  openDecision: (input) => `Open the ${input} decision`,
+} satisfies DecisionTextLabels;
+
+export const DECISION_TEXT_EDIT_LABELS: DecisionTextEditLabels = {
+  addCondition: (position) => `Add condition to rule ${position}`,
+  removeCondition: (column, position) => `Remove ${column} from rule ${position}`,
+  clearOutcome: (column, position) => `Clear ${column} in rule ${position}`,
+  ruleActions: (position) => `Rule ${position} actions`,
+  deleteRule: (position) => `Delete rule ${position}`,
+  newCondition: (column, position) => `New ${column} condition, rule ${position}`,
 };
 
 const firstRule = (): SentenceRule => {
