@@ -154,6 +154,7 @@ export const ruleCardModel = ({
           shownValuesOf(parts, columnId, labels),
           position
         ),
+        editable: editLabels !== undefined,
       }))
     : [];
   const stopByToken = new Map(stops.map((stop) => [stop.token, stop]));

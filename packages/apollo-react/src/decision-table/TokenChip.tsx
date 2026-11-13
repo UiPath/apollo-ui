@@ -33,6 +33,8 @@ export interface CellStop {
   token: SentenceToken;
   labelId: string;
   label: string;
+  /** Whether Enter and Space start editing it, so it is a button; else it is a named group. */
+  editable: boolean;
 }
 
 /** An input's link to the decision that produces it; the section resolves its click. */
@@ -88,14 +90,14 @@ export const TokenChip: React.FC<TokenChipProps> = ({
     );
   }
   return (
-    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: a stop's span is a button whenever it has a label
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: a stop's span is a button or a group whenever it has a label
     <span
       className={cn(
         tokenClass(token, output),
         isValue && MARKED_CHIP_CLASS,
         (isValue || stop) && SELECTED_CHIP_CLASS
       )}
-      role={stop && 'button'}
+      role={stop && (stop.editable ? 'button' : 'group')}
       tabIndex={stop && (selected ? 0 : -1)}
       aria-labelledby={stop?.labelId}
       data-selected={selected || undefined}

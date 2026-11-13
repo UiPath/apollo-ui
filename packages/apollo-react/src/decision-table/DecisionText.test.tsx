@@ -1227,23 +1227,35 @@ describe('DecisionText', () => {
       expect(valueChip('r3', 'risk')).toHaveAttribute('tabindex', '0');
     });
 
-    it('names each cell stop as a button by its column, values and row', () => {
-      renderSelectable();
-      expect(valueChip('r2', 'age')).toHaveAttribute('role', 'button');
+    it('names each cell stop by its column, values and row, as a group that Enter and Space leave to the host', () => {
+      const onKeyDown = vi.fn();
+      renderSelectable({
+        initial: { rowId: 'r2', columnId: 'age' },
+        containerProps: { onKeyDown },
+      });
+      expect(valueChip('r2', 'age')).toHaveAttribute('role', 'group');
       expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60, rule 2');
-      expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
-        '"high"',
-        '25',
-        '40000',
-        '"standard"',
-        '25',
-        '40000',
-        '"review"',
-        '60',
-      ]);
+      expect(screen.queryAllByRole('button')).toEqual([]);
+      act(() => valueChip('r2', 'age').focus());
+      expect([press('Enter'), press(' ')]).toEqual([true, true]);
+      expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual(['Enter', ' ']);
       expect(card('r2')).toHaveAccessibleName(
         'risk is "standard" when age is between 25 and 60 and income is greater than 40000'
       );
+    });
+
+    it('names each cell stop of an editable view as a button that Enter and Space start editing', () => {
+      const { onStartEdit } = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      expect(valueChip('r2', 'age')).toHaveAttribute('role', 'button');
+      expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60, rule 2');
+      expect(
+        screen
+          .getAllByRole('button')
+          .flatMap((button) => (button.dataset.stop === '' ? [button.textContent] : []))
+      ).toEqual(['"high"', '25', '40000', '"standard"', '25', '40000', '"review"', '60']);
+      act(() => valueChip('r2', 'age').focus());
+      expect(press(' ')).toBe(false);
+      expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
     });
 
     it('names an empty value by its word, never by the dash it shows', () => {
