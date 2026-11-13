@@ -37,6 +37,8 @@ export const BAND_COLUMN_CLASS = cn(
   MARKED_CHIP_CLASS
 );
 
+export const BAND_COLUMN_ITEM_CLASS = 'flex shrink-0';
+
 export const EMPTY_STATE_CLASS = 'rounded-lg border border-dashed border-border bg-background p-8';
 
 export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)] focus-visible:outline-none';
@@ -47,6 +49,13 @@ const STOP_RING_CLASS = '-outline-offset-2 outline-primary';
 export const DECISION_LINK_CLASS = cn(
   STOP_RING_CLASS,
   'cursor-pointer rounded underline decoration-dotted underline-offset-2 hover:decoration-solid focus-visible:outline-2'
+);
+
+export const BAND_COLUMN_BUTTON_CLASS = cn(
+  BAND_COLUMN_CLASS,
+  STOP_RING_CLASS,
+  'cursor-pointer hover:border-border focus-visible:outline-2',
+  'aria-expanded:border-primary aria-expanded:bg-[var(--color-background-selected)] aria-expanded:hover:border-primary'
 );
 
 export const SELECTED_CHIP_CLASS = cn(
@@ -120,7 +129,68 @@ export const LINE_MARK_CLASS = 'inline-flex h-[var(--sentence-line)] shrink-0 it
 export const MARK_GLYPH_CLASS = 'size-3.5 forced-colors:text-[CanvasText]';
 
 export const VALUE_EDITOR_CLASS =
-  'absolute z-3 m-0 mt-1 w-64 min-w-0 max-w-full overflow-hidden rounded-md border border-border bg-background p-0 text-sm shadow-lg';
+  'absolute z-3 m-0 mt-1 w-72 min-w-0 max-w-full rounded-md border border-border-de-emp bg-popover p-3 text-sm text-popover-foreground shadow-md future:rounded-lg';
+
+export const COLUMN_EDITOR_CLASS = cn(VALUE_EDITOR_CLASS, 'w-80');
+
+export const POPOVER_CLASS = 'flex min-w-0 flex-col gap-3';
+
+export const POPOVER_HEADER_CLASS = 'flex min-w-0 items-center gap-1.5';
+
+export const POPOVER_ICON_CLASS = 'flex shrink-0 text-foreground-de-emp [&_svg]:size-3.5';
+
+export const POPOVER_TITLE_CLASS =
+  'min-w-0 truncate text-sm leading-5 font-semibold text-foreground';
+
+export const POPOVER_FIELD_CLASS = 'h-8 min-w-0';
+
+export const POPOVER_OPTION_CLASS = 'flex min-w-0 items-center gap-1.5';
+
+export const COLUMN_FIELD_CLASS = 'flex min-w-0 flex-col gap-1';
+
+export const COLUMN_FIELD_LABEL_CLASS = 'text-xs font-semibold';
+
+export const COLUMN_REQUIRED_CLASS = 'text-error-text';
+
+export const COLUMN_CODE_FIELD_CLASS = cn(POPOVER_FIELD_CLASS, 'font-mono');
+
+export const COLUMN_HINT_CLASS = 'text-[11px] leading-4 text-foreground-de-emp';
+
+export const POPOVER_ERROR_CLASS = 'text-[11px] leading-4 text-error-text';
+
+export const VALUE_POPOVER_CHOICES_CLASS = 'flex min-w-0 flex-col gap-1';
+
+export const ALLOWED_VALUES_CLASS = 'flex max-h-48 flex-col gap-0 overflow-y-auto';
+
+export const ALLOWED_VALUE_CLASS =
+  'flex h-7 min-w-0 items-center gap-2 rounded px-1 hover:bg-background-hover';
+
+export const ALLOWED_VALUE_LABEL_CLASS = 'min-w-0 flex-1 cursor-pointer truncate text-sm';
+
+export const RANGE_FIELDS_CLASS = 'flex min-w-0 flex-col gap-2';
+
+export const RANGE_END_CLASS = 'flex min-w-0 items-center gap-2';
+
+export const RANGE_END_FIELD_CLASS = cn(POPOVER_FIELD_CLASS, 'flex-1');
+
+export const RANGE_INCLUDED_CLASS = 'shrink-0 cursor-pointer text-xs text-foreground-de-emp';
+
+export const ADD_VALUE_CLASS = 'flex min-w-0 items-center gap-1';
+
+export const ADD_VALUE_BUTTON_CLASS = 'h-8 shrink-0 px-2 [&_svg]:size-4';
+
+export const POPOVER_FOOTER_CLASS =
+  'flex flex-wrap items-center justify-end gap-2 border-t border-border-de-emp pt-3';
+
+export const POPOVER_LINKS_CLASS = 'me-auto flex min-w-0 items-center gap-3';
+
+export const POPOVER_LINK_CLASS = 'h-auto px-0 text-xs';
+
+export const POPOVER_ACTIONS_CLASS = 'flex shrink-0 items-center gap-2';
+
+/** A condition line the open editor adds: its value reads as a placeholder until the host words it. */
+export const PENDING_LINE_CLASS =
+  '[&_[data-kind=value]]:rounded-md [&_[data-kind=value]]:border [&_[data-kind=value]]:border-dashed [&_[data-kind=value]]:border-border [&_[data-kind=value]]:px-1.5 [&_[data-kind=value]]:font-normal [&_[data-kind=value]]:text-foreground-de-emp';
 
 export const HEADING_ACTIONS_SPACE_CLASS = 'pe-18';
 

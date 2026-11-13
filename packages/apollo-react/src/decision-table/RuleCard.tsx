@@ -24,6 +24,8 @@ export interface RuleCardProps extends RuleCardModelParams {
   editLabels: RuleCardEditLabels | undefined;
   /** The card's menu that is open, if any. */
   openMenu: RuleMenuKind | undefined;
+  /** The line of the condition the open editor adds, if any. */
+  pendingColumnId: string | undefined;
   dataTestId: string;
 }
 
@@ -40,6 +42,7 @@ export const RuleCard = memo<RuleCardProps>(
     decisionLinks,
     editLabels,
     openMenu,
+    pendingColumnId,
     idPrefix,
     dataTestId,
     labels,
@@ -102,8 +105,11 @@ export const RuleCard = memo<RuleCardProps>(
                 <ConditionLine
                   key={line.columnId}
                   line={line}
+                  pending={line.columnId === pendingColumnId}
                   badge={card.badges.lines[index] ?? null}
-                  removal={card.removals.lines[index] ?? null}
+                  removal={
+                    line.columnId === pendingColumnId ? null : (card.removals.lines[index] ?? null)
+                  }
                   {...lineProps}
                 />
               ))}

@@ -5,6 +5,7 @@
 // catalog (see `ApI18nProvider`).
 
 export type { AddRuleButtonProps } from './AddRuleButton';
+export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
@@ -93,5 +94,12 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
-export type { ValueEditorOverlayProps } from './ValueEditorOverlay';
-export type { SentenceEditorContext } from './valueTypes';
+export type { ValuePopoverProps } from './ValuePopover';
+export type {
+  RangeEnds,
+  SentenceEditorContext,
+  ValueCommit,
+  ValueField,
+  ValueOperatorOption,
+  ValueShape,
+} from './valueTypes';
