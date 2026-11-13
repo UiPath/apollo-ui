@@ -158,7 +158,15 @@ const StageNodeInner = (props: StageNodeProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <StageContainer selected={selected} status={status} width={width} style={taskWidthStyle}>
+      <StageContainer
+        data-testid={`stage-container-${id}`}
+        selected={selected}
+        hovered={isHovered}
+        dragging={dragging}
+        status={status}
+        width={width}
+        style={taskWidthStyle}
+      >
         <StageNodeHeader
           props={props}
           isReadOnly={isReadOnly}
