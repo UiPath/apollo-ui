@@ -98,12 +98,15 @@ export function WritingTabs({ children }: { children: ReactNode }) {
   }>[];
 
   return (
-    <Tabs defaultValue={tabs[0]?.props.label}>
+    // data-search-*: the Storybook search indexes every panel of this set,
+    // not only the one open by default (see apps/storybook/scripts).
+    <Tabs defaultValue={tabs[0]?.props.label} data-search-tabs="">
       <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-none border-b border-border bg-transparent p-0">
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.props.label}
             value={tab.props.label}
+            data-search-tab={tab.props.label}
             className="-mb-px rounded-none border-b-2 border-transparent bg-transparent px-4 pt-0 pb-3 text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
           >
             {tab.props.label}
@@ -111,7 +114,12 @@ export function WritingTabs({ children }: { children: ReactNode }) {
         ))}
       </TabsList>
       {tabs.map((tab) => (
-        <TabsContent key={tab.props.label} value={tab.props.label} className="mt-0 pt-6">
+        <TabsContent
+          key={tab.props.label}
+          value={tab.props.label}
+          data-search-panel=""
+          className="mt-0 pt-6"
+        >
           {tab.props.children}
         </TabsContent>
       ))}
