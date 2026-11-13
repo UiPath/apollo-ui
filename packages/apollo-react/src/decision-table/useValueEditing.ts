@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { DecisionTextEdit, DecisionTextLabels, DecisionTextProps } from './DecisionText';
-import { activeElementOf, hasLostFocus, onNextGesture } from './gridEvents';
+import { activeElementOf, focusStays, hasLostFocus, onNextGesture } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { cellName } from './ruleCardModel';
 import {
@@ -234,11 +234,7 @@ export const useValueEditing = ({
     const pending = pendingRef.current;
     if (!pending || (target && valueKey(target) === valueKey(pending.from))) return;
     awaitHost(null);
-    const view = container();
-    const focused = view && activeElementOf(view);
-    const stayed =
-      view !== null && (hasLostFocus(view) || focused === view || focused === pending.focused);
-    if (!target && stayed) resolve(pending);
+    if (!target && focusStays(container(), pending.focused)) resolve(pending);
   });
 
   const cancelEditOf = (cell: SentenceSelection) => {

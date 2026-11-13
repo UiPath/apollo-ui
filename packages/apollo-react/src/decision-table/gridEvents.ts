@@ -42,6 +42,13 @@ export const hasLostFocus = (node: Node): boolean => {
   );
 };
 
+/** Whether focus is still on `from`, on the view itself, or lost, so the view may move it. */
+export const focusStays = (view: HTMLElement | null, from: Element | null | undefined): boolean => {
+  if (!view) return false;
+  const focused = activeElementOf(view);
+  return hasLostFocus(view) || focused === view || focused === from;
+};
+
 const GESTURES = ['pointerdown', 'keydown', 'click'] as const;
 
 /** Calls `onGesture` once on the next press, key or click anywhere in a node's document, and returns what stops waiting for it. */

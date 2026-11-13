@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import type { DecisionTextProps } from './DecisionText';
-import { activeElementOf, hasLostFocus, isFromTextField } from './gridEvents';
+import { activeElementOf, focusStays, isFromTextField } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { firstValuesOf } from './ruleCardModel';
 import { cardOf, cellOf } from './sentenceTargets';
@@ -240,10 +240,7 @@ export const useSentenceNavigation = ({
     const pending = pendingFocusRef.current;
     const moved = selectedRule?.rowId !== shownRowIdRef.current;
     shownRowIdRef.current = selectedRule?.rowId;
-    const view = container();
-    const focused = view && activeElementOf(view);
-    const stayed =
-      view !== null && (hasLostFocus(view) || focused === view || focused === pending?.from);
+    const stayed = focusStays(container(), pending?.from);
     const applied = pending !== undefined && sameSelection(pending.selection, current);
     if (!stayed || applied) pendingFocusRef.current = undefined;
     if (pending !== undefined && applied && stayed) {
