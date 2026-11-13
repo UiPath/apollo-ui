@@ -3,10 +3,12 @@ import type React from 'react';
 import { useId } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
+import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
+import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
 import type { RuleCardLabels } from './ruleCardModel';
@@ -22,11 +24,13 @@ import type {
 } from './sentenceTypes';
 import { useAddRule } from './useAddRule';
 import { useCellHover } from './useCellHover';
+import { useColumnEditing } from './useColumnEditing';
 import {
   type ContainerHandlersParams,
   type DecisionTextContainerProps,
   useContainerHandlers,
 } from './useContainerHandlers';
+import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
 import { useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
@@ -62,7 +66,7 @@ interface DecisionTextBaseProps {
   ariaLabel: string;
   /** Spread onto the scroll container: its handlers run after the view's and its className is added to the view's; a `data-testid` here overrides `dataTestId`. */
   containerProps?: DecisionTextContainerProps;
-  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-editor`, `-context-menu`. */
+  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
   dataTestId: string;
   /** Overlays rendered inside the scroll container (menus, notes, dialogs). */
   children?: React.ReactNode;
@@ -112,7 +116,12 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const idPrefix = useId();
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
-  const ruleWindow = useRuleWindow(rules, selected?.rowId, edit?.editing?.rowId ?? selected?.rowId);
+  const shown = usePendingCondition({ edit, rules, bands });
+  const ruleWindow = useRuleWindow(
+    shown.rules,
+    selected?.rowId,
+    edit?.editing?.rowId ?? selected?.rowId
+  );
   const selectable = onSelect !== undefined;
   const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
@@ -145,6 +154,12 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     container: ruleWindow.container,
     stopTabbable: selectable && ruleWindow.selectedRow !== null,
   });
+  const columnEditing = useColumnEditing({
+    column: edit?.column,
+    bands,
+    container: ruleWindow.container,
+  });
+  const columnEditorId = `${idPrefix}-column-editor`;
   const listStyle = sentenceListStyle(numbered, rules.length);
 
   return (
@@ -171,6 +186,9 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           idPrefix={idPrefix}
           dataTestId={dataTestId}
           labels={labels}
+          onToggleColumn={columnEditing.onToggle}
+          openColumnId={columnEditing.openId}
+          editorId={columnEditorId}
         />
       )}
       {rules.length === 0 ? (
@@ -178,7 +196,8 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
       ) : (
         <RuleList
           ref={ruleWindow.listRef}
-          rules={rules}
+          rules={shown.rules}
+          pending={shown.pending}
           segments={ruleWindow.segments}
           numbered={numbered}
           marks={rowMarks}
@@ -202,10 +221,24 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           key={valueEditing.editorKey}
           editor={valueEditing.editor}
           renderEditor={edit.renderEditor}
+          labels={edit.labels}
+          onOperatorChange={shown.onOperatorChange}
           container={ruleWindow.container}
           dataTestId={dataTestId}
         />
       )}
+      {columnEditing.editor && edit?.column && (
+        <ColumnEditorOverlay
+          key={columnEditing.editor.column.id}
+          editor={columnEditing.editor}
+          edit={edit.column}
+          labels={edit.labels}
+          container={ruleWindow.container}
+          id={columnEditorId}
+          dataTestId={dataTestId}
+        />
+      )}
+      <MarkTooltip container={ruleWindow.container} dataTestId={dataTestId} />
       <GridContextMenu
         label={ruleMenus.label}
         dataTestId={dataTestId}

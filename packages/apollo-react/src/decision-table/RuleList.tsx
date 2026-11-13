@@ -4,7 +4,7 @@ import { RuleCard, type RuleCardProps } from './RuleCard';
 import type { SentenceListStyle } from './sentenceRuleHeights';
 import { GUTTER_CLASS } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
-import type { SentenceRule } from './sentenceTypes';
+import type { SentenceRule, SentenceValueId } from './sentenceTypes';
 import type { AxisSegment } from './useVirtualizedAxis';
 
 /** Which card menu is open, and for which rule. */
@@ -27,6 +27,8 @@ export interface RuleListProps {
   editLabels: RuleCardProps['editLabels'];
   /** The card menu that is open, or null. */
   openMenu: OpenRuleMenu | null;
+  /** The condition the open editor adds to its rule, or null. */
+  pending: SentenceValueId | null;
   style: SentenceListStyle;
   idPrefix: string;
   dataTestId: string;
@@ -47,6 +49,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       decisionLinks,
       editLabels,
       openMenu,
+      pending,
       style,
       idPrefix,
       dataTestId,
@@ -86,6 +89,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                 decisionLinks={decisionLinks}
                 editLabels={editLabels}
                 openMenu={openMenu?.rowId === rule.rowId ? openMenu.menu : undefined}
+                pendingColumnId={pending?.rowId === rule.rowId ? pending.columnId : undefined}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
                 labels={labels}

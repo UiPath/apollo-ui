@@ -1,3 +1,5 @@
+import type React from 'react';
+
 /** A column's name inside a sentence; `columnId` is the input's or output's id. */
 export interface SentenceNameToken {
   kind: 'input' | 'output';
@@ -43,6 +45,8 @@ export interface SentenceRule {
 export interface SentenceBandColumn {
   id: string;
   name: string;
+  /** The column's type glyph, before its name. */
+  icon?: React.ReactNode;
 }
 
 /** A labelled run of columns shown above the rules. */

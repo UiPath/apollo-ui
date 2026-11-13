@@ -5,6 +5,7 @@ import {
   type RenderResult,
   render,
   screen,
+  waitFor,
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -44,13 +45,17 @@ import {
   valueList,
 } from './__fixtures__/sentences.fixtures';
 import type { AddRuleButtonProps } from './AddRuleButton';
+import { CellTextEditor } from './CellTextEditor';
+import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { GridMenuEntry } from './GridMenu';
+import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type {
+  SentenceBand,
   SentenceCellId,
   SentencePart,
   SentenceRule,
@@ -59,7 +64,14 @@ import type {
   SentenceValueToken,
 } from './sentenceTypes';
 import { SENTENCE_RULE_OVERSCAN } from './useRuleWindow';
-import type { SentenceEditorContext } from './valueTypes';
+import type {
+  SentenceEditorContext,
+  ValueCommit,
+  ValueField,
+  ValueOperatorOption,
+} from './valueTypes';
+
+vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
 type ViewProps<Props extends DecisionTextProps = DecisionTextProps> = Props extends unknown
   ? Partial<Props> & Pick<Props, 'selected' | 'onSelect' | 'edit'>
@@ -142,6 +154,15 @@ const later = (answer: () => void) => {
   void Promise.resolve().then(answer);
 };
 const settleLater = () => act(async () => {});
+/** A press as Safari on macOS makes one: the pressed control takes no focus, and unless mousedown is prevented the focused element blurs to the body before the click. */
+const safariPress = (target: HTMLElement) => {
+  const focused = document.activeElement;
+  fireEvent.pointerDown(target);
+  if (fireEvent.mouseDown(target) && focused instanceof HTMLElement) act(() => focused.blur());
+  fireEvent.pointerUp(target);
+  fireEvent.mouseUp(target);
+  fireEvent.click(target);
+};
 const rect = (left: number, right: number): DOMRect => ({
   left,
   right,
@@ -157,7 +178,10 @@ const rect = (left: number, right: number): DOMRect => ({
 interface EditSpies {
   onSelect: Mock<NonNullable<DecisionTextProps['onSelect']>>;
   onStartEdit: Mock<DecisionTextEdit['onStartEdit']>;
-  onCommit: Mock<DecisionTextEdit['onCommit']>;
+  onCommit: Mock<
+    (value: SentenceValueId, text: string, move: CellCommitMove, operator?: string) => void
+  >;
+  onCommitValues: Mock<DecisionTextEdit['onCommit']>;
   onCancel: Mock<DecisionTextEdit['onCancel']>;
   onClearCell: Mock<DecisionTextEdit['onClearCell']>;
 }
@@ -169,6 +193,8 @@ interface EditingHostProps
   initialEditing?: SentenceValueId | null;
   refuse?: boolean;
   renderEditor?: DecisionTextEdit['renderEditor'];
+  valueField?: DecisionTextEdit['valueField'];
+  column?: DecisionTextEdit['column'];
   conditionEntries?: (
     rowId: string,
     startEdit: (value: SentenceValueId) => void
@@ -180,6 +206,8 @@ const EditingHost = ({
   initialEditing = null,
   refuse = false,
   renderEditor,
+  valueField,
+  column,
   conditionEntries,
   ...props
 }: EditingHostProps) => {
@@ -193,13 +221,19 @@ const EditingHost = ({
         ...editWith({ onClearCell: spies.onClearCell }),
         editing,
         renderEditor,
+        valueField,
+        column,
         conditionEntries: (rowId) => conditionEntries?.(rowId, setEditing) ?? [],
         onStartEdit: (value) => {
           spies.onStartEdit(value);
           setEditing(value);
         },
-        onCommit: (value, text, move) => {
-          spies.onCommit(value, text, move);
+        onCommit: (value, commit, move) => {
+          spies.onCommitValues(value, commit, move);
+          const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
+          const operator = commit.kind === 'values' ? commit.operator : undefined;
+          if (operator === undefined) spies.onCommit(value, text, move);
+          else spies.onCommit(value, text, move, operator);
           if (refuse) setRefusals(refusals + 1);
           else setEditing(null);
         },
@@ -212,28 +246,34 @@ const EditingHost = ({
   );
 };
 
-const renderEditing = (props: Omit<EditingHostProps, 'spies'> = {}) => {
+const renderEditing = (props: Omit<EditingHostProps, 'spies'> = {}, container?: HTMLElement) => {
   const spies: EditSpies = {
     onSelect: vi.fn(),
     onStartEdit: vi.fn(),
     onCommit: vi.fn(),
+    onCommitValues: vi.fn(),
     onCancel: vi.fn(),
     onClearCell: vi.fn(),
   };
-  const rendered = render(<EditingHost spies={spies} {...props} />);
+  const rendered = render(<EditingHost spies={spies} {...props} />, { container });
   return { ...spies, ...rendered };
 };
 
 const valueChips = (rowId: string, columnId: string) => [
   ...card(rowId).querySelectorAll<HTMLElement>(`[data-kind="value"][data-column-id="${columnId}"]`),
 ];
-const secondAge = () => {
-  const [, second] = valueChips('r2', 'age');
-  if (!second) throw new Error('second age value');
-  return second;
+const valueChipAt = (rowId: string, columnId: string, index: number) => {
+  const chip = valueChips(rowId, columnId)[index];
+  if (!chip) throw new Error(`no ${columnId} value ${index} in ${rowId}`);
+  return chip;
 };
+const secondAge = () => valueChipAt('r2', 'age', 1);
 const editor = () => screen.getByTestId('nl-editor') as HTMLInputElement;
 const r2Age = (index: number): SentenceValueId => ({ rowId: 'r2', columnId: 'age', index });
+const valuesOf = (commit: ValueCommit) => {
+  if (commit.kind !== 'values') throw new Error(`an expression commit, ${commit.text}`);
+  return commit.values;
+};
 const editWith = (overrides: Partial<DecisionTextEdit> = {}): DecisionTextEdit => ({
   editing: null,
   onStartEdit: vi.fn(),
@@ -261,6 +301,22 @@ describe('DecisionText', () => {
           'OutputsDecisionCredit LimitReason',
         ]
       );
+    });
+
+    it("draws a band column's type glyph before its name, hidden from its accessible name", () => {
+      renderView({
+        bands: [
+          {
+            id: 'inputs',
+            label: 'Inputs',
+            columns: [{ id: 'score', name: 'Credit Score', icon: <svg data-testid="type-icon" /> }],
+          },
+        ],
+      });
+      const column = within(screen.getByTestId('nl-bands')).getByRole('listitem');
+      expect(column.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+      expect(column.firstElementChild).toContainElement(screen.getByTestId('type-icon'));
+      expect(column).toHaveTextContent(/^Credit Score$/);
     });
 
     it('puts a row heading first, then its lead, then one line per condition', () => {
@@ -620,6 +676,228 @@ describe('DecisionText', () => {
       expect(column).toHaveAttribute('data-mark-title', 'No expression');
       expect(column?.querySelector('[data-glyph="error"]')).not.toBeNull();
       expect(column).toHaveAccessibleDescription('Error: No expression');
+    });
+  });
+
+  describe('mark tooltip', () => {
+    const tooltip = () => screen.queryByTestId('nl-mark-tooltip');
+    const scoreMarks = rowMarks({
+      m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 1', glyph: true } } },
+      m5: { tone: 'warning', title: 'Unreachable', glyph: true },
+    });
+
+    it("shows a mark's message while the pointer is on it, and hides it off any mark", async () => {
+      renderView({ marks: scoreMarks });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(valueChip('m1', 'score'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it('keeps the message open while the pointer crosses onto it, and hides it once the pointer rests off any mark', async () => {
+      renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      fireEvent.pointerOver(card('m3'));
+      const shown = tooltip();
+      if (!shown) throw new Error('no tooltip');
+      fireEvent.pointerOver(shown);
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m3'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it("shows the header's and a band column's mark on hover", () => {
+      renderView({
+        headerMark: { tone: 'error', title: 'Collect returns a list', glyph: true },
+        marks: {
+          rows: new Map(),
+          columns: new Map([['country', { tone: 'error', title: 'No expression', glyph: true }]]),
+        },
+      });
+      const headerBadge = screen.getByTestId('nl-header').querySelector('[data-mark-title]');
+      if (!headerBadge) throw new Error('header badge');
+      fireEvent.pointerOver(headerBadge);
+      expect(tooltip()).toHaveTextContent('Collect returns a list');
+      const country = screen.getByTestId('nl-bands').querySelector('[data-column-id="country"]');
+      if (!country) throw new Error('country column');
+      fireEvent.pointerOver(country);
+      expect(tooltip()).toHaveTextContent('No expression');
+    });
+
+    it('shows the mark a focused element carries or is described by, without adding to its description', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
+      act(() => valueChip('m3', 'score').focus());
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+    });
+
+    it("shows every message a focused rule's marks on several lines describe it with", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+    });
+
+    it('shows every message of a focused rule whose first mark the pointer is on, until Escape', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
+      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
+      if (!first) throw new Error('m1 first badge');
+      fireEvent.pointerOver(first);
+      expect(tooltip()).not.toHaveTextContent('Overlaps row 2');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+      fireEvent.keyDown(card('m1'), { key: 'Escape' });
+      fireEvent.pointerOver(first);
+      expect(tooltip()).toBeNull();
+    });
+
+    it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
+      const host = document.createElement('div');
+      document.body.append(host);
+      onTestFinished(() => host.remove());
+      const container = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).append(container);
+      render(
+        <Selectable
+          rules={MULTI_SENTENCE_RULES}
+          bands={MULTI_SENTENCE_BANDS}
+          header={MULTI_SENTENCE_HEADER}
+          marks={scoreMarks}
+          initial={{ rowId: 'm5' }}
+        />,
+        { container }
+      );
+      const inShadow = within(container);
+      act(() => inShadow.getByTestId('nl-row-m5').focus());
+      expect(inShadow.queryByTestId('nl-mark-tooltip')).toHaveTextContent('Unreachable');
+    });
+
+    it("keeps a focused rule's message once the pointer leaves the view or rests off any mark, back from another mark, until Escape", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      const restOffMarks = () => act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(card('m1'));
+      await restOffMarks();
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(card('m1'));
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      await restOffMarks();
+      expect(tooltip()).toBeNull();
+    });
+
+    it("keeps a focused rule's message dismissed after Escape once the pointer leaves another mark", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toBeNull();
+    });
+
+    it('keeps the message of the mark under the pointer when focus moves to a rule with none', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm1' },
+      });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
+    it("brings a focused rule's message back once the pointer rests off any mark after another", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m1'));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
+    it('hides the message on Escape until another mark is reached', () => {
+      renderView({ marks: scoreMarks });
+      const score = valueChip('m3', 'score');
+      fireEvent.pointerOver(score);
+      fireEvent.keyDown(score, { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(score);
+      expect(tooltip()).toBeNull();
+      const heading = card('m5').querySelector('[data-mark-title="Unreachable"]');
+      if (!heading) throw new Error('m5 heading');
+      fireEvent.pointerOver(heading);
+      expect(tooltip()).toHaveTextContent('Unreachable');
     });
   });
 
@@ -1090,6 +1368,31 @@ describe('DecisionText', () => {
       if (!added) throw new Error('no added column');
       resize(added);
       expect(inputs()).toHaveAttribute('tabindex', '0');
+    });
+
+    it("drops a band list's tab stop while its columns are buttons, even as they overflow it", () => {
+      renderView({
+        bands: manyColumnBands(50),
+        selected: null,
+        onSelect: vi.fn(),
+        edit: editWith({
+          column: {
+            field: () => ({
+              kind: 'input',
+              label: 'x',
+              binding: 'x',
+              required: false,
+              typeRef: 't',
+            }),
+            types: [],
+            onCommit: vi.fn(),
+          },
+        }),
+      });
+      setWidths(inputs(), 3000, 400);
+      resize(inputs());
+      expect(within(inputs()).getAllByRole('button').length).toBeGreaterThan(0);
+      expect(inputs()).not.toHaveAttribute('tabindex');
     });
   });
 
@@ -2291,31 +2594,6 @@ describe('DecisionText', () => {
       expect(focusedStop()).toBe('r3:age');
     });
 
-    it("tabs to the cell's next value, and from its last value to the next cell", () => {
-      const { onCommit, onStartEdit, onSelect } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
-        initialEditing: r2Age(0),
-      });
-      fireEvent.keyDown(editor(), { key: 'Tab' });
-      expect(onCommit.mock.calls).toEqual([[r2Age(0), '25', 'right']]);
-      expect(onStartEdit.mock.calls).toEqual([[r2Age(1)]]);
-      expect(editor()).toHaveValue('60');
-      fireEvent.keyDown(editor(), { key: 'Tab' });
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'income' }]]);
-      expect(focusedStop()).toBe('r2:income');
-    });
-
-    it("tabs back from a cell's later value to its previous one", () => {
-      const { onCommit, onStartEdit } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
-        initialEditing: r2Age(1),
-      });
-      fireEvent.keyDown(editor(), { key: 'Tab', shiftKey: true });
-      expect(onCommit.mock.calls).toEqual([[r2Age(1), '60', 'left']]);
-      expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
-      expect(editor()).toHaveValue('25');
-    });
-
     it.each([
       'with a render',
       'silently',
@@ -2380,7 +2658,6 @@ describe('DecisionText', () => {
     };
 
     it.each<[string, KeyboardEventInit, string, string]>([
-      ['Tab', { key: 'Tab' }, '60', 'nl-editor'],
       ['Enter', { key: 'Enter' }, '', 'r3:age'],
       ['Escape', { key: 'Escape' }, '', 'r2:age'],
     ])('moves on from %s once the host closes the editor a moment later', async (_, key, opened, stop) => {
@@ -2550,14 +2827,18 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it("hands the host's editor the value it edits and the edit's commit", () => {
+    it("swaps in the host's editor from Edit expression, handing it the value it edits and the edit's commit", () => {
       const contexts: SentenceEditorContext[] = [];
       const renderEditor = (context: SentenceEditorContext) => {
         contexts.push(context);
         return <textarea aria-label={context.ariaLabel} defaultValue={context.value} />;
       };
       const { onCommit } = renderEditing({ initialEditing: r2Age(1), renderEditor });
+      expect(editor()).toHaveValue('60');
+      expect(contexts).toEqual([]);
+      fireEvent.click(screen.getByRole('button', { name: 'Edit expression' }));
       expect(screen.queryByTestId('nl-editor')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Edit expression' })).toBeNull();
       expect(screen.getByRole('textbox', { name: 'age 60, rule 2' })).toHaveValue('60');
       const context = contexts.at(-1);
       expect(context?.target).toEqual(r2Age(1));
@@ -2604,6 +2885,1384 @@ describe('DecisionText', () => {
         's',
         'z',
       ]);
+    });
+  });
+
+  describe('value popover', () => {
+    const AGE_OPERATORS = [
+      { id: '<', label: 'is less than' },
+      { id: '>', label: 'is greater than' },
+    ];
+    const RISKS = ['"high"', '"standard"', '"review"'];
+    const r1Age: SentenceValueId = { rowId: 'r1', columnId: 'age', index: 0 };
+    const r1Risk: SentenceValueId = { rowId: 'r1', columnId: 'risk', index: 0 };
+    const r3Channel: SentenceValueId = { rowId: 'r3', columnId: 'channel', index: 0 };
+    const CHANNEL_BANDS: SentenceBand[] = [
+      ...GRID_SENTENCE_BANDS,
+      { id: 'more', label: 'More', columns: [{ id: 'channel', name: 'channel' }] },
+    ];
+    const field = (cell: SentenceCellId): ValueField => {
+      if (cell.columnId === 'risk') return { allowedValues: RISKS };
+      if (cell.columnId === 'channel') return { operators: AGE_OPERATORS, operator: '>' };
+      return {
+        icon: <svg data-testid="type-icon" />,
+        operators: AGE_OPERATORS,
+        operator: '<',
+        expression: '< 25',
+      };
+    };
+    const popover = () => screen.getByTestId('nl-value-editor');
+    const inPopover = () => within(popover());
+    const operatorSelect = () => inPopover().getByRole('combobox', { name: 'Operator' });
+    const action = (name: string) => inPopover().getByRole('button', { name });
+    const pressApply = () => {
+      const apply = action('Apply');
+      const hit = (apply.matches(':disabled') && apply.parentElement) || apply;
+      fireEvent.pointerDown(hit);
+      fireEvent.mouseDown(hit);
+      fireEvent.pointerUp(hit);
+      fireEvent.mouseUp(hit);
+      fireEvent.click(hit);
+    };
+
+    const blurCommittingEditor =
+      (reportsDraft: boolean) =>
+      ({ value, ariaLabel, onCommit, onCancel, onDraftChange }: SentenceEditorContext) => (
+        <CellTextEditor
+          value={value}
+          ariaLabel={ariaLabel}
+          dataTestId="host-editor"
+          onCommit={onCommit}
+          onCancel={onCancel}
+          onDraftChange={reportsDraft ? onDraftChange : undefined}
+        />
+      );
+
+    it('cancels from Cancel an expression typed into a host editor that commits on blur', () => {
+      const { onCommit, onCancel } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: blurCommittingEditor(true),
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      const cancel = action('Cancel');
+      act(() => cancel.focus());
+      fireEvent.click(cancel);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('hands a host editor the grid editor contract, applying the draft it reports through onDraftChange', () => {
+      const draftOnlyEditor = ({ value, ariaLabel, onDraftChange }: SentenceEditorContext) => (
+        <input
+          aria-label={ariaLabel}
+          data-testid="host-editor"
+          defaultValue={value}
+          onChange={(event) => onDraftChange?.(event.currentTarget.value)}
+        />
+      );
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: draftOnlyEditor,
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
+    it('applies once the text a host editor last held, though it reports no draft', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        refuse: true,
+        renderEditor: blurCommittingEditor(false),
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      const apply = action('Apply');
+      act(() => apply.focus());
+      fireEvent.click(apply);
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
+    it('applies from a mouse click on Apply the text a host editor holds, though it reports no draft', async () => {
+      const user = userEvent.setup();
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: blurCommittingEditor(false),
+      });
+      await user.click(action('Edit expression'));
+      await user.clear(screen.getByTestId('host-editor'));
+      await user.type(screen.getByTestId('host-editor'), 'x');
+      await user.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
+    it('applies from Apply the text a refused Enter submitted from a host editor that reports no draft', async () => {
+      const user = userEvent.setup();
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        refuse: true,
+        renderEditor: blurCommittingEditor(false),
+      });
+      await user.click(action('Edit expression'));
+      await user.clear(screen.getByTestId('host-editor'));
+      await user.type(screen.getByTestId('host-editor'), 'x{Enter}');
+      await user.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([
+        [r1Age, 'x', 'down'],
+        [r1Age, 'x', 'none'],
+      ]);
+    });
+
+    it('applies an expression a host editor held as focus moved to the footer, once focus leaves from there', () => {
+      const renderEditor = ({ value, ariaLabel, onCommit }: SentenceEditorContext) => (
+        <textarea
+          aria-label={ariaLabel}
+          defaultValue={value}
+          onBlur={(event) => onCommit(event.currentTarget.value, 'none')}
+        />
+      );
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor,
+      });
+      fireEvent.click(action('Edit expression'));
+      const expression = screen.getByRole('textbox', { name: 'age 25, rule 1' });
+      act(() => expression.focus());
+      fireEvent.change(expression, { target: { value: 'x' } });
+      act(() => action('Apply').focus());
+      expect(onCommit).not.toHaveBeenCalled();
+      act(() => screen.getByTestId('nl').focus());
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
+    it('returns focus to the value from Apply when the view is in a shadow root', () => {
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const shadow = host.attachShadow({ mode: 'open' });
+      const container = shadow.appendChild(document.createElement('div'));
+      renderEditing(
+        { initial: { rowId: 'r1', columnId: 'age' }, initialEditing: r1Age, valueField: field },
+        container
+      );
+      const inShadow = within(container);
+      fireEvent.click(
+        within(inShadow.getByTestId('nl-value-editor')).getByRole('button', { name: 'Apply' })
+      );
+      expect(inShadow.queryByTestId('nl-value-editor')).toBeNull();
+      expect(shadow.activeElement).toBe(
+        inShadow.getByTestId('nl-row-r1').querySelector('[data-kind="value"][data-column-id="age"]')
+      );
+    });
+
+    it("titles the popover with the column's type glyph and name, over the cell's operator and value", () => {
+      renderEditing({ initialEditing: r1Age, valueField: field });
+      expect(inPopover().getByTestId('type-icon')).toBeInTheDocument();
+      expect(inPopover().getByText('age')).toBeInTheDocument();
+      expect(operatorSelect()).toHaveTextContent('is less than');
+      expect(editor()).toHaveValue('25');
+      expect(
+        inPopover()
+          .getAllByRole('button')
+          .map((button) => button.textContent)
+      ).toEqual(['Cancel', 'Apply']);
+    });
+
+    it('opens the operator list from the value input on Alt+ArrowDown or Alt+ArrowUp, and returns focus to it on a pick', () => {
+      const { onCommit, onCancel } = renderEditing({ initialEditing: r1Age, valueField: field });
+      expect(editor()).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
+      fireEvent.keyDown(editor(), { key: 'ArrowDown' });
+      expect(screen.queryByRole('listbox')).toBeNull();
+      fireEvent.keyDown(editor(), { key: 'ArrowDown', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      expect(screen.queryByRole('listbox')).toBeNull();
+      expect(document.activeElement).toBe(editor());
+      fireEvent.keyDown(editor(), { key: 'ArrowUp', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
+      expect(document.activeElement).toBe(editor());
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onCancel).not.toHaveBeenCalled();
+      fireEvent.keyDown(editor(), { key: 'ArrowDown', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '>']]);
+    });
+
+    it('shows no operator select or shortcut for a cell the host offers none for', () => {
+      renderEditing({ initialEditing: r2Age(1) });
+      expect(inPopover().queryByRole('combobox')).toBeNull();
+      expect(inPopover().getByText('age')).toBeInTheDocument();
+      expect(editor()).toHaveValue('60');
+      expect(editor()).not.toHaveAttribute('aria-keyshortcuts');
+      fireEvent.keyDown(editor(), { key: 'ArrowDown', altKey: true });
+      expect(screen.queryByRole('listbox')).toBeNull();
+      expect(editor()).toBeInTheDocument();
+    });
+
+    it("shows an operator the host's operators lack as it is, and keeps it offered once another is picked", async () => {
+      const user = userEvent.setup();
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({ operators: AGE_OPERATORS, operator: '!=' }),
+      });
+      expect(operatorSelect()).toHaveTextContent('!=');
+      await user.click(operatorSelect());
+      await user.click(screen.getByRole('option', { name: 'is greater than' }));
+      await user.click(operatorSelect());
+      await user.click(screen.getByRole('option', { name: '!=' }));
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '!=']]);
+    });
+
+    it('starts a condition whose field offers operators but names none on the first of them, and commits it', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({ operators: AGE_OPERATORS }),
+      });
+      const [first] = AGE_OPERATORS;
+      if (!first) throw new Error('no age operator');
+      expect(operatorSelect()).toHaveTextContent(first.label);
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', first.id]]);
+    });
+
+    it('commits the picked operator with the value on Enter, and moves down as before', () => {
+      const { onCommit, onSelect } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: r1Age,
+        valueField: field,
+      });
+      fireEvent.click(operatorSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      expect(operatorSelect()).toHaveTextContent('is greater than');
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '>']]);
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(focusedStop()).toBe('r2:age');
+    });
+
+    it('commits an allowed value from a click on its radio, offering no text field beside them', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Risk,
+        valueField: field,
+        renderEditor: () => null,
+      });
+      const high = inPopover().getByRole('radio', { name: '"high"' });
+      expect(high).toBeChecked();
+      expect(document.activeElement).toBe(high);
+      expect(inPopover().queryByRole('textbox')).toBeNull();
+      expect(action('Edit expression')).toBeInTheDocument();
+      fireEvent.click(inPopover().getByRole('radio', { name: '"review"' }));
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"review"', 'none']]);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+    });
+
+    it('moves the choice with an arrow key without committing, and commits it on Enter', async () => {
+      const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+      const standard = inPopover().getByRole('radio', { name: '"standard"' });
+      fireEvent.keyDown(inPopover().getByRole('radio', { name: '"high"' }), { key: 'ArrowDown' });
+      await waitFor(() => expect(standard).toBeChecked());
+      fireEvent.keyUp(standard, { key: 'ArrowDown' });
+      expect(document.activeElement).toBe(standard);
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.keyDown(standard, { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"standard"', 'down']]);
+    });
+
+    it('commits the value an arrow key moved to on Space', async () => {
+      const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+      const user = userEvent.setup();
+      const standard = inPopover().getByRole('radio', { name: '"standard"' });
+      await user.keyboard('{ArrowDown}');
+      await waitFor(() => expect(standard).toBeChecked());
+      expect(document.activeElement).toBe(standard);
+      await user.keyboard(' ');
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"standard"', 'none']]);
+    });
+
+    it('shows a value the column does not allow as the checked radio after the allowed ones, marked not allowed', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Risk,
+        valueField: () => ({ allowedValues: ['"standard"', '"review"'] }),
+      });
+      const high = inPopover().getByRole('radio', { name: '"high"' });
+      expect(inPopover().getAllByRole('radio').indexOf(high)).toBe(2);
+      expect(high).toBeChecked();
+      expect(high).toHaveAccessibleDescription('Not one of the allowed values');
+      expect(
+        inPopover().getByRole('radio', { name: '"standard"' })
+      ).not.toHaveAccessibleDescription();
+      expect(popover().querySelectorAll('[data-glyph="error"]')).toHaveLength(1);
+      fireEvent.click(inPopover().getByRole('radio', { name: '"review"' }));
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"review"', 'none']]);
+    });
+
+    it("focuses an empty outcome's first allowed value without choosing it", () => {
+      const m2Reason: SentenceValueId = { rowId: 'm2', columnId: 'reason', index: 0 };
+      const { onCommit } = renderEditing({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        initialEditing: m2Reason,
+        valueField: () => ({ allowedValues: ['"prime"', '"low score"'] }),
+      });
+      const radios = inPopover().getAllByRole('radio');
+      expect(radios).toHaveLength(2);
+      expect(document.activeElement).toBe(radios[0]);
+      expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([]);
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[m2Reason, '', 'none']]);
+    });
+
+    it('opens the operator list from an allowed value on Alt+ArrowDown, and returns focus to it on a pick', () => {
+      const m3Channel: SentenceValueId = { rowId: 'm3', columnId: 'channel', index: 0 };
+      const { onCommit } = renderEditing({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        initialEditing: m3Channel,
+        valueField: () => ({
+          operators: AGE_OPERATORS,
+          operator: '<',
+          allowedValues: ['"web"', '"branch"'],
+        }),
+      });
+      const branch = inPopover().getByRole('radio', { name: '"branch"' });
+      expect(branch).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
+      fireEvent.keyDown(branch, { key: 'ArrowDown', altKey: true });
+      fireEvent.keyUp(branch, { key: 'ArrowDown', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      expect(document.activeElement).toBe(branch);
+      expect(branch).toBeChecked();
+      fireEvent.keyDown(branch, { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[m3Channel, '"branch"', 'down', '>']]);
+    });
+
+    it('clears an outcome with a value from Clear, and offers no Clear on a condition', () => {
+      const { onClearCell, onCancel, onCommit } = renderEditing({
+        initialEditing: r1Risk,
+        valueField: field,
+      });
+      fireEvent.click(action('Clear'));
+      expect(onClearCell.mock.calls).toEqual([[{ rowId: 'r1', columnId: 'risk' }]]);
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      fireEvent.click(valueChip('r1', 'age'));
+      expect(inPopover().queryByRole('button', { name: 'Clear' })).toBeNull();
+    });
+
+    it('cancels from Cancel back to the chip, committing nothing', () => {
+      const { onCancel, onCommit } = renderEditing({
+        initial: { rowId: 'r2', columnId: 'age' },
+        initialEditing: r2Age(1),
+      });
+      fireEvent.change(editor(), { target: { value: '61' } });
+      fireEvent.click(action('Cancel'));
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(focusedStop()).toBe('r2:age');
+    });
+
+    describe('settling', () => {
+      const hostInput = ({ value, ariaLabel, onCommit, onDraftChange }: SentenceEditorContext) => (
+        <input
+          aria-label={ariaLabel}
+          data-testid="host-editor"
+          defaultValue={value}
+          onChange={(event) => onDraftChange?.(event.currentTarget.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') onCommit(event.currentTarget.value, 'down');
+          }}
+        />
+      );
+
+      it('commits the allowed value a press picks though the press leaves focus nowhere, as Safari does', () => {
+        const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+        safariPress(inPopover().getByRole('radio', { name: '"review"' }));
+        expect(onCommit.mock.calls).toEqual([[r1Risk, '"review"', 'none']]);
+      });
+
+      it.each([
+        ['its operator select', () => operatorSelect()],
+        ['its header', () => inPopover().getByText('age')],
+      ])('keeps the popover open and focused from a press on %s that leaves focus nowhere, as Safari does', (_, target) => {
+        const { onCommit } = renderEditing({ initialEditing: r1Age, valueField: field });
+        safariPress(target());
+        expect(onCommit).not.toHaveBeenCalled();
+        expect(popover().contains(document.activeElement)).toBe(true);
+      });
+
+      it('applies the draft a host editor reports through onDraftChange once focus leaves the popover', () => {
+        const { onCommit } = renderEditing({
+          initialEditing: r1Age,
+          valueField: field,
+          renderEditor: hostInput,
+        });
+        fireEvent.click(action('Edit expression'));
+        const input = screen.getByTestId('host-editor');
+        act(() => input.focus());
+        fireEvent.change(input, { target: { value: '< 30' } });
+        act(() => screen.getByTestId('nl').focus());
+        expect(onCommit.mock.calls).toEqual([[r1Age, '< 30', 'none']]);
+      });
+
+      it('commits once as focus leaves a host editor that commits on blur', () => {
+        const { onCommit } = renderEditing({
+          initialEditing: r1Age,
+          valueField: field,
+          renderEditor: blurCommittingEditor(false),
+        });
+        fireEvent.click(action('Edit expression'));
+        const input = screen.getByTestId('host-editor');
+        act(() => input.focus());
+        fireEvent.change(input, { target: { value: '< 30' } });
+        act(() => screen.getByTestId('nl').focus());
+        expect(onCommit.mock.calls).toEqual([[r1Age, '< 30', 'none']]);
+      });
+
+      it('opens Edit expression on the whole condition the host gives, and applies one left as it opened as the popover draft', () => {
+        const { onCommitValues } = renderEditing({
+          initialEditing: r1Age,
+          valueField: field,
+          renderEditor: hostInput,
+        });
+        fireEvent.click(action('Edit expression'));
+        expect(screen.getByTestId('host-editor')).toHaveValue('< 25');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [r1Age, { kind: 'values', values: ['25'], operator: '<' }, 'none'],
+        ]);
+      });
+
+      it('offers no Edit expression on a condition with operators the host gives no expression for', () => {
+        renderEditing({
+          initialEditing: r1Age,
+          valueField: () => ({ operators: AGE_OPERATORS, operator: '<' }),
+          renderEditor: hostInput,
+        });
+        expect(inPopover().queryByRole('button', { name: 'Edit expression' })).toBeNull();
+      });
+
+      it('tells the host an expression commit from a values commit by its kind', () => {
+        const { onCommitValues } = renderEditing({
+          initialEditing: r1Age,
+          valueField: field,
+          renderEditor: hostInput,
+        });
+        fireEvent.change(editor(), { target: { value: '30' } });
+        fireEvent.keyDown(editor(), { key: 'Enter' });
+        fireEvent.click(valueChip('r1', 'age'));
+        fireEvent.click(action('Edit expression'));
+        const input = screen.getByTestId('host-editor');
+        fireEvent.change(input, { target: { value: '< 30' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+        expect(onCommitValues.mock.calls.map(([, commit]) => commit)).toEqual([
+          { kind: 'values', values: ['30'], operator: '<' },
+          { kind: 'expression', text: '< 30' },
+        ]);
+      });
+
+      it('commits nothing from a host editor that commits on blur once Escape cancelled the popover and focus left before the host closed it', async () => {
+        const outside = document.body.appendChild(document.createElement('button'));
+        onTestFinished(() => outside.remove());
+        const onCommit = vi.fn();
+        const SlowCancelHost = () => {
+          const [editing, setEditing] = useState<SentenceValueId | null>(r1Age);
+          return view({
+            rules: GRID_SENTENCE_RULES,
+            bands: GRID_SENTENCE_BANDS,
+            selected: { rowId: 'r1', columnId: 'age' },
+            onSelect: vi.fn(),
+            edit: editWith({
+              editing,
+              onStartEdit: setEditing,
+              valueField: field,
+              renderEditor: ({ value, ariaLabel, onCommit: commit }) => (
+                <input
+                  aria-label={ariaLabel}
+                  data-testid="host-editor"
+                  defaultValue={value}
+                  onBlur={(event) => commit(event.currentTarget.value, 'none')}
+                />
+              ),
+              onCommit: (...args) => {
+                onCommit(...args);
+                setEditing(null);
+              },
+              onCancel: () => later(() => setEditing(null)),
+            }),
+          });
+        };
+        render(<SlowCancelHost />);
+        fireEvent.click(action('Edit expression'));
+        const input = screen.getByTestId('host-editor');
+        act(() => input.focus());
+        fireEvent.change(input, { target: { value: 'cancelled' } });
+        fireEvent.keyDown(input, { key: 'Escape' });
+        act(() => outside.focus());
+        await settleLater();
+        expect(onCommit).not.toHaveBeenCalled();
+      });
+
+      it('commits nothing from a condition added from + while it has no value, and says why Apply is off', () => {
+        const { onCommit } = renderEditing({
+          initialEditing: r3Channel,
+          valueField: field,
+          bands: CHANNEL_BANDS,
+        });
+        expect(action('Apply')).toBeDisabled();
+        expect(editor()).toHaveAttribute('aria-invalid', 'true');
+        expect(editor()).toHaveAccessibleDescription('Enter a value');
+        fireEvent.keyDown(editor(), { key: 'Enter' });
+        fireEvent.keyDown(editor(), { key: 'Tab' });
+        act(() => screen.getByTestId('nl').focus());
+        expect(onCommit).not.toHaveBeenCalled();
+        fireEvent.change(editor(), { target: { value: '"web"' } });
+        expect(editor()).not.toHaveAccessibleDescription();
+        expect(action('Apply')).toBeEnabled();
+      });
+
+      it('applies from Apply an expression typed for a condition added from + into a host editor that reports no draft', async () => {
+        const user = userEvent.setup();
+        const { onCommitValues } = renderEditing({
+          initialEditing: r3Channel,
+          valueField: () => ({}),
+          bands: CHANNEL_BANDS,
+          renderEditor: blurCommittingEditor(false),
+        });
+        await user.click(action('Edit expression'));
+        pressApply();
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(popover()).toBeInTheDocument();
+        await user.type(screen.getByTestId('host-editor'), '"web"');
+        pressApply();
+        expect(onCommitValues.mock.calls).toEqual([
+          [r3Channel, { kind: 'expression', text: '"web"' }, 'none'],
+        ]);
+      });
+
+      it('applies an expression typed for a condition added from +, though its own fields hold no value', () => {
+        const { onCommitValues } = renderEditing({
+          initialEditing: r3Channel,
+          valueField: () => ({}),
+          bands: CHANNEL_BANDS,
+          renderEditor: hostInput,
+        });
+        fireEvent.click(action('Edit expression'));
+        expect(action('Apply')).toHaveAttribute('aria-disabled', 'true');
+        fireEvent.change(screen.getByTestId('host-editor'), { target: { value: '"web"' } });
+        expect(action('Apply')).not.toHaveAttribute('aria-disabled');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [r3Channel, { kind: 'expression', text: '"web"' }, 'none'],
+        ]);
+      });
+
+      it.each<[string, ValueField, string]>([
+        [
+          'the first operator when the field names none',
+          { operators: AGE_OPERATORS },
+          'is less than',
+        ],
+        [
+          'an operator the host lacks, as the select shows it',
+          { operators: AGE_OPERATORS, operator: '!=' },
+          '!=',
+        ],
+      ])('words a pending line with %s', (_, pendingField, words) => {
+        renderEditing({
+          initialEditing: r3Channel,
+          valueField: () => pendingField,
+          bands: CHANNEL_BANDS,
+        });
+        expect(operatorSelect()).toHaveTextContent(words);
+        expect(card('r3').querySelector('li[data-pending]')).toHaveTextContent(
+          new RegExp(`^channel ${words} Set a value$`)
+        );
+      });
+    });
+
+    it('applies the draft in place from Apply, with its operator', () => {
+      const { onCommit } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: r1Age,
+        valueField: field,
+      });
+      fireEvent.change(editor(), { target: { value: '30' } });
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r1Age, '30', 'none', '<']]);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      expect(focusedStop()).toBe('r1:age');
+    });
+
+    it('keeps the edit open while focus moves inside the popover, and commits once it leaves', () => {
+      const renderEditor = () => <textarea aria-label="expression" />;
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor,
+      });
+      fireEvent.change(editor(), { target: { value: '30' } });
+      for (const inside of [
+        operatorSelect(),
+        action('Edit expression'),
+        action('Cancel'),
+        action('Apply'),
+      ]) {
+        fireEvent.blur(editor(), { relatedTarget: inside });
+      }
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(editor()).toHaveValue('30');
+      fireEvent.blur(editor(), { relatedTarget: card('r2') });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '30', 'none', '<']]);
+    });
+
+    it('shows a pending line for a condition added from +, opens on it, and drops it on Cancel', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r3Channel,
+        valueField: field,
+        bands: CHANNEL_BANDS,
+      });
+      const line = card('r3').querySelector<HTMLElement>('li[data-pending]');
+      expect(line).toHaveTextContent('channel is greater than Set a value');
+      expect(
+        within(card('r3')).queryByRole('button', { name: 'Remove channel from rule 3' })
+      ).toBeNull();
+      expect(editor()).toHaveValue('');
+      expect(editor()).toHaveAccessibleName('New channel condition, rule 3');
+      fireEvent.click(action('Cancel'));
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(card('r3').querySelector('li[data-pending]')).toBeNull();
+      expect(card('r3').querySelector('[data-column-id="channel"]')).toBeNull();
+    });
+
+    it('words the pending line with the operator the select picks before Apply', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r3Channel,
+        valueField: field,
+        bands: CHANNEL_BANDS,
+        conditionEntries: (_, startEdit) => [
+          { label: 'channel', focusesOwnSurface: true, onClick: () => startEdit(r3Channel) },
+        ],
+      });
+      const pendingLine = () => card('r3').querySelector('li[data-pending]');
+      fireEvent.click(operatorSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
+      expect(pendingLine()).toHaveTextContent(/^channel is less than Set a value$/);
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.click(action('Cancel'));
+      fireEvent.click(within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' }));
+      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
+      expect(pendingLine()).toHaveTextContent(/^channel is greater than Set a value$/);
+    });
+
+    it('commits a pending condition only on Apply, with its operator, and words it without a placeholder', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r3Channel,
+        valueField: field,
+        bands: CHANNEL_BANDS,
+      });
+      fireEvent.change(editor(), { target: { value: '"web"' } });
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r3Channel, '"web"', 'none', '>']]);
+      expect(card('r3').querySelector('li[data-pending]')).toBeNull();
+    });
+
+    it('words a pending line without an operator when the host offers none', () => {
+      renderEditing({ initialEditing: r3Channel, bands: CHANNEL_BANDS });
+      expect(card('r3').querySelector('li[data-pending]')).toHaveTextContent(
+        /^channel Set a value$/
+      );
+    });
+
+    describe('ranges and lists', () => {
+      const SHAPED_OPERATORS: ValueOperatorOption[] = [
+        { id: '<', label: 'is less than' },
+        { id: 'between', label: 'is between', shape: 'range' },
+        { id: 'oneOf', label: 'is one of', shape: 'list' },
+        { id: 'noneOf', label: 'is none of', shape: 'list' },
+      ];
+      const COUNTRIES = ['"US"', '"CA"', '"MX"', '"GB"', '"DE"'];
+      const BOTH_INCLUDED = { lowInclusive: true, highInclusive: true };
+      const inOrder = (low: string, high: string) => Number(low) <= Number(high);
+      const at = (rowId: string, columnId: string, index = 0): SentenceValueId => ({
+        rowId,
+        columnId,
+        index,
+      });
+      const shapedField = (cell: SentenceCellId): ValueField => {
+        const base = { operators: SHAPED_OPERATORS, inOrder };
+        if (cell.rowId === 'm1' && cell.columnId === 'score') {
+          return { ...base, operator: 'between', values: ['700', '850'], ends: BOTH_INCLUDED };
+        }
+        if (cell.rowId === 'm1' && cell.columnId === 'country') {
+          return { ...base, operator: 'oneOf', values: COUNTRIES };
+        }
+        if (cell.rowId === 'm2' && cell.columnId === 'country') {
+          return { ...base, operator: 'noneOf', values: ['"RU"', '"KP"'] };
+        }
+        return { ...base, operator: '<' };
+      };
+      const renderShaped = (props: Omit<EditingHostProps, 'spies'> = {}) =>
+        renderEditing({
+          rules: MULTI_SENTENCE_RULES,
+          bands: MULTI_SENTENCE_BANDS,
+          header: MULTI_SENTENCE_HEADER,
+          valueField: shapedField,
+          ...props,
+        });
+      const end = (name: 'From' | 'To') => within(inPopover().getByRole('group', { name }));
+      const endField = (name: 'From' | 'To') => end(name).getByRole('textbox', { name });
+      const included = (name: 'From' | 'To') =>
+        end(name).getByRole('checkbox', { name: 'Included' });
+      const box = (name: string) => inPopover().getByRole('checkbox', { name });
+      const addField = () => inPopover().getByRole('textbox', { name: 'Add value' });
+
+      it('edits both ends of a range and whether each is included in one popover, focused on the clicked end', async () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'score', 1) });
+        expect(operatorSelect()).toHaveTextContent('is between');
+        expect(endField('From')).toHaveValue('700');
+        expect(endField('To')).toHaveValue('850');
+        expect(document.activeElement).toBe(endField('To'));
+        expect(included('From')).toBeChecked();
+        expect(included('To')).toBeChecked();
+        expect(await axe(popover())).toHaveNoViolations();
+        fireEvent.change(endField('From'), { target: { value: '650' } });
+        fireEvent.click(included('To'));
+        expect(included('To')).not.toBeChecked();
+        expect(onCommitValues).not.toHaveBeenCalled();
+        fireEvent.keyDown(endField('From'), { key: 'Enter' });
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'score', 1),
+            {
+              kind: 'values',
+              values: ['650', '850'],
+              operator: 'between',
+              ends: { lowInclusive: true, highInclusive: false },
+            },
+            'down',
+          ],
+        ]);
+      });
+
+      it('keeps Apply off while an end is empty or the ends are out of order, committing nothing on Enter or a blur', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'score') });
+        fireEvent.change(endField('To'), { target: { value: '' } });
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.keyDown(endField('From'), { key: 'Enter' });
+        fireEvent.change(endField('To'), { target: { value: '600' } });
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.keyDown(included('To'), { key: 'Enter' });
+        fireEvent.blur(endField('To'), { relatedTarget: card('m2') });
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(popover()).toBeInTheDocument();
+        fireEvent.change(endField('To'), { target: { value: '700' } });
+        expect(action('Apply')).toBeEnabled();
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'score'),
+            { kind: 'values', values: ['700', '700'], operator: 'between', ends: BOTH_INCLUDED },
+            'none',
+          ],
+        ]);
+      });
+
+      it('turns a single value into a range from it, with an empty To and both ends included', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m3', 'score') });
+        fireEvent.click(operatorSelect());
+        fireEvent.click(screen.getByRole('option', { name: 'is between' }));
+        expect(endField('From')).toHaveValue('600');
+        expect(endField('To')).toHaveValue('');
+        expect(included('From')).toBeChecked();
+        expect(included('To')).toBeChecked();
+        expect(document.activeElement).toBe(endField('From'));
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.change(endField('To'), { target: { value: '650' } });
+        fireEvent.keyDown(endField('To'), { key: 'Enter' });
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m3', 'score'),
+            { kind: 'values', values: ['600', '650'], operator: 'between', ends: BOTH_INCLUDED },
+            'down',
+          ],
+        ]);
+      });
+
+      it("opens the operator list from a range's Included box on Alt+ArrowDown, and carries its ends into a list", () => {
+        renderShaped({ initialEditing: at('m1', 'score') });
+        expect(included('To')).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
+        fireEvent.keyDown(included('To'), { key: 'ArrowDown', altKey: true });
+        fireEvent.click(screen.getByRole('option', { name: 'is one of' }));
+        expect(box('700')).toBeChecked();
+        expect(box('850')).toBeChecked();
+        expect(document.activeElement).toBe(box('700'));
+      });
+
+      it('edits a list as checkboxes of its values with a field that adds one, focused on the clicked value', async () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'country', 2) });
+        expect(operatorSelect()).toHaveTextContent('is one of');
+        expect(inPopover().getAllByRole('checkbox')).toHaveLength(5);
+        for (const country of COUNTRIES) expect(box(country)).toBeChecked();
+        expect(document.activeElement).toBe(box('"MX"'));
+        expect(await axe(popover())).toHaveNoViolations();
+        fireEvent.click(box('"MX"'));
+        expect(box('"MX"')).not.toBeChecked();
+        fireEvent.change(addField(), { target: { value: '"FR"' } });
+        fireEvent.keyDown(addField(), { key: 'Enter' });
+        expect(addField()).toHaveValue('');
+        expect(box('"FR"')).toBeChecked();
+        fireEvent.change(addField(), { target: { value: '"IT"' } });
+        fireEvent.click(action('Add value'));
+        expect(box('"IT"')).toBeChecked();
+        expect(onCommitValues).not.toHaveBeenCalled();
+        fireEvent.keyDown(addField(), { key: 'Enter' });
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'country', 2),
+            {
+              kind: 'values',
+              values: ['"US"', '"CA"', '"GB"', '"DE"', '"FR"', '"IT"'],
+              operator: 'oneOf',
+            },
+            'down',
+          ],
+        ]);
+      });
+
+      it.each<[string, () => void, string]>([
+        ['a list', () => {}, '"RU"'],
+        [
+          'a range whose From was typed',
+          () => {
+            fireEvent.click(operatorSelect());
+            fireEvent.click(screen.getByRole('option', { name: 'is between' }));
+            fireEvent.change(endField('From'), { target: { value: '"XX"' } });
+          },
+          '"XX"',
+        ],
+      ])('checks and applies the value a single operator keeps from %s, outside the allowed values', (_, before, kept) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country', 1),
+          valueField: (cell) => ({ ...shapedField(cell), allowedValues: ['"CN"'] }),
+        });
+        before();
+        fireEvent.click(operatorSelect());
+        fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
+        const radios = inPopover().getAllByRole('radio');
+        expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([
+          inPopover().getByRole('radio', { name: kept }),
+        ]);
+        expect(inPopover().getByRole('radio', { name: kept })).toHaveAccessibleDescription(
+          'Not one of the allowed values'
+        );
+        expect(inPopover().getByRole('radio', { name: '"KP"' })).toBeInTheDocument();
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m2', 'country', 1), { kind: 'values', values: [kept], operator: '<' }, 'none'],
+        ]);
+      });
+
+      it("offers a list the column's allowed values with no field to add one, keeping a held value outside them marked", () => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({ ...shapedField(cell), allowedValues: ['"RU"', '"CN"'] }),
+        });
+        const boxes = inPopover().getAllByRole('checkbox');
+        expect(boxes.map((checkbox) => checkbox.getAttribute('aria-checked'))).toEqual([
+          'true',
+          'false',
+          'true',
+        ]);
+        expect(boxes[2]).toBe(box('"KP"'));
+        expect(box('"KP"')).toHaveAccessibleDescription('Not one of the allowed values');
+        expect(inPopover().queryByRole('textbox')).toBeNull();
+        fireEvent.click(box('"CN"'));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m2', 'country'),
+            { kind: 'values', values: ['"RU"', '"KP"', '"CN"'], operator: 'noneOf' },
+            'none',
+          ],
+        ]);
+      });
+
+      it('keeps a list’s values in their sentence order, adding a checked one after them and putting a re-checked one back', () => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({
+            ...shapedField(cell),
+            values: ['"KP"', '"RU"'],
+            allowedValues: ['"RU"', '"CN"'],
+          }),
+        });
+        fireEvent.click(action('Apply'));
+        fireEvent.click(valueChip('m2', 'country'));
+        fireEvent.click(box('"CN"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([
+          ['"KP"', '"RU"'],
+          ['"KP"', '"RU"', '"CN"'],
+        ]);
+      });
+
+      it.each<[string, string[]]>([
+        ['checking an allowed value', ['"CN"']],
+        ['unchecking and re-checking a held value', ['"KP"', '"KP"']],
+      ])('commits a list in its sentence order after %s', (_, clicks) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({
+            ...shapedField(cell),
+            values: ['"KP"', '"RU"'],
+            allowedValues: ['"RU"', '"CN"'],
+          }),
+        });
+        for (const option of clicks) fireEvent.click(box(option));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([
+          clicks.includes('"CN"') ? ['"KP"', '"RU"', '"CN"'] : ['"KP"', '"RU"'],
+        ]);
+      });
+
+      it("lists every value of a long list, past the sentence's +N more", () => {
+        const countries = Array.from({ length: 25 }, (_, index) => `"Country ${index + 1}"`);
+        renderShaped({
+          rules: [longValueListRule(25)],
+          initialEditing: at('long-list', 'country'),
+          valueField: () => ({ operators: SHAPED_OPERATORS, operator: 'oneOf', values: countries }),
+        });
+        expect(inPopover().getAllByRole('checkbox')).toHaveLength(25);
+        expect(box('"Country 25"')).toBeChecked();
+      });
+
+      it('keeps Apply off with nothing checked, and commits one checked value as the list', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        fireEvent.click(box('"RU"'));
+        fireEvent.click(box('"KP"'));
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.keyDown(addField(), { key: 'Enter' });
+        expect(onCommitValues).not.toHaveBeenCalled();
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m2', 'country'), { kind: 'values', values: ['"KP"'], operator: 'noneOf' }, 'none'],
+        ]);
+      });
+
+      it('toggles the box a press lands on, keeping the list open, though the press leaves focus nowhere, as Safari does', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'country', 2) });
+        safariPress(box('"CA"'));
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(box('"CA"')).not.toBeChecked();
+        expect(document.activeElement).toBe(box('"CA"'));
+      });
+
+      it.each([
+        ['box', () => included('To')],
+        ['label', () => end('To').getByText('Included')],
+      ])("toggles a range end's Included from a press on its %s, keeping the range open, though the press leaves focus nowhere, as Safari does", (_, target) => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'score') });
+        safariPress(target());
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(included('To')).not.toBeChecked();
+        expect(document.activeElement).toBe(included('To'));
+      });
+
+      it('says why Apply is off: an empty end, ends out of order, or nothing checked', async () => {
+        renderShaped({ initialEditing: at('m1', 'score') });
+        fireEvent.change(endField('To'), { target: { value: '' } });
+        expect(action('Apply')).toBeDisabled();
+        expect(endField('To')).toHaveAttribute('aria-invalid', 'true');
+        expect(endField('To')).toHaveAccessibleDescription('Enter both ends');
+        expect(endField('From')).toHaveAttribute('aria-invalid', 'false');
+        expect(await axe(popover())).toHaveNoViolations();
+        fireEvent.change(endField('To'), { target: { value: '600' } });
+        expect(endField('To')).toHaveAccessibleDescription('From must not be past To');
+        fireEvent.change(endField('To'), { target: { value: '900' } });
+        expect(endField('To')).not.toHaveAccessibleDescription();
+        expect(action('Apply')).toBeEnabled();
+        cleanup();
+        renderShaped({ initialEditing: at('m2', 'country') });
+        fireEvent.click(box('"RU"'));
+        fireEvent.click(box('"KP"'));
+        expect(action('Apply')).toBeDisabled();
+        expect(box('"RU"').closest('fieldset')).toHaveAccessibleDescription('Check a value');
+        expect(await axe(popover())).toHaveNoViolations();
+      });
+
+      it.each<[string, ValueField, ValueCommit]>([
+        [
+          'range',
+          {
+            operators: AGE_OPERATORS,
+            operator: 'between',
+            values: ['700', '850'],
+            ends: BOTH_INCLUDED,
+          },
+          { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
+        ],
+        [
+          'list',
+          { operators: AGE_OPERATORS, operator: 'anyOf', values: ['"US"', '"CA"'] },
+          { kind: 'values', values: ['"US"', '"CA"'], operator: 'anyOf' },
+        ],
+      ])('keeps the %s of an operator the host does not offer, applying all its values', (_, lacking, applied) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m1', 'score'),
+          valueField: () => lacking,
+        });
+        expect(operatorSelect()).toHaveTextContent(lacking.operator ?? '');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([[at('m1', 'score'), applied, 'none']]);
+      });
+
+      it.each<[string, () => void]>([
+        ['Apply', () => fireEvent.click(action('Apply'))],
+        ['focus leaving', () => act(() => screen.getByTestId('nl').focus())],
+      ])('applies the text left in Add value with the list on %s', (_, settle) => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        act(() => addField().focus());
+        fireEvent.change(addField(), { target: { value: ' "FR" ' } });
+        settle();
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([
+          ['"RU"', '"KP"', '"FR"'],
+        ]);
+      });
+
+      it('counts the text left in Add value as a value of a list with nothing checked', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        fireEvent.click(box('"RU"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.change(addField(), { target: { value: '"FR"' } });
+        expect(action('Apply')).toBeEnabled();
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([['"FR"']]);
+      });
+
+      it('keeps focus in Add value from a press on its + button, adding the text', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        act(() => addField().focus());
+        fireEvent.change(addField(), { target: { value: '"FR"' } });
+        safariPress(inPopover().getByRole('button', { name: 'Add value' }));
+        expect(document.activeElement).toBe(addField());
+        expect(addField()).toHaveValue('');
+        expect(box('"FR"')).toBeChecked();
+        expect(onCommitValues).not.toHaveBeenCalled();
+      });
+
+      it('applies from Apply an expression typed for an incomplete range into a host editor that reports no draft', async () => {
+        const user = userEvent.setup();
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m3', 'score'),
+          valueField: (cell) => ({ ...shapedField(cell), expression: '< 600' }),
+          renderEditor: blurCommittingEditor(false),
+        });
+        await user.click(operatorSelect());
+        await user.click(screen.getByRole('option', { name: 'is between' }));
+        await user.click(action('Edit expression'));
+        await user.clear(screen.getByTestId('host-editor'));
+        await user.type(screen.getByTestId('host-editor'), '[[600..650]');
+        pressApply();
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m3', 'score'), { kind: 'expression', text: '[600..650]' }, 'none'],
+        ]);
+      });
+
+      it('opens Edit expression on a whole range the host gives, applying it as it opened unchanged', () => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m1', 'score', 1),
+          valueField: (cell) => ({ ...shapedField(cell), expression: '[700..850]' }),
+          renderEditor: ({ value, ariaLabel }) => (
+            <input aria-label={ariaLabel} data-testid="host-editor" defaultValue={value} />
+          ),
+        });
+        fireEvent.click(action('Edit expression'));
+        expect(screen.getByTestId('host-editor')).toHaveValue('[700..850]');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'score', 1),
+            { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
+            'none',
+          ],
+        ]);
+      });
+    });
+  });
+
+  describe('column popover', () => {
+    const TYPES: ColumnTypeOption[] = [
+      {
+        id: 'number',
+        label: 'Number',
+        icon: <svg data-testid="number-icon" />,
+        allowedValuesPlaceholder: 'e.g. 10, 20',
+      },
+      { id: 'string', label: 'Text', allowedValuesPlaceholder: 'e.g. "a", "b"' },
+    ];
+    const AGE_FIELD: ColumnField = {
+      kind: 'input',
+      label: 'age',
+      binding: 'applicant.age',
+      required: true,
+      typeRef: 'string',
+      allowedValues: '',
+    };
+    const FIELDS: Record<string, ColumnField> = {
+      age: AGE_FIELD,
+      risk: {
+        kind: 'output',
+        label: 'risk',
+        binding: 'risk',
+        required: false,
+        typeRef: 'string',
+        allowedValues: '"high", "low"',
+      },
+    };
+    const columnEdit = (overrides: Partial<ColumnEdit> = {}): ColumnEdit => ({
+      field: (columnId) => FIELDS[columnId] ?? AGE_FIELD,
+      types: TYPES,
+      onCommit: vi.fn(),
+      ...overrides,
+    });
+    const pill = (name: string) =>
+      within(screen.getByTestId('nl-bands')).getByRole('button', { name });
+    const popover = () => screen.getByTestId('nl-column-editor');
+    const inPopover = () => within(popover());
+    const field = (name: string) => inPopover().getByRole('textbox', { name }) as HTMLInputElement;
+    const typeSelect = () => inPopover().getByRole('combobox', { name: 'Data type' });
+    const action = (name: string) => inPopover().getByRole('button', { name });
+    const renderColumns = (overrides: Partial<ColumnEdit> = {}) => {
+      const column = columnEdit(overrides);
+      renderEditing({ column });
+      return column;
+    };
+
+    it('keeps the pills plain without column editing', () => {
+      renderEditing();
+      expect(within(screen.getByTestId('nl-bands')).queryAllByRole('button')).toEqual([]);
+    });
+
+    it("opens an input's popover from its pill, titled by its kind and name, over its label, expression, type and allowed values", async () => {
+      const { container } = renderEditing({ column: columnEdit() });
+      expect(pill('age')).toHaveAttribute('aria-expanded', 'false');
+      fireEvent.click(pill('age'));
+      expect(pill('age')).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByRole('group', { name: 'Input · age' })).toBe(popover());
+      expect(inPopover().getByText('Input · age')).toBeInTheDocument();
+      expect(field('Label')).toHaveValue('age');
+      expect(document.activeElement).toBe(field('Label'));
+      expect(field('Input expression')).toHaveValue('applicant.age');
+      expect(field('Input expression')).toBeRequired();
+      expect(typeSelect()).toHaveTextContent('Text');
+      expect(field('Allowed values')).toHaveValue('');
+      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. "a", "b"');
+      expect(field('Allowed values')).toHaveAccessibleDescription('Separate values with commas.');
+      expect(
+        inPopover()
+          .getAllByRole('button')
+          .map((button) => button.textContent)
+      ).toEqual(['Cancel', 'Apply']);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it("names an output's binding as its output name, required only when the host says so", () => {
+      renderColumns();
+      fireEvent.click(pill('risk'));
+      expect(inPopover().getByText('Output · risk')).toBeInTheDocument();
+      expect(field('Output name')).toHaveValue('risk');
+      expect(field('Output name')).not.toBeRequired();
+      expect(field('Allowed values')).toHaveValue('"high", "low"');
+    });
+
+    it('opens from Enter or Space on the pill, and closes from it again', async () => {
+      const user = userEvent.setup();
+      renderColumns();
+      act(() => pill('age').focus());
+      await user.keyboard('{Enter}');
+      expect(popover()).toBeInTheDocument();
+      await user.keyboard('{Escape}');
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).toBe(pill('age'));
+      await user.keyboard(' ');
+      expect(popover()).toBeInTheDocument();
+      fireEvent.click(pill('age'));
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+    });
+
+    it('applies only the changed fields from Apply, with the picked type, and returns focus to the pill', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: '  Age  ' } });
+      fireEvent.click(typeSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      expect(typeSelect()).toHaveTextContent('Number');
+      expect(inPopover().getByTestId('number-icon')).toBeInTheDocument();
+      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. 10, 20');
+      fireEvent.click(action('Apply'));
+      expect(vi.mocked(onCommit).mock.calls).toEqual([
+        ['age', { label: 'Age', typeRef: 'number' }],
+      ]);
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).toBe(pill('age'));
+    });
+
+    it('applies on Enter in a field, never mid-composition', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('risk'));
+      fireEvent.change(field('Output name'), { target: { value: 'riskLevel' } });
+      fireEvent.change(field('Allowed values'), { target: { value: '"high"' } });
+      fireEvent.keyDown(field('Allowed values'), { key: 'Enter', isComposing: true });
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.keyDown(field('Allowed values'), { key: 'Enter' });
+      expect(vi.mocked(onCommit).mock.calls).toEqual([
+        ['risk', { binding: 'riskLevel', allowedValues: '"high"' }],
+      ]);
+      expect(document.activeElement).toBe(pill('risk'));
+    });
+
+    it('closes without a commit when nothing changed', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.keyDown(field('Label'), { key: 'Enter' });
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+    });
+
+    it('cancels from Cancel or Escape back to the pill, keeping Escape in an open type list to the list', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: 'Age' } });
+      fireEvent.click(action('Cancel'));
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).toBe(pill('age'));
+      fireEvent.click(pill('age'));
+      expect(field('Label')).toHaveValue('age');
+      fireEvent.click(typeSelect());
+      fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' });
+      expect(popover()).toBeInTheDocument();
+      fireEvent.keyDown(field('Label'), { key: 'Escape' });
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(onCommit).not.toHaveBeenCalled();
+    });
+
+    it('keeps Tab and Shift+Tab inside the popover', async () => {
+      const user = userEvent.setup();
+      renderColumns({ onMoreProperties: vi.fn() });
+      fireEvent.click(pill('age'));
+      await user.tab();
+      expect(document.activeElement).toBe(field('Input expression'));
+      act(() => action('Apply').focus());
+      await user.tab();
+      expect(document.activeElement).toBe(field('Label'));
+      await user.tab({ shift: true });
+      expect(document.activeElement).toBe(action('Apply'));
+      expect(popover()).toBeInTheDocument();
+    });
+
+    it('closes without a commit on a press outside, leaving focus where it lands', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: 'Age' } });
+      fireEvent.pointerDown(field('Label'));
+      expect(popover()).toBeInTheDocument();
+      fireEvent.pointerDown(card('r1'));
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(onCommit).not.toHaveBeenCalled();
+    });
+
+    it('refuses Apply while a required binding is empty, and says why', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Input expression'), { target: { value: '  ' } });
+      expect(field('Input expression')).toHaveAttribute('aria-invalid', 'true');
+      expect(field('Input expression')).toHaveAccessibleDescription('This input has no expression');
+      expect(action('Apply')).toBeDisabled();
+      fireEvent.keyDown(field('Input expression'), { key: 'Enter' });
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(popover()).toBeInTheDocument();
+    });
+
+    it('refuses Apply while the label is empty, and says why', () => {
+      const column = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: '   ' } });
+      expect(action('Apply')).toBeDisabled();
+      expect(field('Label')).toHaveAttribute('aria-invalid', 'true');
+      expect(field('Label')).toHaveAccessibleDescription('Enter a label');
+      fireEvent.keyDown(field('Label'), { key: 'Enter' });
+      expect(column.onCommit).not.toHaveBeenCalled();
+    });
+
+    it('keeps focus in the popover from a press off its fields or on a label, so Escape still cancels it, as Safari leaves it nowhere', () => {
+      const column = renderColumns();
+      fireEvent.click(pill('age'));
+      safariPress(inPopover().getByText('Input · age'));
+      expect(document.activeElement).toBe(field('Label'));
+      safariPress(inPopover().getByText('Input expression'));
+      expect(document.activeElement).toBe(field('Input expression'));
+      press('Escape');
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(column.onCommit).not.toHaveBeenCalled();
+    });
+
+    it("offers More properties only with the host's action, which closes the popover", () => {
+      const onMoreProperties = vi.fn();
+      const { onCommit } = renderColumns({ onMoreProperties });
+      fireEvent.click(pill('risk'));
+      fireEvent.click(action('More properties'));
+      expect(onMoreProperties.mock.calls).toEqual([['risk']]);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+    });
+
+    it("offers the column's own type when the host's types lack it, and no allowed values the host leaves out", () => {
+      renderColumns({
+        field: () => ({
+          kind: 'input',
+          label: 'age',
+          binding: 'age',
+          required: true,
+          typeRef: 'tPeriod',
+        }),
+      });
+      fireEvent.click(pill('age'));
+      expect(typeSelect()).toHaveTextContent('tPeriod');
+      expect(inPopover().queryByRole('textbox', { name: 'Allowed values' })).toBeNull();
+    });
+
+    it('closes once the column is gone', () => {
+      const column = columnEdit();
+      const { rerender, onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell } =
+        renderEditing({ column });
+      fireEvent.click(pill('age'));
+      rerender(
+        <EditingHost
+          spies={{ onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell }}
+          column={column}
+          bands={GRID_SENTENCE_BANDS.map((band) => ({
+            ...band,
+            columns: band.columns.filter((c) => c.id !== 'age'),
+          }))}
+        />
+      );
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
     });
   });
 
@@ -2676,7 +4335,7 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it("opens the host's add-condition entries from +, and edits a condition the rule lacks under it", () => {
+    it("opens the host's add-condition entries from +, and edits a condition the rule lacks on its pending line", () => {
       const conditionEntries = vi.fn(
         (rowId: string, startEdit: (value: SentenceValueId) => void): GridMenuEntry[] => [
           {
@@ -2696,11 +4355,13 @@ describe('DecisionText', () => {
       const frame = screen.getByTestId('nl');
       Object.defineProperty(frame, 'clientWidth', { value: 800 });
       Object.defineProperty(frame, 'clientHeight', { value: 400 });
-      vi.spyOn(add, 'getBoundingClientRect').mockReturnValue({
-        ...rect(300, 324),
-        top: 130,
-        bottom: 154,
-      });
+      const boxes = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: HTMLElement) {
+          return this.closest('[data-pending]') && this.dataset.kind === 'value'
+            ? { ...rect(300, 380), top: 130, bottom: 154 }
+            : rect(0, 0);
+        });
       fireEvent.click(add);
       const menu = screen.getByRole('menu');
       expect(menu).toHaveAttribute('aria-label', 'Add condition to rule 3');
@@ -2711,6 +4372,7 @@ describe('DecisionText', () => {
       expect(input).toHaveValue('');
       expect(input).toHaveAccessibleName('New income condition, rule 3');
       expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '154px', left: '300px' });
+      boxes.mockRestore();
       expect(document.activeElement).toBe(input);
       fireEvent.keyDown(input, { key: 'Escape' });
       expect(document.activeElement).toBe(add);
@@ -2760,7 +4422,8 @@ describe('DecisionText', () => {
           editing,
           onStartEdit: setEditing,
           onDeleteRule: (rowId) => setTable((current) => tableWithoutRule(current, rowId)),
-          onCommit: (value, text) => {
+          onCommit: (value, commit) => {
+            const [text = ''] = valuesOf(commit);
             setTable((current) =>
               text === '' ? tableWithoutCell(current, value) : tableWithValue(current, value, text)
             );
@@ -2814,19 +4477,6 @@ describe('DecisionText', () => {
 
     it.each<[string, SentenceCellId, KeyboardEventInit, string]>([
       ['Enter to the next rule', { rowId: 'r1', columnId: 'age' }, { key: 'Enter' }, 'r2:age'],
-      ['Tab to the next cell', { rowId: 'r1', columnId: 'age' }, { key: 'Tab' }, 'r1:income'],
-      [
-        'Shift+Tab to the previous cell',
-        { rowId: 'r1', columnId: 'income' },
-        { key: 'Tab', shiftKey: true },
-        'r1:age',
-      ],
-      [
-        'Tab from the last cell to the rule',
-        { rowId: 'r1', columnId: 'income' },
-        { key: 'Tab' },
-        'r1',
-      ],
     ])('moves by %s when committing an empty value removes its condition', (_, cell, key, stop) => {
       render(<TableHost initial={cell} />);
       act(() => valueChip(cell.rowId, cell.columnId).focus());
@@ -2839,8 +4489,6 @@ describe('DecisionText', () => {
 
     it.each<[string, KeyboardEventInit, string]>([
       ['Enter to the next rule', { key: 'Enter' }, 'r2:channel'],
-      ['Tab from the last cell in place', { key: 'Tab' }, 'r1:channel'],
-      ['Shift+Tab to the previous cell', { key: 'Tab', shiftKey: true }, 'r1:income'],
     ])('moves by %s when committing a condition added from +', (_, key, stop) => {
       render(<TableHost initial={{ rowId: 'r1' }} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
@@ -3422,8 +5070,6 @@ describe('DecisionText', () => {
     it.each<[string, KeyboardEventInit, string]>([
       ['Escape back to its input', { key: 'Escape' }, 'r1:income'],
       ['Enter down to the next rule', { key: 'Enter' }, 'r2:income'],
-      ['Tab from the last cell in place', { key: 'Tab' }, 'r1:income'],
-      ['Shift+Tab to the previous cell', { key: 'Tab', shiftKey: true }, 'r1:age'],
     ])('moves by %s from the editor of a condition with no value', (_, key, stop) => {
       renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1', columnId: 'income' } });
       act(() => card('r1').querySelector<HTMLElement>('[data-column-id="income"]')?.focus());
