@@ -1,6 +1,6 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
 import React, { useRef } from 'react';
 import { createRoot } from 'react-dom/client';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import type { SizedColumn } from './columnSizing';
 import { useColumnWidths } from './useColumnWidths';
