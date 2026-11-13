@@ -128,6 +128,7 @@ export const useValueEditing = ({
   const pressedRef = useRef<Pressed | null>(null);
   const recoveredRef = useRef(false);
   const refocusRef = useRef<PendingRefocus | null>(null);
+  const goneRef = useRef<string | null>(null);
   const target = edit?.editing ?? null;
   const openedRef = useRef(target ? valueKey(target) : undefined);
   const row = target ? rules.findIndex((rule) => rule.rowId === target.rowId) : -1;
@@ -208,6 +209,12 @@ export const useValueEditing = ({
     if (target && (selected?.rowId !== target.rowId || selected?.columnId !== target.columnId)) {
       onSelect?.({ rowId: target.rowId, columnId: target.columnId });
     }
+  });
+
+  useLayoutEffect(() => {
+    const gone = target && !rule ? valueKey(target) : null;
+    if (gone !== null && gone !== goneRef.current) edit?.onCancel();
+    goneRef.current = gone;
   });
 
   const staysOn = (rowId: string): boolean => {

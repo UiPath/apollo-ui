@@ -2182,6 +2182,43 @@ describe('DecisionText', () => {
       expect(screen.queryByTestId('nl-editor')).toBeNull();
     });
 
+    it('cancels once the edit of a rule the host removes another way, as by undo or another client', () => {
+      const onCancel = vi.fn();
+      const props = {
+        bands: GRID_SENTENCE_BANDS,
+        selected: { rowId: 'r2', columnId: 'age' },
+        onSelect: vi.fn(),
+        edit: editWith({ editing: r2Age(0), onCancel }),
+      };
+      const without = GRID_SENTENCE_RULES.filter(({ rowId }) => rowId !== 'r2');
+      const { rerender } = render(view({ ...props, rules: GRID_SENTENCE_RULES }));
+      expect(screen.getByTestId('nl-editor')).toBeInTheDocument();
+      rerender(view({ ...props, rules: without }));
+      rerender(view({ ...props, rules: [...without] }));
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+      expect(onCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the editor closed when a rule the host removed while it was edited comes back', () => {
+      const CancellingHost = ({ rules }: { rules: readonly SentenceRule[] }) => {
+        const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
+        return view({
+          rules,
+          bands: GRID_SENTENCE_BANDS,
+          selected: { rowId: 'r2', columnId: 'age' },
+          onSelect: vi.fn(),
+          edit: editWith({ editing, onCancel: () => setEditing(null) }),
+        });
+      };
+      const { rerender } = render(<CancellingHost rules={GRID_SENTENCE_RULES} />);
+      rerender(
+        <CancellingHost rules={GRID_SENTENCE_RULES.filter(({ rowId }) => rowId !== 'r2')} />
+      );
+      rerender(<CancellingHost rules={GRID_SENTENCE_RULES} />);
+      expect(card('r2')).toBeInTheDocument();
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+    });
+
     it('cancels on Escape back to the chip, and commits in place on a click outside', () => {
       const { onCancel, onCommit } = renderEditing({
         initial: { rowId: 'r2', columnId: 'age' },
