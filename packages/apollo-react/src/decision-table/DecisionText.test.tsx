@@ -825,6 +825,22 @@ describe('DecisionText', () => {
       expect(tooltip()).toHaveTextContent('Unreachable');
     });
 
+    it("brings a focused rule's message back once the pointer rests off any mark after another", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m1'));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
     it('hides the message on Escape until another mark is reached', () => {
       renderView({ marks: scoreMarks });
       const score = valueChip('m3', 'score');
@@ -905,6 +921,23 @@ describe('DecisionText', () => {
       expect(onAddRow).toHaveBeenCalledTimes(1);
       expect(screen.getByTestId('nl-header')).toBeInTheDocument();
       expect(screen.getByTestId('nl-bands')).toBeInTheDocument();
+    });
+
+    it('leaves focus on the rule the user is on after a click on an add-rule action that adds none', () => {
+      const onAdd = vi.fn();
+      const props = {
+        rules: GRID_SENTENCE_RULES,
+        bands: GRID_SENTENCE_BANDS,
+        selected: { rowId: 'r1' },
+        onSelect: vi.fn(),
+        addRule: { label: 'Add rule', onAdd },
+      };
+      const { rerender } = render(view(props));
+      act(() => card('r1').focus());
+      fireEvent.click(screen.getByRole('button', { name: 'Add rule' }), { detail: 1 });
+      rerender(view({ ...props, selected: { rowId: 'r1' } }));
+      expect(onAdd).toHaveBeenCalledTimes(1);
+      expect(focusedStop()).toBe('r1');
     });
 
     it('follows the rules with the add-rule action', () => {
@@ -1395,6 +1428,14 @@ describe('DecisionText', () => {
         'income',
         'age',
       ]);
+    });
+
+    it('keeps the column a click lands on, not the one ↓ kept before it', () => {
+      startAt({ rowId: 'r1', columnId: 'income' });
+      expect(walk('ArrowDown', 'ArrowDown')).toEqual(['r2:income', 'r3']);
+      fireEvent.click(valueChip('r1', 'age'), { detail: 1 });
+      expect(focusedStop()).toBe('r1:age');
+      expect(walk('ArrowDown', 'ArrowDown', 'ArrowUp')).toEqual(['r2:age', 'r3:age', 'r2:age']);
     });
 
     it('moves a row with ↓ and ↑, keeping the column across a row without it', () => {
