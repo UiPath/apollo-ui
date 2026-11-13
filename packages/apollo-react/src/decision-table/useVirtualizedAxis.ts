@@ -5,7 +5,9 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
  * What a windowed axis mounts: runs of real items (half-open index ranges) and spacers standing in
  * for everything scrolled out of view, sized so scrollbar geometry matches the full table.
  */
-type AxisSegment = { type: 'items'; from: number; to: number } | { type: 'spacer'; sizePx: number };
+export type AxisSegment =
+  | { type: 'items'; from: number; to: number }
+  | { type: 'spacer'; sizePx: number };
 
 interface WindowSegmentsInput {
   itemCount: number;
