@@ -277,12 +277,12 @@ describe('Wind message list', () => {
   it('copies the whole reply streamed as content-part chunks, not just its first chunk', async () => {
     const service = createService();
     render(<ApChat chatServiceInstance={service} />);
+    const chunk = (text: string, done = false) =>
+      service.sendResponse({ ...reply({ id: 's1', done }), contentPartChunk: { index: 0, text } });
     act(() => {
-      service.sendResponse(reply({ id: 's1', contentPartChunk: { index: 0, text: '#' } }));
-      service.sendResponse(reply({ id: 's1', contentPartChunk: { index: 0, text: ' Title\n\n' } }));
-      service.sendResponse(
-        reply({ id: 's1', contentPartChunk: { index: 0, text: '**Bold** body' }, done: true })
-      );
+      chunk('#');
+      chunk(' Title\n\n');
+      chunk('**Bold** body', true);
     });
     const message = document.querySelector('[data-chat-message-id="s1"]') as HTMLElement;
 
