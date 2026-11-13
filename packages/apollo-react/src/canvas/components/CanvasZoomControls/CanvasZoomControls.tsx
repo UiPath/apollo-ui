@@ -17,6 +17,11 @@ export interface CanvasZoomControlsProps {
   zoomInOptions?: { duration?: number };
   zoomOutOptions?: { duration?: number };
   onOrganize?: () => void;
+  /** Replaces the default `zoomIn` call when provided. */
+  onZoomIn?: () => void;
+  /** Replaces the default `zoomOut` call when provided. */
+  onZoomOut?: () => void;
+  /** Replaces the default `fitView` call when provided. */
   onFitView?: () => void;
   /**
    * Optional label overrides. When omitted, each label falls back to the
@@ -36,6 +41,8 @@ export const CanvasZoomControls = memo(
       zoomInOptions,
       zoomOutOptions,
       onOrganize,
+      onZoomIn,
+      onZoomOut,
       onFitView,
       labels,
     },
@@ -47,12 +54,20 @@ export const CanvasZoomControls = memo(
     const tooltipSide = isVertical ? 'left' : ('top' as const);
 
     const handleZoomIn = useCallback(() => {
-      zoomIn(zoomInOptions);
-    }, [zoomIn, zoomInOptions]);
+      if (onZoomIn) {
+        onZoomIn();
+      } else {
+        zoomIn(zoomInOptions);
+      }
+    }, [onZoomIn, zoomIn, zoomInOptions]);
 
     const handleZoomOut = useCallback(() => {
-      zoomOut(zoomOutOptions);
-    }, [zoomOut, zoomOutOptions]);
+      if (onZoomOut) {
+        onZoomOut();
+      } else {
+        zoomOut(zoomOutOptions);
+      }
+    }, [onZoomOut, zoomOut, zoomOutOptions]);
 
     const handleFitView = useCallback(() => {
       if (onFitView) {
