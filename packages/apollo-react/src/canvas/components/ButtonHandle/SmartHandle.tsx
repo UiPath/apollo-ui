@@ -17,10 +17,10 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useBatchedUpdateNodeInternals } from '../../hooks/useBatchedUpdateNodeInternals';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
 import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
-import { useBatchedUpdateNodeInternals } from '../BaseNode/useBatchedUpdateNodeInternals';
 import type { HandleActionEvent } from './ButtonHandle';
 import { pixelToPercent } from './ButtonHandleStyleUtils';
 import { HandleButton } from './HandleButton';

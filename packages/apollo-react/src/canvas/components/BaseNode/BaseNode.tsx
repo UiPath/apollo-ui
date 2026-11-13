@@ -24,6 +24,7 @@ import {
   useNodeExecutionState,
   useToolbarActionStoreContext,
 } from '../../hooks';
+import { useBatchedUpdateNodeInternals } from '../../hooks/useBatchedUpdateNodeInternals';
 import { isWideNodeShape, type NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
@@ -56,7 +57,6 @@ import { BaseContainer } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
-import { useBatchedUpdateNodeInternals } from './useBatchedUpdateNodeInternals';
 
 /** Stable predicate used to hard-disable add buttons on read-only nodes. */
 const NEVER_SHOW_ADD_BUTTON = () => false;
