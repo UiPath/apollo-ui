@@ -1,0 +1,114 @@
+import { cn } from '@uipath/apollo-wind';
+import type React from 'react';
+import { Fragment } from 'react';
+import { showTitleIfClipped } from './clippedTitle';
+import type { LineLeadLabels } from './LineLead';
+import type { RowMark } from './marks';
+import { boundedParts, partsText } from './sentenceParts';
+import {
+  CLAMPED_LINE_CLASS,
+  HEADING_TEXT_CLASS,
+  LINE_TEXT_CLASS,
+  MORE_VALUES_CLASS,
+  MUTED_TEXT_CLASS,
+} from './sentenceStyles';
+import type { SentencePart, SentenceToken } from './sentenceTypes';
+import { TokenChip } from './TokenChip';
+
+/** Most values of one column's run a line shows before the rest of that run collapse into a count. */
+const SENTENCE_LINE_VALUE_LIMIT = 20;
+
+/** The first values of the hidden run, an ellipsis if any remain, then the parts after the run. */
+const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePart[]): string => {
+  const { shown, clamped } = boundedParts(hidden, SENTENCE_LINE_VALUE_LIMIT);
+  return `${partsText(shown)}${clamped.length > 0 ? '…' : ''}${partsText(after)}`;
+};
+
+/** A line that tests an input mutes its connecting words, as the condition's operator. */
+const testsInput = (parts: readonly SentencePart[]): boolean =>
+  parts.some((part) => typeof part !== 'string' && part.kind === 'input');
+
+export interface LineTextLabels extends LineLeadLabels {
+  /** The count a clamped run of values shows in place of the rest, e.g. "+9,980 more". */
+  moreValues: (count: number) => string;
+}
+
+export interface LineTextProps {
+  id?: string;
+  heading?: boolean;
+  /** Reads out each worded condition's run verdict before its input, for a line without a lead of its own. */
+  verdicts?: boolean;
+  parts: readonly SentencePart[];
+  cells: RowMark['cells'];
+  labels: LineTextLabels;
+}
+
+/** One line, each column's run of values cut to its first ones and followed by a count of the rest. */
+export const LineText: React.FC<LineTextProps> = ({
+  id,
+  heading = false,
+  verdicts = false,
+  parts,
+  cells,
+  labels,
+}) => {
+  const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+  const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, 'flex-1');
+  const wordClass = testsInput(parts) ? MUTED_TEXT_CLASS : undefined;
+  const verdictOf = (token: SentenceToken) => {
+    const matched =
+      verdicts && token.kind === 'input' ? cells?.[token.columnId]?.matched : undefined;
+    return matched === undefined ? null : (
+      <span className="sr-only">{labels.conditionVerdict(matched)}</span>
+    );
+  };
+  const text = (from: number, to = shown.length) =>
+    shown.slice(from, to).map((part, offset) =>
+      typeof part === 'string' ? (
+        <span key={from + offset} className={wordClass}>
+          {part}
+        </span>
+      ) : (
+        <Fragment key={from + offset}>
+          {verdictOf(part)}
+          <TokenChip
+            token={part}
+            mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
+            output={heading}
+          />
+        </Fragment>
+      )
+    );
+  if (clamped.length === 0) {
+    return (
+      <span id={id} className={textClass} onMouseEnter={showTitleIfClipped}>
+        {text(0)}
+      </span>
+    );
+  }
+  const cuts = clamped.map(({ after }) => shown.length - after.length);
+  const tail = cuts.at(-1) ?? shown.length;
+  return (
+    <span id={id} className={cn(textClass, CLAMPED_LINE_CLASS)}>
+      {clamped.map(({ hidden, after, hiddenValues }, index) => (
+        <Fragment key={index}>
+          <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
+            {text(cuts[index - 1] ?? 0, cuts[index])}
+          </span>
+          <span
+            className={MORE_VALUES_CLASS}
+            data-more-values={hiddenValues}
+            title={hiddenTitle(hidden, after)}
+          >
+            {labels.moreValues(hiddenValues)}
+          </span>
+        </Fragment>
+      ))}
+      {tail < shown.length && (
+        <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
+          {text(tail)}
+        </span>
+      )}
+    </span>
+  );
+};

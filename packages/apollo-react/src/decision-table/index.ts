@@ -4,9 +4,11 @@
 // (`GridLabels`). The drag and insert titles are the table's own, from its `decision-table`
 // catalog (see `ApI18nProvider`).
 
+export type { AddRuleButtonProps } from './AddRuleButton';
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
+export { DecisionText, type DecisionTextLabels, type DecisionTextProps } from './DecisionText';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export {
@@ -59,6 +61,18 @@ export {
 export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
+export type { GlyphTone } from './sentenceMarks';
+export type {
+  SentenceBand,
+  SentenceBandColumn,
+  SentenceCellId,
+  SentenceHeader,
+  SentenceLine,
+  SentencePart,
+  SentenceRule,
+  SentenceToken,
+} from './sentenceTypes';
+export type { DecisionTextContainerProps } from './useContainerHandlers';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {
