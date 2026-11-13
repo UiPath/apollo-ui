@@ -66,7 +66,7 @@ const edgeMove = (
   return { row, stop: end ? stopsAt(row).length - 1 : 0 };
 };
 
-/** Past the row's ends Tab is left alone, so focus leaves the view (WCAG 2.1.2). */
+/** The row's next or previous stop, or undefined past its ends. */
 const tabMove = (back: boolean, from: StopPosition, stops: Stops): StopPosition | undefined => {
   const stop = from.stop + (back ? -1 : 1);
   return stop < 0 || stop >= stops.length ? undefined : { row: from.row, stop };
@@ -105,9 +105,6 @@ const stopAfterKey = (
   }
   if (event.key === 'Home' || event.key === 'End') {
     return edgeMove(event.key === 'End', meta, from, rules.length, stopsAt);
-  }
-  if (event.key === 'Tab' && !meta && !event.altKey && event.target !== event.currentTarget) {
-    return tabMove(event.shiftKey, from, stopsAt(from.row));
   }
   return undefined;
 };

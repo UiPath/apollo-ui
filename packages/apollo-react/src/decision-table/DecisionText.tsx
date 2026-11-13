@@ -189,6 +189,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     ruleMenus,
     onOpenDecision,
     container: ruleWindow.container,
+    stopTabbable: selectable && ruleWindow.selectedRow !== null,
   });
   const columnEditing = useColumnEditing({
     column: edit?.column,
@@ -202,8 +203,6 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     <section
       ref={ruleWindow.attachSection}
       aria-label={ariaLabel}
-      // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be reachable by keyboard
-      tabIndex={0}
       className={DECISION_TEXT_FRAME_CLASS}
       data-testid={dataTestId}
       {...sectionProps}

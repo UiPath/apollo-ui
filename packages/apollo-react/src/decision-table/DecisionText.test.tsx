@@ -1480,16 +1480,15 @@ describe('DecisionText', () => {
       expect(focusedStop()).toBe(stop);
     });
 
-    it("tabs through a row's stops and lets Tab leave at either end", () => {
-      const { onSelect } = startAt({ rowId: 'r3' });
-      expect(walk('Tab', 'Tab')).toEqual(['r3:risk', 'r3:age']);
-      expect(press('Tab')).toBe(true);
-      press('Tab', { shiftKey: true });
-      press('Tab', { shiftKey: true });
-      expect(focusedStop()).toBe('r3');
-      expect(press('Tab', { shiftKey: true })).toBe(true);
-      expect(press('Tab', { altKey: true })).toBe(true);
-      expect(onSelect).toHaveBeenCalledTimes(4);
+    it('leaves Tab and Shift+Tab on a stop to the browser, selecting nothing', () => {
+      const { onSelect } = startAt({ rowId: 'r3', columnId: 'risk' });
+      expect([
+        press('Tab'),
+        press('Tab', { shiftKey: true }),
+        press('Tab', { altKey: true }),
+      ]).toEqual([true, true, true]);
+      expect(focusedStop()).toBe('r3:risk');
+      expect(onSelect).not.toHaveBeenCalled();
     });
 
     it('clears with Escape and returns focus to the view, claiming it only when something was selected', () => {
@@ -1522,21 +1521,76 @@ describe('DecisionText', () => {
       expect(onSelect).not.toHaveBeenCalled();
     });
 
-    it.each<[string, SentenceSelection]>([
-      ['a rule', { rowId: 'r2' }],
-      ['a cell', { rowId: 'r2', columnId: 'age' }],
-    ])('leaves Tab on the view itself to the browser with %s selected, moving on to the selected stop', async (_, initial) => {
-      const { onSelect } = renderSelectable({ initial });
+    const aroundView = () => {
+      const before = document.body.insertBefore(
+        document.createElement('button'),
+        document.body.firstChild
+      );
+      const after = document.body.appendChild(document.createElement('button'));
+      onTestFinished(() => {
+        before.remove();
+        after.remove();
+      });
+      return { before, after };
+    };
+    const tabs = async (count: number, shift = false) => {
       const user = userEvent.setup();
-      act(() => screen.getByTestId('nl').focus());
-      await user.tab();
-      expect(document.activeElement).toBe(screen.getByRole('list', { name: 'Inputs' }));
-      await user.tab();
-      await user.tab();
-      expect(focusedStop()).toBe(initial.columnId ? `r2:${initial.columnId}` : 'r2');
-      act(() => screen.getByTestId('nl').focus());
-      await user.tab({ shift: true });
-      expect(document.activeElement).toBe(document.body);
+      const focused: (Element | null)[] = [];
+      for (const _ of Array.from({ length: count })) {
+        await user.tab({ shift });
+        focused.push(document.activeElement);
+      }
+      return focused;
+    };
+
+    it.each<[string, SentenceSelection, string]>([
+      ['a rule', { rowId: 'r2' }, 'r2'],
+      ['a cell', { rowId: 'r2', columnId: 'age' }, 'r2:age'],
+    ])('lands Tab into the view on the selected stop with %s selected, and Tab or Shift+Tab from it leaves the view', async (_, initial, stop) => {
+      const { onSelect } = renderSelectable({ initial, bands: [] });
+      const { before, after } = aroundView();
+      act(() => before.focus());
+      await tabs(1);
+      expect(focusedStop()).toBe(stop);
+      expect(await tabs(1)).toEqual([after]);
+      await tabs(1, true);
+      expect(focusedStop()).toBe(stop);
+      expect(await tabs(1, true)).toEqual([before]);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('passes the band lists going into the view and stops on them going back out of it from the selected stop', async () => {
+      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { before, after } = aroundView();
+      const inputs = screen.getByRole('list', { name: 'Inputs' });
+      const outputs = screen.getByRole('list', { name: 'Outputs' });
+      const stop = valueChip('r2', 'age');
+      act(() => before.focus());
+      expect(await tabs(2)).toEqual([stop, after]);
+      expect(await tabs(4, true)).toEqual([stop, outputs, inputs, before]);
+      expect(await tabs(1)).toEqual([stop]);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('leaves focus on the view a pointer gives it with a stop selected', () => {
+      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const view = screen.getByTestId('nl');
+      fireEvent.pointerDown(view);
+      act(() => view.focus());
+      fireEvent.pointerUp(view);
+      expect(document.activeElement).toBe(view);
+      act(() => valueChip('r2', 'age').focus());
+      act(() => view.focus());
+      expect(document.activeElement).toBe(view);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('lands Tab into the view on the view itself with nothing selected', async () => {
+      const { onSelect } = renderSelectable({ bands: [] });
+      const { before, after } = aroundView();
+      act(() => before.focus());
+      expect(await tabs(2)).toEqual([screen.getByTestId('nl'), after]);
+      expect(await tabs(2, true)).toEqual([screen.getByTestId('nl'), before]);
       expect(onSelect).not.toHaveBeenCalled();
     });
 
@@ -4176,13 +4230,13 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(card('row-0'));
     });
 
-    it("tabs from the selected rule's last stop to + to ⋯ to delete and then out of the view, leaving their keys to the browser", () => {
+    it("tabs from the selected stop to its rule's + to ⋯ to delete and then out of the view, leaving their keys to the browser", () => {
       const { onSelect } = renderSelectable({
-        initial: { rowId: 'r3', columnId: 'age' },
+        initial: { rowId: 'r3', columnId: 'risk' },
         edit: editWith(),
       });
       const add = within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' });
-      const chip = valueChip('r3', 'age');
+      const chip = valueChip('r3', 'risk');
       act(() => chip.focus());
       expect(press('Tab')).toBe(true);
       const tabbable = [
@@ -4474,11 +4528,13 @@ describe('DecisionText', () => {
           ' is not empty',
         ] satisfies SentencePart[],
       }));
-      renderSelectable({ rules, onOpenDecision, initial: { rowId: 'r1' } });
+      renderSelectable({
+        rules,
+        onOpenDecision,
+        bands: [],
+        initial: { rowId: 'r1', columnId: 'income' },
+      });
       const user = userEvent.setup();
-      act(() => card('r1').focus());
-      await user.tab();
-      expect(focusedStop()).toBe('r1:risk');
       await user.tab();
       expect(document.activeElement).toBe(link('r1'));
       await user.keyboard('{Enter}');
@@ -4521,7 +4577,7 @@ describe('DecisionText', () => {
       expect(onStartEdit).not.toHaveBeenCalled();
     });
 
-    it('stops on each input with no value in reading order, and opens its decision by Alt+Enter', async () => {
+    it('stops on each input with no value in reading order, and opens its decision by Alt+Enter', () => {
       const onOpenDecision = vi.fn();
       const lead = [
         'when ',
@@ -4536,19 +4592,14 @@ describe('DecisionText', () => {
       ] satisfies SentencePart[];
       const rules = GRID_SENTENCE_RULES.map((rule) => ({ ...rule, lead }));
       renderSelectable({ rules, onOpenDecision, initial: { rowId: 'r1' } });
-      const user = userEvent.setup();
       act(() => card('r1').focus());
-      const columns: (string | undefined)[] = [];
-      for (const _ of [1, 2, 3, 4]) {
-        await user.tab();
-        columns.push(
-          document.activeElement instanceof HTMLElement
-            ? document.activeElement.dataset.columnId
-            : undefined
-        );
-      }
-      expect(columns).toEqual(['risk', 'income', 'age', 'channel']);
-      await user.keyboard('{Shift>}{Tab}{Tab}{/Shift}');
+      expect(walk('ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight')).toEqual([
+        'r1:risk',
+        'r1:income',
+        'r1:age',
+        'r1:channel',
+      ]);
+      walk('ArrowLeft', 'ArrowLeft');
       press('Enter', { altKey: true });
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
     });

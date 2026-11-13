@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DecisionTextProps } from './DecisionText';
 import { hasLostFocus } from './gridEvents';
 import { clickedDecision, clickedSelection, stopDecisionOf, valueTokenAt } from './sentenceTargets';
@@ -20,6 +20,8 @@ export interface ContainerHandlersParams {
   ruleMenus: RuleMenus;
   onOpenDecision: DecisionTextProps['onOpenDecision'];
   container: RuleWindow['container'];
+  /** Whether a selected stop takes Tab into the view in place of the view itself. */
+  stopTabbable: boolean;
 }
 
 /** The consumer's container props, with the view's own handlers run before the consumer's. */
@@ -31,8 +33,11 @@ export const useContainerHandlers = ({
   ruleMenus,
   onOpenDecision,
   container,
+  stopTabbable,
 }: ContainerHandlersParams) => {
   const focusWithinRef = useRef(false);
+  const pressedRef = useRef(false);
+  const [focusInside, setFocusInside] = useState(false);
   useEffect(() => {
     const view = container();
     if (focusWithinRef.current && view && hasLostFocus(view)) view.focus();
@@ -55,10 +60,12 @@ export const useContainerHandlers = ({
     consumerPointerOver?.(event);
   };
   const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    pressedRef.current = true;
     valueEditing.onPointerDown(event);
     consumerPointerDown?.(event);
   };
   const onPointerUp = (event: React.PointerEvent<HTMLElement>) => {
+    pressedRef.current = false;
     valueEditing.onPointerUp();
     consumerPointerUp?.(event);
   };
@@ -86,7 +93,10 @@ export const useContainerHandlers = ({
     }
   };
   const onFocus = (event: React.FocusEvent<HTMLElement>) => {
+    const entered = !focusWithinRef.current && event.target === event.currentTarget;
     focusWithinRef.current = true;
+    setFocusInside(true);
+    if (entered && stopTabbable && !pressedRef.current) navigation.refocus();
     consumerFocus?.(event);
   };
   const onBlur = (event: React.FocusEvent<HTMLElement>) => {
@@ -95,6 +105,8 @@ export const useContainerHandlers = ({
       !event.currentTarget.contains(event.relatedTarget)
     ) {
       focusWithinRef.current = false;
+      pressedRef.current = false;
+      setFocusInside(false);
     }
     consumerBlur?.(event);
   };
@@ -111,6 +123,7 @@ export const useContainerHandlers = ({
   };
 
   return {
+    tabIndex: stopTabbable && focusInside ? -1 : 0,
     onPointerOver,
     onPointerDown,
     onPointerUp,

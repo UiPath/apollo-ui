@@ -574,7 +574,7 @@ export const Selection: Story = {
       <SelectionDemo
         numbered
         initialSelected={{ rowId: 'r2', columnId: 'income' }}
-        caption="Click a value or a rule. Arrows, Home and End move, Tab walks a rule's values, Escape clears."
+        caption="Click a value or a rule. Arrows, Home and End move, Escape clears."
       />
     </div>
   ),
