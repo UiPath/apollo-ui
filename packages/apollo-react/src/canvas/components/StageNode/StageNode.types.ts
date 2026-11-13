@@ -1,5 +1,6 @@
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { GroupModificationType } from '../../utils/GroupModificationUtils';
+import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle';
 import type { NodeMenuItem } from '../NodeContextMenu';
 import type { ListItem, ToolboxSearchHandler } from '../Toolbox';
 
@@ -139,6 +140,18 @@ export interface StageNodeBaseProps {
   getTaskContextMenuItems?: (args: StageTaskContextMenuArgs) => NodeMenuItem[] | undefined;
   hideParallelOptions?: boolean;
   loadingTaskIds?: ReadonlySet<string>;
+  /**
+   * Opts the stage into Flow's handle "+": the right source handle shows an add button on hover
+   * or selection that calls this on click and starts a connection when dragged. Without it the
+   * stage renders plain handles. Hidden while read-only, multi-selected, connecting or dragging.
+   */
+  onHandleAction?: (event: HandleActionEvent) => void;
+  /** Fired when the cursor enters the handle's add button. */
+  onHandleMouseEnter?: (event: HandleMouseEvent) => void;
+  /** Fired when the cursor leaves the handle's add button. */
+  onHandleMouseLeave?: (event: HandleMouseEvent) => void;
+  /** Native tooltip for the handle's add button. Supply it already translated. */
+  handleAddButtonTitle?: string;
 }
 
 export interface SectionState {

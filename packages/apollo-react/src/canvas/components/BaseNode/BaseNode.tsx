@@ -30,7 +30,7 @@ import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import { CanvasIcon, getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
-import { selectIsConnecting } from '../../utils/NodeUtils';
+import { resolveNodeHandleAffordances, selectIsConnecting } from '../../utils/NodeUtils';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
@@ -411,10 +411,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return 'default';
   }, [disabled, dragging, selected, isHovered, isFocused]);
 
-  const shouldShowHandles = useMemo(
-    () => (isConnecting || selected || isHovered) && !dragging,
-    [isConnecting, selected, isHovered, dragging]
-  );
+  const { shouldShowHandles, showAddButton } = resolveNodeHandleAffordances({
+    isConnecting,
+    selected,
+    hovered: isHovered,
+    dragging,
+    canEdit,
+    multipleNodesSelected,
+  });
 
   const hasVisibleBottomHandles = useMemo(() => {
     if (
@@ -556,7 +560,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     nodeId: id,
     selected: selected ?? false,
     hovered: isHovered,
-    showAddButton: canEdit && !multipleNodesSelected && !isConnecting && !dragging,
+    showAddButton,
     isLocked: !canEdit,
     showNotches,
     // Deterministic geometry (not the measured props) so handles are grid-aligned from first render.

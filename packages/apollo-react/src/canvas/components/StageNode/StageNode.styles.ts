@@ -10,6 +10,8 @@ export const STAGE_CONTENT_INSET = STAGE_CONTENT_PADDING_X * 2 + STAGE_BORDER_WI
 
 export const StageContainer = styled.div<{
   selected?: boolean;
+  hovered?: boolean;
+  dragging?: boolean;
   status?: StageStatus;
   width?: number;
 }>`
@@ -22,18 +24,31 @@ export const StageContainer = styled.div<{
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  box-shadow: var(--canvas-node-shadow-rest);
+  transition:
+    box-shadow 150ms,
+    border-color 150ms;
+
+  /* Rest, hover, selected and drag match Flow's BaseNode container. */
+  ${({ hovered }) =>
+    hovered &&
+    css`
+      border-color: var(--canvas-border-hover);
+      box-shadow: var(--canvas-node-shadow-hover);
+    `}
 
   ${({ selected }) =>
-    selected
-      ? css`
-          border-color: var(--canvas-primary);
-          outline: 4px solid var(--canvas-secondary-pressed);
-        `
-      : css`
-          &:hover {
-            outline: 4px solid var(--canvas-secondary-pressed);
-          }
-        `}
+    selected &&
+    css`
+      outline: 2px solid var(--canvas-primary-hover);
+    `}
+
+  ${({ dragging }) =>
+    dragging &&
+    css`
+      cursor: grabbing;
+      box-shadow: var(--canvas-node-shadow-lifted);
+    `}
 
   ${({ status }) =>
     status === 'Completed' &&

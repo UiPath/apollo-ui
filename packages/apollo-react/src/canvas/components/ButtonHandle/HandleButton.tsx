@@ -1,6 +1,7 @@
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useEffect, useRef } from 'react';
+import { HANDLE_DRAG_THRESHOLD } from '../../constants';
 import { cx } from '../../utils/CssUtil';
 import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import { CanvasInlineButton } from './CanvasInlineButton';
@@ -12,7 +13,6 @@ const BUTTON_POSITION: Record<Position, string> = {
   [Position.Left]: 'flex-row-reverse right-full top-1/2 -translate-y-1/2',
   [Position.Right]: 'flex-row left-full top-1/2 -translate-y-1/2',
 };
-const DRAG_THRESHOLD = 5; // px — movement before a click becomes a drag
 
 export type HandleButtonPortal = {
   nodeId: string;
@@ -46,6 +46,7 @@ export const HandleButton = memo(
     labelBackgroundColor,
     renderLabel = true,
     portal,
+    title,
   }: {
     visible?: boolean;
     labelVisible?: boolean;
@@ -72,6 +73,8 @@ export const HandleButton = memo(
      */
     renderLabel?: boolean;
     portal?: HandleButtonPortal;
+    /** Native tooltip for the add button. The accessible name stays `label`-driven. */
+    title?: string;
   }) => {
     const accessibleName = label ? `Add node from ${label} handle` : 'Add node';
     const didDragRef = useRef(false);
@@ -103,7 +106,7 @@ export const HandleButton = memo(
         if (didDragRef.current) return; // already forwarded
         const dx = moveEvt.clientX - startX;
         const dy = moveEvt.clientY - startY;
-        if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
+        if (dx * dx + dy * dy < HANDLE_DRAG_THRESHOLD * HANDLE_DRAG_THRESHOLD) return;
 
         didDragRef.current = true;
 
@@ -154,6 +157,7 @@ export const HandleButton = memo(
       // `disabled:opacity-0` overrides the button's default `disabled:opacity-50`.
       <CanvasInlineButton
         aria-label={accessibleName}
+        title={title}
         aria-hidden={visible ? undefined : true}
         disabled={visible ? undefined : true}
         onClick={handleClick}
@@ -171,6 +175,7 @@ export const HandleButton = memo(
       visible && (
         <CanvasInlineButton
           aria-label={accessibleName}
+          title={title}
           onClick={handleClick}
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}
