@@ -23,6 +23,7 @@ export const useButtonHandles = ({
   nodeWidth,
   nodeHeight,
   portalActions,
+  addButtonTitle,
 }: {
   handleConfigurations: HandleGroupManifest[];
   shouldShowHandles: boolean;
@@ -38,6 +39,8 @@ export const useButtonHandles = ({
   nodeWidth?: number;
   nodeHeight?: number;
   portalActions?: boolean;
+  /** Native tooltip for the source handles' add buttons. */
+  addButtonTitle?: string;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -102,6 +105,7 @@ export const useButtonHandles = ({
           nodeWidth={nodeWidth}
           nodeHeight={nodeHeight}
           portalActions={portalActions}
+          addButtonTitle={addButtonTitle}
         />
       );
     });
@@ -124,6 +128,7 @@ export const useButtonHandles = ({
     nodeWidth,
     nodeHeight,
     portalActions,
+    addButtonTitle,
     node?.data,
   ]);
 

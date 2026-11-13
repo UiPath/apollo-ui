@@ -271,6 +271,34 @@ describe('ButtonHandles', () => {
     });
   });
 
+  describe('hover bridge', () => {
+    const renderGroup = (showButton?: boolean) =>
+      render(
+        <ButtonHandles
+          handles={[
+            { id: 'out', type: 'source', handleType: 'output', onAction: vi.fn(), showButton },
+          ]}
+          nodeId="n"
+          position={Position.Bottom}
+          selected
+        />
+      );
+    const bridge = (container: HTMLElement) =>
+      container.querySelector('.pointer-events-auto.cursor-default');
+
+    it('bridges the gap to a source handle that can show an add button', () => {
+      const { container } = renderGroup();
+
+      expect(bridge(container)).toBeInTheDocument();
+    });
+
+    it('adds no bridge for a source handle with showButton false', () => {
+      const { container } = renderGroup(false);
+
+      expect(bridge(container)).not.toBeInTheDocument();
+    });
+  });
+
   describe('hover-gated labels (labelVisibility)', () => {
     const hoverHandle: ButtonHandleConfig = {
       id: 'tool',
