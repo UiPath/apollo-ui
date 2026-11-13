@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContainerNodeData } from './ContainerNode.types';
@@ -11,6 +11,8 @@ const {
   mockManifest,
   mockNodeToolbar,
   mockReadOnlyNodeIds,
+  mockStoreApi,
+  mockUpdateNodeInternals,
   mockValidationState,
 } = vi.hoisted(() => ({
   mockUpdateNodeData: vi.fn(),
@@ -32,6 +34,8 @@ const {
   // biome-ignore lint/suspicious/noExplicitAny: captures the toolbar props for assertions
   mockNodeToolbar: vi.fn() as any,
   mockReadOnlyNodeIds: { current: new Set<string>() as ReadonlySet<string> },
+  mockStoreApi: { getState: vi.fn() },
+  mockUpdateNodeInternals: vi.fn(),
   mockValidationState: { current: undefined as unknown },
 }));
 
@@ -77,7 +81,8 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
 
     return typeof selector === 'function' ? selector(state) : false;
   },
-  useUpdateNodeInternals: () => vi.fn(),
+  useUpdateNodeInternals: () => mockUpdateNodeInternals,
+  useStoreApi: () => mockStoreApi,
   useReactFlow: () => ({ updateNodeData: mockUpdateNodeData }),
 }));
 
@@ -180,6 +185,7 @@ function setContainerDisplay(container: Record<string, unknown> | undefined) {
 
 beforeEach(() => {
   mockUpdateNodeData.mockClear();
+  mockUpdateNodeInternals.mockClear();
   mockExecutionState.current = undefined;
   mockReadOnlyNodeIds.current = new Set<string>();
   mockValidationState.current = undefined;
@@ -215,6 +221,37 @@ describe('ContainerNode root', () => {
   // reactflow-reset.css keys the sticky-note stacking rules off [data-container].
   it.each(['container', 'error-handler', 'loop'])('sets data-container for kind %s', (kind) => {
     expect(renderContainer({ kind }).hasAttribute('data-container')).toBe(true);
+  });
+});
+
+describe('ContainerNode internals', () => {
+  const flushFrame = () =>
+    act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+
+  it('updates the internals of containers mounted together in one call', async () => {
+    render(
+      <>
+        <ContainerNode {...defaultProps} id="a" />
+        <ContainerNode {...defaultProps} id="b" />
+        <ContainerNode {...defaultProps} id="c" />
+      </>
+    );
+    await flushFrame();
+
+    expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+    expect(mockUpdateNodeInternals).toHaveBeenCalledWith(['a', 'b', 'c']);
+  });
+
+  it('updates the internals again when the container is resized', async () => {
+    const { rerender } = render(<ContainerNode {...defaultProps} width={400} height={300} />);
+    await flushFrame();
+    mockUpdateNodeInternals.mockClear();
+
+    rerender(<ContainerNode {...defaultProps} width={500} height={300} />);
+    await flushFrame();
+
+    expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+    expect(mockUpdateNodeInternals).toHaveBeenCalledWith(['container-1']);
   });
 });
 
