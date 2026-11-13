@@ -1,8 +1,9 @@
+import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from '../../../test/durations';
 import { act, fireEvent, render, screen } from '../../utils/testing';
-import type { StageNodeProps } from './StageNode.types';
+import { StageHeaderChipType, type StageNodeProps } from './StageNode.types';
 import { StageNodeHeader } from './StageNodeHeader';
 
 // Uses the real Radix tooltip (the shared setup stubs it out) to cover that the exact duration
@@ -63,5 +64,44 @@ describe('StageNodeHeader duration tooltip (real CanvasTooltip)', () => {
 
     hover(duration);
     expect(duration).toHaveAttribute('data-state', 'closed');
+  });
+});
+
+describe('StageNodeHeader status pill tooltip (real CanvasTooltip)', () => {
+  it('opens on keyboard focus and closes on blur and Escape', async () => {
+    const user = userEvent.setup();
+    const props = {
+      id: 'stage-1',
+      stageDetails: {
+        label: 'Stage 1',
+        tasks: [],
+        headerChips: [
+          { type: StageHeaderChipType.Optional, tooltip: 'Not required for case completion' },
+        ],
+      },
+    } as unknown as StageNodeProps;
+    render(
+      <ReactFlowProvider>
+        <StageNodeHeader
+          props={props}
+          isReadOnly={true}
+          status={undefined}
+          handleTaskAddClick={vi.fn()}
+        />
+      </ReactFlowProvider>
+    );
+    const pill = screen.getByTestId('stage-optional-badge-stage-1');
+
+    await user.tab();
+    expect(pill).toHaveFocus();
+    expect(pill).toHaveAttribute('data-state', 'instant-open');
+
+    await user.tab();
+    expect(pill).toHaveAttribute('data-state', 'closed');
+
+    await user.tab({ shift: true });
+    expect(pill).toHaveAttribute('data-state', 'instant-open');
+    await user.keyboard('{Escape}');
+    expect(pill).toHaveAttribute('data-state', 'closed');
   });
 });
