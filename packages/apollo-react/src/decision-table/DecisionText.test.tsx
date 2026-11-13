@@ -1640,6 +1640,16 @@ describe('DecisionText', () => {
       expect(onSelect).not.toHaveBeenCalled();
     });
 
+    it('lands Shift+Tab from the band lists on the view itself with nothing selected', async () => {
+      const { onSelect } = renderSelectable();
+      const { before } = aroundView();
+      const inputs = screen.getByRole('list', { name: 'Inputs' });
+      act(() => before.focus());
+      expect(await tabs(2)).toEqual([screen.getByTestId('nl'), inputs]);
+      expect(await tabs(2, true)).toEqual([screen.getByTestId('nl'), before]);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
     it('lands Tab into the view on the view itself with nothing selected', async () => {
       const { onSelect } = renderSelectable({ bands: [] });
       const { before, after } = aroundView();
