@@ -182,12 +182,51 @@ export const useVirtualizedAxis = (
     [itemOffsetsPx, itemSizePx]
   );
 
+  /** The window's end for an anchor: the items filling a viewport from it, plus the overscan. */
+  const windowEnd = useCallback(
+    (anchor: number, viewport: number): number => {
+      const fillEnd = itemOffsetsPx
+        ? indexAtPx(itemStartPx(anchor) + viewport - 1) + 1
+        : anchor + Math.ceil(viewport / itemSizePx);
+      return Math.min(itemCount, fillEnd + overscanItems);
+    },
+    [itemOffsetsPx, indexAtPx, itemStartPx, itemSizePx, itemCount, overscanItems]
+  );
+
   // Trails the first visible item by up to the threshold and snaps forward in coarse steps, so a
   // fling costs a handful of renders instead of one per item boundary.
   const [anchor, setAnchor] = useState(0);
   const [viewportPx, setViewportPx] = useState<number | null>(null);
+  /** An end the window extends to when the visible end outruns what fills a viewport from the anchor. */
+  const [tail, setTail] = useState(0);
   const anchorRef = useRef(anchor);
+  const tailRef = useRef(tail);
   const viewportRef = useRef(viewportPx);
+
+  const followRange = (
+    range: NonNullable<Virtualizer<HTMLElement, Element>['range']>,
+    viewport: number
+  ) => {
+    const lagging = Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold;
+    const nextAnchor = lagging ? range.startIndex : anchorRef.current;
+    const kept = lagging ? 0 : tailRef.current;
+    const end = Math.max(
+      windowEnd(Math.min(nextAnchor, Math.max(0, itemCount - 1)), viewport),
+      kept
+    );
+    const nextTail =
+      end < itemCount && range.endIndex >= end - shiftThreshold
+        ? range.endIndex + 1 + overscanItems
+        : kept;
+    if (nextAnchor !== anchorRef.current) {
+      anchorRef.current = nextAnchor;
+      setAnchor(nextAnchor);
+    }
+    if (nextTail !== tailRef.current) {
+      tailRef.current = nextTail;
+      setTail(nextTail);
+    }
+  };
 
   const scrollElementRef = useRef<HTMLElement | null>(null);
   const measureRef = useCallback((element: HTMLElement | null) => {
@@ -271,20 +310,14 @@ export const useVirtualizedAxis = (
     },
     // The render gate. The core notifies on every raw range change — every item boundary the
     // scroll crosses — and this callback turns that into at most one state change per coarse
-    // anchor step or real viewport resize.
+    // anchor step, tail extension or real viewport resize.
     onChange: (instance) => {
       const range = instance.range;
-      if (range) {
-        const nextAnchor =
-          Math.abs(range.startIndex - anchorRef.current) >= shiftThreshold
-            ? range.startIndex
-            : anchorRef.current;
-        if (nextAnchor !== anchorRef.current) {
-          anchorRef.current = nextAnchor;
-          setAnchor(nextAnchor);
-        }
-      }
       const rect = instance.scrollRect;
+      if (range) {
+        const viewport = (axis === 'horizontal' ? rect?.width : rect?.height) || fallbackViewportPx;
+        followRange(range, viewport);
+      }
       if (rect) {
         const nextViewport = (axis === 'horizontal' ? rect.width : rect.height) || null;
         if (nextViewport !== viewportRef.current) {
@@ -371,16 +404,11 @@ export const useVirtualizedAxis = (
     // browser's own scroll correction.
     const safeAnchor = Math.min(anchor, Math.max(0, itemCount - 1));
     const start = Math.max(0, safeAnchor - overscanItems);
-    // How many items fill a viewport from the anchor: exact under offsets, uniform otherwise.
-    const fillEnd = itemOffsetsPx
-      ? indexAtPx(itemStartPx(safeAnchor) + viewport - 1) + 1
-      : safeAnchor + Math.ceil(viewport / itemSizePx);
-    const end = Math.min(itemCount, fillEnd + overscanItems);
     const next = windowSegments({
       itemCount,
       itemSizePx,
       start,
-      end,
+      end: Math.max(windowEnd(safeAnchor, viewport), tail),
       retained,
       offsetsPx: itemOffsetsPx,
     });
@@ -393,13 +421,13 @@ export const useVirtualizedAxis = (
     itemCount,
     itemSizePx,
     anchor,
+    tail,
     viewportPx,
     retained,
     overscanItems,
     fallbackViewportPx,
     itemOffsetsPx,
-    indexAtPx,
-    itemStartPx,
+    windowEnd,
   ]);
 
   return { segments, measureRef, scrollItemIntoView };
