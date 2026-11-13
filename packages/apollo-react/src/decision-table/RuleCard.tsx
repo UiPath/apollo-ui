@@ -17,10 +17,10 @@ import type { RuleMenuKind } from './sentenceTargets';
 import type { SentenceRule } from './sentenceTypes';
 
 export interface RuleCardLabels extends MarkBadgeLabels, ConditionLineLabels {
-  /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position. */
-  cell: (column: string, values: string, position: number) => string;
-  /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash. */
-  emptyValue: string;
+  /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position; without it a stop is named by its column and values. */
+  cell?: (column: string, values: string, position: number) => string;
+  /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash; without it the dash is read. */
+  emptyValue?: string;
   /** An input's link to the decision that produces it, e.g. "Open the income decision"; without it a link is named by its input. */
   openDecision?: (input: string) => string;
 }

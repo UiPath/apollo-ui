@@ -45,6 +45,14 @@ export const firstValuesOf = (rule: SentenceRule) => {
   return first;
 };
 
+/** A cell's name as a stop or an editor reads it: the host's `cell` label, else its column and values. */
+export const cellName = (
+  { cell }: Pick<RuleCardLabels, 'cell'>,
+  column: string,
+  values: string,
+  position: number
+): string => cell?.(column, values, position) ?? [column, values].filter(Boolean).join(' ');
+
 /** A cell's values as its line shows them, first to last, then the count of those it clamps. */
 const shownValuesOf = (
   parts: readonly SentencePart[],
@@ -149,7 +157,8 @@ export const ruleCardModel = ({
     ? [...firstValuesOf(rule)].map(([columnId, { token, parts }], index) => ({
         token,
         labelId: `${id}-cell-${index}`,
-        label: labels.cell(
+        label: cellName(
+          labels,
           columnNameOf(rule, columnId),
           shownValuesOf(parts, columnId, labels),
           position

@@ -209,7 +209,7 @@ export const MULTI_SENTENCE_HEADER: SentenceHeader = {
   hint: 'Returns the matches as a list.',
 };
 
-export const DECISION_TEXT_LABELS: DecisionTextLabels = {
+export const DECISION_TEXT_LABELS = {
   emptyRules: 'No rules yet',
   markStatus: (tone, message) => {
     const status = tone === 'error' ? 'Error' : 'Warning';
@@ -220,7 +220,7 @@ export const DECISION_TEXT_LABELS: DecisionTextLabels = {
   cell: (column, values, position) => `${column} ${values}, rule ${position}`,
   emptyValue: 'empty',
   openDecision: (input) => `Open the ${input} decision`,
-};
+} satisfies DecisionTextLabels;
 
 export const DECISION_TEXT_EDIT_LABELS: DecisionTextEditLabels = {
   addCondition: (position) => `Add condition to rule ${position}`,

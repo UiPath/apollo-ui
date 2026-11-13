@@ -1258,6 +1258,19 @@ describe('DecisionText', () => {
       expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
     });
 
+    it('takes no cell labels from a read-only view, and names a stop by its column and values without them', () => {
+      const { cell: _cell, emptyValue: _emptyValue, ...readOnly } = DECISION_TEXT_LABELS;
+      const namesWith = (labels: DecisionTextProps['labels']) => {
+        const { unmount } = renderView({ labels });
+        const names = mountedRows().map((row) => row.getAttribute('aria-label'));
+        unmount();
+        return names;
+      };
+      expect(namesWith(readOnly)).toEqual(namesWith(DECISION_TEXT_LABELS));
+      renderSelectable({ labels: readOnly, initial: { rowId: 'r2', columnId: 'age' } });
+      expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60');
+    });
+
     it('names an empty value by its word, never by the dash it shows', () => {
       const edit = editWith({ editing: { rowId: 'm2', columnId: 'reason', index: 0 } });
       render(view({ selected: { rowId: 'm2', columnId: 'reason' }, onSelect: vi.fn(), edit }));
