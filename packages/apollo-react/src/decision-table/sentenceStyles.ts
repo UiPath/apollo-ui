@@ -194,6 +194,8 @@ export const POPOVER_LINK_CLASS = 'h-auto px-0 text-xs';
 
 export const POPOVER_ACTIONS_CLASS = 'flex shrink-0 items-center gap-2';
 
+export const POPOVER_APPLY_DIMMED_CLASS = 'aria-disabled:opacity-50';
+
 /** A condition line the open editor adds: its value reads as a placeholder until the host words it. */
 export const PENDING_LINE_CLASS =
   '[&_[data-kind=value]]:rounded-md [&_[data-kind=value]]:border [&_[data-kind=value]]:border-dashed [&_[data-kind=value]]:border-border [&_[data-kind=value]]:px-1.5 [&_[data-kind=value]]:font-normal [&_[data-kind=value]]:text-foreground-de-emp';

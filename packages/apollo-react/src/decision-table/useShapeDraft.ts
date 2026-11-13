@@ -57,11 +57,13 @@ export type DraftProblem = keyof DraftProblemLabels;
 
 type ValuesCommit = Extract<ValueCommit, { kind: 'values' }>;
 
+/** `held` when the condition holds a value, which a blank pick among allowed values would hide. */
 const problemOf = (
   shape: ValueShape,
   { values }: ValuesCommit,
   field: ValueField,
-  adds: boolean
+  adds: boolean,
+  held: boolean
 ): DraftProblem | null => {
   const [low = '', high = ''] = values;
   if (shape === 'range') {
@@ -69,7 +71,8 @@ const problemOf = (
     return (field.inOrder?.(low, high) ?? true) ? null : 'endsOutOfOrder';
   }
   if (shape === 'list') return values.length > 0 ? null : 'noValueChecked';
-  return adds && low.trim() === '' ? 'missingValue' : null;
+  const hidesHeld = held && (field.allowedValues?.length ?? 0) > 0;
+  return (adds || hidesHeld) && low.trim() === '' ? 'missingValue' : null;
 };
 
 /** The popover's draft: its operator, the values, range ends and listed values it takes, and what it commits. */
@@ -147,7 +150,7 @@ export const useShapeDraft = (field: ValueField, value: string, adds: boolean): 
     checked,
     adding,
     current,
-    problem: problemOf(shape, current, field, adds),
+    problem: problemOf(shape, current, field, adds, held.length > 0),
     setText: (next: string) => setValues([next, ...values.slice(1)]),
     setRange: (low: string, nextHigh: string, nextEnds: RangeEnds) => {
       setValues([low, nextHigh, ...values.slice(2)]);
