@@ -2547,6 +2547,16 @@ describe('DecisionText', () => {
       expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '!=']]);
     });
 
+    it('starts a condition whose field offers operators but names none on the first of them, and commits it', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({ operators: AGE_OPERATORS }),
+      });
+      expect(operatorSelect()).toHaveTextContent(AGE_OPERATORS[0]?.label ?? '');
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', AGE_OPERATORS[0]?.id]]);
+    });
+
     it('commits the picked operator with the value on Enter, and moves down as before', () => {
       const { onCommit, onSelect } = renderEditing({
         initial: { rowId: 'r1', columnId: 'age' },
@@ -3414,7 +3424,9 @@ describe('DecisionText', () => {
         conditionEntries,
         initial: { rowId: 'r1', columnId: 'age' },
       });
-      expect(conditionEntries).not.toHaveBeenCalled();
+      expect(new Set(conditionEntries.mock.calls.map(([rowId]) => rowId))).toEqual(
+        new Set(mountedRows().map((row) => row.dataset.rowId))
+      );
       const add = button('r3', 'Add condition to rule 3');
       expect(add).toHaveAttribute('aria-haspopup', 'menu');
       const frame = screen.getByTestId('nl');
@@ -3430,7 +3442,7 @@ describe('DecisionText', () => {
       fireEvent.click(add);
       const menu = screen.getByRole('menu');
       expect(menu).toHaveAttribute('aria-label', 'Add condition to rule 3');
-      expect(new Set(conditionEntries.mock.calls.map(([rowId]) => rowId))).toEqual(new Set(['r3']));
+      expect(conditionEntries.mock.calls.map(([rowId]) => rowId)).toContain('r3');
       fireEvent.click(within(menu).getByRole('menuitem', { name: 'income' }));
       expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3', columnId: 'income' }]]);
       const input = editor();
@@ -3855,12 +3867,14 @@ describe('DecisionText', () => {
         { label: 'Delete rule', destructive: true, onClick: onDelete },
       ]);
       renderMenus({ ruleEntries });
-      expect(ruleEntries).not.toHaveBeenCalled();
+      expect(new Set(ruleEntries.mock.calls.map(([rowId]) => rowId))).toEqual(
+        new Set(mountedRows().map((row) => row.dataset.rowId))
+      );
       expect(actions('r2')).toHaveAttribute('aria-haspopup', 'menu');
       fireEvent.click(actions('r2'));
       const menu = screen.getByRole('menu');
       expect(menu).toHaveAttribute('aria-label', 'Rule 2 actions');
-      expect(new Set(ruleEntries.mock.calls.map(([rowId]) => rowId))).toEqual(new Set(['r2']));
+      expect(ruleEntries).toHaveBeenCalledWith('r2');
       expect(within(menu).getByRole('menuitem', { name: /^Move up/ })).toHaveAttribute(
         'aria-disabled',
         'true'
@@ -3889,6 +3903,10 @@ describe('DecisionText', () => {
       fireEvent.click(actions('r3'));
       expect(screen.queryByRole('menu')).toBeNull();
       expect(actions('r3')).not.toHaveAttribute('aria-expanded', 'true');
+      for (const button of [add, actions('r3')]) {
+        expect(button).toHaveAttribute('aria-disabled', 'true');
+        expect(button).not.toHaveAttribute('aria-haspopup');
+      }
     });
 
     it('marks only the button whose menu is open as expanded', () => {
@@ -3977,7 +3995,7 @@ describe('DecisionText', () => {
     it.each<[string, readonly SentenceRule[], boolean]>([
       ['its rule is gone', GRID_SENTENCE_RULES.filter((rule) => rule.rowId !== 'r2'), true],
       ['editing is gone', GRID_SENTENCE_RULES, false],
-    ])('closes the rule menu once %s, asking no entries for it, and focuses the view', (_, rules, editable) => {
+    ])('closes the rule menu once %s, asking no entries of its rule, and focuses the view', (_, rules, editable) => {
       const ruleEntries = vi.fn(deleteEntry);
       const edit = editWith({ ruleEntries });
       const onSelect = vi.fn();
@@ -3989,7 +4007,7 @@ describe('DecisionText', () => {
       ruleEntries.mockClear();
       rerender(view({ rules, selected: null, onSelect, edit: editable ? edit : undefined }));
       expect(screen.queryByRole('menu')).toBeNull();
-      expect(ruleEntries).not.toHaveBeenCalled();
+      expect(ruleEntries).not.toHaveBeenCalledWith('r2');
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
     });
 
@@ -4217,6 +4235,16 @@ describe('DecisionText', () => {
       ...overrides,
     });
     const trigger = () => screen.getByRole('button', { name: /^Hit policy/ });
+
+    it('offers no menu from a picker the host gives no options', async () => {
+      renderView({ header: GRID_SENTENCE_HEADER, policy: policyWith({ groups: [] }) });
+      const user = userEvent.setup();
+      await user.click(trigger());
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(trigger()).toBeDisabled();
+      expect(trigger()).not.toHaveAttribute('aria-haspopup');
+      expect(trigger()).toHaveTextContent('FIRST');
+    });
 
     it.each<[string, Policy | undefined, string]>([
       ['the picked option', policyWith(), 'F·First'],

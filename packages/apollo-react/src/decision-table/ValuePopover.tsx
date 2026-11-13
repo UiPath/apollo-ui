@@ -35,7 +35,7 @@ export interface RangeEnds {
 export interface ValueField extends Pick<SentenceBand['columns'][number], 'icon'> {
   /** A condition's operators; without them the popover shows none. */
   operators?: readonly ValueOperatorOption[];
-  /** The id of the operator the condition has, or a new condition starts with. */
+  /** The id of the operator the condition has, or a new condition starts with; without it, the first of `operators`. */
   operator?: string;
   /** The column's allowed values, each one literal, offered as radios or a list's checkboxes in place of the text field. */
   allowedValues?: readonly string[];

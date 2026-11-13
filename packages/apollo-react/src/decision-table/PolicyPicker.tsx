@@ -32,7 +32,7 @@ export interface PolicyPickerProps {
   dataTestId: string;
 }
 
-/** The header's picker: the picked option's code and label, opening the host's grouped options. */
+/** The header's picker: the picked option's code and label, opening the host's grouped options, or unavailable with none. */
 export const PolicyPicker: React.FC<PolicyPickerProps> = ({
   value,
   groups,
@@ -41,35 +41,36 @@ export const PolicyPicker: React.FC<PolicyPickerProps> = ({
   describedBy,
   dataTestId,
 }) => {
-  const picked = pickedOption(
-    groups.flatMap((group) => group.options),
-    value
-  );
+  const options = groups.flatMap((group) => group.options);
+  const picked = pickedOption(options, value);
   const pick = (next: string) => {
     if (next !== value) onChange(next);
   };
+  const trigger = (
+    <Button
+      variant="ghost"
+      size="4xs"
+      disabled={options.length === 0}
+      aria-label={label}
+      aria-describedby={describedBy}
+      className={POLICY_TRIGGER_CLASS}
+      data-testid={`${dataTestId}-policy`}
+    >
+      {picked?.code && (
+        <>
+          <span className={POLICY_CODE_CLASS}>{picked.code}</span>
+          <span aria-hidden>·</span>
+        </>
+      )}
+      <span>{picked?.label ?? value}</span>
+      {options.length > 0 && <ChevronDown aria-hidden />}
+    </Button>
+  );
+  if (options.length === 0) return trigger;
 
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="4xs"
-          aria-label={label}
-          aria-describedby={describedBy}
-          className={POLICY_TRIGGER_CLASS}
-          data-testid={`${dataTestId}-policy`}
-        >
-          {picked?.code && (
-            <>
-              <span className={POLICY_CODE_CLASS}>{picked.code}</span>
-              <span aria-hidden>·</span>
-            </>
-          )}
-          <span>{picked?.label ?? value}</span>
-          <ChevronDown aria-hidden />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
         className={POLICY_MENU_CLASS}

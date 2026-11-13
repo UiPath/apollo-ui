@@ -21,6 +21,8 @@ export interface RuleActionsProps {
   labels: RuleActionsLabels;
   /** The card's menu that is open, if any. */
   openMenu: RuleMenuKind | undefined;
+  /** Whether each of the card's menus has entries, so its button opens one. */
+  offered: Record<RuleMenuKind, boolean>;
 }
 
 const ACTIONS = [
@@ -35,6 +37,7 @@ export const RuleActions: React.FC<RuleActionsProps> = ({
   selected,
   labels,
   openMenu,
+  offered,
 }) => (
   <div className={RULE_ACTIONS_CLASS}>
     {ACTIONS.map(({ action, Icon, label, className }) => (
@@ -45,8 +48,9 @@ export const RuleActions: React.FC<RuleActionsProps> = ({
         icon
         tabIndex={selected ? 0 : -1}
         aria-label={labels[label](position)}
-        aria-haspopup={action === 'delete' ? undefined : 'menu'}
-        aria-expanded={action === 'delete' ? undefined : openMenu === action}
+        aria-disabled={action === 'delete' || offered[action] ? undefined : true}
+        aria-haspopup={action !== 'delete' && offered[action] ? 'menu' : undefined}
+        aria-expanded={action !== 'delete' && offered[action] ? openMenu === action : undefined}
         className={className}
         data-rule-action={action}
       >

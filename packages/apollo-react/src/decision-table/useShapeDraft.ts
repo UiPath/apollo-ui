@@ -62,7 +62,7 @@ export const useShapeDraft = (
   const [ends, setEnds] = useState(field.ends ?? BOTH_INCLUDED);
   const [held] = useState(() => filled(field.values ?? [value]));
   const [entries, setEntries] = useState(held);
-  const [operator, setOperator] = useState(field.operator);
+  const [operator, setOperator] = useState(field.operator ?? field.operators?.[0]?.id);
   const operators = operatorsOf(field);
   const allowedValues = field.allowedValues ?? NO_VALUES;
   const picked = expression || operators.length === 0 ? undefined : operator;
