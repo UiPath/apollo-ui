@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { DecisionTextEdit } from './DecisionText';
 import type { GridContextMenuProps, GridContextMenuState, GridMenuEntry } from './GridMenu';
 import type { OpenRuleMenu } from './RuleList';
-import { clickedAction, type RuleAction, type RuleMenuKind } from './sentenceTargets';
+import { clickedAction, type RuleAction } from './sentenceTargets';
 import type { SentenceRule } from './sentenceTypes';
 
 export interface RuleMenusParams {
@@ -31,8 +31,6 @@ export interface RuleMenus extends Pick<GridContextMenuProps, 'label' | 'entries
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
   /** Opens the menu a card action names, from where its button is now, unless the host has no entries for it, and returns whether it did. */
   openFor: (action: RuleAction) => boolean;
-  /** Whether the host has entries for a rule's menu, so its button opens one. */
-  offers: (menu: RuleMenuKind, rowId: string) => boolean;
 }
 
 const menuLabel = (
@@ -139,13 +137,10 @@ export const useRuleMenus = ({
 
   const onClose = () => close(true);
 
-  const offers = (menu: RuleMenuKind, rowId: string): boolean =>
-    edit !== undefined &&
-    (menu === 'rule' ? edit.ruleEntries(rowId) : edit.conditionEntries(rowId)).length > 0;
-
   const openFor = (action: RuleAction | null): boolean => {
-    if (action?.action !== 'conditions' && action?.action !== 'rule') return false;
-    if (!offers(action.action, action.rowId)) return false;
+    if (!edit || (action?.action !== 'conditions' && action?.action !== 'rule')) return false;
+    const entriesOf = action.action === 'rule' ? edit.ruleEntries : edit.conditionEntries;
+    if (entriesOf(action.rowId).length === 0) return false;
     setState({
       menu: action.action,
       rowId: action.rowId,
@@ -166,6 +161,5 @@ export const useRuleMenus = ({
     onClose,
     onClick,
     openFor,
-    offers,
   };
 };

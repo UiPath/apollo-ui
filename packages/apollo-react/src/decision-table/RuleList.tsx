@@ -27,8 +27,6 @@ export interface RuleListProps {
   editLabels: RuleCardProps['editLabels'];
   /** The card menu that is open, or null. */
   openMenu: OpenRuleMenu | null;
-  /** Whether the host has entries for a rule's menu; asked only of mounted rules. */
-  offers: (menu: RuleMenuKind, rowId: string) => boolean;
   /** The condition the open editor adds to its rule, or null. */
   pending: SentenceValueId | null;
   style: SentenceListStyle;
@@ -51,7 +49,6 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       decisionLinks,
       editLabels,
       openMenu,
-      offers,
       pending,
       style,
       idPrefix,
@@ -92,8 +89,6 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                 decisionLinks={decisionLinks}
                 editLabels={editLabels}
                 openMenu={openMenu?.rowId === rule.rowId ? openMenu.menu : undefined}
-                offersConditions={offers('conditions', rule.rowId)}
-                offersRuleMenu={offers('rule', rule.rowId)}
                 pendingColumnId={pending?.rowId === rule.rowId ? pending.columnId : undefined}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}

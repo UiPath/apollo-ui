@@ -49,10 +49,6 @@ export interface RuleCardProps {
   editLabels: RuleCardEditLabels | undefined;
   /** The card's menu that is open, if any. */
   openMenu: RuleMenuKind | undefined;
-  /** Whether the host has add-condition entries for the rule. */
-  offersConditions: boolean;
-  /** Whether the host has entries for the rule's own menu. */
-  offersRuleMenu: boolean;
   /** The line of the condition the open editor adds, if any. */
   pendingColumnId: string | undefined;
   idPrefix: string;
@@ -73,8 +69,6 @@ export const RuleCard = memo<RuleCardProps>(
     decisionLinks,
     editLabels,
     openMenu,
-    offersConditions,
-    offersRuleMenu,
     pendingColumnId,
     idPrefix,
     dataTestId,
@@ -152,7 +146,6 @@ export const RuleCard = memo<RuleCardProps>(
               selected={selectedColumnId !== undefined}
               labels={editLabels}
               openMenu={openMenu}
-              offered={{ conditions: offersConditions, rule: offersRuleMenu }}
             />
           )}
         </div>

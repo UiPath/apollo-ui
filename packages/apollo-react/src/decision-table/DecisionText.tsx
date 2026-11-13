@@ -71,9 +71,9 @@ export interface DecisionTextEdit {
   column?: ColumnEdit;
   /** A condition's remove action, or Delete on a selected value: the grid's clear, for one cell. */
   onClearCell: (cell: SentenceCellId) => void;
-  /** The add-condition menu of a rule; called for each mounted rule, and while it is open; an empty list leaves its + unavailable. */
+  /** The add-condition menu of a rule; called only to open it and while it is open, which an empty list skips. */
   conditionEntries: (rowId: string) => GridMenuEntry[];
-  /** The rule's own menu, as the grid's row menu; called for each mounted rule, and while it is open; an empty list leaves its ⋯ unavailable. */
+  /** The rule's own menu, as the grid's row menu; called only to open it and while it is open, which an empty list skips. */
   ruleEntries: (rowId: string) => GridMenuEntry[];
   /** The rule card's delete action, as the grid row's delete button; the host selects what follows. */
   onDeleteRule: (rowId: string) => void;
@@ -245,7 +245,6 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           decisionLinks={onOpenDecision !== undefined}
           editLabels={edit?.labels}
           openMenu={ruleMenus.state}
-          offers={ruleMenus.offers}
           style={listStyle}
           idPrefix={idPrefix}
           dataTestId={dataTestId}
