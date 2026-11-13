@@ -51,8 +51,10 @@ const DEFAULT_VALUE_MODES: readonly QuickFormFieldMode[] = ['literal', 'expressi
  * A Quick Form is assembled by end users, like a form builder. QuickFormField is
  * the control for an individual field within it, and carries its own
  * configuration controls: a lock that marks it read-only for the person filling
- * in the form, a data-type switch that swaps the control, a Required toggle, and
- * a value-mode switch across `literal`, `expression`, `variable` and `prompt`.
+ * in the form, and a value-mode switch across `literal`, `expression`,
+ * `variable` and `prompt`. Its header actions are composed in `headerActions`:
+ * `QuickFormFieldTypePicker`, `QuickFormFieldAiAssist`,
+ * `QuickFormFieldInsertVariable` and the consumer's own, in any order.
  *
  * Only use it within a quick form builder. For standard forms, compose the
  * form-field anatomy (`FormField`, `FormFieldLabel`, `InputGroup`, …) or
@@ -64,7 +66,6 @@ const DEFAULT_VALUE_MODES: readonly QuickFormFieldMode[] = ['literal', 'expressi
  * - `confirmModeChange` asks before a switch the consumer knows is lossy.
  * - `locked` is configuration the author sets, so the value stays editable;
  *   `disabled` is what stops the author editing the field.
- * - `fieldTypes` chooses which types the picker offers.
  * - `onLabelChange` makes a string `label` editable in place.
  * - Insert variable renders `variables` as supplied and splices at the caret;
  *   `onInsertVariable` takes over what inserting means.
@@ -73,9 +74,8 @@ const DEFAULT_VALUE_MODES: readonly QuickFormFieldMode[] = ['literal', 'expressi
  * - Every user-visible string can be overridden through `strings`.
  *
  * The expression mode is styled as code but not highlighted or evaluated.
- * Select options default to a small demo set unless `options` is provided. The
- * AI-assist button renders only with `onGenerateWithAi`, and file uploads
- * aren't persisted anywhere.
+ * Select options default to a small demo set unless `options` is provided, and
+ * file uploads aren't persisted anywhere.
  */
 export function QuickFormField({
   value = '',
@@ -113,7 +113,7 @@ export function QuickFormField({
   fileUploadAriaLabel,
   headerActions,
   compact,
-  showFieldActions = true,
+  showFieldActions = false,
   options = DEFAULT_SELECT_OPTIONS,
   onGenerateWithAi,
   onInsertVariable,

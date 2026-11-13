@@ -42,6 +42,21 @@ export type {
 } from './components/forms/field-control';
 export { FIELD_CONTROL_GEOMETRY, FieldControl } from './components/forms/field-control';
 export { FormFieldRenderer } from './components/forms/field-renderer';
+export type {
+  FieldRuleOutcome,
+  FieldRulesOptions,
+  StoredFieldRules,
+} from './components/forms/field-rules';
+export {
+  fromFieldRules,
+  readStoredRules,
+  renameFieldInRules,
+  rulesReferencing,
+  toFieldRules,
+  writeStoredRules,
+} from './components/forms/field-rules';
+export type { FieldRulesStrings } from './components/forms/field-rules-strings';
+export { DEFAULT_FIELD_RULES_STRINGS } from './components/forms/field-rules-strings';
 export { FormDesigner } from './components/forms/form-designer';
 export {
   analyticsPlugin,
@@ -99,8 +114,20 @@ export {
   RuleBuilder,
   RulesEngine,
 } from './components/forms/rules-engine';
+export type {
+  FieldRuleField,
+  FieldValueType,
+  RulesEngineVocabularyOptions,
+} from './components/forms/rules-engine-dialect';
+export {
+  createRulesEngineVocabulary,
+  RULES_ENGINE_OPERATORS,
+  rulesEngineDialect,
+  rulesEngineVocabulary,
+} from './components/forms/rules-engine-dialect';
 export type { StringListFieldProps } from './components/forms/string-list-field';
 export { formatTemplate, StringListField } from './components/forms/string-list-field';
+export { useFieldRules } from './components/forms/use-field-rules';
 export type {
   CodecContext,
   ConvertResult,
@@ -310,6 +337,31 @@ export {
   CommandShortcut,
 } from './components/ui/command';
 export type {
+  Condition,
+  ConditionField,
+  ConditionFieldOption,
+  ConditionFieldType,
+  ConditionGroup,
+  ConditionNode,
+  ConditionOperator,
+  ConditionOperators,
+  ConditionsEditorProps,
+  ConditionsEditorStrings,
+  ConditionValueContext,
+  ConditionValueMode,
+  ConditionValueRenderProps,
+  ConditionVocabulary,
+  RenderConditionValue,
+} from './components/ui/conditions-editor';
+export {
+  ConditionsEditor,
+  createCondition,
+  createConditionGroup,
+  DEFAULT_CONDITION_OPERATORS,
+  DEFAULT_CONDITIONS_EDITOR_STRINGS,
+  isConditionComplete,
+} from './components/ui/conditions-editor';
+export type {
   Connection,
   ConnectionPickerProps,
   ConnectionPickerStrings,
@@ -442,12 +494,16 @@ export type {
   AiAssistContentProps,
   InsertVariableActionProps,
   InsertVariableActionStrings,
+  RulesActionProps,
+  RulesActionStrings,
 } from './components/ui/field-actions';
 export {
   AiAssistAction,
   DEFAULT_AI_ASSIST_ACTION_STRINGS,
   DEFAULT_INSERT_VARIABLE_ACTION_STRINGS,
+  DEFAULT_RULES_ACTION_STRINGS,
   InsertVariableAction,
+  RulesAction,
 } from './components/ui/field-actions';
 export type {
   BuiltInValueModesOptions,
@@ -891,13 +947,17 @@ export type { PromptValueControlProps } from './components/ui/prompt-value-contr
 export { PromptValueControl } from './components/ui/prompt-value-control';
 export type {
   QuickFieldType,
+  QuickFormFieldAiAssistProps,
   QuickFormFieldControlProps,
+  QuickFormFieldHeaderState,
+  QuickFormFieldInsertVariableProps,
   QuickFormFieldMode,
   QuickFormFieldModeSwitchConfirm,
   QuickFormFieldMoreActions,
   QuickFormFieldOption,
   QuickFormFieldProps,
   QuickFormFieldStrings,
+  QuickFormFieldTypePickerProps,
   VariableInsertContext,
 } from './components/ui/quick-form-field';
 export {
@@ -905,6 +965,10 @@ export {
   FIELD_TYPE_META,
   FIELD_TYPE_ORDER,
   QuickFormField,
+  QuickFormFieldAiAssist,
+  QuickFormFieldInsertVariable,
+  QuickFormFieldTypePicker,
+  useQuickFormFieldHeader,
 } from './components/ui/quick-form-field';
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
 export { ReferenceChip, type ReferenceChipProps } from './components/ui/reference-chip';
@@ -929,6 +993,52 @@ export {
   ResourcePicker,
   ResourcePickerContent,
 } from './components/ui/resource-picker';
+export type {
+  AddRowButtonProps,
+  CollapsibleRowGroupProps,
+  EmptyRowsProps,
+  GroupModeOption,
+  GroupModeToggleProps,
+  GroupModeToggleStrings,
+  MatchMode,
+  RowDeleteButtonProps,
+} from './components/ui/row-groups';
+export {
+  AddRowButton,
+  CollapsibleRowGroup,
+  DEFAULT_GROUP_MODE_TOGGLE_STRINGS,
+  EmptyRows,
+  GroupModeToggle,
+  MATCH_MODES,
+  RowDeleteButton,
+  useRowFocus,
+} from './components/ui/row-groups';
+export type {
+  ConditionsRule,
+  ExpressionRule,
+  PreservedRule,
+  RenderRuleExpressionEditor,
+  Rule,
+  RuleExpressionEditorProps,
+  RuleExpressionProblem,
+  RuleIssue,
+  RuleIssueKind,
+  RuleMode,
+  RuleOutcome,
+  RuleRepair,
+  RulesDialect,
+  RulesEditorProps,
+  RulesEditorStrings,
+  RuleVocabulary,
+} from './components/ui/rules-editor';
+export {
+  createRule,
+  DEFAULT_RULES_EDITOR_STRINGS,
+  findRuleIssues,
+  issueIds,
+  isRuleComplete,
+  RulesEditor,
+} from './components/ui/rules-editor';
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
 export type {
   SearchProps,
