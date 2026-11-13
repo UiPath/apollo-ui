@@ -8,6 +8,7 @@ import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionText
 import type { DecisionTextEdit } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
+import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
 import type { RuleCardLabels } from './ruleCardModel';
@@ -65,7 +66,7 @@ interface DecisionTextBaseProps {
   ariaLabel: string;
   /** Spread onto the scroll container: its handlers run after the view's and its className is added to the view's; a `data-testid` here overrides `dataTestId`. */
   containerProps?: DecisionTextContainerProps;
-  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
+  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
   dataTestId: string;
   /** Overlays rendered inside the scroll container (menus, notes, dialogs). */
   children?: React.ReactNode;
@@ -237,6 +238,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           dataTestId={dataTestId}
         />
       )}
+      <MarkTooltip container={ruleWindow.container} dataTestId={dataTestId} />
       <GridContextMenu
         label={ruleMenus.label}
         dataTestId={dataTestId}
