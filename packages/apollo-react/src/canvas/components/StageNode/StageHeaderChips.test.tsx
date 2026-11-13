@@ -65,4 +65,43 @@ describe('StageHeaderChips', () => {
 
     expect(screen.getByTestId('stage-ends-case-badge-case')).toHaveTextContent('Ends case');
   });
+
+  it('makes a status pill with a tooltip a tab stop described by its tooltip', async () => {
+    render(
+      <StageHeaderChips
+        id="case"
+        chips={[
+          { type: StageHeaderChipType.Optional, tooltip: 'Not required for case completion' },
+          { type: StageHeaderChipType.EndsCase },
+        ]}
+      />
+    );
+
+    await userEvent.tab();
+    const optional = screen.getByRole('img', { name: 'Optional' });
+    expect(optional).toHaveFocus();
+    expect(optional).toHaveAccessibleDescription('Not required for case completion');
+
+    await userEvent.tab();
+    expect(document.body).toHaveFocus();
+  });
+
+  it('describes a clickable status pill by its tooltip', () => {
+    render(
+      <StageHeaderChips
+        id="case"
+        chips={[
+          {
+            type: StageHeaderChipType.EndsCase,
+            tooltip: 'Entering this stage ends the case',
+            onClick: vi.fn(),
+          },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Ends case' })).toHaveAccessibleDescription(
+      'Entering this stage ends the case'
+    );
+  });
 });
