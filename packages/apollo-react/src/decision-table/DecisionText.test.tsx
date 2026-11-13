@@ -475,6 +475,24 @@ describe('DecisionText', () => {
       expect(within(ruleLine('m3', 0) as HTMLElement).queryByText(/matched/i)).toBeNull();
     });
 
+    it('names a focused condition stop with its run verdict, in a lead and on a line, and an outcome without one', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m3: { cells: { score: { matched: true }, channel: { matched: false } } },
+          m1: { cells: { score: { matched: true }, decision: { matched: true } } },
+        }),
+      });
+      expect(valueChip('m3', 'score').getAttribute('aria-labelledby')).not.toBeNull();
+      expect(valueChip('m3', 'score')).toHaveAccessibleName(/ Matched$/);
+      expect(valueChip('m3', 'channel')).toHaveAccessibleName(/ Not matched$/);
+      expect(valueChip('m1', 'score')).toHaveAccessibleName(/ Matched$/);
+      expect(valueChip('m1', 'decision')).not.toHaveAccessibleName(/matched/i);
+      expect(valueChip('m1', 'debt')).not.toHaveAccessibleName(/matched/i);
+    });
+
     it('ends a condition line with its glyph, announced by status and message', () => {
       renderView({
         marks: rowMarks({

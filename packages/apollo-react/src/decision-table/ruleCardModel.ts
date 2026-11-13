@@ -8,6 +8,7 @@ import { type LineMark, lineMarksOf, type MarkFields, unplacedColumnIds } from '
 import {
   boundedParts,
   columnNameOf,
+  isOutcome,
   partsText,
   SENTENCE_LINE_VALUE_LIMIT,
   stopTokensOf,
@@ -52,6 +53,17 @@ export const cellName = (
   values: string,
   position: number
 ): string => cell?.(column, values, position) ?? [column, values].filter(Boolean).join(' ');
+
+/** A condition's run verdict as its line reads it out, or nothing for an outcome or a cell the run did not judge. */
+const verdictOf = (
+  rule: SentenceRule,
+  columnId: string,
+  cells: RowMark['cells'],
+  labels: RuleCardLabels
+): string => {
+  const matched = isOutcome(rule, columnId) ? undefined : cells?.[columnId]?.matched;
+  return matched === undefined ? '' : labels.conditionVerdict(matched);
+};
 
 /** A cell's values as its line shows them, first to last, then the count of those it clamps. */
 const shownValuesOf = (
@@ -157,12 +169,17 @@ export const ruleCardModel = ({
     ? [...firstValuesOf(rule)].map(([columnId, { token, parts }], index) => ({
         token,
         labelId: `${id}-cell-${index}`,
-        label: cellName(
-          labels,
-          columnNameOf(rule, columnId),
-          shownValuesOf(parts, columnId, labels),
-          position
-        ),
+        label: [
+          cellName(
+            labels,
+            columnNameOf(rule, columnId),
+            shownValuesOf(parts, columnId, labels),
+            position
+          ),
+          verdictOf(rule, columnId, cells, labels),
+        ]
+          .filter(Boolean)
+          .join(' '),
         editable: editLabels !== undefined,
       }))
     : [];

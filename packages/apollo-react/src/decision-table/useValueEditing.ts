@@ -9,6 +9,7 @@ import {
   cellTextOf,
   columnNameOf,
   hasStop,
+  isOutcome,
   tokenText,
   valueTokenOf,
 } from './sentenceParts';
@@ -96,9 +97,6 @@ const movedAway = ({ element, at }: Pressed): boolean => {
   const { x, y } = element.getBoundingClientRect();
   return x !== at.x || y !== at.y;
 };
-
-const isOutcome = (rule: SentenceRule, columnId: string): boolean =>
-  rule.heading.some((part) => typeof part !== 'string' && part.columnId === columnId);
 
 /** A cell's text, or an empty one for a rule, as the rules hold it; undefined once its rule is gone. */
 const textIn = (rules: readonly SentenceRule[], cell: SentenceSelection): string | undefined => {

@@ -50,6 +50,10 @@ export const cellTextOf = (rule: SentenceRule, columnId: string): string =>
     .map((token) => `${token.kind}:${token.text}`)
     .join('\n');
 
+/** Whether a rule words a cell in its heading, as an outcome. */
+export const isOutcome = (rule: SentenceRule, columnId: string): boolean =>
+  rule.heading.some((part) => typeof part !== 'string' && part.columnId === columnId);
+
 /** A column's name as the row words it. */
 export const columnNameOf = (rule: SentenceRule, columnId: string): string =>
   ruleTokens(rule).find((token) => token.kind !== 'value' && token.columnId === columnId)?.text ??
