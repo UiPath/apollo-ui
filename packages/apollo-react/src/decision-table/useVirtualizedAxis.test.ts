@@ -12,6 +12,12 @@ const offsetsFor = (widths: number[]): number[] =>
     [0]
   );
 
+const mountedCount = (segments: Segments): number =>
+  segments.reduce(
+    (count, segment) => count + (segment.type === 'items' ? segment.to - segment.from : 0),
+    0
+  );
+
 const mountsItem = (segments: Segments, index: number): boolean =>
   segments.some(
     (segment) => segment.type === 'items' && segment.from <= index && index < segment.to
@@ -59,6 +65,108 @@ describe('useVirtualizedAxis (virtual-core binding)', () => {
       expect(mountsItem(result.current.segments, 25)).toBe(false);
     } finally {
       element.remove();
+    }
+  });
+});
+
+describe('useVirtualizedAxis coverage while scrolling', () => {
+  const OVERSCAN = 10;
+  /** The most items past the visible ones the window may mount: the overscan on each side, and the anchor's lag. */
+  const MOST_EXTRA = 2 * OVERSCAN + Math.floor(OVERSCAN / 2);
+
+  interface SweepCase {
+    sizes: number[];
+    viewport: number;
+    axis?: Parameters<typeof useVirtualizedAxis>[3]['axis'];
+    uniform?: boolean;
+  }
+
+  /** Scrolls through every offset, then jumps back to the start: where a visible item was unmounted on the way down, whether the window stayed within its bound, and the window at the start before and after. */
+  const sweep = ({ sizes, viewport, axis = 'vertical', uniform = false }: SweepCase) => {
+    const element = document.createElement('div');
+    document.body.appendChild(element);
+    const offsets = offsetsFor(sizes);
+    const total = offsets[sizes.length] ?? 0;
+    const indexAt = (px: number) => offsets.findIndex((_, index) => (offsets[index + 1] ?? 0) > px);
+    const gaps: number[] = [];
+    let mostExtra = 0;
+    const scrollTo = (at: number) =>
+      act(() => {
+        if (axis === 'vertical') element.scrollTop = at;
+        else element.scrollLeft = at;
+        element.dispatchEvent(new Event('scroll'));
+      });
+    try {
+      const { result, rerender } = renderHook(() =>
+        useVirtualizedAxis(sizes.length, sizes[0] ?? 64, null, {
+          axis,
+          overscanItems: OVERSCAN,
+          fallbackViewportPx: viewport,
+          itemOffsetsPx: uniform ? undefined : offsets,
+        })
+      );
+      result.current.measureRef(element);
+      rerender();
+      const firstWindow = result.current.segments;
+      for (let at = 0; at <= total - viewport; at += 8) {
+        scrollTo(at);
+        const first = indexAt(at);
+        const last = indexAt(Math.min(at + viewport, total) - 1);
+        for (let index = first; index <= last; index += 1) {
+          if (!mountsItem(result.current.segments, index)) {
+            gaps.push(at);
+            break;
+          }
+        }
+        mostExtra = Math.max(mostExtra, mountedCount(result.current.segments) - (last - first + 1));
+      }
+      scrollTo(0);
+      return {
+        gaps,
+        withinWindow: mostExtra <= MOST_EXTRA,
+        firstWindow,
+        lastWindow: result.current.segments,
+      };
+    } finally {
+      element.remove();
+    }
+  };
+  const short = (count: number) => new Array<number>(count).fill(64);
+  const cases = (viewport: number): Record<string, SweepCase> => ({
+    leading: { sizes: [1264, ...short(60)], viewport },
+    middle: { sizes: [...short(30), 1264, ...short(30)], viewport },
+    backToBack: { sizes: [...short(20), 1264, 1264, ...short(30)], viewport },
+    taller: { sizes: [...short(20), 3200, ...short(20), 4000, ...short(20)], viewport },
+    uniform: { sizes: short(200), viewport, uniform: true },
+    horizontal: { sizes: [...short(30), 1264, ...short(30)], viewport, axis: 'horizontal' },
+    uniformHorizontal: {
+      sizes: new Array<number>(200).fill(120),
+      viewport,
+      axis: 'horizontal',
+      uniform: true,
+    },
+  });
+  const each = <T>(viewport: number, check: (sweepCase: SweepCase) => T) =>
+    Object.fromEntries(
+      Object.entries(cases(viewport)).map(([name, value]) => [name, check(value)])
+    );
+
+  it.each([
+    200, 480, 800,
+  ])('mounts every visible item and no more than the window in a %ipx viewport at every offset', (viewport) => {
+    expect(
+      each(viewport, (sweepCase) => {
+        const { gaps, withinWindow } = sweep(sweepCase);
+        return { gaps, withinWindow };
+      })
+    ).toEqual(each(viewport, () => ({ gaps: [], withinWindow: true })));
+  });
+
+  it.each([
+    200, 480, 800,
+  ])('drops the end it extended to once a jump back to the start moves the anchor, in a %ipx viewport', (viewport) => {
+    for (const [name, { firstWindow, lastWindow }] of Object.entries(each(viewport, sweep))) {
+      expect({ [name]: lastWindow }).toEqual({ [name]: firstWindow });
     }
   });
 });
