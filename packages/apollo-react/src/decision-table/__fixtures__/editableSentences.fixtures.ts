@@ -308,29 +308,47 @@ export const EDITABLE_TABLE: EditableTable = {
 /** The table with no rules, as a host starts a new one. */
 export const EMPTY_TABLE: EditableTable = { ...EDITABLE_TABLE, rules: [] };
 
-/** `count` rules cycling through the editable table's, each with its own id, after one rule whose channel lists `values` values. */
-export const manyRulesTable = (count: number, values: number): EditableTable => ({
-  ...EDITABLE_TABLE,
-  rules: [
-    {
-      rowId: 'long-list',
-      outcomes: { risk: '"review"' },
-      conditions: [
-        {
-          inputId: 'channel',
-          operator: 'is one of',
-          values: Array.from({ length: values }, (_, index) => `"Channel ${index + 1}"`),
+/** `count` rules cycling through the editable table's, each with its own id, after one rule whose channel lists `values` values and one with a condition on each of `inputs` more inputs. */
+export const manyRulesTable = (count: number, values: number, inputs: number): EditableTable => {
+  const extra = Array.from(
+    { length: inputs },
+    (_, index): EditableColumn => ({ id: `input-${index + 1}`, name: `Input ${index + 1}` })
+  );
+  return {
+    ...EDITABLE_TABLE,
+    inputs: [...EDITABLE_TABLE.inputs, ...extra],
+    nextId: inputs + 1,
+    rules: [
+      {
+        rowId: 'long-list',
+        outcomes: { risk: '"review"' },
+        conditions: [
+          {
+            inputId: 'channel',
+            operator: 'is one of',
+            values: Array.from({ length: values }, (_, index) => `"Channel ${index + 1}"`),
+            joiner: ', ',
+          },
+        ],
+      },
+      {
+        rowId: 'many-inputs',
+        outcomes: { risk: '"review"' },
+        conditions: extra.map((input, index) => ({
+          inputId: input.id,
+          operator: 'is',
+          values: [`${index + 1}`],
           joiner: ', ',
-        },
-      ],
-    },
-    ...Array.from({ length: count }, (_, index): EditableRule => {
-      const source = EDITABLE_TABLE.rules[index % EDITABLE_TABLE.rules.length];
-      return {
-        rowId: `row-${index}`,
-        outcomes: source?.outcomes ?? {},
-        conditions: source?.conditions ?? [],
-      };
-    }),
-  ],
-});
+        })),
+      },
+      ...Array.from({ length: count }, (_, index): EditableRule => {
+        const source = EDITABLE_TABLE.rules[index % EDITABLE_TABLE.rules.length];
+        return {
+          rowId: `row-${index}`,
+          outcomes: source?.outcomes ?? {},
+          conditions: source?.conditions ?? [],
+        };
+      }),
+    ],
+  };
+};

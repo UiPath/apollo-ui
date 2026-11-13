@@ -25,15 +25,7 @@ import {
 import {
   DECISION_TEXT_EDIT_LABELS,
   DECISION_TEXT_LABELS,
-  GRID_SENTENCE_BANDS,
-  GRID_SENTENCE_HEADER,
-  GRID_SENTENCE_RULES,
   HIT_POLICY_GROUPS,
-  MULTI_SENTENCE_BANDS,
-  MULTI_SENTENCE_HEADER,
-  MULTI_SENTENCE_RULES,
-  manyColumnBands,
-  manyLinesRule,
 } from './__fixtures__/sentences.fixtures';
 import { CellTextEditor } from './CellTextEditor';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
@@ -46,13 +38,9 @@ import { valueTokenOf } from './sentenceParts';
 import type {
   SentenceBand,
   SentenceCellId,
-  SentenceLine,
-  SentenceNameToken,
-  SentencePart,
   SentenceRule,
   SentenceSelection,
   SentenceValueId,
-  SentenceValueToken,
 } from './sentenceTypes';
 import type {
   RangeEnds,
@@ -77,83 +65,6 @@ interface StoryCaptionProps {
 const StoryCaption = ({ children }: StoryCaptionProps) => (
   <p className="text-xs text-foreground-de-emp">{children}</p>
 );
-
-interface ReadOnlyDemoProps
-  extends Partial<Omit<DecisionTextProps, 'selected' | 'onSelect' | 'edit'>> {
-  caption: string;
-}
-
-/** A host that only shows the rules and reports the hovered cell. */
-const ReadOnlyDemo = ({ caption, ...props }: ReadOnlyDemoProps) => {
-  const [hovered, setHovered] = useState<SentenceCellId | null>(null);
-  return (
-    <div className="flex h-[480px] flex-col gap-2">
-      <DecisionText
-        rules={GRID_SENTENCE_RULES}
-        bands={TYPED_GRID_BANDS}
-        header={GRID_SENTENCE_HEADER}
-        labels={DECISION_TEXT_LABELS}
-        ariaLabel="Rules"
-        dataTestId="decision-text"
-        onCellHover={setHovered}
-        {...props}
-      />
-      <StoryCaption>Hovered cell: {cellText(hovered)}</StoryCaption>
-      <StoryCaption>{caption}</StoryCaption>
-    </div>
-  );
-};
-
-interface SelectionDemoProps extends ReadOnlyDemoProps {
-  initialSelected?: SentenceSelection | null;
-}
-
-/** A host that owns the selection, as it owns the grid's. */
-const SelectionDemo = ({ caption, initialSelected = null, ...props }: SelectionDemoProps) => {
-  const [selected, setSelected] = useState(initialSelected);
-  return (
-    <div className="flex h-[480px] flex-col gap-2">
-      <DecisionText
-        rules={GRID_SENTENCE_RULES}
-        bands={GRID_SENTENCE_BANDS}
-        header={GRID_SENTENCE_HEADER}
-        labels={DECISION_TEXT_LABELS}
-        ariaLabel="Rules"
-        dataTestId="decision-text"
-        selected={selected}
-        onSelect={setSelected}
-        {...props}
-      />
-      <StoryCaption>Selected: {selectionText(selected)}</StoryCaption>
-      <StoryCaption>{caption}</StoryCaption>
-    </div>
-  );
-};
-
-const DEMO_MARKS: TableMarks = {
-  rows: new Map<string, RowMark>([
-    [
-      'm1',
-      {
-        cells: {
-          debt: { tone: 'error', title: 'Not a number', glyph: true },
-          country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
-        },
-      },
-    ],
-    [
-      'm3',
-      {
-        cells: {
-          score: { tone: 'warning', title: 'Overlaps row 4', glyph: true },
-          channel: { tone: 'error', title: 'Unknown channel', glyph: true },
-        },
-      },
-    ],
-    ['m5', { tone: 'warning', title: 'Never reached', glyph: true }],
-  ]),
-  columns: new Map([['start', { tone: 'warning', title: 'No type', glyph: true }]]),
-};
 
 /** How much of the view a host wires: rules only, then selection, then editing. */
 type HostMode = 'read' | 'select' | 'edit';
@@ -286,8 +197,6 @@ const tableWithColumnName = (
   return { ...table, inputs: rename(table.inputs), outputs: rename(table.outputs) };
 };
 
-const TYPED_GRID_BANDS = typedBands(GRID_SENTENCE_BANDS);
-
 const numberOrder = (low: string, high: string) => Number(low) <= Number(high);
 
 /** What the story host's popover offers: the column's type glyph, a condition's operators, its values and ends, and the column's allowed values. */
@@ -370,6 +279,8 @@ interface TableHostProps {
   caption: string;
   mode?: HostMode;
   validate?: boolean;
+  marks?: TableMarks;
+  headerMark?: DecisionTextProps['headerMark'];
   renderEditor?: DecisionTextEdit['renderEditor'];
   frameClassName?: string;
 }
@@ -380,6 +291,8 @@ const TableHost = ({
   caption,
   mode = 'edit',
   validate = false,
+  marks: fixedMarks,
+  headerMark,
   renderEditor,
   frameClassName = 'h-[600px]',
 }: TableHostProps) => {
@@ -394,7 +307,10 @@ const TableHost = ({
   const [moreProperties, setMoreProperties] = useState<string | null>(null);
   const rules = useMemo(() => wordedRules(table), [table]);
   const bands = useMemo(() => typedBands(tableBands(table), columnEdits), [table, columnEdits]);
-  const marks = useMemo(() => (validate ? validationMarks(table) : NO_MARKS), [table, validate]);
+  const marks = useMemo(
+    () => fixedMarks ?? (validate ? validationMarks(table) : NO_MARKS),
+    [fixedMarks, table, validate]
+  );
 
   useEffect(() => {
     setSelected((current) => {
@@ -532,6 +448,7 @@ const TableHost = ({
         dataTestId="decision-text"
         numbered
         marks={marks}
+        headerMark={headerMark}
         onCellHover={setHovered}
         {...(mode === 'read'
           ? { selected: null }
@@ -567,32 +484,126 @@ export default meta;
 type Story = StoryObj<typeof DecisionText>;
 
 export const Default: Story = {
-  render: () => <ReadOnlyDemo caption="Read only: no selection and no editing." />,
-};
-
-export const WithMarks: Story = {
   render: () => (
-    <ReadOnlyDemo
-      rules={MULTI_SENTENCE_RULES}
-      bands={MULTI_SENTENCE_BANDS}
-      header={MULTI_SENTENCE_HEADER}
-      numbered
-      marks={DEMO_MARKS}
-      headerMark={{ tone: 'error', title: 'Collect returns a list, not one value', glyph: true }}
-      caption="The grid's marks on values, rules, band columns and the header. Each glyph's message is read with its line, and shows as a tooltip on hover or focus."
+    <TableHost
+      initialTable={EDITABLE_TABLE}
+      caption="The rules as they come: click a value, a column or a rule's ⋯ to edit."
     />
   ),
 };
 
-export const Selection: Story = {
+export const ReadOnly: Story = {
   render: () => (
-    <div className="w-[420px]">
-      <SelectionDemo
-        numbered
-        initialSelected={{ rowId: 'r2', columnId: 'income' }}
-        caption="Click a value or a rule. Arrows, Home and End move, Escape clears."
-      />
-    </div>
+    <TableHost
+      initialTable={EDITABLE_TABLE}
+      mode="select"
+      caption="Read-only: click a value or a rule to select it, arrows move, nothing edits."
+    />
+  ),
+};
+
+const ERRORS_TABLE: EditableTable = {
+  ...EDITABLE_TABLE,
+  rules: [
+    {
+      rowId: 'e1',
+      outcomes: { risk: '"high"' },
+      conditions: [
+        { inputId: 'age', operator: 'is less than', values: ['"25"'], joiner: ', ' },
+        { inputId: 'channel', operator: 'is', values: ['"kiosk"'], joiner: ', ' },
+      ],
+    },
+    {
+      rowId: 'e2',
+      outcomes: { risk: '' },
+      conditions: [
+        { inputId: 'age', operator: 'is between', values: ['25', '60'], joiner: ' and ' },
+      ],
+    },
+    {
+      rowId: 'e3',
+      outcomes: { risk: '"review"' },
+      conditions: [{ inputId: 'age', operator: 'is at most', values: ['30'], joiner: ', ' }],
+    },
+    {
+      rowId: 'e4',
+      outcomes: { risk: '"standard"' },
+      conditions: [
+        { inputId: 'age', operator: 'is greater than', values: ['60'], joiner: ', ' },
+        { inputId: 'income', operator: 'is greater than', values: ['40000'], joiner: ', ' },
+      ],
+    },
+    {
+      rowId: 'e5',
+      outcomes: { risk: '"high"' },
+      conditions: [
+        { inputId: 'age', operator: 'is greater than', values: ['60'], joiner: ', ' },
+        { inputId: 'income', operator: 'is at most', values: ['40000'], joiner: ', ' },
+      ],
+    },
+    { rowId: 'e6', outcomes: { risk: '"review"' }, conditions: [] },
+  ],
+};
+
+const ERRORS_MARKS: TableMarks = {
+  rows: new Map<string, RowMark>([
+    [
+      'e1',
+      {
+        cells: {
+          age: {
+            tone: 'error',
+            glyph: true,
+            title: 'Type mismatch: age is a number, "25" is text',
+          },
+          channel: { tone: 'warning', glyph: true, title: '"kiosk" is not an allowed channel' },
+        },
+      },
+    ],
+    [
+      'e2',
+      {
+        tone: 'error',
+        glyph: true,
+        title: 'Set a risk.',
+        cells: { risk: { tone: 'error', glyph: true, title: 'Set a risk.' } },
+      },
+    ],
+    ['e3', { tone: 'warning', glyph: true, title: 'Overlaps rule 2' }],
+    [
+      'e4',
+      {
+        tone: 'success',
+        cells: {
+          age: { matched: true, title: 'age: 67' },
+          income: { matched: true, title: 'income: 52000' },
+        },
+      },
+    ],
+    [
+      'e5',
+      {
+        cells: {
+          age: { tone: 'success', matched: true, title: 'age: 67' },
+          income: { tone: 'error', matched: false, title: 'income: 52000' },
+        },
+      },
+    ],
+    ['e6', { dim: true, title: 'Not evaluated' }],
+  ]),
+  columns: new Map([
+    ['income', { tone: 'warning', glyph: true, title: 'income has no allowed values' }],
+  ]),
+};
+
+export const Errors: Story = {
+  render: () => (
+    <TableHost
+      initialTable={ERRORS_TABLE}
+      marks={ERRORS_MARKS}
+      headerMark={{ tone: 'error', glyph: true, title: 'Unique: rules 2 and 3 overlap' }}
+      caption="Validation and run marks on values, rules, a column and the header; hover a glyph for its message."
+    />
   ),
 };
 
@@ -604,48 +615,13 @@ export const Empty: Story = {
         frameClassName="h-[480px]"
         caption="Add rule adds an empty rule and selects it."
       />
-      <ReadOnlyDemo
-        rules={[]}
-        ariaLabel="Rules without an add action"
-        dataTestId="decision-text-no-add"
-        caption="Without addRule there is no add action."
+      <TableHost
+        initialTable={EMPTY_TABLE}
+        mode="select"
+        frameClassName="h-[480px]"
+        caption="Read-only: no add action."
       />
     </div>
-  ),
-};
-
-const MANY_COLUMNS = manyColumnBands(50);
-const MANY_LINES = [manyLinesRule(50)];
-
-export const ManyColumns: Story = {
-  render: () => (
-    <SelectionDemo
-      bands={MANY_COLUMNS}
-      rules={MANY_LINES}
-      header={MULTI_SENTENCE_HEADER}
-      caption="50 band columns scroll on one line, and a 50-line rule is taller than the view."
-    />
-  ),
-};
-
-const MANY_RULES = manyRulesTable(50_000, 10_000);
-
-export const ManyRules: Story = {
-  render: () => (
-    <TableHost
-      initialTable={MANY_RULES}
-      validate
-      caption="50,001 rules, windowed, with editing on. Rule 1 lists 10,000 channels: 20 show, then a count. Marks follow each edit, and an empty condition is refused."
-    />
-  ),
-};
-
-export const Editing: Story = {
-  render: () => (
-    <TableHost
-      initialTable={EDITABLE_TABLE}
-      caption="Click an input or output above the rules to edit its label, expression or name, type and allowed values: Enter applies, Escape cancels, and More properties hands the column to the host. Click a value, or press Enter on a cell, to open its popover: the column, the condition's operator, and the value, a range's two ends or a list's values, or the column's allowed values. Enter applies and moves down, Tab and Shift+Tab move through the popover's controls and wrap, Escape cancels, and a click outside applies in place. Delete, Backspace or a ✕ removes a condition or clears an outcome. + adds a condition: its line waits in the rule until Apply. ⋯ inserts, duplicates, moves, clears or deletes the rule, and the bin deletes it. The header picks the hit policy; Collect and total opens its totals, Sum refused. income and channel come from other decisions: click either, or press Alt+Enter on its cell, to open it."
-    />
   ),
 };
 
@@ -668,7 +644,7 @@ export const HostEditor: Story = {
     <TableHost
       initialTable={EDITABLE_TABLE}
       renderEditor={renderExpressionEditor}
-      caption="With renderEditor the popover offers Edit expression, which swaps its fields for the host's editor on the whole condition as a FEEL test; a condition applied from it reads as matches, and one applied as it opened stays as it was."
+      caption="renderEditor adds Edit expression, which opens the host's editor on the whole condition."
     />
   ),
 };
@@ -704,7 +680,7 @@ const EndToEndDemo = () => {
         initialTable={EDITABLE_TABLE}
         mode={mode}
         validate
-        caption="One host, wired a step at a time. Read passes the rules, the marks and onOpenDecision for the linked income and channel, Select adds selected and onSelect, Edit adds edit, addRule and the hit policy picker. The host validates after each write and marks a number input holding text or an empty outcome."
+        caption="One host wired a step at a time, Read, Select then Edit, validating after each write."
       />
     </div>
   );
@@ -714,449 +690,14 @@ export const EndToEnd: Story = {
   render: () => <EndToEndDemo />,
 };
 
-/** A rule-card state: what drives it, and the card it draws. */
-interface CardState {
-  id: string;
-  label: string;
-  source: string;
-  rules: readonly SentenceRule[];
-  marks?: TableMarks;
-  selected?: SentenceSelection;
-  readOnly?: boolean;
-  editing?: SentenceValueId;
-  /** The card's width when not the canvas's 704px. */
-  cardWidth?: number;
-}
+const LARGE_TABLE = manyRulesTable(50_000, 10_000, 50);
 
-interface CardSection {
-  id: string;
-  label: string;
-  states: readonly CardState[];
-}
-
-const stateName = (
-  kind: SentenceNameToken['kind'],
-  columnId: string,
-  text: string
-): SentenceNameToken => ({ kind, columnId, text });
-
-const stateValue = (columnId: string, text: string, index = 0): SentenceValueToken => ({
-  kind: 'value',
-  columnId,
-  index,
-  text,
-});
-
-const SCORE = stateName('input', 'score', 'Score');
-const MONTHS = stateName('input', 'months', 'Months employed');
-const FIELD = stateName('input', 'field', 'Field');
-const DEBT = stateName('input', 'debt', 'Debt ratio');
-const RATE = stateName('output', 'rate', 'Rate');
-const TERM = stateName('output', 'term', 'Term');
-
-const rateIs = (text: string): SentencePart[] => [RATE, ' is ', stateValue('rate', text)];
-const atLeast = (name: SentenceNameToken, text: string): SentenceLine => ({
-  columnId: name.columnId,
-  parts: [name, ' is at least ', stateValue(name.columnId, text)],
-});
-const whenScoreAtLeast = (text: string): SentencePart[] => [
-  'when ',
-  SCORE,
-  ' is at least ',
-  stateValue('score', text),
-];
-const ALL_TRUE = ['when all of these are true:'];
-
-const NAMED: SentenceRule = {
-  rowId: 'named',
-  heading: rateIs('Prime'),
-  lead: ALL_TRUE,
-  lines: [atLeast(SCORE, '700'), atLeast(MONTHS, '12')],
-};
-const SECOND: SentenceRule = {
-  rowId: 'second',
-  heading: rateIs('Standard'),
-  lead: ALL_TRUE,
-  lines: [atLeast(SCORE, '640'), atLeast(MONTHS, '6')],
-};
-const ALWAYS: SentenceRule = {
-  rowId: 'third',
-  heading: rateIs('Refer'),
-  lead: ['in every case'],
-  lines: [],
-};
-const ONE: SentenceRule = {
-  rowId: 'one',
-  heading: rateIs('Prime'),
-  lead: whenScoreAtLeast('700'),
-  lines: [],
-};
-const MANY: SentenceRule = {
-  rowId: 'many',
-  heading: rateIs('Prime'),
-  lead: ALL_TRUE,
-  lines: [
-    atLeast(SCORE, '700'),
-    atLeast(MONTHS, '12'),
-    {
-      columnId: 'field',
-      parts: [
-        FIELD,
-        ' is ',
-        stateValue('field', 'Medicine'),
-        ' or ',
-        stateValue('field', 'Law', 1),
-      ],
-    },
-    { columnId: 'debt', parts: [DEBT, ' is less than ', stateValue('debt', '0.4')] },
-  ],
-};
-const UNSET: SentenceRule = {
-  rowId: 'unset',
-  heading: rateIs(''),
-  lead: whenScoreAtLeast('650'),
-  lines: [],
-};
-const FEEL: SentenceRule = {
-  rowId: 'feel',
-  heading: rateIs('base * 1.2'),
-  lead: whenScoreAtLeast('600'),
-  lines: [],
-};
-const TWO: SentenceRule = {
-  rowId: 'two',
-  heading: [...rateIs('Prime'), ' and ', TERM, ' is ', stateValue('term', '30 years')],
-  lead: whenScoreAtLeast('700'),
-  lines: [],
-};
-const FIELDS = ['Medicine', 'Law', 'Engineering', 'Architecture', 'Accounting'];
-const LONG: SentenceRule = {
-  rowId: 'longsentence',
-  heading: rateIs('Prime'),
-  lead: ALL_TRUE,
-  lines: [
-    {
-      columnId: 'score',
-      parts: [
-        SCORE,
-        ' is between ',
-        stateValue('score', '700'),
-        ' and ',
-        stateValue('score', '850', 1),
-      ],
-    },
-    atLeast(MONTHS, '120'),
-    {
-      columnId: 'field',
-      parts: [
-        FIELD,
-        ' is ',
-        ...FIELDS.flatMap((text, index): SentencePart[] => [
-          ...(index === 0 ? [] : [index === FIELDS.length - 1 ? ' or ' : ', ']),
-          stateValue('field', text, index),
-        ]),
-      ],
-    },
-    { columnId: 'debt', parts: [DEBT, ' is less than ', stateValue('debt', '0.25')] },
-  ],
-};
-
-const rowMarks = (entries: Record<string, RowMark>): TableMarks => ({
-  rows: new Map(Object.entries(entries)),
-  columns: new Map(),
-});
-
-const RULE_WARNING = rowMarks({
-  named: { tone: 'warning', glyph: true, title: 'This rule overlaps rule 2.' },
-});
-const RULE_ERROR = rowMarks({
-  named: { tone: 'error', glyph: true, title: 'This rule can never match.' },
-});
-const FIRED = rowMarks({
-  named: {
-    tone: 'success',
-    cells: {
-      score: { matched: true, title: 'Score: 742' },
-      months: { matched: true, title: 'Months employed: 26' },
-    },
-  },
-});
-
-const RULE_SELECTED = { rowId: 'named' };
-
-const CARD_SECTIONS: readonly CardSection[] = [
-  {
-    id: 'interaction',
-    label: 'Interaction',
-    states: [
-      { id: 'rest', label: 'Rest', source: '—', rules: [NAMED] },
-      {
-        id: 'selected',
-        label: 'Selected',
-        source: 'selected: rule',
-        rules: [NAMED],
-        selected: RULE_SELECTED,
-      },
-      { id: 'read-only', label: 'Read-only', source: 'no edit', rules: [NAMED], readOnly: true },
-      {
-        id: 'read-only-selected',
-        label: 'Read-only, selected',
-        source: 'no edit + selected',
-        rules: [NAMED],
-        readOnly: true,
-        selected: RULE_SELECTED,
-      },
-    ],
-  },
-  {
-    id: 'content',
-    label: 'Content',
-    states: [
-      {
-        id: 'always',
-        label: 'No conditions (last rule)',
-        source: 'every input "-"',
-        rules: [ALWAYS],
-      },
-      { id: 'one', label: 'One condition', source: 'one input set', rules: [ONE] },
-      { id: 'many', label: 'Many conditions', source: 'four inputs set', rules: [MANY] },
-      { id: 'unset', label: 'Result not set', source: 'output ""', rules: [UNSET] },
-      {
-        id: 'unset-ro',
-        label: 'Result not set, read-only',
-        source: 'output "", no edit',
-        rules: [UNSET],
-        readOnly: true,
-      },
-      { id: 'feel', label: 'Expression result', source: 'output base * 1.2', rules: [FEEL] },
-      { id: 'two-outputs', label: 'Two outputs', source: 'two outputs', rules: [TWO] },
-      { id: 'long-sentence', label: 'Long conditions', source: 'wraps', rules: [LONG] },
-      {
-        id: 'long-sentence-narrow',
-        label: 'Long conditions, 420px',
-        source: 'wraps; Field selected',
-        rules: [LONG],
-        selected: { rowId: 'longsentence', columnId: 'field' },
-        cardWidth: 420,
-      },
-    ],
-  },
-  {
-    id: 'validation',
-    label: 'Validation',
-    states: [
-      {
-        id: 'rule-warning',
-        label: 'Rule warning',
-        source: 'rows: warning, glyph',
-        rules: [NAMED],
-        marks: RULE_WARNING,
-      },
-      {
-        id: 'rule-error',
-        label: 'Rule error',
-        source: 'rows: error, glyph',
-        rules: [NAMED],
-        marks: RULE_ERROR,
-      },
-      {
-        id: 'rule-error-selected',
-        label: 'Rule error, selected',
-        source: 'rows: error + selected',
-        rules: [NAMED],
-        marks: RULE_ERROR,
-        selected: RULE_SELECTED,
-      },
-      {
-        id: 'rule-warning-read-only',
-        label: 'Rule warning, read-only',
-        source: 'rows: warning + no edit',
-        rules: [NAMED],
-        marks: RULE_WARNING,
-        readOnly: true,
-      },
-      {
-        id: 'condition-warning',
-        label: 'Condition warning',
-        source: 'cells[score]: warning, glyph',
-        rules: [NAMED],
-        marks: rowMarks({
-          named: {
-            cells: {
-              score: {
-                tone: 'warning',
-                glyph: true,
-                title: "700 is outside Score's allowed values.",
-              },
-            },
-          },
-        }),
-      },
-      {
-        id: 'result-error',
-        label: 'Result error',
-        source: 'rows + cells[rate]: error',
-        rules: [UNSET],
-        marks: rowMarks({
-          unset: {
-            tone: 'error',
-            glyph: true,
-            title: 'Set a result.',
-            cells: { rate: { tone: 'error', glyph: true, title: 'Set a result.' } },
-          },
-        }),
-      },
-    ],
-  },
-  {
-    id: 'execution',
-    label: 'Execution',
-    states: [
-      {
-        id: 'fired',
-        label: 'Fired',
-        source: 'rows: success; cells matched',
-        rules: [NAMED],
-        marks: FIRED,
-      },
-      {
-        id: 'not-fired',
-        label: 'Evaluated, not fired',
-        source: 'cells: success / error',
-        rules: [NAMED],
-        marks: rowMarks({
-          named: {
-            cells: {
-              score: { tone: 'success', matched: true, title: 'Score: 742' },
-              months: { tone: 'error', matched: false, title: 'Months employed: 8' },
-            },
-          },
-        }),
-      },
-      {
-        id: 'not-evaluated',
-        label: 'Not evaluated',
-        source: 'rows: dim',
-        rules: [NAMED],
-        marks: rowMarks({ named: { dim: true, title: 'Not evaluated' } }),
-      },
-      {
-        id: 'not-reached',
-        label: 'Not reached',
-        source: 'rows: dim (after the fired rule)',
-        rules: [SECOND],
-        marks: rowMarks({ second: { dim: true, title: 'Not reached: an earlier rule fired' } }),
-      },
-      {
-        id: 'fired-ro',
-        label: 'Fired, read-only',
-        source: 'no edit + success',
-        rules: [NAMED],
-        marks: FIRED,
-        readOnly: true,
-      },
-    ],
-  },
-  {
-    id: 'editing',
-    label: 'Editing',
-    states: [
-      {
-        id: 'condition-editor',
-        label: 'Condition editor open',
-        source: 'editing: score',
-        rules: [NAMED],
-        selected: { rowId: 'named', columnId: 'score' },
-        editing: { rowId: 'named', columnId: 'score', index: 0 },
-      },
-      {
-        id: 'outcome-editor',
-        label: 'Result editor open',
-        source: 'editing: rate',
-        rules: [NAMED],
-        selected: { rowId: 'named', columnId: 'rate' },
-        editing: { rowId: 'named', columnId: 'rate', index: 0 },
-      },
-    ],
-  },
-];
-
-const STATE_HEADER = { label: 'First', hint: 'Stops at the first matching rule.' };
-
-const ignore = () => undefined;
-
-/** The editing a state tile wires: the open value, its popover and its menus, every action a no-op. */
-const stateEdit = (editing: SentenceValueId | undefined): DecisionTextEdit => ({
-  editing: editing ?? null,
-  onStartEdit: ignore,
-  onCommit: ignore,
-  onCancel: ignore,
-  valueField: (cell) =>
-    cell.columnId === 'rate'
-      ? { icon: <Type className={TYPE_ICON_CLASS} /> }
-      : {
-          icon: <Hash className={TYPE_ICON_CLASS} />,
-          operators: SINGLE_VALUE_OPERATORS,
-          operator: 'is at least',
-        },
-  onClearCell: ignore,
-  conditionEntries: () => [],
-  ruleEntries: () => [],
-  onDeleteRule: ignore,
-  labels: DECISION_TEXT_EDIT_LABELS,
-});
-
-/** The list's side padding, so a tile's card is its stated width. */
-const LIST_GUTTERS_PX = 64;
-const CARD_WIDTH_PX = 704;
-
-interface StateTileProps {
-  state: CardState;
-}
-
-const StateTile = ({ state }: StateTileProps) => {
-  const width = (state.cardWidth ?? CARD_WIDTH_PX) + LIST_GUTTERS_PX;
-  const host = state.readOnly
-    ? { selected: state.selected ?? null }
-    : {
-        selected: state.selected ?? null,
-        onSelect: ignore,
-        edit: stateEdit(state.editing),
-      };
-  return (
-    <figure className="m-0 flex flex-col gap-1" data-state={state.id}>
-      <figcaption className="flex items-baseline gap-2 ps-8 text-xs">
-        <span className="font-semibold text-foreground">{state.label}</span>
-        <span className="font-mono text-[11px] text-foreground-de-emp">{state.source}</span>
-      </figcaption>
-      <div className={`flex flex-col ${state.editing ? 'h-[360px]' : ''}`} style={{ width }}>
-        <DecisionText
-          rules={state.rules}
-          bands={[]}
-          header={STATE_HEADER}
-          numbered
-          marks={state.marks}
-          labels={DECISION_TEXT_LABELS}
-          ariaLabel={state.label}
-          dataTestId={`state-${state.id}`}
-          {...host}
-        />
-      </div>
-    </figure>
-  );
-};
-
-export const States: Story = {
+export const LargeTable: Story = {
   render: () => (
-    <div className="flex flex-col gap-10">
-      {CARD_SECTIONS.map((section) => (
-        <section key={section.id} id={`states-${section.id}`} className="flex flex-col gap-4">
-          <h2 className="m-0 text-sm font-semibold text-foreground">{section.label}</h2>
-          {section.states.map((state) => (
-            <StateTile key={state.id} state={state} />
-          ))}
-        </section>
-      ))}
-    </div>
+    <TableHost
+      initialTable={LARGE_TABLE}
+      validate
+      caption={`${LARGE_TABLE.rules.length.toLocaleString('en-US')} rules over ${LARGE_TABLE.inputs.length} inputs, windowed, on the same editing stack.`}
+    />
   ),
 };
