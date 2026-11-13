@@ -4477,6 +4477,14 @@ describe('DecisionText', () => {
     }));
     const link = (rowId: string) =>
       within(card(rowId)).getByRole('button', { name: 'Open the income decision' });
+    const noValueLinkedRules: SentenceRule[] = GRID_SENTENCE_RULES.map((rule) => ({
+      ...rule,
+      lead: [
+        'when ',
+        { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
+        ' is not empty',
+      ],
+    }));
 
     it('opens the decision by a click on the input or Alt+Enter on its cell, without selecting or editing', () => {
       const onOpenDecision = vi.fn();
@@ -4520,16 +4528,8 @@ describe('DecisionText', () => {
 
     it('keeps a selectable link in the tab order when its input has no value to open it from', async () => {
       const onOpenDecision = vi.fn();
-      const rules = GRID_SENTENCE_RULES.map((rule) => ({
-        ...rule,
-        lead: [
-          'when ',
-          { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
-          ' is not empty',
-        ] satisfies SentencePart[],
-      }));
       renderSelectable({
-        rules,
+        rules: noValueLinkedRules,
         onOpenDecision,
         bands: [],
         initial: { rowId: 'r1', columnId: 'income' },
@@ -4547,20 +4547,13 @@ describe('DecisionText', () => {
       'editable',
     ])('opens the decision of a linked input with no value on a click in the %s view, which arrow keys select', async (mode) => {
       const onOpenDecision = vi.fn();
-      const rules = GRID_SENTENCE_RULES.map((rule) => ({
-        ...rule,
-        lead: [
-          'when ',
-          { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
-          ' is not empty',
-        ] satisfies SentencePart[],
-      }));
       const onStartEdit = vi.fn();
       const edit = mode === 'editable' ? editWith({ onStartEdit }) : undefined;
+      const props = { rules: noValueLinkedRules, onOpenDecision };
       const { onSelect } =
         mode === 'read-only'
-          ? { onSelect: vi.fn(), ...renderView({ rules, onOpenDecision }) }
-          : renderSelectable({ rules, onOpenDecision, edit, initial: { rowId: 'r2' } });
+          ? { onSelect: vi.fn(), ...renderView(props) }
+          : renderSelectable({ ...props, edit, initial: { rowId: 'r2' } });
       const user = userEvent.setup();
       await user.click(link('r2'));
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
@@ -4575,6 +4568,30 @@ describe('DecisionText', () => {
         [{ rowId: 'r2', columnId: 'income' }],
       ]);
       expect(onStartEdit).not.toHaveBeenCalled();
+    });
+
+    it.each<[string, boolean]>([
+      ['selectable', false],
+      ['editable', true],
+    ])('opens the decision of a selected linked input with no value on Space in the %s view, and on Enter unless Enter edits it', async (_, editable) => {
+      const onOpenDecision = vi.fn();
+      const onStartEdit = vi.fn();
+      renderSelectable({
+        rules: noValueLinkedRules,
+        onOpenDecision,
+        edit: editable ? editWith({ onStartEdit }) : undefined,
+        initial: { rowId: 'r2', columnId: 'income' },
+      });
+      const user = userEvent.setup();
+      act(() => link('r2').focus());
+      await user.keyboard(' ');
+      expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
+      expect(onStartEdit).not.toHaveBeenCalled();
+      await user.keyboard('{Enter}');
+      expect(onOpenDecision).toHaveBeenCalledTimes(editable ? 1 : 2);
+      expect(onStartEdit.mock.calls).toEqual(
+        editable ? [[{ rowId: 'r2', columnId: 'income', index: 0 }]] : []
+      );
     });
 
     it('stops on each input with no value in reading order, and opens its decision by Alt+Enter', () => {

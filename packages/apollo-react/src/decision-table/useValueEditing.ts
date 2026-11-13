@@ -13,7 +13,13 @@ import {
   tokenText,
   valueTokenOf,
 } from './sentenceParts';
-import { addConditionOf, clickedAction, clickedValue, type RuleAction } from './sentenceTargets';
+import {
+  addConditionOf,
+  clickedAction,
+  clickedDecision,
+  clickedValue,
+  type RuleAction,
+} from './sentenceTargets';
 import type {
   SentenceBand,
   SentenceCellId,
@@ -84,7 +90,9 @@ interface Pressed {
 }
 
 const isStartKey = (event: React.KeyboardEvent): boolean =>
-  event.key === 'Enter' || event.key === ' ' || event.key === 'F2';
+  event.key === 'Enter' ||
+  event.key === 'F2' ||
+  (event.key === ' ' && clickedDecision(event.target) === undefined);
 
 const isClearKey = (event: React.KeyboardEvent): boolean =>
   event.key === 'Delete' || event.key === 'Backspace';
