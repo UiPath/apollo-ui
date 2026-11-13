@@ -7,9 +7,74 @@ import {
   getNonOverlappingPositionForDirection,
   resolveCollisions,
   resolveHandleContext,
+  resolveNodeHandleAffordances,
 } from './NodeUtils';
 
 describe('NodeUtils', () => {
+  describe('resolveNodeHandleAffordances', () => {
+    const idle = {
+      isConnecting: false,
+      selected: false,
+      hovered: false,
+      dragging: false,
+      canEdit: true,
+      multipleNodesSelected: false,
+    };
+
+    it('hides handles and add buttons on an idle node', () => {
+      expect(resolveNodeHandleAffordances(idle)).toEqual({
+        shouldShowHandles: false,
+        showAddButton: true,
+        isAddButtonVisible: false,
+      });
+    });
+
+    it.each([
+      { hovered: true },
+      { selected: true },
+    ])('shows handles and add buttons when %o', (state) => {
+      expect(resolveNodeHandleAffordances({ ...idle, ...state })).toEqual({
+        shouldShowHandles: true,
+        showAddButton: true,
+        isAddButtonVisible: true,
+      });
+    });
+
+    it('shows handles but no add buttons while a connection is in progress', () => {
+      expect(resolveNodeHandleAffordances({ ...idle, isConnecting: true, hovered: true })).toEqual({
+        shouldShowHandles: true,
+        showAddButton: false,
+        isAddButtonVisible: false,
+      });
+    });
+
+    it('hides everything while the node is dragged', () => {
+      expect(resolveNodeHandleAffordances({ ...idle, selected: true, dragging: true })).toEqual({
+        shouldShowHandles: false,
+        showAddButton: false,
+        isAddButtonVisible: false,
+      });
+    });
+
+    it.each([
+      { multipleNodesSelected: true },
+      { canEdit: false },
+    ])('keeps handles but hides add buttons when %o', (state) => {
+      expect(resolveNodeHandleAffordances({ ...idle, selected: true, ...state })).toEqual({
+        shouldShowHandles: true,
+        showAddButton: false,
+        isAddButtonVisible: false,
+      });
+    });
+
+    it('treats omitted selected and dragging as false', () => {
+      const { selected: _s, dragging: _d, ...rest } = idle;
+      expect(resolveNodeHandleAffordances({ ...rest, hovered: true }).isAddButtonVisible).toBe(
+        true
+      );
+    });
+  });
+
   describe('getAbsolutePosition', () => {
     it('should return node position when node has no parent', () => {
       const node: Node = {
