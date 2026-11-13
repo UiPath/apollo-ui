@@ -23,3 +23,10 @@ export function useBaseCanvasMode() {
   }
   return context;
 }
+
+/** Like `useBaseCanvasMode`, but returns `fallback` outside a provider instead of throwing. */
+export function useBaseCanvasModeOr(
+  fallback: NonNullable<BaseCanvasMode>
+): NonNullable<BaseCanvasMode> {
+  return useContext(BaseCanvasModeContext)?.mode ?? fallback;
+}

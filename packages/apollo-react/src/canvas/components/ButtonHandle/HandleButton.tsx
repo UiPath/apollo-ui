@@ -46,6 +46,7 @@ export const HandleButton = memo(
     labelBackgroundColor,
     renderLabel = true,
     portal,
+    title,
   }: {
     visible?: boolean;
     labelVisible?: boolean;
@@ -72,6 +73,8 @@ export const HandleButton = memo(
      */
     renderLabel?: boolean;
     portal?: HandleButtonPortal;
+    /** Native tooltip for the add button. The accessible name stays `label`-driven. */
+    title?: string;
   }) => {
     const accessibleName = label ? `Add node from ${label} handle` : 'Add node';
     const didDragRef = useRef(false);
@@ -154,6 +157,7 @@ export const HandleButton = memo(
       // `disabled:opacity-0` overrides the button's default `disabled:opacity-50`.
       <CanvasInlineButton
         aria-label={accessibleName}
+        title={title}
         aria-hidden={visible ? undefined : true}
         disabled={visible ? undefined : true}
         onClick={handleClick}
@@ -171,6 +175,7 @@ export const HandleButton = memo(
       visible && (
         <CanvasInlineButton
           aria-label={accessibleName}
+          title={title}
           onClick={handleClick}
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}
