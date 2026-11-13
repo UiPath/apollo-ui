@@ -24,6 +24,31 @@ export const isRedoKey = (event: ShortcutKeyEvent): boolean =>
   !event.altKey &&
   (event.shiftKey ? event.key.toLowerCase() === 'z' : event.key.toLowerCase() === 'y');
 
+/** The focused element as a node's own document or shadow root sees it. */
+export const activeElementOf = (node: Node): Element | null => {
+  const root = node.getRootNode();
+  return (root instanceof ShadowRoot ? root.activeElement : null) ?? document.activeElement;
+};
+
+/** Whether nothing on the page has focus, as once the focused element is removed: focus rests on the body, or on the host of a node's shadow root. */
+export const hasLostFocus = (node: Node): boolean => {
+  const root = node.getRootNode();
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+  return (
+    active === null ||
+    active === document.body ||
+    (root instanceof ShadowRoot && active === root.host)
+  );
+};
+
+/** Whether focus is still on `from`, on the view itself, or lost, so the view may move it. */
+export const focusStays = (view: HTMLElement | null, from: Element | null | undefined): boolean => {
+  if (!view) return false;
+  const focused = activeElementOf(view);
+  return hasLostFocus(view) || focused === view || focused === from;
+};
+
 /** Where an inline edit's commit key sends the selection: Enter down, Tab right, Shift+Tab left. */
 export const commitMoveFor = (event: { key: string; shiftKey: boolean }): CellCommitMove =>
   event.key === 'Enter' ? 'down' : event.shiftKey ? 'left' : 'right';

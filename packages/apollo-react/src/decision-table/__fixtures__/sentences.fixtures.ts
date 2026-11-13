@@ -187,6 +187,8 @@ export const DECISION_TEXT_LABELS: DecisionTextLabels = {
   },
   moreValues: (count) => `+${count.toLocaleString('en-US')} more`,
   conditionVerdict: (matched) => (matched ? 'Matched' : 'Not matched'),
+  cell: (column, values, position) => `${column} ${values}, rule ${position}`,
+  emptyValue: 'empty',
 };
 
 const firstRule = (): SentenceRule => {

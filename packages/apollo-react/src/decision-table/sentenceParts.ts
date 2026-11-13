@@ -1,16 +1,34 @@
 import { EMPTY_VALUE_DASH } from './constants';
-import type { SentencePart, SentenceToken } from './sentenceTypes';
+import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes';
+
+/** Most value tokens one line renders before the rest collapse into a count. */
+export const SENTENCE_LINE_VALUE_LIMIT = 20;
 
 export const isValue = (part: SentencePart): part is SentenceToken =>
   typeof part !== 'string' && part.kind === 'value';
 
-/** A token's text as shown; an empty value reads as the grid's empty cell does. */
-export const tokenText = (token: SentenceToken): string =>
-  token.kind === 'value' && token.text === '' ? EMPTY_VALUE_DASH : token.text;
+/** A token's text as shown; an empty value reads as the grid's empty cell does, or as `empty`. */
+export const tokenText = (token: SentenceToken, empty = EMPTY_VALUE_DASH): string =>
+  token.kind === 'value' && token.text === '' ? empty : token.text;
 
-/** The text a reader sees for these parts. */
-export const partsText = (parts: readonly SentencePart[]): string =>
-  parts.map((part) => (typeof part === 'string' ? part : tokenText(part))).join('');
+const isToken = (part: SentencePart): part is SentenceToken => typeof part !== 'string';
+
+/** Every token of a rule, heading, lead, then lines. */
+const ruleTokens = (rule: SentenceRule): SentenceToken[] =>
+  [...rule.heading, ...rule.lead, ...rule.lines.flatMap((line) => line.parts)].filter(isToken);
+
+/** Whether a rule words a cell in its heading, as an outcome. */
+export const isOutcome = (rule: SentenceRule, columnId: string): boolean =>
+  rule.heading.some((part) => typeof part !== 'string' && part.columnId === columnId);
+
+/** A column's name as the row words it. */
+export const columnNameOf = (rule: SentenceRule, columnId: string): string =>
+  ruleTokens(rule).find((token) => token.kind !== 'value' && token.columnId === columnId)?.text ??
+  '';
+
+/** The text a reader sees for these parts, an empty value read as `empty`. */
+export const partsText = (parts: readonly SentencePart[], empty = EMPTY_VALUE_DASH): string =>
+  parts.map((part) => (typeof part === 'string' ? part : tokenText(part, empty))).join('');
 
 /** A run of one column's values past the limit: the values it hides, the parts shown after it and how many values it hides. */
 interface ClampedRun {

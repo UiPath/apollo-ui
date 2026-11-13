@@ -1,7 +1,7 @@
 import type React from 'react';
 import type { SentenceRule } from './sentenceTypes';
 
-/** A sentence line's fixed height; every line of a rule is clamped to one. */
+/** One unwrapped sentence line's height; only a measured card counts the lines a wrap adds. */
 const SENTENCE_LINE_HEIGHT_PX = 24;
 const SENTENCE_RULE_BORDER_PX = 1;
 const SENTENCE_RULE_PADDING_PX = 10;
@@ -14,7 +14,7 @@ export const SENTENCE_MIN_RULE_HEIGHT_PX =
   SENTENCE_RULE_GAP_PX +
   2 * SENTENCE_LINE_HEIGHT_PX;
 
-/** A rule's height: one line each for its heading, its lead and every condition line. */
+/** A rule's height before its card is measured: one line each for its heading, its lead and every condition line. */
 const sentenceRuleHeight = (rule: SentenceRule): number =>
   rule.lines.length === 0
     ? SENTENCE_MIN_RULE_HEIGHT_PX
@@ -22,12 +22,15 @@ const sentenceRuleHeight = (rule: SentenceRule): number =>
       SENTENCE_LINES_GAP_PX +
       SENTENCE_LINE_HEIGHT_PX * rule.lines.length;
 
-/** Prefix sums of the rules' heights, for `useVirtualizedAxis`. */
-export const sentenceRuleOffsets = (rules: readonly SentenceRule[]): number[] => {
+/** Prefix sums of the rules' heights, for `useVirtualizedAxis`: a rule's `measured` height by row id, else its estimate. */
+export const sentenceRuleOffsets = (
+  rules: readonly SentenceRule[],
+  measured?: ReadonlyMap<string, number>
+): number[] => {
   let total = 0;
   const offsets = [total];
   for (const rule of rules) {
-    total += sentenceRuleHeight(rule);
+    total += measured?.get(rule.rowId) ?? sentenceRuleHeight(rule);
     offsets.push(total);
   }
   return offsets;
