@@ -6,7 +6,8 @@ import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { LINE_CLASS, MATCHED_LINE_CLASS } from './sentenceStyles';
 import type { SentenceLine } from './sentenceTypes';
 
-export interface ConditionLineProps extends Pick<LineTextProps, 'cells' | 'labels'> {
+export interface ConditionLineProps
+  extends Pick<LineTextProps, 'cells' | 'selectedColumnId' | 'stopOf' | 'labels'> {
   line: SentenceLine;
   badge: MarkBadgeProps | null;
 }

@@ -1,22 +1,25 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { Fragment } from 'react';
-import { showTitleIfClipped } from './clippedTitle';
 import type { LineLeadLabels } from './LineLead';
 import type { RowMark } from './marks';
-import { boundedParts, partsText } from './sentenceParts';
+import { boundedParts, partsText, SENTENCE_LINE_VALUE_LIMIT } from './sentenceParts';
 import {
   CLAMPED_LINE_CLASS,
   HEADING_TEXT_CLASS,
   LINE_TEXT_CLASS,
   MORE_VALUES_CLASS,
   MUTED_TEXT_CLASS,
+  SELECTED_CHIP_CLASS,
 } from './sentenceStyles';
 import type { SentencePart, SentenceToken } from './sentenceTypes';
-import { TokenChip } from './TokenChip';
+import { type CellStop, TokenChip } from './TokenChip';
 
-/** Most values of one column's run a line shows before the rest of that run collapse into a count. */
-const SENTENCE_LINE_VALUE_LIMIT = 20;
+/** The column a clamped run's values belong to. */
+const runColumnId = (hidden: readonly SentencePart[]): string | undefined => {
+  const [first] = hidden;
+  return typeof first === 'string' ? undefined : first?.columnId;
+};
 
 /** The first values of the hidden run, an ellipsis if any remain, then the parts after the run. */
 const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePart[]): string => {
@@ -34,22 +37,24 @@ export interface LineTextLabels extends LineLeadLabels {
 }
 
 export interface LineTextProps {
-  id?: string;
   heading?: boolean;
   /** Reads out each worded condition's run verdict before its input, for a line without a lead of its own. */
   verdicts?: boolean;
   parts: readonly SentencePart[];
   cells: RowMark['cells'];
+  selectedColumnId: string | null | undefined;
+  stopOf: (token: SentenceToken) => CellStop | undefined;
   labels: LineTextLabels;
 }
 
 /** One line, each column's run of values cut to its first ones and followed by a count of the rest. */
 export const LineText: React.FC<LineTextProps> = ({
-  id,
   heading = false,
   verdicts = false,
   parts,
   cells,
+  selectedColumnId,
+  stopOf,
   labels,
 }) => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
@@ -75,40 +80,34 @@ export const LineText: React.FC<LineTextProps> = ({
             token={part}
             mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
             output={heading}
+            selected={part.kind === 'value' && part.columnId === selectedColumnId}
+            stop={stopOf(part)}
           />
         </Fragment>
       )
     );
   if (clamped.length === 0) {
-    return (
-      <span id={id} className={textClass} onMouseEnter={showTitleIfClipped}>
-        {text(0)}
-      </span>
-    );
+    return <span className={textClass}>{text(0)}</span>;
   }
   const cuts = clamped.map(({ after }) => shown.length - after.length);
   const tail = cuts.at(-1) ?? shown.length;
   return (
-    <span id={id} className={cn(textClass, CLAMPED_LINE_CLASS)}>
+    <span className={cn(textClass, CLAMPED_LINE_CLASS)}>
       {clamped.map(({ hidden, after, hiddenValues }, index) => (
         <Fragment key={index}>
-          <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
-            {text(cuts[index - 1] ?? 0, cuts[index])}
-          </span>
+          <span className={LINE_TEXT_CLASS}>{text(cuts[index - 1] ?? 0, cuts[index])}</span>
           <span
-            className={MORE_VALUES_CLASS}
+            className={cn(MORE_VALUES_CLASS, SELECTED_CHIP_CLASS)}
+            data-selected={runColumnId(hidden) === selectedColumnId || undefined}
             data-more-values={hiddenValues}
+            data-column-id={runColumnId(hidden)}
             title={hiddenTitle(hidden, after)}
           >
             {labels.moreValues(hiddenValues)}
           </span>
         </Fragment>
       ))}
-      {tail < shown.length && (
-        <span className={LINE_TEXT_CLASS} onMouseEnter={showTitleIfClipped}>
-          {text(tail)}
-        </span>
-      )}
+      {tail < shown.length && <span className={LINE_TEXT_CLASS}>{text(tail)}</span>}
     </span>
   );
 };

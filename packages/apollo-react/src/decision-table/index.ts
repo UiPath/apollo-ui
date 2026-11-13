@@ -70,6 +70,7 @@ export type {
   SentenceLine,
   SentencePart,
   SentenceRule,
+  SentenceSelection,
   SentenceToken,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';

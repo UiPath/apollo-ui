@@ -12,10 +12,17 @@ import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
-import type { SentenceBand, SentenceHeader, SentenceRule } from './sentenceTypes';
+import type {
+  SentenceBand,
+  SentenceHeader,
+  SentenceRule,
+  SentenceSelection,
+} from './sentenceTypes';
+import { useAddRule } from './useAddRule';
 import { useCellHover } from './useCellHover';
 import { type DecisionTextContainerProps, useContainerHandlers } from './useContainerHandlers';
 import { useRuleWindow } from './useRuleWindow';
+import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
 
 /** The view's own strings; the consumer passes localized values. */
 export interface DecisionTextLabels extends RuleCardLabels {
@@ -34,6 +41,10 @@ export interface DecisionTextProps {
   addRule?: AddRuleButtonProps;
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
   onCellHover?: Parameters<typeof useCellHover>[0];
+  /** The selected rule or cell; one whose row is gone shows nothing selected. */
+  selected?: SentenceSelection | null;
+  /** A click or key asks for this selection, or null on Escape; without it the view claims no key. */
+  onSelect?: SentenceNavigationSource['onSelect'];
   /** The view's own strings; mounted rules re-render when it changes, so memoize it. */
   labels: DecisionTextLabels;
   /** Accessible name of the scroll region. */
@@ -53,6 +64,8 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   marks = EMPTY_MARKS,
   addRule,
   onCellHover,
+  selected,
+  onSelect,
   labels,
   ariaLabel,
   containerProps,
@@ -61,21 +74,28 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const idPrefix = useId();
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
-  const { listRef, segments, measureRef } = useRuleWindow(rules);
-  const sectionProps = useContainerHandlers({ containerProps, hoverTo });
+  const ruleWindow = useRuleWindow(rules, selected?.rowId);
+  const selectable = onSelect !== undefined;
+  const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
+  const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
+  const sectionProps = useContainerHandlers({
+    containerProps,
+    hoverTo,
+    navigation,
+    container: ruleWindow.container,
+    stopTabbable: selectable && ruleWindow.selectedRow !== null,
+  });
   const listStyle = sentenceListStyle(numbered, rules.length);
 
   return (
     <section
-      ref={measureRef}
+      ref={ruleWindow.attachSection}
       data-testid={dataTestId}
       {...sectionProps}
       aria-label={ariaLabel}
-      // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be reachable by keyboard
-      tabIndex={0}
       className={cn(DECISION_TEXT_FRAME_CLASS, sectionProps.className)}
     >
-      <DecisionTextHeader header={header} dataTestId={dataTestId} />
+      <DecisionTextHeader ref={ruleWindow.headerRef} header={header} dataTestId={dataTestId} />
       {bands.length > 0 && (
         <SentenceBands
           bands={bands}
@@ -87,21 +107,26 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         />
       )}
       {rules.length === 0 ? (
-        <EmptyRules title={labels.emptyRules} addRule={addRule} dataTestId={dataTestId} />
+        <EmptyRules title={labels.emptyRules} addRule={addRuleAction} dataTestId={dataTestId} />
       ) : (
         <RuleList
-          ref={listRef}
+          ref={ruleWindow.listRef}
           rules={rules}
-          segments={segments}
+          segments={ruleWindow.segments}
           numbered={numbered}
           marks={rowMarks}
+          selectedRow={ruleWindow.selectedRow}
+          selectedColumnId={navigation.selectedColumnId}
+          selectable={selectable}
           style={listStyle}
           idPrefix={idPrefix}
           dataTestId={dataTestId}
           labels={labels}
         />
       )}
-      {addRule && rules.length > 0 && <AddRuleFooter addRule={addRule} style={listStyle} />}
+      {addRuleAction && rules.length > 0 && (
+        <AddRuleFooter addRule={addRuleAction} style={listStyle} />
+      )}
     </section>
   );
 };

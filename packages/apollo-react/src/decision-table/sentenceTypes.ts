@@ -50,3 +50,9 @@ export interface SentenceCellId {
   rowId: string;
   columnId: string;
 }
+
+/** A rule, or one of its cells when `columnId` is set. */
+export interface SentenceSelection {
+  rowId: string;
+  columnId?: string;
+}
