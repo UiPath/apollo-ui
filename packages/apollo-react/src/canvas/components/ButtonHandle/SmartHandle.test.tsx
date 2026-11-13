@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -11,6 +11,8 @@ import {
 // Mock @xyflow/react
 const mockUseStore = vi.fn();
 const mockUseNodeId = vi.fn();
+const mockUpdateNodeInternals = vi.fn();
+const mockStoreApi = { getState: vi.fn() };
 
 vi.mock('@xyflow/react', () => ({
   Handle: ({ children, ...props }: any) => {
@@ -42,8 +44,40 @@ vi.mock('@xyflow/react', () => ({
   },
   useStore: (selector: any) => mockUseStore(selector),
   useNodeId: () => mockUseNodeId(),
-  useUpdateNodeInternals: () => vi.fn(),
+  useUpdateNodeInternals: () => mockUpdateNodeInternals,
 }));
+
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
+  useUpdateNodeInternals: () => mockUpdateNodeInternals,
+  useStoreApi: () => mockStoreApi,
+}));
+
+const flushFrame = () =>
+  act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+
+function connectedStore(targetX: number, targetY: number) {
+  return (selector: (state: unknown) => unknown) =>
+    selector({
+      nodes: [
+        { id: 'test-node', position: { x: 100, y: 100 }, measured: { width: 100, height: 50 } },
+        {
+          id: 'target-node',
+          position: { x: targetX, y: targetY },
+          measured: { width: 100, height: 50 },
+        },
+      ],
+      edges: [
+        {
+          id: 'e1',
+          source: 'test-node',
+          sourceHandle: 'output',
+          target: 'target-node',
+          targetHandle: 'input',
+        },
+      ],
+    });
+}
 
 describe('SmartHandle', () => {
   beforeEach(() => {
@@ -374,6 +408,50 @@ describe('SmartHandle', () => {
 
       const handles = screen.getAllByTestId('smart-handle');
       expect(handles).toHaveLength(2);
+    });
+  });
+
+  describe('Node internals', () => {
+    it('updates the internals of nodes mounted together in one call', async () => {
+      mockUseNodeId.mockReturnValueOnce('a').mockReturnValueOnce('b').mockReturnValueOnce('c');
+
+      render(
+        <>
+          <SmartHandle type="source" id="output" />
+          <SmartHandle type="source" id="output" />
+          <SmartHandle type="source" id="output" />
+        </>
+      );
+      await flushFrame();
+
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledWith(['a', 'b', 'c']);
+    });
+
+    it('updates the internals again when the computed position changes', async () => {
+      mockUseStore.mockImplementation(connectedStore(400, 100));
+      const { rerender } = render(<SmartHandle type="source" id="output" />);
+      await flushFrame();
+      mockUpdateNodeInternals.mockClear();
+
+      mockUseStore.mockImplementation(connectedStore(100, 400));
+      rerender(<SmartHandle type="source" id="output" />);
+      await flushFrame();
+
+      expect(screen.getByTestId('smart-handle')).toHaveAttribute('data-position', Position.Bottom);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledWith(['test-node']);
+    });
+
+    it('does not update the internals when a rerender keeps the position', async () => {
+      const { rerender } = render(<SmartHandle type="source" id="output" />);
+      await flushFrame();
+      mockUpdateNodeInternals.mockClear();
+
+      rerender(<SmartHandle type="source" id="output" label="Output" />);
+      await flushFrame();
+
+      expect(mockUpdateNodeInternals).not.toHaveBeenCalled();
     });
   });
 

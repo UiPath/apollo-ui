@@ -1,12 +1,9 @@
-import {
-  type ReactFlowState,
-  useStore,
-  useUpdateNodeInternals,
-} from '@uipath/apollo-react/canvas/xyflow/react';
+import { type ReactFlowState, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { type ContainerResizeMinimums, getContainerResizeMinimums } from '../../utils/container';
+import { useBatchedUpdateNodeInternals } from '../BaseNode/useBatchedUpdateNodeInternals';
 import { DEFAULT_RESIZE_MINIMUMS } from './ContainerNode.constants';
 import type { ContainerHandleGroup } from './ContainerNode.helpers';
 
@@ -60,17 +57,11 @@ export function useContainerNodeInternalsRefresh(
   width: number,
   height: number
 ) {
-  const updateNodeInternals = useUpdateNodeInternals();
+  const updateNodeInternals = useBatchedUpdateNodeInternals();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: dimensions and resolved handle groups are intentional rerun triggers for React Flow internals recalculation
   useEffect(() => {
-    const frameId = requestAnimationFrame(() => {
-      updateNodeInternals(id);
-    });
-
-    return () => {
-      cancelAnimationFrame(frameId);
-    };
+    updateNodeInternals(id);
   }, [id, handleGroups, updateNodeInternals, width, height]);
 }
 

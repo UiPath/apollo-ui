@@ -7,7 +7,6 @@ import {
   type ReactFlowState,
   useNodeId,
   useStore,
-  useUpdateNodeInternals,
 } from '@xyflow/react';
 import {
   createContext,
@@ -21,6 +20,7 @@ import {
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
 import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
+import { useBatchedUpdateNodeInternals } from '../BaseNode/useBatchedUpdateNodeInternals';
 import type { HandleActionEvent } from './ButtonHandle';
 import { pixelToPercent } from './ButtonHandleStyleUtils';
 import { HandleButton } from './HandleButton';
@@ -564,7 +564,7 @@ export function SmartHandle({
   ...rest
 }: SmartHandleProps) {
   const nodeId = useNodeId();
-  const updateNodeInternals = useUpdateNodeInternals();
+  const updateNodeInternals = useBatchedUpdateNodeInternals();
   const [isHovered, setIsHovered] = useState(false);
   const smartHandleContext = useSmartHandleContext();
 
@@ -618,12 +618,7 @@ export function SmartHandle({
     // Only update if position actually changed
     if (prevPositionRef.current !== computedPosition) {
       prevPositionRef.current = computedPosition;
-
-      // Use requestAnimationFrame to ensure the DOM has updated
-      // before telling React Flow to recalculate
-      requestAnimationFrame(() => {
-        updateNodeInternals(nodeId);
-      });
+      updateNodeInternals(nodeId);
     }
   }, [nodeId, computedPosition, updateNodeInternals]);
 
