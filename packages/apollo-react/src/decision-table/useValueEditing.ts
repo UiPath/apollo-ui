@@ -63,8 +63,6 @@ interface PendingSettle {
   rules: readonly SentenceRule[];
   /** Whether focus was in the editor, so settling in place returns it to the value. */
   refocus: boolean;
-  /** Whether the editor edited all the condition's values, so Tab leaves the cell instead of opening its next value. */
-  whole: boolean;
   /** Where focus was when it settled, so a close that finds focus moved elsewhere leaves it there. */
   focused: Element | null;
 }
@@ -196,7 +194,7 @@ export const useValueEditing = ({
     const field = edit.valueField?.(target) ?? {};
     const held = hasStop(rule, target.columnId);
     const cancel = () => {
-      awaitHost({ from: target, move: 'cancel', rules, refocus: true, whole: false });
+      awaitHost({ from: target, move: 'cancel', rules, refocus: true });
       edit.onCancel();
     };
     return {
@@ -209,9 +207,7 @@ export const useValueEditing = ({
       field,
       adds: !held,
       onCommit: (commit, move, refocus) => {
-        const whole =
-          commit.kind === 'expression' || field.values !== undefined || commit.values.length > 1;
-        awaitHost({ from: target, move, rules, refocus, whole });
+        awaitHost({ from: target, move, rules, refocus });
         edit.onCommit(target, commit, move);
       },
       onCancel: cancel,
@@ -222,7 +218,7 @@ export const useValueEditing = ({
     };
   };
 
-  const resolve = ({ from, move, rules: before, refocus, whole }: PendingSettle) => {
+  const resolve = ({ from, move, rules: before, refocus }: PendingSettle) => {
     const cell = { rowId: from.rowId, columnId: from.columnId };
     const rowRule = rules.find((candidate) => candidate.rowId === from.rowId);
     if (move === 'cancel' || (move === 'none' && refocus)) {
@@ -231,12 +227,7 @@ export const useValueEditing = ({
       return;
     }
     const sibling = { ...from, index: from.index + (move === 'left' ? -1 : 1) };
-    if (
-      (move === 'left' || move === 'right') &&
-      !whole &&
-      rowRule &&
-      valueTokenOf(rowRule, sibling)
-    ) {
+    if ((move === 'left' || move === 'right') && rowRule && valueTokenOf(rowRule, sibling)) {
       start(sibling);
       return;
     }

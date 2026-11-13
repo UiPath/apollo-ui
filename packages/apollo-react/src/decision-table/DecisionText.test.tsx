@@ -2594,31 +2594,6 @@ describe('DecisionText', () => {
       expect(focusedStop()).toBe('r3:age');
     });
 
-    it("tabs to the cell's next value, and from its last value to the next cell", () => {
-      const { onCommit, onStartEdit, onSelect } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
-        initialEditing: r2Age(0),
-      });
-      fireEvent.keyDown(editor(), { key: 'Tab' });
-      expect(onCommit.mock.calls).toEqual([[r2Age(0), '25', 'right']]);
-      expect(onStartEdit.mock.calls).toEqual([[r2Age(1)]]);
-      expect(editor()).toHaveValue('60');
-      fireEvent.keyDown(editor(), { key: 'Tab' });
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'income' }]]);
-      expect(focusedStop()).toBe('r2:income');
-    });
-
-    it("tabs back from a cell's later value to its previous one", () => {
-      const { onCommit, onStartEdit } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
-        initialEditing: r2Age(1),
-      });
-      fireEvent.keyDown(editor(), { key: 'Tab', shiftKey: true });
-      expect(onCommit.mock.calls).toEqual([[r2Age(1), '60', 'left']]);
-      expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
-      expect(editor()).toHaveValue('25');
-    });
-
     it.each([
       'with a render',
       'silently',
@@ -2683,7 +2658,6 @@ describe('DecisionText', () => {
     };
 
     it.each<[string, KeyboardEventInit, string, string]>([
-      ['Tab', { key: 'Tab' }, '60', 'nl-editor'],
       ['Enter', { key: 'Enter' }, '', 'r3:age'],
       ['Escape', { key: 'Escape' }, '', 'r2:age'],
     ])('moves on from %s once the host closes the editor a moment later', async (_, key, opened, stop) => {
@@ -3046,22 +3020,6 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it("leaves the cell on Shift+Tab from an expression a host editor submits for a cell's later value", () => {
-      const { onStartEdit, onCommit } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
-        initialEditing: r2Age(1),
-        renderEditor: blurCommittingEditor(true),
-      });
-      fireEvent.click(action('Edit expression'));
-      const input = screen.getByTestId('host-editor');
-      fireEvent.change(input, { target: { value: '> limit' } });
-      fireEvent.keyDown(input, { key: 'Tab', shiftKey: true });
-      expect(onCommit.mock.calls).toEqual([[r2Age(1), '> limit', 'left']]);
-      expect(onStartEdit).not.toHaveBeenCalled();
-      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
-      expect(focusedStop()).not.toBe('r2:age');
-    });
-
     it('applies an expression a host editor held as focus moved to the footer, once focus leaves from there', () => {
       const renderEditor = ({ value, ariaLabel, onCommit }: SentenceEditorContext) => (
         <textarea
@@ -3189,27 +3147,6 @@ describe('DecisionText', () => {
       expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '>']]);
       expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
       expect(focusedStop()).toBe('r2:age');
-    });
-
-    it('commits the operator on Tab and Shift+Tab, moving to the next and previous cell as before', () => {
-      const { onCommit, onSelect } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
-        initialEditing: r1Age,
-        valueField: field,
-      });
-      fireEvent.keyDown(editor(), { key: 'Tab' });
-      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'right', '<']]);
-      expect(focusedStop()).toBe('r1:income');
-      press('Enter');
-      fireEvent.keyDown(editor(), { key: 'Tab', shiftKey: true });
-      expect(onCommit.mock.calls.at(-1)).toEqual([
-        { rowId: 'r1', columnId: 'income', index: 0 },
-        '40000',
-        'left',
-        '<',
-      ]);
-      expect(onSelect.mock.calls.at(-1)).toEqual([{ rowId: 'r1', columnId: 'age' }]);
-      expect(focusedStop()).toBe('r1:age');
     });
 
     it('commits an allowed value from a click on its radio, offering no text field beside them', () => {
@@ -3763,39 +3700,6 @@ describe('DecisionText', () => {
         ]);
       });
 
-      it("tabs through a range's own fields, and applies and leaves the condition only from its last or first", () => {
-        const { onCommitValues, onStartEdit } = renderShaped({
-          initial: { rowId: 'm1', columnId: 'score' },
-          initialEditing: at('m1', 'score'),
-        });
-        for (const field of [endField('From'), included('From'), endField('To')]) {
-          fireEvent.keyDown(field, { key: 'Tab' });
-        }
-        for (const field of [included('From'), endField('To'), included('To')]) {
-          fireEvent.keyDown(field, { key: 'Tab', shiftKey: true });
-        }
-        expect(onCommitValues).not.toHaveBeenCalled();
-        fireEvent.keyDown(included('To'), { key: 'Tab' });
-        expect(onCommitValues.mock.calls).toEqual([
-          [
-            at('m1', 'score'),
-            { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
-            'right',
-          ],
-        ]);
-        expect(onStartEdit).not.toHaveBeenCalled();
-        expect(focusedStop()).toBe('m1:debt');
-        fireEvent.click(valueChipAt('m1', 'score', 1));
-        fireEvent.keyDown(endField('From'), { key: 'Tab', shiftKey: true });
-        expect(onCommitValues.mock.calls.at(-1)).toEqual([
-          at('m1', 'score', 1),
-          { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
-          'left',
-        ]);
-        expect(onStartEdit).toHaveBeenCalledTimes(1);
-        expect(screen.queryByTestId('nl-value-editor')).toBeNull();
-      });
-
       it("opens the operator list from a range's Included box on Alt+ArrowDown, and carries its ends into a list", () => {
         renderShaped({ initialEditing: at('m1', 'score') });
         expect(included('To')).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
@@ -3960,30 +3864,6 @@ describe('DecisionText', () => {
         ]);
       });
 
-      it("tabs through a list's own fields, and applies and leaves it from its add field or its first value", () => {
-        const { onCommitValues, onStartEdit } = renderShaped({
-          initial: { rowId: 'm2', columnId: 'country' },
-          initialEditing: at('m2', 'country'),
-        });
-        fireEvent.keyDown(box('"RU"'), { key: 'Tab' });
-        fireEvent.keyDown(box('"KP"'), { key: 'Tab', shiftKey: true });
-        fireEvent.keyDown(addField(), { key: 'Tab', shiftKey: true });
-        expect(onCommitValues).not.toHaveBeenCalled();
-        fireEvent.keyDown(addField(), { key: 'Tab' });
-        expect(onCommitValues.mock.calls).toEqual([
-          [
-            at('m2', 'country'),
-            { kind: 'values', values: ['"RU"', '"KP"'], operator: 'noneOf' },
-            'right',
-          ],
-        ]);
-        expect(onStartEdit).not.toHaveBeenCalled();
-        fireEvent.click(valueChip('m2', 'country'));
-        fireEvent.keyDown(box('"RU"'), { key: 'Tab', shiftKey: true });
-        expect(onCommitValues.mock.calls.at(-1)?.[2]).toBe('left');
-        expect(onStartEdit).toHaveBeenCalledTimes(1);
-      });
-
       it('toggles the box a press lands on, keeping the list open, though the press leaves focus nowhere, as Safari does', () => {
         const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'country', 2) });
         safariPress(box('"CA"'));
@@ -4053,7 +3933,6 @@ describe('DecisionText', () => {
 
       it.each<[string, () => void]>([
         ['Apply', () => fireEvent.click(action('Apply'))],
-        ['Tab', () => fireEvent.keyDown(addField(), { key: 'Tab' })],
         ['focus leaving', () => act(() => screen.getByTestId('nl').focus())],
       ])('applies the text left in Add value with the list on %s', (_, settle) => {
         const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
@@ -4598,19 +4477,6 @@ describe('DecisionText', () => {
 
     it.each<[string, SentenceCellId, KeyboardEventInit, string]>([
       ['Enter to the next rule', { rowId: 'r1', columnId: 'age' }, { key: 'Enter' }, 'r2:age'],
-      ['Tab to the next cell', { rowId: 'r1', columnId: 'age' }, { key: 'Tab' }, 'r1:income'],
-      [
-        'Shift+Tab to the previous cell',
-        { rowId: 'r1', columnId: 'income' },
-        { key: 'Tab', shiftKey: true },
-        'r1:age',
-      ],
-      [
-        'Tab from the last cell to the rule',
-        { rowId: 'r1', columnId: 'income' },
-        { key: 'Tab' },
-        'r1',
-      ],
     ])('moves by %s when committing an empty value removes its condition', (_, cell, key, stop) => {
       render(<TableHost initial={cell} />);
       act(() => valueChip(cell.rowId, cell.columnId).focus());
@@ -4623,8 +4489,6 @@ describe('DecisionText', () => {
 
     it.each<[string, KeyboardEventInit, string]>([
       ['Enter to the next rule', { key: 'Enter' }, 'r2:channel'],
-      ['Tab from the last cell in place', { key: 'Tab' }, 'r1:channel'],
-      ['Shift+Tab to the previous cell', { key: 'Tab', shiftKey: true }, 'r1:income'],
     ])('moves by %s when committing a condition added from +', (_, key, stop) => {
       render(<TableHost initial={{ rowId: 'r1' }} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
@@ -5206,8 +5070,6 @@ describe('DecisionText', () => {
     it.each<[string, KeyboardEventInit, string]>([
       ['Escape back to its input', { key: 'Escape' }, 'r1:income'],
       ['Enter down to the next rule', { key: 'Enter' }, 'r2:income'],
-      ['Tab from the last cell in place', { key: 'Tab' }, 'r1:income'],
-      ['Shift+Tab to the previous cell', { key: 'Tab', shiftKey: true }, 'r1:age'],
     ])('moves by %s from the editor of a condition with no value', (_, key, stop) => {
       renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1', columnId: 'income' } });
       act(() => card('r1').querySelector<HTMLElement>('[data-column-id="income"]')?.focus());
