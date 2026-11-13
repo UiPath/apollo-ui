@@ -23,6 +23,7 @@ import {
   getHandlerForModificationType,
 } from '../../utils/GroupModificationUtils';
 import { BaseCanvas } from '../BaseCanvas';
+import type { HandleActionEvent } from '../ButtonHandle';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
 import type { ListItem } from '../Toolbox';
@@ -3563,4 +3564,145 @@ export const WithCollapsibleHeaders: Story = {
       },
     ],
   },
+};
+
+const HANDLE_ADD_STAGE_GAP = 96;
+
+const HandleAddButtonStory = () => {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const nextId = useRef(1);
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
+
+  // Click on the "+" appends a stage to the right and connects it. A drag from
+  // the same button starts a connection instead and never reaches this callback.
+  const handleAction = useCallback(
+    (event: HandleActionEvent) => {
+      const newId = `added-${nextId.current++}`;
+      setNodes((nds) => {
+        const source = nds.find((n) => n.id === event.nodeId);
+        if (!source) return nds;
+        return [
+          ...nds.map((n) => ({ ...n, selected: false })),
+          {
+            id: newId,
+            type: 'stage',
+            position: {
+              x: source.position.x + DEFAULT_STAGE_WIDTH + HANDLE_ADD_STAGE_GAP,
+              y: source.position.y,
+            },
+            width: DEFAULT_STAGE_WIDTH,
+            selected: true,
+            data: {
+              stageDetails: { label: `New stage ${newId}`, tasks: [] },
+              onHandleAction: handleActionRef.current,
+              handleAddButtonTitle: 'Click to add · Drag to connect',
+            },
+          },
+        ];
+      });
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: `${event.nodeId}-${newId}`,
+          type: 'stage',
+          source: event.nodeId,
+          sourceHandle: event.handleId,
+          target: newId,
+          targetHandle: `${newId}____target____left`,
+        },
+      ]);
+    },
+    [setNodes, setEdges]
+  );
+  const handleActionRef = useRef(handleAction);
+  handleActionRef.current = handleAction;
+
+  useEffect(() => {
+    const stage = (id: string, x: number, y: number, stageDetails: object): Node => ({
+      id,
+      type: 'stage',
+      position: { x, y },
+      width: DEFAULT_STAGE_WIDTH,
+      data: {
+        stageDetails,
+        onHandleAction: handleActionRef.current,
+        handleAddButtonTitle: 'Click to add · Drag to connect',
+      },
+    });
+    setNodes([
+      stage('application', 48, 96, {
+        label: 'Application',
+        tasks: [[{ id: 'kyc', label: 'KYC and AML Checks' }]],
+      }),
+      stage('processing', 480, 96, {
+        label: 'Processing',
+        tasks: [[{ id: 'review', label: 'Processing Review' }]],
+      }),
+      stage('locked', 48, 320, {
+        label: 'Read-only (no add button)',
+        isReadOnly: true,
+        tasks: [[{ id: 'audit', label: 'Audit' }]],
+      }),
+      stage('exception', 480, 320, {
+        label: 'Exception (no handles)',
+        isException: true,
+        tasks: [[{ id: 'notify', label: 'Customer Notification' }]],
+      }),
+    ]);
+    setEdges([
+      {
+        id: 'application-processing',
+        type: 'stage',
+        source: 'application',
+        sourceHandle: 'application____source____right',
+        target: 'processing',
+        targetHandle: 'processing____target____left',
+      },
+    ]);
+  }, [setNodes, setEdges]);
+
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+  const defaultEdgeOptions = useMemo(() => ({ type: 'stage' }), []);
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlowProvider>
+        <BaseCanvas
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          mode="design"
+          connectionMode={ConnectionMode.Strict}
+          defaultEdgeOptions={defaultEdgeOptions}
+          connectionLineComponent={StageConnectionEdge}
+          elevateEdgesOnSelect
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
+          </Panel>
+        </BaseCanvas>
+      </ReactFlowProvider>
+    </div>
+  );
+};
+
+/**
+ * Opt-in handle add button. Hover or select a stage: the right source handle shows a "+".
+ * Click it to add the next stage, or drag it to start a connection. Read-only and exception
+ * stages show none.
+ */
+export const HandleAddButton: Story = {
+  name: 'Handle Add Button',
+  parameters: { useCustomRender: true },
+  render: () => <HandleAddButtonStory />,
 };
