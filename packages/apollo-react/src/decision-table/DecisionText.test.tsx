@@ -71,6 +71,8 @@ import type {
   ValueOperatorOption,
 } from './valueTypes';
 
+vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
+
 type ViewProps<Props extends DecisionTextProps = DecisionTextProps> = Props extends unknown
   ? Partial<Props> & Pick<Props, 'selected' | 'onSelect' | 'edit'>
   : never;
@@ -674,6 +676,228 @@ describe('DecisionText', () => {
       expect(column).toHaveAttribute('data-mark-title', 'No expression');
       expect(column?.querySelector('[data-glyph="error"]')).not.toBeNull();
       expect(column).toHaveAccessibleDescription('Error: No expression');
+    });
+  });
+
+  describe('mark tooltip', () => {
+    const tooltip = () => screen.queryByTestId('nl-mark-tooltip');
+    const scoreMarks = rowMarks({
+      m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 1', glyph: true } } },
+      m5: { tone: 'warning', title: 'Unreachable', glyph: true },
+    });
+
+    it("shows a mark's message while the pointer is on it, and hides it off any mark", async () => {
+      renderView({ marks: scoreMarks });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(valueChip('m1', 'score'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it('keeps the message open while the pointer crosses onto it, and hides it once the pointer rests off any mark', async () => {
+      renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      fireEvent.pointerOver(card('m3'));
+      const shown = tooltip();
+      if (!shown) throw new Error('no tooltip');
+      fireEvent.pointerOver(shown);
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m3'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it("shows the header's and a band column's mark on hover", () => {
+      renderView({
+        headerMark: { tone: 'error', title: 'Collect returns a list', glyph: true },
+        marks: {
+          rows: new Map(),
+          columns: new Map([['country', { tone: 'error', title: 'No expression', glyph: true }]]),
+        },
+      });
+      const headerBadge = screen.getByTestId('nl-header').querySelector('[data-mark-title]');
+      if (!headerBadge) throw new Error('header badge');
+      fireEvent.pointerOver(headerBadge);
+      expect(tooltip()).toHaveTextContent('Collect returns a list');
+      const country = screen.getByTestId('nl-bands').querySelector('[data-column-id="country"]');
+      if (!country) throw new Error('country column');
+      fireEvent.pointerOver(country);
+      expect(tooltip()).toHaveTextContent('No expression');
+    });
+
+    it('shows the mark a focused element carries or is described by, without adding to its description', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
+      act(() => valueChip('m3', 'score').focus());
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+    });
+
+    it("shows every message a focused rule's marks on several lines describe it with", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+    });
+
+    it('shows every message of a focused rule whose first mark the pointer is on, until Escape', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
+      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
+      if (!first) throw new Error('m1 first badge');
+      fireEvent.pointerOver(first);
+      expect(tooltip()).not.toHaveTextContent('Overlaps row 2');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+      fireEvent.keyDown(card('m1'), { key: 'Escape' });
+      fireEvent.pointerOver(first);
+      expect(tooltip()).toBeNull();
+    });
+
+    it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
+      const host = document.createElement('div');
+      document.body.append(host);
+      onTestFinished(() => host.remove());
+      const container = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).append(container);
+      render(
+        <Selectable
+          rules={MULTI_SENTENCE_RULES}
+          bands={MULTI_SENTENCE_BANDS}
+          header={MULTI_SENTENCE_HEADER}
+          marks={scoreMarks}
+          initial={{ rowId: 'm5' }}
+        />,
+        { container }
+      );
+      const inShadow = within(container);
+      act(() => inShadow.getByTestId('nl-row-m5').focus());
+      expect(inShadow.queryByTestId('nl-mark-tooltip')).toHaveTextContent('Unreachable');
+    });
+
+    it("keeps a focused rule's message once the pointer leaves the view or rests off any mark, back from another mark, until Escape", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      const restOffMarks = () => act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(card('m1'));
+      await restOffMarks();
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(card('m1'));
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      await restOffMarks();
+      expect(tooltip()).toBeNull();
+    });
+
+    it("keeps a focused rule's message dismissed after Escape once the pointer leaves another mark", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toBeNull();
+    });
+
+    it('keeps the message of the mark under the pointer when focus moves to a rule with none', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm1' },
+      });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
+    it("brings a focused rule's message back once the pointer rests off any mark after another", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        bands: MULTI_SENTENCE_BANDS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m1'));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
+    it('hides the message on Escape until another mark is reached', () => {
+      renderView({ marks: scoreMarks });
+      const score = valueChip('m3', 'score');
+      fireEvent.pointerOver(score);
+      fireEvent.keyDown(score, { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(score);
+      expect(tooltip()).toBeNull();
+      const heading = card('m5').querySelector('[data-mark-title="Unreachable"]');
+      if (!heading) throw new Error('m5 heading');
+      fireEvent.pointerOver(heading);
+      expect(tooltip()).toHaveTextContent('Unreachable');
     });
   });
 
