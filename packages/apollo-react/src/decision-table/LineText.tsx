@@ -13,7 +13,7 @@ import {
   SELECTED_CHIP_CLASS,
 } from './sentenceStyles';
 import type { SentencePart, SentenceToken } from './sentenceTypes';
-import { type CellStop, TokenChip } from './TokenChip';
+import { type CellStop, type DecisionLink, TokenChip } from './TokenChip';
 
 /** The column a clamped run's values belong to. */
 const runColumnId = (hidden: readonly SentencePart[]): string | undefined => {
@@ -44,6 +44,7 @@ export interface LineTextProps {
   cells: RowMark['cells'];
   selectedColumnId: string | null | undefined;
   stopOf: (token: SentenceToken) => CellStop | undefined;
+  linkOf: (token: SentenceToken) => DecisionLink | undefined;
   labels: LineTextLabels;
 }
 
@@ -55,6 +56,7 @@ export const LineText: React.FC<LineTextProps> = ({
   cells,
   selectedColumnId,
   stopOf,
+  linkOf,
   labels,
 }) => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
@@ -80,8 +82,12 @@ export const LineText: React.FC<LineTextProps> = ({
             token={part}
             mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
             output={heading}
-            selected={part.kind === 'value' && part.columnId === selectedColumnId}
+            selected={
+              (part.kind === 'value' || stopOf(part) !== undefined) &&
+              part.columnId === selectedColumnId
+            }
             stop={stopOf(part)}
+            link={linkOf(part)}
           />
         </Fragment>
       )

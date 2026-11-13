@@ -3,8 +3,15 @@ import type { TableMarks } from './marks';
 import { RuleCard, type RuleCardProps } from './RuleCard';
 import type { SentenceListStyle } from './sentenceRuleHeights';
 import { GUTTER_CLASS } from './sentenceStyles';
+import type { RuleMenuKind } from './sentenceTargets';
 import type { SentenceRule } from './sentenceTypes';
 import type { AxisSegment } from './useVirtualizedAxis';
+
+/** Which card menu is open, and for which rule. */
+export interface OpenRuleMenu {
+  menu: RuleMenuKind;
+  rowId: string;
+}
 
 export interface RuleListProps {
   rules: readonly SentenceRule[];
@@ -15,6 +22,11 @@ export interface RuleListProps {
   /** The selected row's cell, or null for its rule. */
   selectedColumnId: string | null;
   selectable: boolean;
+  decisionLinks: boolean;
+  /** The editing strings, or undefined for read-only cards. */
+  editLabels: RuleCardProps['editLabels'];
+  /** The card menu that is open, or null. */
+  openMenu: OpenRuleMenu | null;
   style: SentenceListStyle;
   idPrefix: string;
   dataTestId: string;
@@ -32,6 +44,9 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       selectedRow,
       selectedColumnId,
       selectable,
+      decisionLinks,
+      editLabels,
+      openMenu,
       style,
       idPrefix,
       dataTestId,
@@ -68,6 +83,9 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                   segment.from + offset === selectedRow ? selectedColumnId : undefined
                 }
                 selectable={selectable}
+                decisionLinks={decisionLinks}
+                editLabels={editLabels}
+                openMenu={openMenu?.rowId === rule.rowId ? openMenu.menu : undefined}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
                 labels={labels}

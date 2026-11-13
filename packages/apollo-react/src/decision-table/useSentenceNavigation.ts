@@ -1,9 +1,10 @@
 import type React from 'react';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { activeElementOf, focusStays, isFromTextField } from './gridEvents';
+import type { CellCommitMove } from './gridTypes';
 import { firstValuesOf } from './ruleCardModel';
 import { cardOf, cellOf } from './sentenceTargets';
-import type { SentenceRule, SentenceSelection } from './sentenceTypes';
+import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import { ARROW_DELTAS, clamp, GRID_ENTRY_KEYS } from './useGridNavigation';
 import type { RuleWindow } from './useRuleWindow';
 
@@ -15,7 +16,7 @@ interface StopPosition {
 
 type Stops = readonly (string | undefined)[];
 
-/** A row's stops: its rule, then each cell by its first value, heading, lead, then lines. */
+/** A row's stops: its rule, then each cell by its stop token, heading, lead, then lines. */
 const stopsOf = (rule: SentenceRule | undefined): Stops => [
   undefined,
   ...(rule ? firstValuesOf(rule).keys() : []),
@@ -64,6 +65,27 @@ const edgeMove = (
   return { row, stop: end ? stopsAt(row).length - 1 : 0 };
 };
 
+/** The row's next or previous stop, or undefined past its ends. */
+const tabMove = (back: boolean, from: StopPosition, stops: Stops): StopPosition | undefined => {
+  const stop = from.stop + (back ? -1 : 1);
+  return stop < 0 || stop >= stops.length ? undefined : { row: from.row, stop };
+};
+
+/** Where a committed edit moves from a cell: down a rule, or to the row's next or previous cell, staying at its ends. */
+const stopAfterCommit = (
+  move: CellCommitMove,
+  from: StopPosition,
+  rules: readonly SentenceRule[]
+): StopPosition | undefined => {
+  const stopsAt = (row: number) => stopsOf(rules[row]);
+  if (move === 'none') return undefined;
+  if (move === 'down') {
+    return verticalMove(1, false, from, rules.length, stopsAt, stopsAt(from.row)[from.stop]);
+  }
+  const next = tabMove(move === 'left', from, stopsAt(from.row));
+  return next && next.stop > 0 ? next : from;
+};
+
 /** Where a key moves from `from`, ↑ and ↓ onto `columnId`, or undefined for a key the view leaves alone. */
 const stopAfterKey = (
   event: React.KeyboardEvent,
@@ -86,13 +108,16 @@ const stopAfterKey = (
   return undefined;
 };
 
-/** Whether a key landed on the view itself or one of its rules. */
+/** Whether a key landed on the view itself or one of its rules, not on a card's action other than a selected stop's link. */
 const isOnStop = (event: React.KeyboardEvent): boolean =>
   event.target === event.currentTarget ||
-  (event.target instanceof Element && event.target.closest('li[data-row-id]') !== null);
+  (event.target instanceof HTMLElement &&
+    event.target.closest('li[data-row-id]') !== null &&
+    (event.target.closest('[data-rule-action]') === null ||
+      event.target.dataset.selected === 'true'));
 
 /** Whether the view leaves a key alone: claimed, composing, off its stops or from a text field. */
-const isIgnoredKey = (event: React.KeyboardEvent): boolean =>
+export const isIgnoredKey = (event: React.KeyboardEvent): boolean =>
   event.defaultPrevented ||
   event.nativeEvent.isComposing ||
   !isOnStop(event) ||
@@ -123,9 +148,13 @@ export interface SentenceNavigationSource
   onSelect: ((selection: SentenceSelection | null) => void) | undefined;
 }
 
-/** A selection the view asked for, whether to scroll it into view once the host applies it, and where focus was when it asked. */
+/** The element of a selected card that takes focus in place of its stop, e.g. one of its actions. */
+type CardFocus = (card: HTMLElement) => HTMLElement | null;
+
+/** A selection the view asked for, what of its card to focus once the host applies it, whether to scroll it into view, and where focus was when it asked. */
 interface PendingFocus {
   selection: SentenceSelection | null;
+  focus: CardFocus | undefined;
   scroll: boolean;
   from: Element | null;
 }
@@ -148,10 +177,16 @@ const isVerticalKey = (key: string): boolean => (ARROW_DELTAS[key]?.row ?? 0) !=
 export interface SentenceNavigation {
   /** The selected row's cell, or null for its rule or a cell it has no value for. */
   selectedColumnId: string | null;
-  /** Selects and focuses from a pointer, starting a new run of ↑ and ↓; `scroll` is false when its target is in view. */
-  select: (selection: SentenceSelection | null, scroll?: boolean) => void;
+  /** Selects and focuses from a pointer or an edit, starting a new run of ↑ and ↓; `focus` picks another element of the selected card, and `scroll` is false when its target is in view. */
+  select: (selection: SentenceSelection | null, focus?: CardFocus, scroll?: boolean) => void;
   /** Handles a key the view claims, and returns whether it did. */
   onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => boolean;
+  /** Selects and focuses where an edit committed in `from` moves among the rules it committed on, or the current ones for a cell those lacked, as the grid's `commitEdit`. */
+  selectAfter: (
+    from: SentenceCellId,
+    move: CellCommitMove,
+    before: readonly SentenceRule[]
+  ) => void;
   /** Focuses the selected stop again, its rule when the selected cell is gone, scrolling it into view unless `scroll` is false. */
   refocus: (scroll?: boolean) => void;
 }
@@ -179,14 +214,15 @@ export const useSentenceNavigation = ({
   const selectedRule = selectedRow === null ? undefined : rules[selectedRow];
   const selectedColumnId = current?.columnId ?? null;
 
-  const focusCurrent = (scroll = true) => {
+  const focusCurrent = (focus?: CardFocus, scroll = true) => {
     const element = container();
     if (!element) return;
     if (!current || !position) {
       element.focus({ preventScroll: true });
       return;
     }
-    const stop = stopOf(element, current);
+    const card = focus && cardOf(element, current.rowId);
+    const stop = card ? focus?.(card) : stopOf(element, current);
     if (stop) {
       stop.focus({ preventScroll: true });
       if (scroll) scrollStopIntoView(position.row, stop);
@@ -210,7 +246,7 @@ export const useSentenceNavigation = ({
     const applied = pending !== undefined && sameSelection(pending.selection, current);
     if (!stayed || applied) pendingFocusRef.current = undefined;
     if (pending !== undefined && applied && stayed) {
-      focusCurrent(pending.scroll);
+      focusCurrent(pending.focus, pending.scroll);
     } else if (moved && selectedRow !== null) {
       const stop = movedStopOf(container(), current);
       if (stop) scrollStopIntoView(selectedRow, stop);
@@ -218,20 +254,20 @@ export const useSentenceNavigation = ({
     }
   });
 
-  const request = (selection: SentenceSelection | null, scroll = true) => {
+  const request = (selection: SentenceSelection | null, focus?: CardFocus, scroll = true) => {
     if (!onSelect) return;
     if (sameSelection(selection, selected ?? null)) {
-      focusCurrent(scroll);
+      focusCurrent(focus, scroll);
       return;
     }
     const view = container();
-    pendingFocusRef.current = { selection, scroll, from: view && activeElementOf(view) };
+    pendingFocusRef.current = { selection, focus, scroll, from: view && activeElementOf(view) };
     onSelect(selection);
   };
 
-  const select = (selection: SentenceSelection | null, scroll = true) => {
+  const select = (selection: SentenceSelection | null, focus?: CardFocus, scroll = true) => {
     wantedRef.current = undefined;
-    request(selection, scroll);
+    request(selection, focus, scroll);
   };
 
   const keyTarget = (event: React.KeyboardEvent<HTMLElement>) => {
@@ -259,5 +295,29 @@ export const useSentenceNavigation = ({
     return true;
   };
 
-  return { selectedColumnId, select, onKeyDown, refocus: focusCurrent };
+  const selectAfter = (
+    from: SentenceCellId,
+    move: CellCommitMove,
+    before: readonly SentenceRule[]
+  ) => {
+    const committedOn = stopsOf(before.find((rule) => rule.rowId === from.rowId)).includes(
+      from.columnId
+    )
+      ? before
+      : rules;
+    const row = committedOn.findIndex((rule) => rule.rowId === from.rowId);
+    if (row < 0) return;
+    const stop = Math.max(0, stopsOf(committedOn[row]).indexOf(from.columnId));
+    const next = stopAfterCommit(move, { row, stop }, committedOn);
+    const target = next && selectionAt(committedOn, next);
+    if (target) select(target);
+  };
+
+  return {
+    selectedColumnId,
+    select,
+    onKeyDown,
+    selectAfter,
+    refocus: (scroll = true) => focusCurrent(undefined, scroll),
+  };
 };

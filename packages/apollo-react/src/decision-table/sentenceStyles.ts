@@ -44,6 +44,11 @@ export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)] focus-vis
 /** A selected stop's ring: an inset outline, so it never moves a line and forced colors keep it. */
 const STOP_RING_CLASS = '-outline-offset-2 outline-primary';
 
+export const DECISION_LINK_CLASS = cn(
+  STOP_RING_CLASS,
+  'cursor-pointer rounded underline decoration-dotted underline-offset-2 hover:decoration-solid focus-visible:outline-2'
+);
+
 export const SELECTED_CHIP_CLASS = cn(
   STOP_RING_CLASS,
   'data-[selected=true]:outline-2 focus-visible:outline-2 forced-colors:data-[tone]:data-[selected=true]:outline-2'
@@ -114,4 +119,57 @@ export const LINE_MARK_CLASS = 'inline-flex h-[var(--sentence-line)] shrink-0 it
 
 export const MARK_GLYPH_CLASS = 'size-3.5 forced-colors:text-[CanvasText]';
 
+export const VALUE_EDITOR_CLASS =
+  'absolute z-3 m-0 mt-1 w-64 min-w-0 max-w-full overflow-hidden rounded-md border border-border bg-background p-0 text-sm shadow-lg';
+
+export const HEADING_ACTIONS_SPACE_CLASS = 'pe-18';
+
+export const RULE_ACTIONS_CLASS =
+  'absolute end-2 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center gap-0.5';
+
+export const RULE_ACTION_CLASS = 'size-6 text-foreground-de-emp hover:text-foreground';
+
+/** Hidden until its card is hovered or holds the selection, or it has keyboard focus. */
+const REVEALED_ACTION_CLASS =
+  'opacity-0 group-hover/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100';
+
+export const DELETE_RULE_CLASS = cn(
+  RULE_ACTION_CLASS,
+  'hover:text-error-text future:hover:text-error-text',
+  REVEALED_ACTION_CLASS
+);
+
+export const REMOVE_CONDITION_CLASS = cn(
+  'mt-0.5 size-5 shrink-0 text-foreground-de-emp hover:text-foreground',
+  REVEALED_ACTION_CLASS
+);
+
 export const ADD_RULE_FOOTER_CLASS = cn('pb-4', GUTTER_CLASS);
+
+export const POLICY_TRIGGER_CLASS = cn(
+  HEADER_LABEL_CLASS,
+  '-my-0.5 -ms-1 gap-1 text-foreground-de-emp future:text-foreground-de-emp'
+);
+
+export const POLICY_CODE_CLASS = 'font-mono text-foreground';
+
+export const POLICY_MENU_CLASS = 'w-[380px] max-w-[calc(100vw-2rem)]';
+
+export const POLICY_SUBMENU_CLASS = 'w-[320px] max-w-[calc(100vw-2rem)]';
+
+/** An option without the radio dot: the picked one shows `POLICY_CHECK_CLASS` instead. */
+export const POLICY_ITEM_CLASS = 'relative [&_.lucide-circle]:hidden';
+
+export const POLICY_CHECK_CLASS =
+  'absolute left-2 flex size-3.5 items-center justify-center [&_svg]:size-4';
+
+export const POLICY_OPTION_CLASS = 'flex min-w-0 flex-1 flex-col gap-0.5 py-0.5';
+
+export const POLICY_OPTION_TITLE_CLASS = 'flex items-center gap-1.5';
+
+export const POLICY_OPTION_LABEL_CLASS = 'text-foreground';
+
+export const POLICY_OPTION_CODE_CLASS =
+  'shrink-0 px-1.5 py-0 font-mono leading-4 text-foreground-de-emp';
+
+export const POLICY_HINT_CLASS = 'text-xs text-foreground-de-emp';
