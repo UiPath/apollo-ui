@@ -17,7 +17,11 @@ import {
   DEFAULT_CONTAINER_WIDTH,
 } from '../../utils/container';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
-import { selectIsConnecting, snapToGrid } from '../../utils/NodeUtils';
+import {
+  resolveNodeHandleAffordances,
+  selectIsConnecting,
+  snapToGrid,
+} from '../../utils/NodeUtils';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
@@ -275,11 +279,16 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
     setIsHovered(false);
   }, []);
 
-  const shouldShowHandles = (isConnecting || selected || isHovered) && !dragging;
-
   // Resize stays enabled when locked: size, like position, is layout rather
   // than content. Only the structural controls are gated.
-  const showHandleAddButtons = canEditNode && !multipleNodesSelected && !isConnecting && !dragging;
+  const { shouldShowHandles, showAddButton: showHandleAddButtons } = resolveNodeHandleAffordances({
+    isConnecting,
+    selected,
+    hovered: isHovered,
+    dragging,
+    canEdit: canEditNode,
+    multipleNodesSelected,
+  });
   const showEmptyState = canEditNode && !hasChildNodes && hasEmptyState;
 
   const interactionState = resolveInteractionState(dragging, selected, isHovered);

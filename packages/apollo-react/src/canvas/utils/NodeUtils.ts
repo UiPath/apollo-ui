@@ -15,6 +15,45 @@ import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
 // `connection.inProgress` accurately reflects an active drag-to-connect gesture.
 export const selectIsConnecting = (state: ReactFlowState) => !!state.connection.inProgress;
 
+export interface NodeHandleAffordanceState {
+  isConnecting: boolean;
+  selected?: boolean;
+  hovered: boolean;
+  dragging?: boolean;
+  /** Design mode and the node is not individually read-only. */
+  canEdit: boolean;
+  multipleNodesSelected: boolean;
+}
+
+export interface NodeHandleAffordances {
+  /** Unconnected handles are visible. */
+  shouldShowHandles: boolean;
+  /** Add buttons are allowed; they still need hover or selection to appear. */
+  showAddButton: boolean;
+  /** Add buttons are on screen under the default hover-or-selected rule. */
+  isAddButtonVisible: boolean;
+}
+
+/**
+ * The canvas-wide rule for when a node shows its handles and "+" add buttons,
+ * shared so node renderers outside BaseNode stay consistent with it.
+ */
+export function resolveNodeHandleAffordances({
+  isConnecting,
+  selected = false,
+  hovered,
+  dragging = false,
+  canEdit,
+  multipleNodesSelected,
+}: NodeHandleAffordanceState): NodeHandleAffordances {
+  const showAddButton = canEdit && !multipleNodesSelected && !isConnecting && !dragging;
+  return {
+    shouldShowHandles: (isConnecting || selected || hovered) && !dragging,
+    showAddButton,
+    isAddButtonVisible: showAddButton && (selected || hovered),
+  };
+}
+
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.
  *

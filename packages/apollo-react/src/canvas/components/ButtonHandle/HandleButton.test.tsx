@@ -2,9 +2,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { HANDLE_DRAG_THRESHOLD } from '../../constants';
 import { HandleButton } from './HandleButton';
-
-const DRAG_THRESHOLD = 5;
 
 function renderButton({
   visible = true,
@@ -56,7 +55,7 @@ describe('HandleButton drag behaviour', () => {
 
     fireEvent.pointerDown(button, { clientX: 100, clientY: 100 });
     fireEvent.pointerMove(document, {
-      clientX: 100 + DRAG_THRESHOLD + 1,
+      clientX: 100 + HANDLE_DRAG_THRESHOLD + 1,
       clientY: 100,
     });
     fireEvent.pointerUp(document);
@@ -89,7 +88,7 @@ describe('HandleButton drag behaviour', () => {
 
     fireEvent.pointerDown(button, { clientX: 100, clientY: 100 });
     fireEvent.pointerMove(document, {
-      clientX: 100 + DRAG_THRESHOLD + 1,
+      clientX: 100 + HANDLE_DRAG_THRESHOLD + 1,
       clientY: 100,
     });
 
