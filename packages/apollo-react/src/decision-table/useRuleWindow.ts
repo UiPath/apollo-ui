@@ -76,7 +76,14 @@ export const useRuleWindow = (
       itemOffsetsPx: offsetsPx,
     }
   );
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the mounted cards change with the rules and the window
+  const mountedRowIds = segments
+    .flatMap((segment) =>
+      segment.type === 'items'
+        ? rules.slice(segment.from, segment.to).map(({ rowId }) => rowId)
+        : []
+    )
+    .join('\n');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the mounted cards change with their row ids
   useLayoutEffect(() => {
     const list = listRef.current;
     if (!list || typeof ResizeObserver === 'undefined') return;
@@ -85,7 +92,7 @@ export const useRuleWindow = (
     );
     for (const card of list.querySelectorAll(':scope > li[data-row-id]')) observer.observe(card);
     return () => observer.disconnect();
-  }, [rules, segments]);
+  }, [mountedRowIds]);
   const attachSection = useCallback(
     (element: HTMLElement | null) => {
       sectionRef.current = element;

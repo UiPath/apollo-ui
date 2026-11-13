@@ -1041,6 +1041,46 @@ describe('DecisionText', () => {
       expect(card('row-15')).toBe(before);
     });
 
+    it.each([
+      [
+        'rebuilds its rules on every render',
+        (rules: readonly SentenceRule[]) => rules.map((rule) => ({ ...rule })),
+        0,
+      ],
+      [
+        'replaces its rules with as many others',
+        (rules: readonly SentenceRule[]) =>
+          rules.map((rule) => ({ ...rule, rowId: `new-${rule.rowId}` })),
+        17,
+      ],
+    ])('observes the mounted cards again only for new row ids when a host %s', (_, next, observedAgain) => {
+      const observed: Element[] = [];
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          observe(target: Element) {
+            if (target.matches('li[data-row-id]')) observed.push(target);
+          }
+          unobserve() {}
+          disconnect() {}
+        }
+      );
+      onTestFinished(() => {
+        vi.unstubAllGlobals();
+      });
+      const rules = manySentenceRules(200);
+      const onSelect = vi.fn();
+      const { rerender } = render(view({ rules, selected: null, onSelect }));
+      observed.length = 0;
+      for (let count = 0; count < 5; count += 1) {
+        rerender(view({ rules: next(rules), selected: null, onSelect }));
+      }
+      expect(observed).toHaveLength(observedAgain);
+      expect(mountedRows().filter((row) => !observed.includes(row))).toEqual(
+        observedAgain === 0 ? mountedRows() : []
+      );
+    });
+
     it('observes the mounted cards again only once the window or the rules change', () => {
       const observed: Element[] = [];
       vi.stubGlobal(
