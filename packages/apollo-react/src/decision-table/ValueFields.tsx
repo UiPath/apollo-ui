@@ -61,6 +61,11 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
 }) => {
   const { shape, text, allowedValues, listed, checked } = draft;
   const choices = allowedValues.length > 0;
+  const allowed = new Set(allowedValues);
+  const outsideAllowed = (options: readonly string[]): string[] =>
+    choices
+      ? [...new Set(options)].filter((option) => option.trim() !== '' && !allowed.has(option))
+      : [];
   if (shape === 'range') {
     return (
       <div onKeyDown={onFieldsKeyDown}>
@@ -81,13 +86,12 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
     );
   }
   if (shape === 'list') {
-    const allowed = new Set(allowedValues);
     return (
       <div onKeyDown={onFieldsKeyDown}>
         <ValueChecklist
           listed={listed}
           checked={checked}
-          notAllowed={choices ? listed.filter((option) => !allowed.has(option)) : []}
+          notAllowed={outsideAllowed(listed)}
           notAllowedLabel={labels.notAllowed}
           onToggle={draft.toggle}
           onAdd={choices ? undefined : draft.add}
@@ -109,7 +113,7 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
       <div className={VALUE_POPOVER_CHOICES_CLASS} onKeyDown={onValueKeyDown}>
         <AllowedValueList
           values={allowedValues}
-          notAllowed={value === '' || allowedValues.includes(value) ? undefined : value}
+          notAllowed={outsideAllowed([value, text])}
           notAllowedLabel={labels.notAllowed}
           draft={text}
           onChoose={draft.setText}

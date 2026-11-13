@@ -2941,6 +2941,15 @@ describe('DecisionText', () => {
     const inPopover = () => within(popover());
     const operatorSelect = () => inPopover().getByRole('combobox', { name: 'Operator' });
     const action = (name: string) => inPopover().getByRole('button', { name });
+    const pressApply = () => {
+      const apply = action('Apply');
+      const hit = (apply.matches(':disabled') && apply.parentElement) || apply;
+      fireEvent.pointerDown(hit);
+      fireEvent.mouseDown(hit);
+      fireEvent.pointerUp(hit);
+      fireEvent.mouseUp(hit);
+      fireEvent.click(hit);
+    };
 
     const blurCommittingEditor =
       (reportsDraft: boolean) =>
@@ -3485,6 +3494,25 @@ describe('DecisionText', () => {
         expect(action('Apply')).toBeEnabled();
       });
 
+      it('applies from Apply an expression typed for a condition added from + into a host editor that reports no draft', async () => {
+        const user = userEvent.setup();
+        const { onCommitValues } = renderEditing({
+          initialEditing: r3Channel,
+          valueField: () => ({}),
+          bands: CHANNEL_BANDS,
+          renderEditor: blurCommittingEditor(false),
+        });
+        await user.click(action('Edit expression'));
+        pressApply();
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(popover()).toBeInTheDocument();
+        await user.type(screen.getByTestId('host-editor'), '"web"');
+        pressApply();
+        expect(onCommitValues.mock.calls).toEqual([
+          [r3Channel, { kind: 'expression', text: '"web"' }, 'none'],
+        ]);
+      });
+
       it('applies an expression typed for a condition added from +, though its own fields hold no value', () => {
         const { onCommitValues } = renderEditing({
           initialEditing: r3Channel,
@@ -3493,9 +3521,9 @@ describe('DecisionText', () => {
           renderEditor: hostInput,
         });
         fireEvent.click(action('Edit expression'));
-        expect(action('Apply')).toBeDisabled();
+        expect(action('Apply')).toHaveAttribute('aria-disabled', 'true');
         fireEvent.change(screen.getByTestId('host-editor'), { target: { value: '"web"' } });
-        expect(action('Apply')).toBeEnabled();
+        expect(action('Apply')).not.toHaveAttribute('aria-disabled');
         fireEvent.click(action('Apply'));
         expect(onCommitValues.mock.calls).toEqual([
           [r3Channel, { kind: 'expression', text: '"web"' }, 'none'],
@@ -3809,6 +3837,39 @@ describe('DecisionText', () => {
         ]);
       });
 
+      it.each<[string, () => void, string]>([
+        ['a list', () => {}, '"RU"'],
+        [
+          'a range whose From was typed',
+          () => {
+            fireEvent.click(operatorSelect());
+            fireEvent.click(screen.getByRole('option', { name: 'is between' }));
+            fireEvent.change(endField('From'), { target: { value: '"XX"' } });
+          },
+          '"XX"',
+        ],
+      ])('checks and applies the value a single operator keeps from %s, outside the allowed values', (_, before, kept) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country', 1),
+          valueField: (cell) => ({ ...shapedField(cell), allowedValues: ['"CN"'] }),
+        });
+        before();
+        fireEvent.click(operatorSelect());
+        fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
+        const radios = inPopover().getAllByRole('radio');
+        expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([
+          inPopover().getByRole('radio', { name: kept }),
+        ]);
+        expect(inPopover().getByRole('radio', { name: kept })).toHaveAccessibleDescription(
+          'Not one of the allowed values'
+        );
+        expect(inPopover().getByRole('radio', { name: '"KP"' })).toBeInTheDocument();
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m2', 'country', 1), { kind: 'values', values: [kept], operator: '<' }, 'none'],
+        ]);
+      });
+
       it("offers a list the column's allowed values with no field to add one, keeping a held value outside them marked", () => {
         const { onCommitValues } = renderShaped({
           initialEditing: at('m2', 'country'),
@@ -4023,6 +4084,24 @@ describe('DecisionText', () => {
         expect(addField()).toHaveValue('');
         expect(box('"FR"')).toBeChecked();
         expect(onCommitValues).not.toHaveBeenCalled();
+      });
+
+      it('applies from Apply an expression typed for an incomplete range into a host editor that reports no draft', async () => {
+        const user = userEvent.setup();
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m3', 'score'),
+          valueField: (cell) => ({ ...shapedField(cell), expression: '< 600' }),
+          renderEditor: blurCommittingEditor(false),
+        });
+        await user.click(operatorSelect());
+        await user.click(screen.getByRole('option', { name: 'is between' }));
+        await user.click(action('Edit expression'));
+        await user.clear(screen.getByTestId('host-editor'));
+        await user.type(screen.getByTestId('host-editor'), '[[600..650]');
+        pressApply();
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m3', 'score'), { kind: 'expression', text: '[600..650]' }, 'none'],
+        ]);
       });
 
       it('opens Edit expression on a whole range the host gives, applying it as it opened unchanged', () => {

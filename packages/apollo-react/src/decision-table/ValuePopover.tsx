@@ -95,7 +95,7 @@ const footerLinks = (
     : []),
 ];
 
-/** One condition's or outcome's editor: its column, its operator, its value, range or list, and the actions that settle it. Enter applies and moves down; Tab and Shift+Tab apply and move from its last and first field; Escape cancels; focus leaving the popover applies in place. An expression applied as it opened applies the popover's draft. */
+/** One condition's or outcome's editor: its column, its operator, its value, range or list, and the actions that settle it. Enter applies and moves down; Tab and Shift+Tab apply and move from its last and first field; Escape cancels; focus leaving the popover applies in place. An expression applied as it opened applies the popover's draft, unless the fields changed from the condition the host's expression words. */
 export const ValuePopover: React.FC<ValuePopoverProps> = ({
   target,
   value,
@@ -123,6 +123,8 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const blurStaysRef = useRef(false);
   const shapeDraft = useShapeDraft(field, value, adds);
   const { operators, current, problem } = shapeDraft;
+  const [opened] = useState(current);
+  const fieldsChanged = field.expression !== undefined && !sameCommit(current, opened);
   const expression = seed !== null;
   const holdFocus = (element: HTMLElement | null) => {
     focusRef.current = element;
@@ -133,7 +135,8 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   };
   const settling = (): ValueCommit | null => {
     const text = draftRef.current;
-    if (seedRef.current !== null && text !== seedRef.current) return { kind: 'expression', text };
+    const seed = seedRef.current;
+    if (seed !== null && (text !== seed || fieldsChanged)) return { kind: 'expression', text };
     return problem === null ? current : null;
   };
 
@@ -270,7 +273,8 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
         links={footerLinks(expression ? undefined : editExpression, onClear, labels, dataTestId)}
         onCancel={cancel}
         onApply={() => settle('none')}
-        applyDisabled={(!expression || draft === seed) && problem !== null}
+        applyDisabled={!expression && problem !== null}
+        applyDimmed={expression && draft === seed && !fieldsChanged && problem !== null}
         applyKeepsFocus={!expression}
         labels={labels}
         dataTestId={dataTestId}

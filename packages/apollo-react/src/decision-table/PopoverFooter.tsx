@@ -2,6 +2,7 @@ import { Button } from '@uipath/apollo-wind';
 import type React from 'react';
 import {
   POPOVER_ACTIONS_CLASS,
+  POPOVER_APPLY_DIMMED_CLASS,
   POPOVER_FOOTER_CLASS,
   POPOVER_LINK_CLASS,
   POPOVER_LINKS_CLASS,
@@ -26,6 +27,8 @@ export interface PopoverFooterProps {
   onCancel: () => void;
   onApply: () => void;
   applyDisabled?: boolean;
+  /** Shows Apply as off while it stays pressable, so a press still takes focus from an editor that commits on blur. */
+  applyDimmed?: boolean;
   applyKeepsFocus?: boolean;
   labels: PopoverFooterLabels;
   /** The popover's testid; derived ids: `-cancel`, `-apply`. */
@@ -40,6 +43,7 @@ export const PopoverFooter: React.FC<PopoverFooterProps> = ({
   onCancel,
   onApply,
   applyDisabled = false,
+  applyDimmed = false,
   applyKeepsFocus = true,
   labels,
   dataTestId,
@@ -79,6 +83,8 @@ export const PopoverFooter: React.FC<PopoverFooterProps> = ({
         type="button"
         size="sm"
         disabled={applyDisabled}
+        aria-disabled={applyDimmed || undefined}
+        className={POPOVER_APPLY_DIMMED_CLASS}
         onMouseDown={applyKeepsFocus ? keepFocus : undefined}
         onClick={onApply}
         data-testid={`${dataTestId}-apply`}

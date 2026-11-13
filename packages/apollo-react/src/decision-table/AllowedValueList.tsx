@@ -10,9 +10,9 @@ import {
 
 export interface AllowedValueListProps {
   values: readonly string[];
-  /** The value the cell holds when it is not one of `values`, listed after them and marked. */
-  notAllowed: string | undefined;
-  /** The not-allowed value's mark, as read aloud. */
+  /** The held and drafted values that are not among `values`, listed after them and marked. */
+  notAllowed: readonly string[];
+  /** A not-allowed value's mark, as read aloud. */
   notAllowedLabel: string;
   /** The value the draft holds, checked when it is listed. */
   draft: string;
@@ -43,7 +43,8 @@ export const AllowedValueList: React.FC<AllowedValueListProps> = ({
 }) => {
   const idPrefix = useId();
   const arrowedRef = useRef(false);
-  const listed = notAllowed === undefined ? values : [...values, notAllowed];
+  const allowed = [...new Set(values)];
+  const listed = [...allowed, ...notAllowed.filter((value) => !allowed.includes(value))];
   const checked = listed.includes(draft) ? draft : '';
   const focused = checked || listed[0];
   return (
@@ -72,7 +73,9 @@ export const AllowedValueList: React.FC<AllowedValueListProps> = ({
             id={`${idPrefix}-${index}`}
             value={value}
             aria-keyshortcuts={keyShortcuts}
-            aria-describedby={value === notAllowed ? `${idPrefix}-not-allowed` : undefined}
+            aria-describedby={
+              index >= allowed.length ? `${idPrefix}-${index}-not-allowed` : undefined
+            }
             onFocus={() => {
               if (arrowedRef.current) onChoose(value);
             }}
@@ -83,10 +86,10 @@ export const AllowedValueList: React.FC<AllowedValueListProps> = ({
           <label htmlFor={`${idPrefix}-${index}`} className={ALLOWED_VALUE_LABEL_CLASS}>
             {value}
           </label>
-          {value === notAllowed && (
+          {index >= allowed.length && (
             <>
               <MarkGlyph tone="error" />
-              <span id={`${idPrefix}-not-allowed`} hidden>
+              <span id={`${idPrefix}-${index}-not-allowed`} hidden>
                 {notAllowedLabel}
               </span>
             </>
