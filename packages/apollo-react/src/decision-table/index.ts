@@ -11,12 +11,7 @@ export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from '
 export { DecisionText, type DecisionTextLabels, type DecisionTextProps } from './DecisionText';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
-export {
-  GridCell,
-  type GridCellEditorContext,
-  type GridCellProps,
-  renderRestingCellContent,
-} from './GridCell';
+export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
   GridContextMenu,
   type GridContextMenuProps,

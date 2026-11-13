@@ -1,36 +1,19 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useLayoutEffect, useRef } from 'react';
+import { CellTextEditor } from './CellTextEditor';
 import { showTitleIfClipped } from './clippedTitle';
-import { commitMoveFor } from './gridEvents';
 import {
   BODY_CELL_CLASS,
-  CELL_EDITOR_CLASS,
   CELL_MARK_CLASS,
   CELL_SURFACE_CLASS,
   IN_RANGE_CLASS,
   MONO_CELL_TEXT_CLASS,
   OMIT_BORDER_CLASS,
 } from './gridStyles';
-import type { CellCommitMove, CellEdge } from './gridTypes';
+import type { CellCommitMove, CellEdge, GridCellEditorContext } from './gridTypes';
 import { MarkGlyph } from './MarkGlyph';
 import type { Mark } from './marks';
-
-/**
- * What a custom cell editor receives: the value to seed from and the cell's commit contract.
- * A custom editor owns its own blur/commit dedup — the cell's key-then-blur double-commit guard
- * covers only the built-in input, so a plain editor that commits on both Enter and blur would
- * land two commits (and two undo entries) per edit.
- */
-export interface GridCellEditorContext {
-  value: string;
-  /** Typing opened the editor, and the browser is about to deliver that keystroke into it. */
-  openedByTyping?: boolean;
-  ariaLabel: string;
-  onCommit: (text: string, move: CellCommitMove) => void;
-  onCancel: () => void;
-  onDraftChange?: (text: string) => void;
-}
 
 export interface GridCellProps {
   value: string;
@@ -126,11 +109,7 @@ export const GridCell: React.FC<GridCellProps> = ({
   onCancel,
   onDraftChange,
 }) => {
-  // Set when a key commit/cancel already handled this edit session, so the
-  // following native blur doesn't commit a second time.
   const settledByKeyRef = useRef(false);
-  /** What the last key-settled commit carried, so a blur can tell a stale draft from a new one. */
-  const keyCommittedValueRef = useRef<string | null>(null);
   const isEditing = editing && !readOnly;
   // While editing the editor holds focus, so the cell itself leaves the tab order; while resting,
   // only the grid's single roving tab stop is reachable by Tab (the rest are focusable by script).
@@ -147,25 +126,8 @@ export const GridCell: React.FC<GridCellProps> = ({
     wasEditingRef.current = isEditing;
   });
 
-  const handleEditorKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    // Enter/Escape during an IME composition confirm or dismiss the composition, not the edit —
-    // committing here would save a half-composed draft (the navigation hook guards the same way).
-    // Safari reports the confirming Enter with `isComposing` already false, so the legacy 229
-    // keyCode every IME sets while composing is checked too.
-    if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
-      return;
-    }
-    if (event.key === 'Enter' || event.key === 'Tab') {
-      event.preventDefault();
-      settledByKeyRef.current = true;
-      keyCommittedValueRef.current = event.currentTarget.value;
-      onCommit(event.currentTarget.value, commitMoveFor(event));
-      return;
-    }
-    if (event.key === 'Escape') {
-      settledByKeyRef.current = true;
-      onCancel();
-    }
+  const settleByKey = (settled: boolean) => {
+    settledByKeyRef.current = settled;
   };
 
   return (
@@ -249,34 +211,14 @@ export const GridCell: React.FC<GridCellProps> = ({
       {isEditing &&
         renderEditor?.({ value, openedByTyping, ariaLabel, onCommit, onCancel, onDraftChange })}
       {isEditing && !renderEditor && (
-        <input
-          className={CELL_EDITOR_CLASS}
-          // The td's label does not name a nested input — the editor needs its own.
-          aria-label={ariaLabel}
-          data-testid={`${dataTestId}-editor`}
-          // biome-ignore lint/a11y/noAutofocus: opening a spreadsheet cell is an explicit edit gesture and the caret belongs in that cell
-          autoFocus
-          defaultValue={value}
-          onFocus={(event) => {
-            settledByKeyRef.current = false;
-            keyCommittedValueRef.current = null;
-            // Select the existing text so typing replaces it instead of appending (e.g. a
-            // default "-" would otherwise end up prefixed onto the new value).
-            event.currentTarget.select();
-          }}
-          onChange={(event) => onDraftChange?.(event.currentTarget.value)}
-          onKeyDown={handleEditorKeyDown}
-          onBlur={(event) => {
-            // A key-settled commit already carried this text, so blurring must not send it twice.
-            // A consumer that refuses the commit keeps the editor open, though, and anything typed
-            // after that is a draft this blur is the last chance to keep.
-            if (
-              !settledByKeyRef.current ||
-              event.currentTarget.value !== keyCommittedValueRef.current
-            ) {
-              onCommit(event.currentTarget.value, 'none');
-            }
-          }}
+        <CellTextEditor
+          value={value}
+          ariaLabel={ariaLabel}
+          dataTestId={`${dataTestId}-editor`}
+          onCommit={onCommit}
+          onCancel={onCancel}
+          onDraftChange={onDraftChange}
+          onKeySettle={settleByKey}
         />
       )}
     </td>
