@@ -2,9 +2,13 @@ import { useState } from 'react';
 import type { AllowedValueListProps } from './AllowedValueList';
 import type { RangeFieldsProps } from './RangeFields';
 import type { ValueChecklistProps } from './ValueChecklist';
-import type { RangeEnds, ValueCommit, ValueField, ValueOperatorOption } from './ValuePopover';
-
-type Shape = NonNullable<ValueOperatorOption['shape']>;
+import type {
+  RangeEnds,
+  ValueCommit,
+  ValueField,
+  ValueOperatorOption,
+  ValueShape,
+} from './ValuePopover';
 
 const NO_OPERATORS: readonly ValueOperatorOption[] = [];
 
@@ -22,7 +26,7 @@ const operatorsOf = ({ operators = NO_OPERATORS, operator }: ValueField) =>
     ? operators
     : [{ id: operator, label: operator }, ...operators];
 
-const isComplete = (shape: Shape, { values }: ValueCommit, field: ValueField): boolean => {
+const isComplete = (shape: ValueShape, { values }: ValueCommit, field: ValueField): boolean => {
   const [low = '', high = ''] = values;
   if (shape === 'range') {
     return low.trim() !== '' && high.trim() !== '' && (field.inOrder?.(low, high) ?? true);
@@ -36,7 +40,7 @@ export interface ShapeDraft {
   operator: string | undefined;
   /** The operator a commit carries: undefined without operators or in the expression editor. */
   picked: string | undefined;
-  shape: Shape;
+  shape: ValueShape;
   values: readonly string[];
   text: string;
   high: string;
@@ -66,14 +70,14 @@ export const useShapeDraft = (
   const operators = operatorsOf(field);
   const allowedValues = field.allowedValues ?? NO_VALUES;
   const picked = expression || operators.length === 0 ? undefined : operator;
-  const shapeOf = (id: string | undefined): Shape =>
+  const shapeOf = (id: string | undefined): ValueShape =>
     operators.find((option) => option.id === id)?.shape ?? 'single';
   const shape = shapeOf(picked);
   const [text = '', high = ''] = values;
   const listed = filled([...allowedValues, ...entries]);
   const offered = new Set(listed);
   const checked = filled(values).filter((value) => offered.has(value));
-  const byShape: Record<Shape, ValueCommit> = {
+  const byShape: Record<ValueShape, ValueCommit> = {
     single: { values: [text], operator: picked },
     range: { values: [text, high], operator: picked, ends },
     list: { values: checked, operator: picked },

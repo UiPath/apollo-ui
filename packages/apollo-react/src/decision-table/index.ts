@@ -70,7 +70,7 @@ export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
 export type { PolicyOption } from './PolicyOptionItem';
-export type { PolicyGroup } from './PolicyPicker';
+export type { PolicyGroup, PolicyPickerProps } from './PolicyPicker';
 export type { GlyphTone } from './sentenceMarks';
 export * from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';

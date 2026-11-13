@@ -53,7 +53,7 @@ export interface SentenceBand extends Pick<GridColumnGroup, 'id' | 'label'> {
 }
 
 /** A cell, addressed as the grid's marks address it. */
-export type SentenceCellId = NonNullable<GridNavigation['selectedIds']>;
+export interface SentenceCellId extends NonNullable<GridNavigation['selectedIds']> {}
 
 /** One value of a cell: the cell, and the value's `index` among the cell's values, 0 for an outcome. */
 export interface SentenceValueId extends SentenceCellId {

@@ -43,7 +43,7 @@ const verticalMove = (
   from: StopPosition,
   rowCount: number,
   stopsAt: (row: number) => Stops,
-  columnId: string | undefined
+  columnId: SentenceSelection['columnId']
 ): StopPosition => {
   const last = rowCount - 1;
   const row = meta ? (delta < 0 ? 0 : last) : clamp(from.row + delta, last);
@@ -93,7 +93,7 @@ const stopAfterKey = (
   from: StopPosition,
   rules: readonly SentenceRule[],
   rtl: boolean,
-  columnId: string | undefined
+  columnId: SentenceSelection['columnId']
 ): StopPosition | undefined => {
   const meta = event.metaKey || event.ctrlKey;
   const stopsAt = (row: number) => stopsOf(rules[row]);
