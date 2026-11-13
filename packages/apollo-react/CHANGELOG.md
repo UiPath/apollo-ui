@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.18.0...@uipath/apollo-react@7.19.0) (2026-11-13)
+
+### Features
+
+* **apollo-react:** edit rules in the decision text [ECS-2141] ([da242c3](https://github.com/UiPath/apollo-ui/commit/da242c3f4effac4750e7128a558f421c690d8a64))
+
+### Bug Fixes
+
+* **apollo-react:** commit nothing on a blur after Escape cancels a cell edit [ECS-2141] ([a8d8fbd](https://github.com/UiPath/apollo-ui/commit/a8d8fbd2996fe0e7e07b214dc2821fa61ebc3b00))
+
 ## [@uipath/apollo-react-v7.17.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.17.3...@uipath/apollo-react@7.17.4) (2026-11-12)
 
 ### Bug Fixes
