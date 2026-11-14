@@ -9,7 +9,7 @@ import { ValuePopover, type ValuePopoverHandle, type ValuePopoverProps } from '.
 /** The open value's editor as the view derives it; the host's editor, the strings and the testid come apart. */
 export type OpenValueEditor = Omit<
   ValuePopoverProps,
-  'ref' | 'renderEditor' | 'labels' | 'onOperatorChange' | 'dataTestId'
+  'renderEditor' | 'labels' | 'onOperatorChange' | 'dataTestId'
 >;
 
 export interface ValueEditorOverlayProps
