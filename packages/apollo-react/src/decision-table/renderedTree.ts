@@ -10,3 +10,9 @@ export const scrollRootsOf = (node: Node): Node[] => {
   for (let at: Node | null = node; at; at = renderedParentOf(at)) roots.add(at.getRootNode());
   return [...roots];
 };
+
+/** Whether `element` has a box: connected, and neither it nor anything holding it is hidden from rendering. */
+export const isRendered = (element: Element): boolean =>
+  typeof element.checkVisibility === 'function'
+    ? element.checkVisibility()
+    : element.getClientRects().length > 0;
