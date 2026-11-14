@@ -523,6 +523,22 @@ describe('DecisionText value popover whose view stops rendering', () => {
     expect(document.activeElement).toBe(popover().getByRole('textbox'));
   });
 
+  it('opens and applies the popover in a browser without checkVisibility', async () => {
+    const checkVisibility = Element.prototype.checkVisibility;
+    Reflect.deleteProperty(Element.prototype, 'checkVisibility');
+    try {
+      const onCommit = vi.fn();
+      render(<Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />);
+      resizeAll();
+      expect(dialog()?.open).toBe(true);
+      fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
+      await closeEvents();
+      expect(onCommit).toHaveBeenCalledWith(at('m3', 'score'), expect.anything(), 'none');
+    } finally {
+      Element.prototype.checkVisibility = checkVisibility;
+    }
+  });
+
   it('closes the popover while an Activity hides its view, and opens it again once shown', async () => {
     const onCommit = vi.fn();
     const view = (mode: 'visible' | 'hidden') => (

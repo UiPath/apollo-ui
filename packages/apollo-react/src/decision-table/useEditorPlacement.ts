@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { scrollRootsOf } from './renderedTree';
+import { isRendered, scrollRootsOf } from './renderedTree';
 import { addConditionOf, cardOf, cellOf, valueChipOf } from './sentenceTargets';
 import type { SentenceValueId } from './sentenceTypes';
 import type { RuleWindow } from './useRuleWindow';
@@ -81,7 +81,7 @@ export const useEditorPlacement = ({
     const element = section && anchorRef.current(section);
     const next = placementOf(section, element, overlay);
     setPlacement((current) => (samePlacement(current, next) ? current : next));
-    if (section) setHidden(element?.checkVisibility() !== true);
+    if (section) setHidden(!element || !isRendered(element));
   }, [container]);
 
   useLayoutEffect(() => place());
