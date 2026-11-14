@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
+import { isRendered } from './renderedTree';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
 
@@ -63,7 +64,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
     const dialog = overlayRef.current;
     return () =>
       queueMicrotask(() => {
-        if (dialog?.open && !dialog.checkVisibility()) dialog.close();
+        if (dialog?.open && !isRendered(dialog)) dialog.close();
       });
   }, [overlayRef]);
   const showWhileRendered = (dialog: HTMLDialogElement) => {
