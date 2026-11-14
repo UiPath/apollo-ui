@@ -143,6 +143,8 @@ export const POPOVER_CLASS = 'flex min-w-0 flex-col gap-3';
 
 export const POPOVER_HEADER_CLASS = 'flex min-w-0 items-center gap-1.5';
 
+export const POPOVER_SENTINEL_CLASS = 'sr-only';
+
 export const POPOVER_ICON_CLASS = 'flex shrink-0 text-foreground-de-emp [&_svg]:size-3.5';
 
 export const POPOVER_TITLE_CLASS =
@@ -166,12 +168,25 @@ export const POPOVER_ERROR_CLASS = 'text-[11px] leading-4 text-error-text';
 
 export const VALUE_POPOVER_CHOICES_CLASS = 'flex min-w-0 flex-col gap-1';
 
-export const ALLOWED_VALUES_CLASS = 'flex max-h-48 flex-col gap-0 overflow-y-auto';
+export const ALLOWED_VALUES_CLASS =
+  'group/radio-group flex max-h-48 flex-col gap-0 overflow-y-auto';
 
 export const ALLOWED_VALUE_CLASS =
   'flex h-7 min-w-0 items-center gap-2 rounded px-1 hover:bg-background-hover';
 
 export const ALLOWED_VALUE_LABEL_CLASS = 'min-w-0 flex-1 cursor-pointer truncate text-sm';
+
+export const ALLOWED_VALUE_INPUT_CLASS = 'peer sr-only';
+
+export const ALLOWED_VALUE_DOT_CLASS = cn(
+  'flex aspect-square h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full border border-primary text-primary ring-offset-background peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-transparent peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group-aria-invalid/radio-group:border-error group-aria-invalid/radio-group:peer-focus-visible:ring-error',
+  'future:border-border future:text-foreground future:hover:border-border-hover future:peer-checked:border-foreground-muted future:hover:peer-checked:border-foreground-muted future:group-aria-invalid/radio-group:border-error',
+  'future:group-aria-invalid/radio-group:hover:border-error future:group-aria-invalid/radio-group:peer-checked:border-error',
+  '[&>svg]:invisible peer-checked:[&>svg]:visible'
+);
+
+export const ALLOWED_VALUE_MARK_CLASS =
+  'h-2.5 w-2.5 fill-current text-current future:fill-foreground-accent future:text-foreground-accent';
 
 export const RANGE_FIELDS_CLASS = 'flex min-w-0 flex-col gap-2';
 

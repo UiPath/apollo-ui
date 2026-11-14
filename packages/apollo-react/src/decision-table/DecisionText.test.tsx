@@ -3167,10 +3167,10 @@ describe('DecisionText', () => {
 
     it('moves the choice with an arrow key without committing, and commits it on Enter', async () => {
       const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+      const user = userEvent.setup();
       const standard = inPopover().getByRole('radio', { name: '"standard"' });
-      fireEvent.keyDown(inPopover().getByRole('radio', { name: '"high"' }), { key: 'ArrowDown' });
+      await user.keyboard('{ArrowDown}');
       await waitFor(() => expect(standard).toBeChecked());
-      fireEvent.keyUp(standard, { key: 'ArrowDown' });
       expect(document.activeElement).toBe(standard);
       expect(onCommit).not.toHaveBeenCalled();
       fireEvent.keyDown(standard, { key: 'Enter' });
@@ -3217,7 +3217,9 @@ describe('DecisionText', () => {
       const radios = inPopover().getAllByRole('radio');
       expect(radios).toHaveLength(2);
       expect(document.activeElement).toBe(radios[0]);
-      expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([]);
+      expect(radios.filter((radio) => radio instanceof HTMLInputElement && radio.checked)).toEqual(
+        []
+      );
       fireEvent.click(action('Apply'));
       expect(onCommit.mock.calls).toEqual([[m2Reason, '', 'none']]);
     });
@@ -3287,7 +3289,7 @@ describe('DecisionText', () => {
 
       it('commits the allowed value a press picks though the press leaves focus nowhere, as Safari does', () => {
         const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
-        safariPress(inPopover().getByRole('radio', { name: '"review"' }));
+        safariPress(inPopover().getByText('"review"'));
         expect(onCommit.mock.calls).toEqual([[r1Risk, '"review"', 'none']]);
       });
 
@@ -3761,9 +3763,9 @@ describe('DecisionText', () => {
         fireEvent.click(operatorSelect());
         fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
         const radios = inPopover().getAllByRole('radio');
-        expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([
-          inPopover().getByRole('radio', { name: kept }),
-        ]);
+        expect(
+          radios.filter((radio) => radio instanceof HTMLInputElement && radio.checked)
+        ).toEqual([inPopover().getByRole('radio', { name: kept })]);
         expect(inPopover().getByRole('radio', { name: kept })).toHaveAccessibleDescription(
           'Not one of the allowed values'
         );
@@ -4169,8 +4171,9 @@ describe('DecisionText', () => {
       await user.tab();
       expect(document.activeElement).toBe(field('Input expression'));
       act(() => action('Apply').focus());
-      await user.tab();
-      expect(document.activeElement).toBe(field('Label'));
+      expect(fireEvent.keyDown(action('Apply'), { key: 'Tab' })).toBe(true);
+      expect(document.activeElement).toBe(popover().querySelector('[data-popover-sentinel]'));
+      act(() => field('Label').focus());
       await user.tab({ shift: true });
       expect(document.activeElement).toBe(action('Apply'));
       expect(popover()).toBeInTheDocument();
