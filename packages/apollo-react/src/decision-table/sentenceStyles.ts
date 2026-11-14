@@ -135,7 +135,7 @@ export const MARK_TOOLTIP_CLASS = 'max-w-[320px] data-[state=closed]:animate-non
 export const MARK_TOOLTIP_TEXT_CLASS = 'flex items-center gap-1.5 whitespace-pre-line text-xs';
 
 export const VALUE_EDITOR_CLASS =
-  'absolute z-3 m-0 mt-1 w-72 min-w-0 max-w-full rounded-md border border-border-de-emp bg-popover p-3 text-sm text-popover-foreground shadow-md future:rounded-lg';
+  'fixed inset-auto m-0 mt-1 w-72 min-w-0 max-w-full rounded-md border border-border-de-emp bg-popover p-3 text-sm text-popover-foreground shadow-md backdrop:bg-transparent future:rounded-lg';
 
 export const COLUMN_EDITOR_CLASS = cn(VALUE_EDITOR_CLASS, 'w-80');
 

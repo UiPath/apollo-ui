@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { createElement, useEffect, useRef, useState } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
 import {
   DECISION_TEXT_EDIT_LABELS,
   DECISION_TEXT_LABELS,
@@ -10,13 +11,17 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import { CellTextEditor } from './CellTextEditor';
 import { DecisionText } from './DecisionText';
-import { tabbablesIn } from './popoverFocus';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 afterEach(cleanup);
+let uninstallEscape: () => void = () => {};
+beforeAll(() => {
+  uninstallEscape = installEscapeCloseRequest();
+});
+afterAll(() => uninstallEscape());
 
 const OPS: ValueOperatorOption[] = [
   { id: '<', label: 'is less than' },
@@ -265,17 +270,21 @@ describe('DecisionText value popover settling', () => {
     ]).toEqual([true, true, false]);
   });
 
-  it("keeps focus in the popover on a press off the host editor's controls", () => {
+  it("leaves a press off the host editor's controls its default, keeping the popover open", () => {
+    const onCommit = vi.fn();
     render(
       <Host
         initial={at('m3', 'score')}
         valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
         renderEditor={hostEditor}
-        onCommit={vi.fn()}
+        onCommit={onCommit}
       />
     );
     fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    expect(fireEvent.mouseDown(screen.getByTestId('caption'))).toBe(false);
+    expect(fireEvent.mouseDown(screen.getByTestId('caption'))).toBe(true);
+    fireEvent.click(screen.getByTestId('caption'));
+    expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    expect(onCommit).not.toHaveBeenCalled();
   });
 
   it.each<[string, ValueField]>([
@@ -301,13 +310,13 @@ describe('DecisionText value popover settling', () => {
     expect(radios.map((radio) => radio.getAttribute('aria-checked'))).toEqual(['true', 'false']);
   });
 
-  const popoverStops = () => tabbablesIn(screen.getByTestId('nl-value-editor'));
-
   it.each<[string, ValueField, boolean]>([
     ['a single value', { operators: OPS, operator: '<', expression: '< 600' }, false],
     ['a range', { operators: OPS, operator: 'between', values: ['600', '700'] }, false],
     ["the host's expression editor", { operators: OPS, operator: '<', expression: '< 600' }, true],
-  ])('keeps Tab and Shift+Tab inside the popover of %s, wrapping at both ends and applying nothing', (_, field, expression) => {
+    ['an outcome with allowed values', { allowedValues: ['600', '700'] }, false],
+  ])('opens the popover of %s as a modal dialog, leaving Tab and Shift+Tab to the browser', (_, field, expression) => {
+    const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal');
     const onCommit = vi.fn();
     render(
       <Host
@@ -318,17 +327,15 @@ describe('DecisionText value popover settling', () => {
       />
     );
     if (expression) fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    const stops = popoverStops();
-    const [first] = stops;
-    const last = stops.at(-1);
-    if (!first || !last || stops.length < 3) throw new Error('too few stops');
-    last.focus();
-    expect(fireEvent.keyDown(last, { key: 'Tab' })).toBe(false);
-    expect(document.activeElement).toBe(first);
-    expect(fireEvent.keyDown(first, { key: 'Tab', shiftKey: true })).toBe(false);
-    expect(document.activeElement).toBe(last);
+    const dialog = screen.getByTestId('nl-value-editor');
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(showModal.mock.contexts).toEqual([dialog]);
+    const apply = popover().getByRole('button', { name: 'Apply' });
+    apply.focus();
+    expect(fireEvent.keyDown(apply, { key: 'Tab' })).toBe(true);
+    expect(fireEvent.keyDown(apply, { key: 'Tab', shiftKey: true })).toBe(true);
     expect(onCommit).not.toHaveBeenCalled();
-    expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    showModal.mockRestore();
   });
 
   it("moves focus on Tab and Shift+Tab from the host's editor that claims Tab, applying nothing", () => {
@@ -345,13 +352,13 @@ describe('DecisionText value popover settling', () => {
     const input = screen.getByTestId('host-editor');
     input.focus();
     fireEvent.change(input, { target: { value: '> 1' } });
-    const stops = popoverStops();
-    const index = stops.indexOf(input);
+    const actions = popover().getAllByRole('button');
     fireEvent.keyDown(input, { key: 'Tab' });
-    expect(document.activeElement).toBe(stops[(index + 1) % stops.length]);
+    expect(document.activeElement).toBe(actions[0]);
     input.focus();
     fireEvent.keyDown(input, { key: 'Tab', shiftKey: true });
-    expect(document.activeElement).toBe(stops[(index - 1 + stops.length) % stops.length]);
+    expect(document.activeElement).toBe(actions.at(-1));
+    expect(actions.at(-1)).toBe(popover().getByRole('button', { name: 'Apply' }));
     expect(onCommit).not.toHaveBeenCalled();
     fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
     expect(onCommit.mock.calls[0]?.[1]).toEqual({ kind: 'expression', text: '> 1' });
@@ -395,23 +402,6 @@ describe('DecisionText value popover settling', () => {
     domInput().focus();
     fireEvent.keyDown(domInput(), { key: 'Tab', shiftKey });
     expect(document.activeElement).toBe(popover().getByRole('button', { name }));
-    expect(onCommit).not.toHaveBeenCalled();
-  });
-
-  it('wraps Shift+Tab from the first radio of an outcome with allowed values to Apply', () => {
-    const onCommit = vi.fn();
-    render(
-      <Host
-        initial={at('m3', 'score')}
-        valueField={() => ({ allowedValues: ['600', '700'] })}
-        onCommit={onCommit}
-      />
-    );
-    const [radio] = popover().getAllByRole('radio');
-    if (!radio) throw new Error('no radio');
-    radio.focus();
-    expect(fireEvent.keyDown(radio, { key: 'Tab', shiftKey: true })).toBe(false);
-    expect(document.activeElement).toBe(popover().getByRole('button', { name: 'Apply' }));
     expect(onCommit).not.toHaveBeenCalled();
   });
 });

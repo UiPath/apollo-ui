@@ -1,8 +1,6 @@
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
-import { isComposing, isFromTextField } from './gridEvents';
-import { moveFocusIn, stopAfter } from './popoverFocus';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
 
@@ -17,51 +15,12 @@ const overlayStyle = ({ top, left }: EditorPlacement): EditorOverlayStyle => ({
   '--grid-row-height': `${BODY_ROW_HEIGHT_PX}px`,
 });
 
-const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation();
-
-const PRESSED_CONTROL = 'label, button:not(:disabled), [role="checkbox"], [role="radio"]';
-
-/** Keeps Tab inside: Tab past the last control or Shift+Tab before the first wraps to the other end. */
-const wrapTab = (event: React.KeyboardEvent<HTMLElement>) => {
-  if (event.key !== 'Tab' || event.defaultPrevented || isComposing(event)) return;
-  const { currentTarget, target, shiftKey } = event;
-  if (!(target instanceof Element) || stopAfter(currentTarget, target, shiftKey)) return;
-  event.preventDefault();
-  moveFocusIn(currentTarget, target, shiftKey);
-};
-
-const OWN_FOCUS_CONTROL =
-  'select, a[href], [tabindex], [contenteditable]:not([contenteditable="false"])';
-
-/** Whether a press lands on a focusable part of the host's editor that is no pressed control, or inside its shadow root, which keep their own default. */
-const hostEditorOwns = (event: React.MouseEvent<HTMLElement>, target: Element): boolean => {
-  const editor = target.closest('[data-owns-presses]');
-  if (!editor) return false;
-  const [origin] = event.nativeEvent.composedPath();
-  if (origin !== target) return true;
-  const control = target.closest(`${PRESSED_CONTROL}, ${OWN_FOCUS_CONTROL}`);
-  return control !== null && editor.contains(control) && !control.matches(PRESSED_CONTROL);
-};
-
-/** Keeps focus inside on a press, which Safari leaves nowhere: a press on a control focuses it, one on a label focuses its control with no text selected so its click still reaches it, and one off a text field keeps focus where it is. */
-const focusPressedControl = (event: React.MouseEvent<HTMLElement>) => {
-  const { target } = event;
-  if (
-    event.defaultPrevented ||
-    !(target instanceof Element) ||
-    isFromTextField(target) ||
-    hostEditorOwns(event, target)
-  ) {
-    return;
-  }
-  event.preventDefault();
-  const pressed = target.closest<HTMLElement>(PRESSED_CONTROL);
-  if (!(pressed instanceof HTMLLabelElement)) {
-    pressed?.focus();
-    return;
-  }
-  target.ownerDocument.getSelection()?.removeAllRanges();
-  pressed.control?.focus();
+/** Whether a pointer event landed on the backdrop, which the browser reports on the dialog itself. */
+const onBackdrop = (event: React.MouseEvent<HTMLDialogElement>): boolean => {
+  const { currentTarget, target, clientX, clientY } = event;
+  if (target !== currentTarget) return false;
+  const box = currentTarget.getBoundingClientRect();
+  return clientX < box.left || clientX > box.right || clientY < box.top || clientY > box.bottom;
 };
 
 export interface EditorOverlayProps {
@@ -71,13 +30,15 @@ export interface EditorOverlayProps {
   className: string;
   id?: string;
   dataTestId: string;
-  /** A press outside the overlay and its anchor; without it the overlay ignores them. */
-  onPressOutside?: () => void;
+  /** A press outside the overlay, which the overlay takes so nothing under it gets that press. */
+  onPressOutside: () => void;
+  /** Escape, unless a control inside the overlay kept it. */
+  onCancel: () => void;
   /** Mounted once the overlay is placed, so it takes focus where it shows. */
   children: React.ReactNode;
 }
 
-/** A popover over the rules at its anchor, keeping its clicks from the view and focus inside it on a press. */
+/** A modal dialog over the rules at its anchor: the page is inert while it shows, a press outside it is its own, and Escape cancels it. */
 export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   anchor,
   container,
@@ -86,40 +47,57 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   id,
   dataTestId,
   onPressOutside,
+  onCancel,
   children,
 }) => {
   const { overlayRef, placement } = useEditorPlacement({ container, anchor });
-  const anchorRef = useRef(anchor);
-  anchorRef.current = anchor;
-  const pressOutsideRef = useRef(onPressOutside);
-  pressOutsideRef.current = onPressOutside;
-  const watchesPresses = onPressOutside !== undefined;
-  useEffect(() => {
-    if (!watchesPresses) return;
-    const press = (event: PointerEvent) => {
-      const [origin] = event.composedPath();
-      const target = origin instanceof Node ? origin : null;
-      const section = container();
-      if (overlayRef.current?.contains(target)) return;
-      if (section && anchorRef.current(section)?.contains(target)) return;
-      pressOutsideRef.current?.();
-    };
-    document.addEventListener('pointerdown', press, true);
-    return () => document.removeEventListener('pointerdown', press, true);
-  }, [container, overlayRef, watchesPresses]);
+  const pressedOutsideRef = useRef(false);
+  const attach = useCallback(
+    (dialog: HTMLDialogElement | null) => {
+      overlayRef.current = dialog;
+      if (dialog?.isConnected && !dialog.open) dialog.showModal();
+    },
+    [overlayRef]
+  );
+  const takePress = (event: React.MouseEvent<HTMLDialogElement>) => {
+    if (!pressedOutsideRef.current || event.target !== event.currentTarget) return;
+    pressedOutsideRef.current = false;
+    event.preventDefault();
+    onPressOutside();
+  };
   return (
-    <fieldset
-      ref={overlayRef}
+    <dialog
+      ref={attach}
       id={id}
       aria-label={ariaLabel}
       className={className}
       style={overlayStyle(placement ?? UNPLACED)}
       data-testid={dataTestId}
-      onMouseDown={focusPressedControl}
-      onKeyDown={wrapTab}
-      onClick={stopPropagation}
+      onPointerDown={(event) => {
+        pressedOutsideRef.current = onBackdrop(event);
+        if (pressedOutsideRef.current) event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerCancel={() => {
+        pressedOutsideRef.current = false;
+      }}
+      onMouseDown={(event) => {
+        if (onBackdrop(event)) event.preventDefault();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        takePress(event);
+      }}
+      onAuxClick={takePress}
+      onContextMenu={takePress}
+      onCancel={(event) => {
+        event.preventDefault();
+        onCancel();
+      }}
+      onClose={(event) => {
+        if (event.currentTarget.isConnected) event.currentTarget.showModal();
+      }}
     >
       {placement && children}
-    </fieldset>
+    </dialog>
   );
 };
