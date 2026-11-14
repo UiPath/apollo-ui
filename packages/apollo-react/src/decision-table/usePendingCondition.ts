@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import { bandColumnNameOf, hasStop } from './sentenceParts';
 import type { SentenceBand, SentenceRule, SentenceValueId } from './sentenceTypes';
@@ -10,6 +10,8 @@ export interface PendingConditionParams {
   edit: DecisionTextEdit | undefined;
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
+  /** Whether a press is under way, which keeps the pending line until it ends though its editor closed. */
+  pressing: boolean;
 }
 
 export interface PendingCondition {
@@ -32,10 +34,13 @@ export const usePendingCondition = ({
   edit,
   rules,
   bands,
+  pressing,
 }: PendingConditionParams): PendingCondition => {
-  const target = edit?.editing ?? null;
+  const keptRef = useRef<SentenceValueId | null>(null);
+  const target = edit?.editing ?? (pressing ? keptRef.current : null);
   const rule = target ? rules.find((candidate) => candidate.rowId === target.rowId) : undefined;
   const pending = target && rule && !hasStop(rule, target.columnId) ? target : null;
+  keptRef.current = pending;
   const [picked, setPicked] = useState<PickedOperator | null>(null);
   const key = pending ? valueKey(pending) : null;
   if (picked && picked.key !== key) setPicked(null);

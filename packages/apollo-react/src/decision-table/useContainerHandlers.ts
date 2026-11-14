@@ -65,11 +65,12 @@ export const useContainerHandlers = ({
     onFocus: consumerFocus,
     onBlur: consumerBlur,
     onClick: consumerClick,
+    onClickCapture: consumerClickCapture,
     onPointerDown: consumerPointerDown,
+    onMouseDown: consumerMouseDown,
     onPointerUp: consumerPointerUp,
     onMouseUp: consumerMouseUp,
     onPointerCancel: consumerPointerCancel,
-    onContextMenu: consumerContextMenu,
     ...restContainerProps
   } = containerProps ?? {};
 
@@ -80,8 +81,12 @@ export const useContainerHandlers = ({
   const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
     pressedRef.current = true;
     stopPressRef.current = onNextGesture(event.currentTarget, endPress);
-    valueEditing.onPointerDown(event);
+    valueEditing.onPress(event);
     consumerPointerDown?.(event);
+  };
+  const onMouseDown = (event: React.MouseEvent<HTMLElement>) => {
+    valueEditing.onPress(event);
+    consumerMouseDown?.(event);
   };
   const onPointerUp = (event: React.PointerEvent<HTMLElement>) => {
     valueEditing.onRelease();
@@ -94,10 +99,6 @@ export const useContainerHandlers = ({
   const onPointerCancel = (event: React.PointerEvent<HTMLElement>) => {
     endPress();
     consumerPointerCancel?.(event);
-  };
-  const onContextMenu = (event: React.MouseEvent<HTMLElement>) => {
-    valueEditing.forgetPress();
-    consumerContextMenu?.(event);
   };
   const onPointerOut = (event: React.PointerEvent<HTMLElement>) => {
     const to = event.relatedTarget instanceof Node ? event.relatedTarget : null;
@@ -118,7 +119,6 @@ export const useContainerHandlers = ({
     !isIgnoredKey(event) &&
     openDecision(event, stopDecisionOf(event.target));
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (!event.repeat) valueEditing.forgetPress();
     if (stopTabbable && isTabOnView(event)) {
       event.preventDefault();
       navigation.refocus();
@@ -145,14 +145,22 @@ export const useContainerHandlers = ({
     ) {
       focusWithinRef.current = false;
       endPress();
-      if (event.relatedTarget instanceof Node) valueEditing.forgetPress();
       setFocusInside(false);
     }
     consumerBlur?.(event);
   };
+  const onClickCapture = (event: React.MouseEvent<HTMLElement>) => {
+    valueEditing.onPressClick(event, () => {
+      const view = container();
+      if (view) event.currentTarget = view;
+      consumerClick?.(event);
+    });
+    consumerClickCapture?.(event);
+    if (event.isPropagationStopped()) valueEditing.takeClick();
+  };
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (valueEditing.takeClick()) return;
     const claimed =
-      valueEditing.takeRecoveredClick(event) ||
       openDecision(event, clickedDecision(event.target)) ||
       ruleMenus.onClick(event) ||
       valueEditing.onClick(event);
@@ -168,14 +176,15 @@ export const useContainerHandlers = ({
     tabIndex: stopTabbable && focusInside ? -1 : 0,
     onPointerOver,
     onPointerDown,
+    onMouseDown,
     onPointerUp,
     onMouseUp,
     onPointerCancel,
-    onContextMenu,
     onPointerOut,
     onKeyDown,
     onFocus,
     onBlur,
+    onClickCapture,
     onClick,
   };
 };
