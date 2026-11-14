@@ -6,7 +6,7 @@ import type { useCellHover } from './useCellHover';
 import type { RuleMenus } from './useRuleMenus';
 import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
-import type { ValueEditing, ValueEditingParams } from './useValueEditing';
+import type { ValueEditing } from './useValueEditing';
 
 /** The scroll container's props a host may add; the view names the region and owns its tab stop. */
 export type DecisionTextContainerProps = Omit<
@@ -21,7 +21,8 @@ export interface ContainerHandlersParams {
   navigation: SentenceNavigation;
   valueEditing: ValueEditing;
   ruleMenus: RuleMenus;
-  onOpenDecision: ValueEditingParams['onOpenDecision'];
+  /** Opens the decision a linked input names. */
+  onOpenDecision: ((decisionId: string) => void) | undefined;
   container: RuleWindow['container'];
   /** Whether a selected stop takes Tab into the view in place of the view itself. */
   stopTabbable: boolean;
@@ -66,10 +67,7 @@ export const useContainerHandlers = ({
     onBlur: consumerBlur,
     onClick: consumerClick,
     onPointerDown: consumerPointerDown,
-    onPointerUp: consumerPointerUp,
-    onMouseUp: consumerMouseUp,
     onPointerCancel: consumerPointerCancel,
-    onContextMenu: consumerContextMenu,
     ...restContainerProps
   } = containerProps ?? {};
 
@@ -80,24 +78,12 @@ export const useContainerHandlers = ({
   const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
     pressedRef.current = true;
     stopPressRef.current = onNextGesture(event.currentTarget, endPress);
-    valueEditing.onPointerDown(event);
+    valueEditing.onPointerDown();
     consumerPointerDown?.(event);
-  };
-  const onPointerUp = (event: React.PointerEvent<HTMLElement>) => {
-    valueEditing.onRelease();
-    consumerPointerUp?.(event);
-  };
-  const onMouseUp = (event: React.MouseEvent<HTMLElement>) => {
-    valueEditing.onRelease();
-    consumerMouseUp?.(event);
   };
   const onPointerCancel = (event: React.PointerEvent<HTMLElement>) => {
     endPress();
     consumerPointerCancel?.(event);
-  };
-  const onContextMenu = (event: React.MouseEvent<HTMLElement>) => {
-    valueEditing.forgetPress();
-    consumerContextMenu?.(event);
   };
   const onPointerOut = (event: React.PointerEvent<HTMLElement>) => {
     const to = event.relatedTarget instanceof Node ? event.relatedTarget : null;
@@ -118,7 +104,6 @@ export const useContainerHandlers = ({
     !isIgnoredKey(event) &&
     openDecision(event, stopDecisionOf(event.target));
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (!event.repeat) valueEditing.forgetPress();
     if (stopTabbable && isTabOnView(event)) {
       event.preventDefault();
       navigation.refocus();
@@ -145,14 +130,12 @@ export const useContainerHandlers = ({
     ) {
       focusWithinRef.current = false;
       endPress();
-      if (event.relatedTarget instanceof Node) valueEditing.forgetPress();
       setFocusInside(false);
     }
     consumerBlur?.(event);
   };
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
     const claimed =
-      valueEditing.takeRecoveredClick(event) ||
       openDecision(event, clickedDecision(event.target)) ||
       ruleMenus.onClick(event) ||
       valueEditing.onClick(event);
@@ -168,10 +151,7 @@ export const useContainerHandlers = ({
     tabIndex: stopTabbable && focusInside ? -1 : 0,
     onPointerOver,
     onPointerDown,
-    onPointerUp,
-    onMouseUp,
     onPointerCancel,
-    onContextMenu,
     onPointerOut,
     onKeyDown,
     onFocus,

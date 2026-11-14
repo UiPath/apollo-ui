@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { isRendered, scrollRootsOf } from './renderedTree';
 import { addConditionOf, cardOf, cellOf, valueChipOf } from './sentenceTargets';
 import type { SentenceValueId } from './sentenceTypes';
 import type { RuleWindow } from './useRuleWindow';
@@ -12,16 +13,18 @@ export interface EditorPlacementParams {
   anchor: EditorAnchor;
 }
 
-/** Where the editor overlay sits, in the scroll container's content box. */
+/** Where the editor overlay sits in the viewport. */
 export interface EditorPlacement {
   top: number;
   left: number;
 }
 
 export interface EditorPlacementResult {
-  overlayRef: React.RefObject<HTMLFieldSetElement | null>;
+  overlayRef: React.RefObject<HTMLDialogElement | null>;
   /** Null until the empty overlay is measured, so the editor mounts and takes focus already placed. */
   placement: EditorPlacement | null;
+  /** Whether the anchor is no longer rendered: its view hidden, detached or gone. */
+  hidden: boolean;
 }
 
 /** What the editor of a value hangs from: its chip, else its cell's first chip, else its rule's add-condition button. */
@@ -35,45 +38,50 @@ export const valueAnchor =
     );
   };
 
-/** Under the anchor, or above it when only that fits, its margin counted, and kept inside the container's width. */
+/** Under the anchor, or above it when only that fits the window, else at the window's bottom, its margin counted; kept inside the container's width and the window. */
 const placementOf = (
   section: HTMLElement | null,
-  anchor: EditorAnchor,
+  element: HTMLElement | null | undefined,
   overlay: HTMLElement
 ): EditorPlacement => {
-  const element = section && anchor(section);
   if (!section || !element) return { top: 0, left: 0 };
   const frame = section.getBoundingClientRect();
   const box = element.getBoundingClientRect();
+  const { innerWidth, innerHeight } = window;
   const margin = Number.parseFloat(getComputedStyle(overlay).marginTop) || 0;
   const height = overlay.offsetHeight + margin;
-  const fitsBelow = box.bottom + height <= frame.top + section.clientHeight;
-  const fitsAbove = box.top - height >= frame.top;
-  const top = fitsBelow || !fitsAbove ? box.bottom : box.top - height - margin;
-  const left = Math.min(box.left - frame.left, section.clientWidth - overlay.offsetWidth);
-  return {
-    top: top - frame.top + section.scrollTop,
-    left: Math.max(0, left) + section.scrollLeft,
-  };
+  const width = overlay.offsetWidth;
+  const top =
+    box.bottom + height <= innerHeight
+      ? box.bottom
+      : box.top - height >= 0
+        ? box.top - height - margin
+        : Math.max(0, innerHeight - height);
+  const left = Math.min(box.left, frame.left + section.clientWidth - width, innerWidth - width);
+  return { top, left: Math.max(0, left) };
 };
 
 const samePlacement = (left: EditorPlacement | null, right: EditorPlacement): boolean =>
   left?.top === right.top && left?.left === right.left;
 
-/** Places the editor overlay at its anchor after every render, and again when the container or the overlay resizes, anything in the container scrolls, or a web font loads. */
+/** Places the editor overlay at its anchor, and finds whether the anchor is rendered, after every render, and again when the container, the overlay or the window resizes, anything around the container scrolls, or a web font loads. */
 export const useEditorPlacement = ({
   container,
   anchor,
 }: EditorPlacementParams): EditorPlacementResult => {
-  const overlayRef = useRef<HTMLFieldSetElement | null>(null);
+  const overlayRef = useRef<HTMLDialogElement | null>(null);
   const [placement, setPlacement] = useState<EditorPlacement | null>(null);
+  const [hidden, setHidden] = useState(false);
   const anchorRef = useRef(anchor);
   anchorRef.current = anchor;
   const place = useCallback(() => {
     const overlay = overlayRef.current;
     if (!overlay) return;
-    const next = placementOf(container(), anchorRef.current, overlay);
+    const section = container();
+    const element = section && anchorRef.current(section);
+    const next = placementOf(section, element, overlay);
     setPlacement((current) => (samePlacement(current, next) ? current : next));
+    if (section) setHidden(!element || !isRendered(element));
   }, [container]);
 
   useLayoutEffect(() => place());
@@ -89,16 +97,19 @@ export const useEditorPlacement = ({
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(place);
     };
-    section?.addEventListener('scroll', placeNextFrame, true);
+    const scrollRoots = scrollRootsOf(section ?? document);
+    for (const root of scrollRoots) root.addEventListener('scroll', placeNextFrame, true);
+    window.addEventListener('resize', placeNextFrame);
     const fonts = document.fonts;
     fonts?.addEventListener('loadingdone', placeNextFrame);
     return () => {
       resizes?.disconnect();
-      section?.removeEventListener('scroll', placeNextFrame, true);
+      for (const root of scrollRoots) root.removeEventListener('scroll', placeNextFrame, true);
+      window.removeEventListener('resize', placeNextFrame);
       fonts?.removeEventListener('loadingdone', placeNextFrame);
       cancelAnimationFrame(frame);
     };
   }, [container, place]);
 
-  return { overlayRef, placement };
+  return { overlayRef, placement, hidden };
 };

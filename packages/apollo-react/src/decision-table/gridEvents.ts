@@ -72,9 +72,6 @@ export const commitMoveFor = (event: { key: string; shiftKey: boolean }): CellCo
 export const isComposing = (event: React.KeyboardEvent): boolean =>
   event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229;
 
-export const isInList = (target: EventTarget): boolean =>
-  target instanceof Element && target.closest('[role="listbox"]') !== null;
-
 /** Whether a press landed on an element's scrollbar, which sits outside its client area. */
 const isOnScrollbar = (element: Element, event: React.PointerEvent): boolean => {
   // An inline element has no client box, and so no scrollbar.

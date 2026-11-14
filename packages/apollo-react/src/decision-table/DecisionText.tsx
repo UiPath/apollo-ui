@@ -140,9 +140,6 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     navigation,
     labels,
     container: ruleWindow.container,
-    openMenu: ruleMenus.openFor,
-    onOpenDecision,
-    addRule: addRuleAction,
   });
   const sectionProps = useContainerHandlers({
     containerProps,

@@ -1,7 +1,7 @@
 import { Input, Label } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useId, useState } from 'react';
-import { isComposing, isInList } from './gridEvents';
+import { isComposing } from './gridEvents';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
 import { PopoverHeader } from './PopoverHeader';
 import { PopoverSelect, type PopoverSelectOption } from './PopoverSelect';
@@ -104,7 +104,7 @@ const changeOf = (field: ColumnField, draft: Required<ColumnChange>): ColumnChan
   return change;
 };
 
-/** A band column's editor: its label, its expression or name, its type and allowed values. Enter in a field applies, Escape cancels, and Tab stays inside. */
+/** A band column's editor: its label, its expression or name, its type and allowed values. Enter in a field applies. */
 export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
   column,
   field,
@@ -138,9 +138,8 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (isComposing(event)) return;
-    if (event.key === 'Escape' && !isInList(event.target)) onCancel();
-    else if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
+    if (isComposing(event) || event.key !== 'Enter') return;
+    if (event.target instanceof HTMLInputElement) {
       event.preventDefault();
       apply();
     }

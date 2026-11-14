@@ -38,6 +38,7 @@ export const ColumnEditorOverlay: React.FC<ColumnEditorOverlayProps> = ({
       id={id}
       dataTestId={`${dataTestId}-column-editor`}
       onPressOutside={editor.onDismiss}
+      onCancel={editor.onCancel}
     >
       <ColumnPopover
         column={editor.column}

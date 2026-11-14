@@ -1,6 +1,7 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { createElement, useEffect, useRef, useState } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { Activity, createElement, StrictMode, useEffect, useRef, useState } from 'react';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
 import {
   DECISION_TEXT_EDIT_LABELS,
   DECISION_TEXT_LABELS,
@@ -10,13 +11,17 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import { CellTextEditor } from './CellTextEditor';
 import { DecisionText } from './DecisionText';
-import { tabbablesIn } from './popoverFocus';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 afterEach(cleanup);
+let uninstallEscape: () => void = () => {};
+beforeAll(() => {
+  uninstallEscape = installEscapeCloseRequest();
+});
+afterAll(() => uninstallEscape());
 
 const OPS: ValueOperatorOption[] = [
   { id: '<', label: 'is less than' },
@@ -35,11 +40,13 @@ const Host = ({
   valueField,
   renderEditor,
   onCommit,
+  refusesCancel = false,
 }: {
   initial: SentenceValueId;
   valueField: DecisionTextEdit['valueField'];
   renderEditor?: DecisionTextEdit['renderEditor'];
   onCommit: DecisionTextEdit['onCommit'];
+  refusesCancel?: boolean;
 }) => {
   const [editing, setEditing] = useState<SentenceValueId | null>(initial);
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
@@ -60,7 +67,9 @@ const Host = ({
           onCommit(value, commit, move);
           setEditing(null);
         },
-        onCancel: () => setEditing(null),
+        onCancel: () => {
+          if (!refusesCancel) setEditing(null);
+        },
         onClearCell: () => {},
         conditionEntries: () => [],
         ruleEntries: () => [],
@@ -265,17 +274,21 @@ describe('DecisionText value popover settling', () => {
     ]).toEqual([true, true, false]);
   });
 
-  it("keeps focus in the popover on a press off the host editor's controls", () => {
+  it("leaves a press off the host editor's controls its default, keeping the popover open", () => {
+    const onCommit = vi.fn();
     render(
       <Host
         initial={at('m3', 'score')}
         valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
         renderEditor={hostEditor}
-        onCommit={vi.fn()}
+        onCommit={onCommit}
       />
     );
     fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    expect(fireEvent.mouseDown(screen.getByTestId('caption'))).toBe(false);
+    expect(fireEvent.mouseDown(screen.getByTestId('caption'))).toBe(true);
+    fireEvent.click(screen.getByTestId('caption'));
+    expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    expect(onCommit).not.toHaveBeenCalled();
   });
 
   it.each<[string, ValueField]>([
@@ -301,13 +314,13 @@ describe('DecisionText value popover settling', () => {
     expect(radios.map((radio) => radio.getAttribute('aria-checked'))).toEqual(['true', 'false']);
   });
 
-  const popoverStops = () => tabbablesIn(screen.getByTestId('nl-value-editor'));
-
   it.each<[string, ValueField, boolean]>([
     ['a single value', { operators: OPS, operator: '<', expression: '< 600' }, false],
     ['a range', { operators: OPS, operator: 'between', values: ['600', '700'] }, false],
     ["the host's expression editor", { operators: OPS, operator: '<', expression: '< 600' }, true],
-  ])('keeps Tab and Shift+Tab inside the popover of %s, wrapping at both ends and applying nothing', (_, field, expression) => {
+    ['an outcome with allowed values', { allowedValues: ['600', '700'] }, false],
+  ])('opens the popover of %s as a modal dialog, leaving Tab and Shift+Tab to the browser', (_, field, expression) => {
+    const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal');
     const onCommit = vi.fn();
     render(
       <Host
@@ -318,17 +331,15 @@ describe('DecisionText value popover settling', () => {
       />
     );
     if (expression) fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    const stops = popoverStops();
-    const [first] = stops;
-    const last = stops.at(-1);
-    if (!first || !last || stops.length < 3) throw new Error('too few stops');
-    last.focus();
-    expect(fireEvent.keyDown(last, { key: 'Tab' })).toBe(false);
-    expect(document.activeElement).toBe(first);
-    expect(fireEvent.keyDown(first, { key: 'Tab', shiftKey: true })).toBe(false);
-    expect(document.activeElement).toBe(last);
+    const dialog = screen.getByTestId('nl-value-editor');
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(showModal.mock.contexts).toEqual([dialog]);
+    const apply = popover().getByRole('button', { name: 'Apply' });
+    apply.focus();
+    expect(fireEvent.keyDown(apply, { key: 'Tab' })).toBe(true);
+    expect(fireEvent.keyDown(apply, { key: 'Tab', shiftKey: true })).toBe(true);
     expect(onCommit).not.toHaveBeenCalled();
-    expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    showModal.mockRestore();
   });
 
   it("moves focus on Tab and Shift+Tab from the host's editor that claims Tab, applying nothing", () => {
@@ -345,13 +356,13 @@ describe('DecisionText value popover settling', () => {
     const input = screen.getByTestId('host-editor');
     input.focus();
     fireEvent.change(input, { target: { value: '> 1' } });
-    const stops = popoverStops();
-    const index = stops.indexOf(input);
+    const actions = popover().getAllByRole('button');
     fireEvent.keyDown(input, { key: 'Tab' });
-    expect(document.activeElement).toBe(stops[(index + 1) % stops.length]);
+    expect(document.activeElement).toBe(actions[0]);
     input.focus();
     fireEvent.keyDown(input, { key: 'Tab', shiftKey: true });
-    expect(document.activeElement).toBe(stops[(index - 1 + stops.length) % stops.length]);
+    expect(document.activeElement).toBe(actions.at(-1));
+    expect(actions.at(-1)).toBe(popover().getByRole('button', { name: 'Apply' }));
     expect(onCommit).not.toHaveBeenCalled();
     fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
     expect(onCommit.mock.calls[0]?.[1]).toEqual({ kind: 'expression', text: '> 1' });
@@ -397,21 +408,151 @@ describe('DecisionText value popover settling', () => {
     expect(document.activeElement).toBe(popover().getByRole('button', { name }));
     expect(onCommit).not.toHaveBeenCalled();
   });
+});
 
-  it('wraps Shift+Tab from the first radio of an outcome with allowed values to Apply', () => {
+describe('DecisionText value popover whose view stops rendering', () => {
+  const observers = new Set<ResizeObserverCallback>();
+  class FiringResizeObserver {
+    readonly #callback: ResizeObserverCallback;
+    constructor(callback: ResizeObserverCallback) {
+      this.#callback = callback;
+    }
+    observe() {
+      observers.add(this.#callback);
+    }
+    unobserve() {}
+    disconnect() {
+      observers.delete(this.#callback);
+    }
+  }
+  const resizeAll = () =>
+    act(() => {
+      for (const callback of [...observers]) callback([], {} as ResizeObserver);
+    });
+  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const dialog = () => document.querySelector('dialog');
+
+  beforeEach(() => {
+    observers.clear();
+    vi.stubGlobal('ResizeObserver', FiringResizeObserver);
+    const focusedBefore = new WeakMap<HTMLDialogElement, Element | null>();
+    const showModal = HTMLDialogElement.prototype.showModal;
+    vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function (
+      this: HTMLDialogElement
+    ) {
+      focusedBefore.set(this, document.activeElement);
+      showModal.call(this);
+    });
+    vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (
+      this: HTMLDialogElement
+    ) {
+      if (!this.open) return;
+      this.removeAttribute('open');
+      const before = focusedBefore.get(this);
+      if (before instanceof HTMLElement && this.contains(document.activeElement)) before.focus();
+      setTimeout(() => this.dispatchEvent(new Event('close')));
+    });
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+  const closeEvents = () => act(() => new Promise((resolve) => setTimeout(resolve)));
+
+  it.each<[string, (frame: HTMLElement) => void]>([
+    ['is display: none', (frame) => frame.style.setProperty('display', 'none')],
+    ['is taken out of the document', (frame) => frame.remove()],
+  ])('cancels the popover, writing nothing, once its frame %s', (_, hide) => {
     const onCommit = vi.fn();
-    render(
-      <Host
-        initial={at('m3', 'score')}
-        valueField={() => ({ allowedValues: ['600', '700'] })}
-        onCommit={onCommit}
-      />
+    const { container } = render(
+      <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />
     );
-    const [radio] = popover().getAllByRole('radio');
-    if (!radio) throw new Error('no radio');
-    radio.focus();
-    expect(fireEvent.keyDown(radio, { key: 'Tab', shiftKey: true })).toBe(false);
-    expect(document.activeElement).toBe(popover().getByRole('button', { name: 'Apply' }));
+    expect(dialog()?.open).toBe(true);
+    hide(container);
+    resizeAll();
+    expect(within(container).queryByTestId('nl-value-editor')).toBeNull();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('moves focus to the next rule once Enter applies the popover', async () => {
+    const onCommit = vi.fn();
+    const { container } = render(
+      <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />
+    );
+    fireEvent.keyDown(popover().getByRole('textbox'), { key: 'Escape' });
+    await closeEvents();
+    const chip = container.querySelector<HTMLElement>(
+      'li[data-row-id="m3"] [data-kind="value"][data-column-id="score"]'
+    );
+    if (!chip) throw new Error('no score value in m3');
+    chip.focus();
+    fireEvent.click(chip);
+    const text = popover().getByRole('textbox');
+    text.focus();
+    fireEvent.keyDown(text, { key: 'Enter' });
+    await closeEvents();
+    expect(onCommit).toHaveBeenCalledWith(at('m3', 'score'), expect.anything(), 'down');
+    expect(document.activeElement?.closest('li[data-row-id]')?.getAttribute('data-row-id')).toBe(
+      'm4'
+    );
+  });
+
+  it('closes the popover of a host that refuses the cancel while its frame is hidden, and opens it again once shown', async () => {
+    const onCommit = vi.fn();
+    const { container } = render(
+      <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} refusesCancel />
+    );
+    container.style.setProperty('display', 'none');
+    resizeAll();
+    await closeEvents();
+    expect(dialog()?.open).toBe(false);
+    container.style.removeProperty('display');
+    resizeAll();
+    expect(dialog()?.open).toBe(true);
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it("keeps the popover open and focused through StrictMode's second run of its effects", async () => {
+    render(
+      <StrictMode>
+        <Host initial={at('m3', 'score')} valueField={field} onCommit={vi.fn()} />
+      </StrictMode>
+    );
+    await closeEvents();
+    expect(dialog()?.open).toBe(true);
+    expect(document.activeElement).toBe(popover().getByRole('textbox'));
+  });
+
+  it('opens and applies the popover in a browser without checkVisibility', async () => {
+    const checkVisibility = Element.prototype.checkVisibility;
+    Reflect.deleteProperty(Element.prototype, 'checkVisibility');
+    try {
+      const onCommit = vi.fn();
+      render(<Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />);
+      resizeAll();
+      expect(dialog()?.open).toBe(true);
+      fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
+      await closeEvents();
+      expect(onCommit).toHaveBeenCalledWith(at('m3', 'score'), expect.anything(), 'none');
+    } finally {
+      Element.prototype.checkVisibility = checkVisibility;
+    }
+  });
+
+  it('closes the popover while an Activity hides its view, and opens it again once shown', async () => {
+    const onCommit = vi.fn();
+    const view = (mode: 'visible' | 'hidden') => (
+      <Activity mode={mode}>
+        <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />
+      </Activity>
+    );
+    const { rerender } = render(view('visible'));
+    expect(dialog()?.open).toBe(true);
+    rerender(view('hidden'));
+    await closeEvents();
+    expect(dialog()?.open).toBe(false);
+    rerender(view('visible'));
+    expect(dialog()?.open).toBe(true);
     expect(onCommit).not.toHaveBeenCalled();
   });
 });
