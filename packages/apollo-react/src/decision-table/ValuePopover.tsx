@@ -1,10 +1,9 @@
 import { Braces } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
-import { activeElementOf, isComposing, isInList } from './gridEvents';
+import { useId, useImperativeHandle, useRef, useState } from 'react';
+import { activeElementOf, isComposing } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
-import { moveFocusIn } from './popoverFocus';
 import { PopoverHeader } from './PopoverHeader';
 import { PopoverSelect } from './PopoverSelect';
 import { POPOVER_CLASS, POPOVER_ERROR_CLASS } from './sentenceStyles';
@@ -23,8 +22,15 @@ export interface ValuePopoverLabels
   clear: string;
 }
 
+/** What the popover's overlay asks of it. */
+export interface ValuePopoverHandle {
+  /** Applies the draft in place, as Apply does. */
+  apply: () => void;
+}
+
 export interface ValuePopoverProps
   extends Pick<SentenceEditorContext, 'target' | 'value' | 'ariaLabel' | 'onCancel'> {
+  ref?: React.Ref<ValuePopoverHandle>;
   column: string;
   field: ValueField;
   /** Whether the condition is one the rule does not have yet, which needs a value to apply. */
@@ -42,9 +48,6 @@ export interface ValuePopoverProps
   dataTestId: string;
 }
 
-/** What last settled the edit: a commit, or a cancel. */
-type Settled = ValueCommit | 'cancelled';
-
 const sameCommit = (a: ValueCommit, b: ValueCommit): boolean => {
   if (a.kind === 'expression') return b.kind === 'expression' && a.text === b.text;
   if (b.kind === 'expression') return false;
@@ -61,8 +64,13 @@ const OPERATOR_SHORTCUTS = 'Alt+ArrowDown Alt+ArrowUp';
 
 const isListKey = (key: string): boolean => key === 'ArrowDown' || key === 'ArrowUp';
 
-const staysInside = (event: React.FocusEvent<HTMLElement>): boolean =>
-  event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget);
+/** Blurs the control focused inside `root`, through open shadow roots, so a host editor hands over its text as it commits on blur. */
+const blurFocusIn = (root: HTMLElement) => {
+  let focused = activeElementOf(root);
+  if (!focused || !root.contains(focused)) return;
+  while (focused.shadowRoot?.activeElement) focused = focused.shadowRoot.activeElement;
+  if (focused instanceof HTMLElement) focused.blur();
+};
 
 /** The footer's links: Edit expression while the popover's own fields show, and an outcome's Clear. */
 const footerLinks = (
@@ -86,8 +94,9 @@ const footerLinks = (
     : []),
 ];
 
-/** One condition's or outcome's editor: its column, its operator, its value, range or list, and the actions that settle it. Enter applies and moves down; Tab and Shift+Tab move through its controls without leaving it; Escape cancels; focus leaving the popover applies in place. An expression applied as it opened applies the popover's draft, unless the fields changed from the condition the host's expression words. */
+/** One condition's or outcome's editor: its column, its operator, its value, range or list, and the actions that settle it. Enter applies and moves down, and Apply or a press outside applies in place. An expression applied as it opened applies the popover's draft, unless the fields changed from the condition the host's expression words. */
 export const ValuePopover: React.FC<ValuePopoverProps> = ({
+  ref,
   target,
   value,
   ariaLabel,
@@ -104,14 +113,13 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
 }) => {
   const problemId = `${useId()}-problem`;
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
+  const footerRef = useRef<HTMLDivElement | null>(null);
   const [draft, setDraft] = useState(value);
   const [seed, setSeed] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(false);
   const focusRef = useRef<HTMLElement | null>(null);
   const draftRef = useRef(value);
   const seedRef = useRef<string | null>(null);
-  const settledRef = useRef<Settled | null>(null);
-  const blurStaysRef = useRef(false);
   const shapeDraft = useShapeDraft(field, value, adds);
   const { operators, current, problem } = shapeDraft;
   const [opened] = useState(current);
@@ -131,19 +139,21 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
     return problem === null ? current : null;
   };
 
-  const commit = (next: ValueCommit, move: CellCommitMove) => {
-    settledRef.current = next;
-    onCommit(next, move, root?.contains(activeElementOf(root)) ?? false);
+  const focusInside = (): boolean => root?.contains(activeElementOf(root)) ?? false;
+  const commit = (next: ValueCommit, move: CellCommitMove, refocus = focusInside()) => {
+    onCommit(next, move, refocus);
   };
-  const settle = (move: CellCommitMove) => {
+  const settle = (move: CellCommitMove, refocus?: boolean) => {
     const next = settling();
-    if (next) commit(next, move);
+    if (next) commit(next, move, refocus);
   };
-  const cancel = () => {
-    if (settledRef.current === 'cancelled') return;
-    settledRef.current = 'cancelled';
-    onCancel();
-  };
+  useImperativeHandle(ref, () => ({
+    apply: () => {
+      const refocus = focusInside();
+      if (expression && root) blurFocusIn(root);
+      settle('none', refocus);
+    },
+  }));
   const pick = (next: string) => {
     shapeDraft.setText(next);
     commit({ kind: 'values', values: [next], operator: shapeDraft.picked }, 'none');
@@ -172,34 +182,15 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
     event.preventDefault();
     settle('down');
   };
-  const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Escape' && !isComposing(event) && !isInList(event.target)) cancel();
-  };
-  useEffect(() => {
-    if (!root) return;
-    const blurring = (event: FocusEvent) => {
-      blurStaysRef.current =
-        event.relatedTarget instanceof Node && root.contains(event.relatedTarget);
-    };
-    root.addEventListener('blur', blurring, true);
-    return () => root.removeEventListener('blur', blurring, true);
-  }, [root]);
-  const onBlur = (event: React.FocusEvent<HTMLElement>) => {
-    blurStaysRef.current = false;
-    if (staysInside(event)) return;
-    const next = settling();
-    const settled = settledRef.current;
-    if (!next || settled === 'cancelled') return;
-    if (settled && sameCommit(settled, next)) return;
-    commit(next, 'none');
-  };
   const commitExpression = (next: string, move: CellCommitMove) => {
-    if (move === 'none' && settledRef.current === 'cancelled') return;
     changeDraft(next);
-    const from = root && activeElementOf(root);
-    if (move === 'left' || move === 'right') {
-      if (root && from) moveFocusIn(root, from, move === 'left');
-    } else if (move !== 'none' || !blurStaysRef.current) settle(move);
+    if (move !== 'left' && move !== 'right') {
+      if (move !== 'none') settle(move);
+      return;
+    }
+    const actions = [...(footerRef.current?.querySelectorAll('button:not(:disabled)') ?? [])];
+    const action = move === 'left' ? actions.at(-1) : actions[0];
+    if (action instanceof HTMLElement) action.focus();
   };
   const editExpression =
     renderEditor && (field.expression !== undefined || operators.length === 0)
@@ -212,16 +203,16 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
       : undefined;
 
   return (
-    <div ref={setRoot} className={POPOVER_CLASS} onKeyDown={onKeyDown} onBlur={onBlur}>
+    <div ref={setRoot} className={POPOVER_CLASS}>
       <PopoverHeader icon={field.icon} column={column} />
       {expression && renderEditor ? (
-        <div data-owns-presses>
+        <div>
           {renderEditor({
             target,
             value: draft,
             ariaLabel,
             onCommit: commitExpression,
-            onCancel: cancel,
+            onCancel,
             onDraftChange: changeDraft,
           })}
         </div>
@@ -264,8 +255,9 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
         </>
       )}
       <PopoverFooter
+        ref={footerRef}
         links={footerLinks(expression ? undefined : editExpression, onClear, labels, dataTestId)}
-        onCancel={cancel}
+        onCancel={onCancel}
         onApply={() => settle('none')}
         applyDisabled={!expression && problem !== null}
         applyDimmed={expression && draft === seed && !fieldsChanged && problem !== null}

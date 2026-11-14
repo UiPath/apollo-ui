@@ -23,6 +23,7 @@ export interface PopoverFooterLink {
 }
 
 export interface PopoverFooterProps {
+  ref?: React.Ref<HTMLDivElement>;
   links: readonly PopoverFooterLink[];
   onCancel: () => void;
   onApply: () => void;
@@ -39,6 +40,7 @@ export const keepFocus = (event: React.MouseEvent) => event.preventDefault();
 
 /** The popover's actions: its links, then Cancel and Apply, wrapping before they overflow. */
 export const PopoverFooter: React.FC<PopoverFooterProps> = ({
+  ref,
   links,
   onCancel,
   onApply,
@@ -48,7 +50,7 @@ export const PopoverFooter: React.FC<PopoverFooterProps> = ({
   labels,
   dataTestId,
 }) => (
-  <div className={POPOVER_FOOTER_CLASS}>
+  <div ref={ref} className={POPOVER_FOOTER_CLASS}>
     {links.length > 0 && (
       <div className={POPOVER_LINKS_CLASS}>
         {links.map((link) => (
