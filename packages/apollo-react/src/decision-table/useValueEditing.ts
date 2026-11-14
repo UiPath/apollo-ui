@@ -1,6 +1,5 @@
 import type React from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import type { AddRuleButtonProps } from './AddRuleButton';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import { activeElementOf, focusStays, hasLostFocus, onNextGesture } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
@@ -17,7 +16,6 @@ import {
 import {
   addConditionOf,
   clickedAction,
-  clickedAddRule,
   clickedDecision,
   clickedValue,
   type RuleAction,
@@ -29,7 +27,6 @@ import type {
   SentenceSelection,
   SentenceValueId,
 } from './sentenceTypes';
-import type { RuleMenus } from './useRuleMenus';
 import type { RuleWindow } from './useRuleWindow';
 import {
   isIgnoredKey,
@@ -47,12 +44,6 @@ export interface ValueEditingParams {
   navigation: SentenceNavigation;
   labels: Pick<RuleCardLabels, 'cell' | 'emptyValue'>;
   container: RuleWindow['container'];
-  /** Opens the menu a card action names, and returns whether it did. */
-  openMenu: RuleMenus['openFor'];
-  /** Opens the decision a linked input names. */
-  onOpenDecision: ((decisionId: string) => void) | undefined;
-  /** The add-rule action after the rules. */
-  addRule: AddRuleButtonProps | undefined;
 }
 
 /** How the open editor was last settled, resolved once the host closes it. */
@@ -83,28 +74,8 @@ export interface ValueEditing {
   onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => boolean;
   /** Starts editing a clicked value or clears a clicked condition, and returns whether it did. */
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
-  /** Whether this pointer click ends a press the blur commit unmounted, moved or resized, running a moved or resized press now unless the click reached the add-rule action itself; true once per such press. */
-  takeRecoveredClick: (event: React.MouseEvent<HTMLElement>) => boolean;
-  /** Keeps the card action, value, decision link or add-rule action a primary-button press lands on. */
-  onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
-  /** Runs the pressed target once the press's blur commit unmounted it, at pointerup, or at the mouseup after it on touch, where no click follows. */
-  onRelease: () => void;
-  /** Forgets the last press, so no later click or release is taken as its own. */
-  forgetPress: () => void;
-}
-
-/** What a press landed on. */
-type PressTarget =
-  | { kind: 'decision'; decisionId: string }
-  | { kind: 'action'; action: RuleAction }
-  | { kind: 'value'; value: SentenceValueId }
-  | { kind: 'addRule' };
-
-/** A press target and the element a press landed on for it. */
-interface Pressed {
-  target: PressTarget;
-  element: Element;
-  at: DOMRect;
+  /** Forgets a cleared cell's or deleted rule's pending refocus, so focus stays where a press puts it. */
+  onPointerDown: () => void;
 }
 
 const isStartKey = (event: React.KeyboardEvent): boolean =>
@@ -117,22 +88,6 @@ const isClearKey = (event: React.KeyboardEvent): boolean =>
 
 export const valueKey = ({ rowId, columnId, index }: SentenceValueId): string =>
   JSON.stringify([rowId, columnId, index]);
-
-const pressTargetOf = (target: EventTarget | null): PressTarget | null => {
-  const decisionId = clickedDecision(target);
-  if (decisionId !== undefined) return { kind: 'decision', decisionId };
-  const action = clickedAction(target);
-  if (action) return { kind: 'action', action };
-  const value = clickedValue(target);
-  if (value) return { kind: 'value', value };
-  return clickedAddRule(target) ? { kind: 'addRule' } : null;
-};
-
-const movedAway = ({ element, at }: Pressed): boolean => {
-  if (!element.isConnected) return true;
-  const { x, y, width, height } = element.getBoundingClientRect();
-  return x !== at.x || y !== at.y || width !== at.width || height !== at.height;
-};
 
 /** A cell's text, or an empty one for a rule, as the rules hold it; undefined once its rule is gone. */
 const textIn = (rules: readonly SentenceRule[], cell: SentenceSelection): string | undefined => {
@@ -155,14 +110,9 @@ export const useValueEditing = ({
   navigation,
   labels,
   container,
-  openMenu,
-  onOpenDecision,
-  addRule,
 }: ValueEditingParams): ValueEditing => {
   const pendingRef = useRef<PendingSettle | null>(null);
   const stopAwaitingRef = useRef<(() => void) | null>(null);
-  const pressedRef = useRef<Pressed | null>(null);
-  const recoveredRef = useRef(false);
   const refocusRef = useRef<PendingRefocus | null>(null);
   const goneRef = useRef<string | null>(null);
   const target = edit?.editing ?? null;
@@ -317,44 +267,6 @@ export const useValueEditing = ({
     return true;
   };
 
-  const recover = ({ target }: Pressed): boolean => {
-    switch (target.kind) {
-      case 'decision':
-        onOpenDecision?.(target.decisionId);
-        return onOpenDecision !== undefined;
-      case 'action':
-        return onAction(target.action) || openMenu(target.action);
-      case 'value':
-        start(target.value);
-        return true;
-      case 'addRule':
-        addRule?.onAdd();
-        return addRule !== undefined;
-    }
-  };
-
-  const ranOwnClick = ({ target }: Pressed, clicked: EventTarget | null): boolean =>
-    target.kind === 'addRule' && clickedAddRule(clicked);
-
-  const forgetPress = () => {
-    pressedRef.current = null;
-    recoveredRef.current = false;
-  };
-
-  const takeRecoveredClick = (event: React.MouseEvent<HTMLElement>): boolean => {
-    const pressed = pressedRef.current;
-    const recovered = recoveredRef.current;
-    forgetPress();
-    return (
-      event.detail > 0 &&
-      (recovered ||
-        (pressed !== null &&
-          movedAway(pressed) &&
-          !ranOwnClick(pressed, event.target) &&
-          recover(pressed)))
-    );
-  };
-
   const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
     const action = edit ? clickedAction(event.target) : null;
     if (action) return onAction(action);
@@ -364,21 +276,8 @@ export const useValueEditing = ({
     return true;
   };
 
-  const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
-    recoveredRef.current = false;
+  const onPointerDown = () => {
     refocusRef.current = null;
-    const target = edit && event.button === 0 ? pressTargetOf(event.target) : null;
-    pressedRef.current =
-      target && event.target instanceof Element
-        ? { target, element: event.target, at: event.target.getBoundingClientRect() }
-        : null;
-  };
-
-  const onRelease = () => {
-    const pressed = pressedRef.current;
-    if (!pressed || pressed.element.isConnected) return;
-    pressedRef.current = null;
-    recoveredRef.current = recover(pressed);
   };
 
   return {
@@ -386,9 +285,6 @@ export const useValueEditing = ({
     editorKey: target ? valueKey(target) : undefined,
     onKeyDown,
     onClick,
-    takeRecoveredClick,
     onPointerDown,
-    onRelease,
-    forgetPress,
   };
 };

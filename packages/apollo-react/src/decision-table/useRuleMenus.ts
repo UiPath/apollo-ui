@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { GridContextMenuProps, GridContextMenuState, GridMenuEntry } from './GridMenu';
 import type { OpenRuleMenu } from './RuleList';
+import { renderedParentOf, scrollRootsOf } from './renderedTree';
 import { clickedAction, type RuleAction } from './sentenceTargets';
 import type { SentenceRule } from './sentenceTypes';
 
@@ -29,8 +30,6 @@ export interface RuleMenus extends Pick<GridContextMenuProps, 'label' | 'entries
   state: RuleMenuState | null;
   /** Opens the menu of a clicked card button, and returns whether it did. */
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
-  /** Opens the menu a card action names, from where its button is now, unless the host has no entries for it, and returns whether it did. */
-  openFor: (action: RuleAction) => boolean;
 }
 
 const menuLabel = (
@@ -56,25 +55,12 @@ const movedAnchor = ({ trigger, anchor }: RuleMenuState): GridContextMenuState['
   return moved.x === anchor.x && moved.y === anchor.y ? null : moved;
 };
 
-/** What holds `node` where it renders: the slot it is assigned to, a shadow root's host, else its parent. */
-const renderedParentOf = (node: Node): Node | null => {
-  if (node instanceof ShadowRoot) return node.host;
-  return (node instanceof Element ? node.assignedSlot : null) ?? node.parentNode;
-};
-
 /** Whether `node` is `ancestor` or rendered inside it, through slots and shadow roots. */
 const holds = (ancestor: Node, node: Node): boolean => {
   for (let at: Node | null = node; at; at = renderedParentOf(at)) {
     if (at === ancestor) return true;
   }
   return false;
-};
-
-/** The document and shadow roots of everything `node` is rendered inside: where a scroll of anything holding it reaches. */
-const scrollRootsOf = (node: Node): Node[] => {
-  const roots = new Set<Node>();
-  for (let at: Node | null = node; at; at = renderedParentOf(at)) roots.add(at.getRootNode());
-  return [...roots];
 };
 
 /** The view's one menu slot for `GridContextMenu`, opened from a card's buttons, as the grid has one menu at a time; closed when anything holding its button scrolls or the window resizes. */
@@ -164,6 +150,5 @@ export const useRuleMenus = ({
     entries,
     onClose,
     onClick,
-    openFor,
   };
 };
