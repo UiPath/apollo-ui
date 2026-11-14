@@ -104,4 +104,41 @@ describe('StageNodeHeader status pill tooltip (real CanvasTooltip)', () => {
     await user.keyboard('{Escape}');
     expect(pill).toHaveAttribute('data-state', 'closed');
   });
+
+  it('leaves a rich tooltip unmounted while closed and described by the open tooltip', async () => {
+    const user = userEvent.setup();
+    const props = {
+      id: 'stage-1',
+      stageDetails: {
+        label: 'Stage 1',
+        tasks: [],
+        headerChips: [
+          {
+            type: StageHeaderChipType.Optional,
+            tooltip: (
+              <>
+                Not required. <a href="#rules">See rules</a>
+              </>
+            ),
+          },
+        ],
+      },
+    } as unknown as StageNodeProps;
+    render(
+      <ReactFlowProvider>
+        <StageNodeHeader
+          props={props}
+          isReadOnly={true}
+          status={undefined}
+          handleTaskAddClick={vi.fn()}
+        />
+      </ReactFlowProvider>
+    );
+    const pill = screen.getByTestId('stage-optional-badge-stage-1');
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+
+    await user.tab();
+    expect(pill).toHaveFocus();
+    expect(pill).toHaveAccessibleDescription('Not required. See rules');
+  });
 });

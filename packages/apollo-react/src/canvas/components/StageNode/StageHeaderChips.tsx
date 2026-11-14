@@ -67,7 +67,7 @@ const STATUS_BADGE_BASE_CLASS =
  * Status pill (e.g. "Optional", "Ends case"). Interactive when an `onClick` is supplied —
  * it then renders a focusable button with hover that navigates the consumer to the related control;
  * otherwise it renders a plain label, focusable only when it has a tooltip to open.
- * The tooltip text also follows the pill in the DOM as its description, so screen readers get it while the tooltip is closed.
+ * A text tooltip also follows the pill in the DOM as its description, so screen readers get it while the tooltip is closed.
  */
 const StageStatusBadge = ({
   label,
@@ -88,7 +88,11 @@ const StageStatusBadge = ({
   // CanvasTooltip never opens a blank string, so it counts as no tooltip.
   const hasTooltip =
     tooltip != null && tooltip !== false && !(typeof tooltip === 'string' && !tooltip.trim());
-  const describedBy = hasTooltip ? descriptionId : undefined;
+  // Rich content is not copied: its links or controls would be hidden tab stops. The open tooltip describes the pill instead.
+  const hasTextDescription =
+    hasTooltip && (typeof tooltip === 'string' || typeof tooltip === 'number');
+  // Left out rather than undefined, so Radix can point it at the open tooltip.
+  const describedBy = hasTextDescription ? { 'aria-describedby': descriptionId } : {};
 
   let badge: React.ReactElement;
   if (onClick) {
@@ -96,7 +100,7 @@ const StageStatusBadge = ({
       <button
         type="button"
         data-testid={testId}
-        aria-describedby={describedBy}
+        {...describedBy}
         onClick={(e) => {
           e.stopPropagation();
           onClick();
@@ -112,7 +116,7 @@ const StageStatusBadge = ({
         data-testid={testId}
         role="img"
         aria-label={label}
-        aria-describedby={describedBy}
+        {...describedBy}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: Focusable so keyboard users can open the tooltip. It has no action, so it stays an image rather than a button.
         tabIndex={0}
         className={`${STATUS_BADGE_BASE_CLASS} ${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--canvas-primary)`}
@@ -136,9 +140,11 @@ const StageStatusBadge = ({
       <CanvasTooltip placement="bottom" content={tooltip}>
         {badge}
       </CanvasTooltip>
-      <span id={descriptionId} className="sr-only">
-        {tooltip}
-      </span>
+      {hasTextDescription && (
+        <span id={descriptionId} className="sr-only">
+          {tooltip}
+        </span>
+      )}
     </>
   );
 };
