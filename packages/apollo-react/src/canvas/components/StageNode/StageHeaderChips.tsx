@@ -85,7 +85,10 @@ const StageStatusBadge = ({
   onClick?: () => void;
 }) => {
   const descriptionId = useId();
-  const describedBy = tooltip ? descriptionId : undefined;
+  // CanvasTooltip never opens a blank string, so it counts as no tooltip.
+  const hasTooltip =
+    tooltip != null && tooltip !== false && !(typeof tooltip === 'string' && !tooltip.trim());
+  const describedBy = hasTooltip ? descriptionId : undefined;
 
   let badge: React.ReactElement;
   if (onClick) {
@@ -103,7 +106,7 @@ const StageStatusBadge = ({
         {label}
       </button>
     );
-  } else if (tooltip) {
+  } else if (hasTooltip) {
     badge = (
       <span
         data-testid={testId}
@@ -125,7 +128,7 @@ const StageStatusBadge = ({
     );
   }
 
-  if (!tooltip) {
+  if (!hasTooltip) {
     return badge;
   }
   return (

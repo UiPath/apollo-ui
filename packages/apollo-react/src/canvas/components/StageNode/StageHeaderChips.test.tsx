@@ -66,13 +66,13 @@ describe('StageHeaderChips', () => {
     expect(screen.getByTestId('stage-ends-case-badge-case')).toHaveTextContent('Ends case');
   });
 
-  it('makes a status pill with a tooltip a tab stop described by its tooltip', async () => {
+  it('makes a status pill with a non-blank tooltip a tab stop described by its tooltip', async () => {
     render(
       <StageHeaderChips
         id="case"
         chips={[
           { type: StageHeaderChipType.Optional, tooltip: 'Not required for case completion' },
-          { type: StageHeaderChipType.EndsCase },
+          { type: StageHeaderChipType.EndsCase, tooltip: '  ' },
         ]}
       />
     );
