@@ -12,9 +12,11 @@ import { StageHeaderChipType, type StageNodeBaseProps } from './StageNode.types'
 vi.unmock('@uipath/apollo-react/canvas/xyflow/react');
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
-const onNodesChangeSpy = vi.fn<(changes: NodeChange[]) => void>();
+type StageFlowNode = Node<StageNodeBaseProps & Record<string, unknown>>;
 
-const stageNode: Node<StageNodeBaseProps> = {
+const onNodesChangeSpy = vi.fn<(changes: NodeChange<StageFlowNode>[]) => void>();
+
+const stageNode: StageFlowNode = {
   id: 'stage-1',
   type: 'stage',
   position: { x: 0, y: 0 },
@@ -32,13 +34,7 @@ const stageNode: Node<StageNodeBaseProps> = {
   },
 };
 
-function TestStageNode({
-  id,
-  selected,
-  dragging,
-  width,
-  data,
-}: NodeProps<Node<StageNodeBaseProps>>) {
+function TestStageNode({ id, selected, dragging, width, data }: NodeProps<StageFlowNode>) {
   return <StageNode id={id} selected={selected} dragging={dragging} width={width} {...data} />;
 }
 
@@ -47,7 +43,7 @@ const nodeTypes = { stage: TestStageNode };
 function StageCanvas() {
   const [nodes, , onNodesChange] = useNodesState([stageNode]);
   const handleNodesChange = useCallback(
-    (changes: NodeChange[]) => {
+    (changes: NodeChange<StageFlowNode>[]) => {
       onNodesChangeSpy(changes);
       onNodesChange(changes);
     },
