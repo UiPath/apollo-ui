@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
@@ -32,13 +32,13 @@ export interface EditorOverlayProps {
   dataTestId: string;
   /** A press outside the overlay, which the overlay takes so nothing under it gets that press. */
   onPressOutside: () => void;
-  /** Escape, unless a control inside the overlay kept it. */
+  /** Escape, unless a control inside the overlay kept it, or its anchor no longer rendered. */
   onCancel: () => void;
   /** Mounted once the overlay is placed, so it takes focus where it shows. */
   children: React.ReactNode;
 }
 
-/** A modal dialog over the rules at its anchor: the page is inert while it shows, a press outside it is its own, and Escape cancels it. */
+/** A modal dialog over the rules at its anchor: the page is inert while it shows, a press outside it is its own, and Escape or its anchor no longer rendered cancels it. */
 export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   anchor,
   container,
@@ -50,7 +50,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   onCancel,
   children,
 }) => {
-  const { overlayRef, placement } = useEditorPlacement({ container, anchor });
+  const { overlayRef, placement, hidden } = useEditorPlacement({ container, anchor });
   const pressedOutsideRef = useRef(false);
   const attach = useCallback(
     (dialog: HTMLDialogElement | null) => {
@@ -59,6 +59,24 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
     },
     [overlayRef]
   );
+  useLayoutEffect(() => {
+    const dialog = overlayRef.current;
+    return () =>
+      queueMicrotask(() => {
+        if (dialog?.open && !dialog.checkVisibility()) dialog.close();
+      });
+  }, [overlayRef]);
+  const showWhileRendered = (dialog: HTMLDialogElement) => {
+    if (hidden && dialog.open) {
+      dialog.close();
+      onCancel();
+    } else if (!hidden && !dialog.open && dialog.isConnected) {
+      dialog.showModal();
+    }
+  };
+  useLayoutEffect(() => {
+    if (overlayRef.current) showWhileRendered(overlayRef.current);
+  });
   const takePress = (event: React.MouseEvent<HTMLDialogElement>) => {
     if (!pressedOutsideRef.current || event.target !== event.currentTarget) return;
     pressedOutsideRef.current = false;
@@ -94,7 +112,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
         onCancel();
       }}
       onClose={(event) => {
-        if (event.currentTarget.isConnected) event.currentTarget.showModal();
+        if (overlayRef.current === event.currentTarget) showWhileRendered(event.currentTarget);
       }}
     >
       {placement && children}
