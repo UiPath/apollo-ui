@@ -24,6 +24,7 @@ export interface DecisionTextEdit {
   onStartEdit: (value: SentenceValueId) => void;
   /** Keep `editing` set to refuse the commit; the editor stays open with the draft. A `values` commit's operator is the picked one of the cell's `valueField` operators, and a range's or list's carries all the condition's values; an `expression` commit is the host editor's text for the whole condition. */
   onCommit: (value: SentenceValueId, commit: ValueCommit, move: CellCommitMove) => void;
+  /** Also called when a hidden or detached view stops rendering an open editor; a view hidden with visibility or opacity keeps its modal editor open. */
   onCancel: () => void;
   /** What the open cell's popover offers: its type glyph, operators, allowed values, and a range's or list's values; called only while it is open. */
   valueField?: (cell: SentenceCellId) => ValuePopoverProps['field'];
