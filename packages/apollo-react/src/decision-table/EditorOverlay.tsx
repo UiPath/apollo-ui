@@ -60,6 +60,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   const pressedOutsideRef = useRef(false);
   const startRef = useRef<HTMLSpanElement>(null);
   const wrappingRef = useRef(false);
+  const composingRef = useRef(false);
   const attach = useCallback(
     (dialog: HTMLDialogElement | null) => {
       overlayRef.current = dialog;
@@ -134,9 +135,15 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
           });
         }
       }}
+      onCompositionStart={() => {
+        composingRef.current = true;
+      }}
+      onCompositionEnd={() => {
+        composingRef.current = false;
+      }}
       onCancel={(event) => {
         event.preventDefault();
-        onCancel();
+        if (!composingRef.current) onCancel();
       }}
       onClose={(event) => {
         if (overlayRef.current === event.currentTarget) showWhileRendered(event.currentTarget);

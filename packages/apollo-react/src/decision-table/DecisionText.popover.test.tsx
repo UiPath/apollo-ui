@@ -577,3 +577,26 @@ describe('DecisionText popover Shift+Tab at its start', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 });
+
+describe('DecisionText popover cancel during composition', () => {
+  it('keeps the popover open on a cancel while text is composing, and cancels once it ends', () => {
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
+        onCommit={onCommit}
+      />
+    );
+    const text = popover().getByRole('textbox');
+    const cancel = () =>
+      fireEvent(screen.getByTestId('nl-value-editor'), new Event('cancel', { cancelable: true }));
+    fireEvent.compositionStart(text);
+    cancel();
+    expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    fireEvent.compositionEnd(text);
+    cancel();
+    expect(screen.queryByTestId('nl-value-editor')).not.toBeInTheDocument();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+});
