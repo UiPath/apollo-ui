@@ -23,6 +23,8 @@ export interface EditorPlacementResult {
   overlayRef: React.RefObject<HTMLDialogElement | null>;
   /** Null until the empty overlay is measured, so the editor mounts and takes focus already placed. */
   placement: EditorPlacement | null;
+  /** Whether the anchor is no longer rendered: its view hidden, detached or gone. */
+  hidden: boolean;
 }
 
 /** What the editor of a value hangs from: its chip, else its cell's first chip, else its rule's add-condition button. */
@@ -39,10 +41,9 @@ export const valueAnchor =
 /** Under the anchor, or above it when only that fits the window, else at the window's bottom, its margin counted; kept inside the container's width and the window. */
 const placementOf = (
   section: HTMLElement | null,
-  anchor: EditorAnchor,
+  element: HTMLElement | null | undefined,
   overlay: HTMLElement
 ): EditorPlacement => {
-  const element = section && anchor(section);
   if (!section || !element) return { top: 0, left: 0 };
   const frame = section.getBoundingClientRect();
   const box = element.getBoundingClientRect();
@@ -63,20 +64,24 @@ const placementOf = (
 const samePlacement = (left: EditorPlacement | null, right: EditorPlacement): boolean =>
   left?.top === right.top && left?.left === right.left;
 
-/** Places the editor overlay at its anchor after every render, and again when the container, the overlay or the window resizes, anything around the container scrolls, or a web font loads. */
+/** Places the editor overlay at its anchor, and finds whether the anchor is rendered, after every render, and again when the container, the overlay or the window resizes, anything around the container scrolls, or a web font loads. */
 export const useEditorPlacement = ({
   container,
   anchor,
 }: EditorPlacementParams): EditorPlacementResult => {
   const overlayRef = useRef<HTMLDialogElement | null>(null);
   const [placement, setPlacement] = useState<EditorPlacement | null>(null);
+  const [hidden, setHidden] = useState(false);
   const anchorRef = useRef(anchor);
   anchorRef.current = anchor;
   const place = useCallback(() => {
     const overlay = overlayRef.current;
     if (!overlay) return;
-    const next = placementOf(container(), anchorRef.current, overlay);
+    const section = container();
+    const element = section && anchorRef.current(section);
+    const next = placementOf(section, element, overlay);
     setPlacement((current) => (samePlacement(current, next) ? current : next));
+    if (section) setHidden(element?.checkVisibility() !== true);
   }, [container]);
 
   useLayoutEffect(() => place());
@@ -106,5 +111,5 @@ export const useEditorPlacement = ({
     };
   }, [container, place]);
 
-  return { overlayRef, placement };
+  return { overlayRef, placement, hidden };
 };

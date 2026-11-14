@@ -1,6 +1,6 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { createElement, useEffect, useRef, useState } from 'react';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { Activity, createElement, StrictMode, useEffect, useRef, useState } from 'react';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
 import {
   DECISION_TEXT_EDIT_LABELS,
@@ -40,11 +40,13 @@ const Host = ({
   valueField,
   renderEditor,
   onCommit,
+  refusesCancel = false,
 }: {
   initial: SentenceValueId;
   valueField: DecisionTextEdit['valueField'];
   renderEditor?: DecisionTextEdit['renderEditor'];
   onCommit: DecisionTextEdit['onCommit'];
+  refusesCancel?: boolean;
 }) => {
   const [editing, setEditing] = useState<SentenceValueId | null>(initial);
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
@@ -65,7 +67,9 @@ const Host = ({
           onCommit(value, commit, move);
           setEditing(null);
         },
-        onCancel: () => setEditing(null),
+        onCancel: () => {
+          if (!refusesCancel) setEditing(null);
+        },
         onClearCell: () => {},
         conditionEntries: () => [],
         ruleEntries: () => [],
@@ -402,6 +406,137 @@ describe('DecisionText value popover settling', () => {
     domInput().focus();
     fireEvent.keyDown(domInput(), { key: 'Tab', shiftKey });
     expect(document.activeElement).toBe(popover().getByRole('button', { name }));
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+});
+
+describe('DecisionText value popover whose view stops rendering', () => {
+  const observers = new Set<ResizeObserverCallback>();
+  class FiringResizeObserver {
+    readonly #callback: ResizeObserverCallback;
+    constructor(callback: ResizeObserverCallback) {
+      this.#callback = callback;
+    }
+    observe() {
+      observers.add(this.#callback);
+    }
+    unobserve() {}
+    disconnect() {
+      observers.delete(this.#callback);
+    }
+  }
+  const resizeAll = () =>
+    act(() => {
+      for (const callback of [...observers]) callback([], {} as ResizeObserver);
+    });
+  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const dialog = () => document.querySelector('dialog');
+
+  beforeEach(() => {
+    observers.clear();
+    vi.stubGlobal('ResizeObserver', FiringResizeObserver);
+    const focusedBefore = new WeakMap<HTMLDialogElement, Element | null>();
+    const showModal = HTMLDialogElement.prototype.showModal;
+    vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function (
+      this: HTMLDialogElement
+    ) {
+      focusedBefore.set(this, document.activeElement);
+      showModal.call(this);
+    });
+    vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (
+      this: HTMLDialogElement
+    ) {
+      if (!this.open) return;
+      this.removeAttribute('open');
+      const before = focusedBefore.get(this);
+      if (before instanceof HTMLElement && this.contains(document.activeElement)) before.focus();
+      setTimeout(() => this.dispatchEvent(new Event('close')));
+    });
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+  const closeEvents = () => act(() => new Promise((resolve) => setTimeout(resolve)));
+
+  it.each<[string, (frame: HTMLElement) => void]>([
+    ['is display: none', (frame) => frame.style.setProperty('display', 'none')],
+    ['is taken out of the document', (frame) => frame.remove()],
+  ])('cancels the popover, writing nothing, once its frame %s', (_, hide) => {
+    const onCommit = vi.fn();
+    const { container } = render(
+      <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />
+    );
+    expect(dialog()?.open).toBe(true);
+    hide(container);
+    resizeAll();
+    expect(within(container).queryByTestId('nl-value-editor')).toBeNull();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('moves focus to the next rule once Enter applies the popover', async () => {
+    const onCommit = vi.fn();
+    const { container } = render(
+      <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />
+    );
+    fireEvent.keyDown(popover().getByRole('textbox'), { key: 'Escape' });
+    await closeEvents();
+    const chip = container.querySelector<HTMLElement>(
+      'li[data-row-id="m3"] [data-kind="value"][data-column-id="score"]'
+    );
+    if (!chip) throw new Error('no score value in m3');
+    chip.focus();
+    fireEvent.click(chip);
+    const text = popover().getByRole('textbox');
+    text.focus();
+    fireEvent.keyDown(text, { key: 'Enter' });
+    await closeEvents();
+    expect(onCommit).toHaveBeenCalledWith(at('m3', 'score'), expect.anything(), 'down');
+    expect(document.activeElement?.closest('li[data-row-id]')?.getAttribute('data-row-id')).toBe(
+      'm4'
+    );
+  });
+
+  it('closes the popover of a host that refuses the cancel while its frame is hidden, and opens it again once shown', async () => {
+    const onCommit = vi.fn();
+    const { container } = render(
+      <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} refusesCancel />
+    );
+    container.style.setProperty('display', 'none');
+    resizeAll();
+    await closeEvents();
+    expect(dialog()?.open).toBe(false);
+    container.style.removeProperty('display');
+    resizeAll();
+    expect(dialog()?.open).toBe(true);
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it("keeps the popover open and focused through StrictMode's second run of its effects", async () => {
+    render(
+      <StrictMode>
+        <Host initial={at('m3', 'score')} valueField={field} onCommit={vi.fn()} />
+      </StrictMode>
+    );
+    await closeEvents();
+    expect(dialog()?.open).toBe(true);
+    expect(document.activeElement).toBe(popover().getByRole('textbox'));
+  });
+
+  it('closes the popover while an Activity hides its view, and opens it again once shown', async () => {
+    const onCommit = vi.fn();
+    const view = (mode: 'visible' | 'hidden') => (
+      <Activity mode={mode}>
+        <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />
+      </Activity>
+    );
+    const { rerender } = render(view('visible'));
+    expect(dialog()?.open).toBe(true);
+    rerender(view('hidden'));
+    await closeEvents();
+    expect(dialog()?.open).toBe(false);
+    rerender(view('visible'));
+    expect(dialog()?.open).toBe(true);
     expect(onCommit).not.toHaveBeenCalled();
   });
 });
