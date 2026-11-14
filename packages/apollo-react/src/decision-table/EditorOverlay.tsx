@@ -1,8 +1,9 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
-import { isComposing, isFromTextField } from './gridEvents';
-import { moveFocusIn, stopAfter } from './popoverFocus';
+import { activeElementOf, isComposing, isFromTextField } from './gridEvents';
+import { firstActionIn, lastActionIn } from './PopoverFooter';
+import { isSentinel, startSentinelIn } from './PopoverSentinel';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
 
@@ -21,13 +22,32 @@ const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation()
 
 const PRESSED_CONTROL = 'label, button:not(:disabled), [role="checkbox"], [role="radio"]';
 
-/** Keeps Tab inside: Tab past the last control or Shift+Tab before the first wraps to the other end. */
-const wrapTab = (event: React.KeyboardEvent<HTMLElement>) => {
-  if (event.key !== 'Tab' || event.defaultPrevented || isComposing(event)) return;
+/** Keeps Tab inside: Tab from the last action goes on from the start sentinel, marked `passing`, so the browser's own Tab lands on the first control, and Tab or Shift+Tab from a control with a positive tabindex, which the browser orders before the page, goes to the last action. */
+const keepTabInside = (event: React.KeyboardEvent<HTMLElement>, passing: { current: boolean }) => {
   const { currentTarget, target, shiftKey } = event;
-  if (!(target instanceof Element) || stopAfter(currentTarget, target, shiftKey)) return;
-  event.preventDefault();
-  moveFocusIn(currentTarget, target, shiftKey);
+  if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.defaultPrevented) return;
+  if (isComposing(event) || !(target instanceof HTMLElement)) return;
+  if (target.tabIndex > 0) {
+    event.preventDefault();
+    lastActionIn(currentTarget)?.focus();
+  } else if (!shiftKey && target === lastActionIn(currentTarget)) {
+    passing.current = true;
+    startSentinelIn(currentTarget)?.focus({ preventScroll: true });
+    passing.current = false;
+  }
+};
+
+/** Sends focus that reaches a sentinel to the last action, unless a Tab from that action is `passing` the start sentinel on its way to the first control. */
+const bounceFromSentinel = (
+  event: React.FocusEvent<HTMLElement>,
+  passing: { current: boolean }
+) => {
+  if (isSentinel(event.target) && !passing.current) lastActionIn(event.currentTarget)?.focus();
+};
+
+/** Sends focus the start sentinel still holds a frame after it took it, as when the browser does not move on from the Tab hop, to the first action. */
+const leaveStartSentinel = (overlay: HTMLElement, sentinel: Element) => {
+  if (activeElementOf(sentinel) === sentinel) firstActionIn(overlay)?.focus();
 };
 
 const OWN_FOCUS_CONTROL =
@@ -92,6 +112,8 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   const anchorRef = useRef(anchor);
   anchorRef.current = anchor;
   const pressOutsideRef = useRef(onPressOutside);
+  const passingRef = useRef(false);
+  const frameRef = useRef<number | undefined>(undefined);
   pressOutsideRef.current = onPressOutside;
   const watchesPresses = onPressOutside !== undefined;
   useEffect(() => {
@@ -107,6 +129,14 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
     document.addEventListener('pointerdown', press, true);
     return () => document.removeEventListener('pointerdown', press, true);
   }, [container, overlayRef, watchesPresses]);
+  useEffect(() => () => cancelAnimationFrame(frameRef.current ?? 0), []);
+  const onFocus = (event: React.FocusEvent<HTMLElement>) => {
+    bounceFromSentinel(event, passingRef);
+    const { currentTarget: overlay, target } = event;
+    if (target !== startSentinelIn(overlay)) return;
+    cancelAnimationFrame(frameRef.current ?? 0);
+    frameRef.current = requestAnimationFrame(() => leaveStartSentinel(overlay, target));
+  };
   return (
     <fieldset
       ref={overlayRef}
@@ -116,7 +146,8 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
       style={overlayStyle(placement ?? UNPLACED)}
       data-testid={dataTestId}
       onMouseDown={focusPressedControl}
-      onKeyDown={wrapTab}
+      onKeyDown={(event) => keepTabInside(event, passingRef)}
+      onFocus={onFocus}
       onClick={stopPropagation}
     >
       {placement && children}

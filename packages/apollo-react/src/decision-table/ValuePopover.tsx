@@ -3,8 +3,13 @@ import type React from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { activeElementOf, isComposing, isInList } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
-import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
-import { moveFocusIn } from './popoverFocus';
+import {
+  firstActionIn,
+  lastActionIn,
+  PopoverFooter,
+  type PopoverFooterLabels,
+  type PopoverFooterLink,
+} from './PopoverFooter';
 import { PopoverHeader } from './PopoverHeader';
 import { PopoverSelect } from './PopoverSelect';
 import { POPOVER_CLASS, POPOVER_ERROR_CLASS } from './sentenceStyles';
@@ -196,9 +201,8 @@ export const ValuePopover: React.FC<ValuePopoverProps> = ({
   const commitExpression = (next: string, move: CellCommitMove) => {
     if (move === 'none' && settledRef.current === 'cancelled') return;
     changeDraft(next);
-    const from = root && activeElementOf(root);
     if (move === 'left' || move === 'right') {
-      if (root && from) moveFocusIn(root, from, move === 'left');
+      if (root) (move === 'left' ? lastActionIn(root) : firstActionIn(root))?.focus();
     } else if (move !== 'none' || !blurStaysRef.current) settle(move);
   };
   const editExpression =

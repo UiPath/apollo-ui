@@ -1,4 +1,5 @@
 import type React from 'react';
+import { PopoverSentinel } from './PopoverSentinel';
 import { POPOVER_HEADER_CLASS, POPOVER_ICON_CLASS, POPOVER_TITLE_CLASS } from './sentenceStyles';
 
 export interface PopoverHeaderProps {
@@ -6,9 +7,10 @@ export interface PopoverHeaderProps {
   column: string;
 }
 
-/** The popover's title: the column's type glyph, then its name. */
+/** The popover's title: the column's type glyph, then its name, after the sentinel that starts its controls. */
 export const PopoverHeader: React.FC<PopoverHeaderProps> = ({ icon, column }) => (
   <div className={POPOVER_HEADER_CLASS}>
+    <PopoverSentinel />
     {icon && (
       <span aria-hidden className={POPOVER_ICON_CLASS}>
         {icon}
