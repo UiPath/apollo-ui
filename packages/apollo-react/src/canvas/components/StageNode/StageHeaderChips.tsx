@@ -101,7 +101,7 @@ const StageStatusBadge = ({
           e.stopPropagation();
           onClick();
         }}
-        className={`${STATUS_BADGE_BASE_CLASS} ${className} ${hoverClassName} cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2`}
+        className={`${STATUS_BADGE_BASE_CLASS} ${className} ${hoverClassName} cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--canvas-primary)`}
       >
         {label}
       </button>
@@ -115,7 +115,7 @@ const StageStatusBadge = ({
         aria-describedby={describedBy}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: Focusable so keyboard users can open the tooltip. It has no action, so it stays an image rather than a button.
         tabIndex={0}
-        className={`${STATUS_BADGE_BASE_CLASS} ${className} focus-visible:outline-2 focus-visible:outline-offset-2`}
+        className={`${STATUS_BADGE_BASE_CLASS} ${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--canvas-primary)`}
       >
         {label}
       </span>

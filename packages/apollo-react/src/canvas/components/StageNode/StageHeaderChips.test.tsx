@@ -81,6 +81,7 @@ describe('StageHeaderChips', () => {
     const optional = screen.getByRole('img', { name: 'Optional' });
     expect(optional).toHaveFocus();
     expect(optional).toHaveAccessibleDescription('Not required for case completion');
+    expect(optional).toHaveClass('focus-visible:outline-(--canvas-primary)');
 
     await userEvent.tab();
     expect(document.body).toHaveFocus();
@@ -100,8 +101,8 @@ describe('StageHeaderChips', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Ends case' })).toHaveAccessibleDescription(
-      'Entering this stage ends the case'
-    );
+    const endsCase = screen.getByRole('button', { name: 'Ends case' });
+    expect(endsCase).toHaveAccessibleDescription('Entering this stage ends the case');
+    expect(endsCase).toHaveClass('focus-visible:outline-(--canvas-primary)');
   });
 });
