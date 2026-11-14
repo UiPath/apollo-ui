@@ -1,6 +1,8 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
+import { activeElementOf, isComposing } from './gridEvents';
+import { lastActionIn } from './PopoverFooter';
 import { isRendered } from './renderedTree';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
@@ -23,6 +25,9 @@ const onBackdrop = (event: React.MouseEvent<HTMLDialogElement>): boolean => {
   const box = currentTarget.getBoundingClientRect();
   return clientX < box.left || clientX > box.right || clientY < box.top || clientY > box.bottom;
 };
+
+const isPlainTab = (event: React.KeyboardEvent): boolean =>
+  event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey && !isComposing(event);
 
 export interface EditorOverlayProps {
   anchor: EditorAnchor;
@@ -53,6 +58,8 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
 }) => {
   const { overlayRef, placement, hidden } = useEditorPlacement({ container, anchor });
   const pressedOutsideRef = useRef(false);
+  const startRef = useRef<HTMLSpanElement>(null);
+  const wrappingRef = useRef(false);
   const attach = useCallback(
     (dialog: HTMLDialogElement | null) => {
       overlayRef.current = dialog;
@@ -78,6 +85,9 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   useLayoutEffect(() => {
     if (overlayRef.current) showWhileRendered(overlayRef.current);
   });
+  const toLastAction = () => {
+    if (!wrappingRef.current && overlayRef.current) lastActionIn(overlayRef.current)?.focus();
+  };
   const takePress = (event: React.MouseEvent<HTMLDialogElement>) => {
     if (!pressedOutsideRef.current || event.target !== event.currentTarget) return;
     pressedOutsideRef.current = false;
@@ -108,6 +118,22 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
       }}
       onAuxClick={takePress}
       onContextMenu={takePress}
+      onKeyDown={(event) => {
+        const { currentTarget, target, shiftKey } = event;
+        if (event.defaultPrevented || !isPlainTab(event)) return;
+        if (target instanceof HTMLElement && target.tabIndex > 0) {
+          event.preventDefault();
+          lastActionIn(currentTarget)?.focus();
+        } else if (!shiftKey && target === lastActionIn(currentTarget)) {
+          wrappingRef.current = true;
+          startRef.current?.focus({ preventScroll: true });
+          wrappingRef.current = false;
+          requestAnimationFrame(() => {
+            const start = startRef.current;
+            if (start && activeElementOf(start) === start) toLastAction();
+          });
+        }
+      }}
       onCancel={(event) => {
         event.preventDefault();
         onCancel();
@@ -116,7 +142,11 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
         if (overlayRef.current === event.currentTarget) showWhileRendered(event.currentTarget);
       }}
     >
+      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: Tab past either end lands here */}
+      <span ref={startRef} tabIndex={0} className="sr-only" onFocus={toLastAction} />
       {placement && children}
+      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: Tab past either end lands here */}
+      <span tabIndex={0} className="sr-only" onFocus={toLastAction} />
     </dialog>
   );
 };
