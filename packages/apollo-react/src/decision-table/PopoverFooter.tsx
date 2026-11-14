@@ -1,5 +1,6 @@
 import { Button } from '@uipath/apollo-wind';
 import type React from 'react';
+import { forwardRef } from 'react';
 import {
   POPOVER_ACTIONS_CLASS,
   POPOVER_APPLY_DIMMED_CLASS,
@@ -23,7 +24,6 @@ export interface PopoverFooterLink {
 }
 
 export interface PopoverFooterProps {
-  ref?: React.Ref<HTMLDivElement>;
   links: readonly PopoverFooterLink[];
   onCancel: () => void;
   onApply: () => void;
@@ -39,60 +39,66 @@ export interface PopoverFooterProps {
 export const keepFocus = (event: React.MouseEvent) => event.preventDefault();
 
 /** The popover's actions: its links, then Cancel and Apply, wrapping before they overflow. */
-export const PopoverFooter: React.FC<PopoverFooterProps> = ({
-  ref,
-  links,
-  onCancel,
-  onApply,
-  applyDisabled = false,
-  applyDimmed = false,
-  applyKeepsFocus = true,
-  labels,
-  dataTestId,
-}) => (
-  <div ref={ref} className={POPOVER_FOOTER_CLASS}>
-    {links.length > 0 && (
-      <div className={POPOVER_LINKS_CLASS}>
-        {links.map((link) => (
-          <Button
-            key={link.dataTestId}
-            type="button"
-            variant="link"
-            size="sm"
-            className={POPOVER_LINK_CLASS}
-            onMouseDown={keepFocus}
-            onClick={link.onClick}
-            data-testid={link.dataTestId}
-          >
-            {link.icon}
-            {link.label}
-          </Button>
-        ))}
+export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
+  (
+    {
+      links,
+      onCancel,
+      onApply,
+      applyDisabled = false,
+      applyDimmed = false,
+      applyKeepsFocus = true,
+      labels,
+      dataTestId,
+    },
+    ref
+  ) => (
+    <div ref={ref} className={POPOVER_FOOTER_CLASS}>
+      {links.length > 0 && (
+        <div className={POPOVER_LINKS_CLASS}>
+          {links.map((link) => (
+            <Button
+              key={link.dataTestId}
+              type="button"
+              variant="link"
+              size="sm"
+              className={POPOVER_LINK_CLASS}
+              onMouseDown={keepFocus}
+              onClick={link.onClick}
+              data-testid={link.dataTestId}
+            >
+              {link.icon}
+              {link.label}
+            </Button>
+          ))}
+        </div>
+      )}
+      <div className={POPOVER_ACTIONS_CLASS}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onMouseDown={keepFocus}
+          onClick={onCancel}
+          data-testid={`${dataTestId}-cancel`}
+        >
+          {labels.cancel}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          disabled={applyDisabled}
+          aria-disabled={applyDimmed || undefined}
+          className={POPOVER_APPLY_DIMMED_CLASS}
+          onMouseDown={applyKeepsFocus ? keepFocus : undefined}
+          onClick={onApply}
+          data-testid={`${dataTestId}-apply`}
+        >
+          {labels.apply}
+        </Button>
       </div>
-    )}
-    <div className={POPOVER_ACTIONS_CLASS}>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onMouseDown={keepFocus}
-        onClick={onCancel}
-        data-testid={`${dataTestId}-cancel`}
-      >
-        {labels.cancel}
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        disabled={applyDisabled}
-        aria-disabled={applyDimmed || undefined}
-        className={POPOVER_APPLY_DIMMED_CLASS}
-        onMouseDown={applyKeepsFocus ? keepFocus : undefined}
-        onClick={onApply}
-        data-testid={`${dataTestId}-apply`}
-      >
-        {labels.apply}
-      </Button>
     </div>
-  </div>
+  )
 );
+
+PopoverFooter.displayName = 'PopoverFooter';
