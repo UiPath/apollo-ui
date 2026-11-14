@@ -38,6 +38,10 @@ export interface PopoverFooterProps {
 
 export const keepFocus = (event: React.MouseEvent) => event.preventDefault();
 
+/** The popover's last action under `root`, where Tab wraps to the start and Shift+Tab from the start lands. */
+export const lastActionIn = (root: ParentNode): HTMLElement | null =>
+  root.querySelector<HTMLElement>('[data-last-action]');
+
 /** The popover's actions: its links, then Cancel and Apply, wrapping before they overflow. */
 export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
   (
@@ -80,6 +84,7 @@ export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
           size="sm"
           onMouseDown={keepFocus}
           onClick={onCancel}
+          data-last-action={applyDisabled || undefined}
           data-testid={`${dataTestId}-cancel`}
         >
           {labels.cancel}
@@ -92,6 +97,7 @@ export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
           className={POPOVER_APPLY_DIMMED_CLASS}
           onMouseDown={applyKeepsFocus ? keepFocus : undefined}
           onClick={onApply}
+          data-last-action={!applyDisabled || undefined}
           data-testid={`${dataTestId}-apply`}
         >
           {labels.apply}

@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Activity, createElement, StrictMode, useEffect, useRef, useState } from 'react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
@@ -553,6 +554,26 @@ describe('DecisionText value popover whose view stops rendering', () => {
     expect(dialog()?.open).toBe(false);
     rerender(view('visible'));
     expect(dialog()?.open).toBe(true);
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+});
+
+describe('DecisionText popover Shift+Tab at its start', () => {
+  const field = { operators: OPS, operator: '<', expression: '< 600' };
+
+  it.each<[string, ValueField, SentenceValueId]>([
+    ['Apply', field, at('m3', 'score')],
+    ['Cancel', { ...field, expression: '' }, at('m3', 'country')],
+  ])('sends Shift+Tab from the first control to the last action, %s', async (name, valueField, value) => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<Host initial={value} valueField={() => valueField} onCommit={onCommit} />);
+    expect(popover().getByRole('button', { name: 'Apply' }).hasAttribute('disabled')).toBe(
+      name === 'Cancel'
+    );
+    popover().getByRole('combobox', { name: 'Operator' }).focus();
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(popover().getByRole('button', { name }));
     expect(onCommit).not.toHaveBeenCalled();
   });
 });
