@@ -31,6 +31,7 @@ import {
   useContainerHandlers,
 } from './useContainerHandlers';
 import { usePendingCondition } from './usePendingCondition';
+import { usePressHold } from './usePressHold';
 import { useRuleMenus } from './useRuleMenus';
 import { useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
@@ -116,7 +117,8 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const idPrefix = useId();
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
-  const shown = usePendingCondition({ edit, rules, bands });
+  const press = usePressHold();
+  const shown = usePendingCondition({ edit, rules, bands, pressing: press.pressing });
   const ruleWindow = useRuleWindow(
     shown.rules,
     selected?.rowId,
@@ -143,6 +145,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     openMenu: ruleMenus.openFor,
     onOpenDecision,
     addRule: addRuleAction,
+    press,
   });
   const sectionProps = useContainerHandlers({
     containerProps,

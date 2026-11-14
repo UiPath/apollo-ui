@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import type React from 'react';
 import { useLayoutEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { type Mock, onTestFinished, vi } from 'vitest';
 import {
   EDITABLE_TABLE,
@@ -4401,6 +4402,8 @@ describe('DecisionText', () => {
       late?: boolean;
       onOpenDecision?: DecisionTextProps['onOpenDecision'];
       onAddRule?: AddRuleButtonProps['onAdd'];
+      onClearCell?: DecisionTextEdit['onClearCell'];
+      onStartEdit?: DecisionTextEdit['onStartEdit'];
     }
 
     const TableHost = ({
@@ -4409,6 +4412,8 @@ describe('DecisionText', () => {
       late = false,
       onOpenDecision,
       onAddRule,
+      onClearCell,
+      onStartEdit,
     }: TableHostProps) => {
       const [table, setTable] = useState(start);
       const [selected, setSelected] = useState(initial);
@@ -4423,7 +4428,10 @@ describe('DecisionText', () => {
         addRule: onAddRule && { label: 'Add rule', onAdd: onAddRule },
         edit: editWith({
           editing,
-          onStartEdit: setEditing,
+          onStartEdit: (value) => {
+            onStartEdit?.(value);
+            setEditing(value);
+          },
           onDeleteRule: (rowId) => setTable((current) => tableWithoutRule(current, rowId)),
           onCommit: (value, commit) => {
             const [text = ''] = valuesOf(commit);
@@ -4433,6 +4441,7 @@ describe('DecisionText', () => {
             setEditing(null);
           },
           onClearCell: (cell) => {
+            onClearCell?.(cell);
             const clear = () => setTable((current) => tableWithoutCell(current, cell));
             if (late) later(clear);
             else clear();
@@ -4544,102 +4553,6 @@ describe('DecisionText', () => {
       expect(lines.map((line) => line.dataset.columnId)).toEqual(['age', 'income', regionId]);
     });
 
-    it('removes the condition whose ✕ the refused blur commit moved from under the press', () => {
-      const { onClearCell } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
-        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
-        refuse: true,
-      });
-      fireEvent.change(editor(), { target: { value: '' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      const position = vi.spyOn(remove, 'getBoundingClientRect').mockReturnValue(rect(791, 811));
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      fireEvent.blur(editor());
-      position.mockReturnValue(rect(776, 796));
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(onClearCell).toHaveBeenCalledWith({ rowId: 'r1', columnId: 'age' });
-      expect(screen.queryByTestId('nl-editor')).toBeNull();
-    });
-
-    it('removes the condition whose ✕ the refused blur commit moved while a held key repeats', () => {
-      const { onClearCell } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
-        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
-        refuse: true,
-      });
-      fireEvent.change(editor(), { target: { value: '' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      const position = vi.spyOn(remove, 'getBoundingClientRect').mockReturnValue(rect(791, 811));
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      fireEvent.blur(editor());
-      position.mockReturnValue(rect(776, 796));
-      fireEvent.keyDown(card('r1'), { key: 'Shift', shiftKey: true, repeat: true });
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1, shiftKey: true });
-      expect(onClearCell).toHaveBeenCalledWith({ rowId: 'r1', columnId: 'age' });
-    });
-
-    it.each([
-      'Add condition to rule 3',
-      'Rule 3 actions',
-    ])('opens the %s menu whose button the blur commit moved from under the press', (name) => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', name);
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger);
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(card('r3'));
-      fireEvent.mouseUp(card('r3'));
-      fireEvent.click(card('r3'), { detail: 1 });
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
-      expect(screen.getByTestId('nl-context-menu-anchor')).toHaveStyle({
-        top: '178px',
-        left: '300px',
-      });
-    });
-
-    it.each([
-      ['the card', 'card'],
-      ['the menu button itself', 'trigger'],
-    ])('runs a later keyboard click on a remove action after a press the blur commit moved, whose click lands on %s', (_, clickOn) => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', 'Rule 3 actions');
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger);
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(card('r3'));
-      fireEvent.mouseUp(card('r3'));
-      fireEvent.click(clickOn === 'card' ? card('r3') : trigger, { detail: 1 });
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', 'Rule 3 actions');
-      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
-      const remove = button('r2', 'Remove age from rule 2');
-      act(() => remove.focus());
-      fireEvent.click(remove, { detail: 0 });
-      expect(
-        within(card('r2')).queryByRole('button', { name: 'Remove age from rule 2' })
-      ).toBeNull();
-    });
-
     it('returns focus to the rule after its ✕ removes a condition whose refused blur commit left focus on the view', () => {
       renderEditing({
         initial: { rowId: 'r1', columnId: 'age' },
@@ -4653,250 +4566,494 @@ describe('DecisionText', () => {
       expect(card('r1').contains(document.activeElement)).toBe(true);
     });
 
-    it('removes the lead condition whose ✕ was pressed when the blur commit moves the lead into lines', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
+    /** Clicks as a browser does: React renders what the view's capture handlers changed before the click reaches its target's own handlers. */
+    const browserClick = (target: HTMLElement, init: MouseEventInit = {}) => {
+      target.addEventListener('click', () => flushSync(() => {}), { once: true });
+      fireEvent.click(target, { detail: 1, ...init });
+    };
+    const clicksWith = {
+      'a render before the click reaches its target, as in a browser': browserClick,
+      'a render after the click': (target: HTMLElement, init: MouseEventInit = {}) => {
+        fireEvent.click(target, { detail: 1, ...init });
+      },
+    };
+    type ClickWith = keyof typeof clicksWith;
+    const CLICKS = Object.keys(clicksWith) as ClickWith[];
+    const afterRelease = () => act(() => new Promise((resolve) => setTimeout(resolve)));
+    const pressesWith = {
+      mouse: async (target: HTMLElement) => {
+        fireEvent.pointerDown(target, { pointerType: 'mouse' });
+        fireEvent.mouseDown(target);
+        act(() => target.focus());
+        fireEvent.pointerUp(target, { pointerType: 'mouse' });
+        fireEvent.mouseUp(target);
+      },
+      touch: async (target: HTMLElement) => {
+        fireEvent.pointerDown(target, { pointerType: 'touch' });
+        fireEvent.pointerUp(target, { pointerType: 'touch' });
+        await afterRelease();
+        fireEvent.mouseDown(target);
+        act(() => target.focus());
+        fireEvent.mouseUp(target);
+      },
+    };
+    const committedChannel = () =>
+      [...card('r1').querySelectorAll('[data-kind="value"][data-column-id="channel"]')].find(
+        (chip) => chip.textContent === '"web"'
+      ) ?? null;
+    const editChannelOfR1 = (props: Partial<TableHostProps> = {}) => {
+      render(<TableHost initial={{ rowId: 'r1' }} {...props} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
       fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
       fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      act(() => remove.focus());
-      expect(remove.isConnected).toBe(false);
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull();
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-    });
-
-    it('edits the lead value that was pressed when the blur commit moves the lead into lines', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const age = valueChip('r1', 'age');
-      fireEvent.pointerDown(age);
-      fireEvent.mouseDown(age);
-      act(() => age.focus());
-      expect(age.isConnected).toBe(false);
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/);
-      expect(valueChip('r1', 'age')).toHaveAttribute('tabindex', '0');
-    });
+    };
+    const holdsTheEdit = (target: HTMLElement) => {
+      expect(committedChannel()).toBeNull();
+      expect(editor()).toHaveValue('"web"');
+      expect(target.isConnected).toBe(true);
+    };
 
     interface PressSpies {
       onOpenDecision: Mock;
       onAddRule: Mock;
+      onClearCell: Mock;
+      onStartEdit: Mock;
     }
     interface PressCase {
       kind: string;
       target: () => HTMLElement;
-      landsOn: string;
       outcome: (spies: PressSpies) => void;
     }
     const menuNamed = (name: string) => () =>
       expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
     const pressCases: PressCase[] = [
       {
-        kind: 'a lead value',
+        kind: 'a value of the rule the edit adds a condition to',
         target: () => valueChip('r1', 'age'),
-        landsOn: 'r1',
-        outcome: () => expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/),
+        outcome: ({ onStartEdit }) => {
+          expect(onStartEdit.mock.calls).toEqual([[{ rowId: 'r1', columnId: 'age', index: 0 }]]);
+          expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/);
+        },
       },
       {
-        kind: 'a lead ✕',
-        target: () => button('r1', 'Remove age from rule 1'),
-        landsOn: 'r1',
-        outcome: () => expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull(),
-      },
-      {
-        kind: 'a lead decision link',
+        kind: 'a decision link of the rule the edit adds a condition to',
         target: () => button('r1', 'Open the income decision'),
-        landsOn: 'r1',
         outcome: ({ onOpenDecision }) =>
           expect(onOpenDecision.mock.calls).toEqual([['net-income']]),
       },
       {
+        kind: 'a ✕ of a later rule the commit moves',
+        target: () => button('r2', 'Remove age from rule 2'),
+        outcome: ({ onClearCell }) =>
+          expect(onClearCell.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]),
+      },
+      {
         kind: 'the + of a later rule',
         target: () => button('r3', 'Add condition to rule 3'),
-        landsOn: 'r3',
         outcome: menuNamed('Add condition to rule 3'),
       },
       {
         kind: 'the ⋯ of a later rule',
         target: () => button('r3', 'Rule 3 actions'),
-        landsOn: 'r3',
         outcome: menuNamed('Rule 3 actions'),
       },
       {
         kind: 'the delete action of a later rule',
         target: () => button('r3', 'Delete rule 3'),
-        landsOn: 'r3',
         outcome: () => expect(screen.queryByTestId('nl-row-r3')).toBeNull(),
       },
       {
         kind: 'the add-rule action',
         target: () => screen.getByRole('button', { name: 'Add rule' }),
-        landsOn: 'nl',
         outcome: ({ onAddRule }) => expect(onAddRule).toHaveBeenCalledTimes(1),
       },
     ];
-    const landing = (rowId: string) =>
-      screen.queryByTestId(`nl-row-${rowId}`) ?? screen.getByTestId('nl');
-    const clickUnlessGone = (target: HTMLElement, landsOn: string) => {
-      if (target.isConnected) fireEvent.click(landing(landsOn), { detail: 1 });
-    };
-    const tapsWith = {
-      mouse: (target: HTMLElement, commit: () => void, landsOn: string) => {
-        fireEvent.pointerDown(target, { pointerType: 'mouse' });
-        fireEvent.mouseDown(target);
-        commit();
-        fireEvent.pointerUp(landing(landsOn), { pointerType: 'mouse' });
-        fireEvent.mouseUp(landing(landsOn));
-        clickUnlessGone(target, landsOn);
-      },
-      touch: (target: HTMLElement, commit: () => void, landsOn: string) => {
-        fireEvent.pointerDown(target, { pointerType: 'touch' });
-        fireEvent.pointerUp(target, { pointerType: 'touch' });
-        fireEvent.mouseDown(target);
-        commit();
-        fireEvent.mouseUp(landing(landsOn));
-        clickUnlessGone(target, landsOn);
-      },
-    };
+    const pressSpies = (): PressSpies => ({
+      onOpenDecision: vi.fn(),
+      onAddRule: vi.fn(),
+      onClearCell: vi.fn(),
+      onStartEdit: vi.fn(),
+    });
 
     it.each(
       (['mouse', 'touch'] as const).flatMap((pointer) =>
-        pressCases.map((press) => [pointer, press.kind, press] as const)
+        CLICKS.flatMap((how) =>
+          pressCases.map((press) => [pointer, press.kind, how, press] as const)
+        )
       )
-    )('runs a %s press on %s once when the blur commit moves or unmounts it under the press', (pointer, _, {
+    )('runs a %s press on %s once, after the edit it blurs commits, with %s', async (pointer, _, how, {
       target: targetOf,
-      landsOn,
       outcome,
     }) => {
-      const spies: PressSpies = { onOpenDecision: vi.fn(), onAddRule: vi.fn() };
-      render(<TableHost initial={{ rowId: 'r1' }} {...spies} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
+      const spies = pressSpies();
+      editChannelOfR1(spies);
       const target = targetOf();
-      const position = vi
-        .spyOn(target, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      tapsWith[pointer](
-        target,
-        () => {
-          act(() => target.focus());
-          position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-        },
-        landsOn
-      );
+      await pressesWith[pointer](target);
+      holdsTheEdit(target);
+      clicksWith[how](target);
       expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
       outcome(spies);
     });
 
-    it.each([
-      'mouse',
-      'touch',
-    ] as const)('runs a %s press on the add-rule action once when the blur commit moves it and the click still lands on it', (pointer) => {
-      const onAddRule = vi.fn();
-      render(<TableHost initial={{ rowId: 'r1' }} onAddRule={onAddRule} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const add = screen.getByRole('button', { name: 'Add rule' });
-      const icon = add.querySelector('svg');
-      if (!icon) throw new Error('no add-rule icon');
-      const position = vi.spyOn(icon, 'getBoundingClientRect').mockReturnValue(rect(300, 316));
-      fireEvent.pointerDown(icon, { pointerType: pointer });
-      if (pointer === 'touch') fireEvent.pointerUp(icon, { pointerType: pointer });
-      fireEvent.mouseDown(icon);
-      act(() => add.focus());
-      position.mockReturnValue({ ...rect(300, 316), top: 12, y: 12, bottom: 36 });
-      if (pointer === 'mouse') fireEvent.pointerUp(add, { pointerType: pointer });
-      fireEvent.click(add, { detail: 1 });
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(onAddRule).toHaveBeenCalledTimes(1);
-    });
-
-    it('edits the pressed outcome again when its blur commit shrinks it from under the press', () => {
+    it.each(
+      CLICKS
+    )('edits the pressed outcome again once its commit shrinks it, with %s', (how) => {
       render(<TableHost initial={{ rowId: 'r1' }} />);
       fireEvent.click(valueChip('r1', 'risk'));
       fireEvent.change(editor(), { target: { value: '"hi"' } });
       const risk = valueChip('r1', 'risk');
-      const size = vi.spyOn(risk, 'getBoundingClientRect').mockReturnValue(rect(300, 400));
       fireEvent.pointerDown(risk);
       fireEvent.mouseDown(risk);
       act(() => risk.focus());
-      size.mockReturnValue(rect(300, 330));
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
+      fireEvent.pointerUp(risk);
+      fireEvent.mouseUp(risk);
+      expect(risk).toHaveTextContent('"high"');
+      expect(editor()).toHaveValue('"hi"');
+      clicksWith[how](risk);
       expect(valueChip('r1', 'risk')).toHaveTextContent('"hi"');
       expect(editor()).toHaveAccessibleName(/^risk .*, rule 1$/);
     });
 
-    it.each<[string, { button: number; ctrlKey?: boolean }, 'before' | 'after']>([
-      ['a right-button press', { button: 2 }, 'after'],
-      ['a right-button press that opens its menu at the press', { button: 2 }, 'before'],
-      ['a Control-click, which opens the menu on macOS', { button: 0, ctrlKey: true }, 'before'],
-    ])('runs nothing from %s whose blur commit unmounts the ✕ it landed on', (_, init, menuAt) => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      fireEvent.pointerDown(remove, init);
-      fireEvent.mouseDown(remove, init);
-      act(() => remove.focus());
-      expect(remove.isConnected).toBe(false);
-      if (menuAt === 'before') fireEvent.contextMenu(card('r1'), init);
-      fireEvent.pointerUp(card('r1'), init);
-      fireEvent.mouseUp(card('r1'), init);
-      if (menuAt === 'after') fireEvent.contextMenu(card('r1'), init);
+    it.each(
+      CLICKS.flatMap((how) =>
+        (
+          [
+            ['a lead value', () => valueChip('r1', 'age')],
+            ['a lead ✕', () => button('r1', 'Remove age from rule 1')],
+            ['the delete action of a later rule', () => button('r3', 'Delete rule 3')],
+          ] as const
+        ).map(([kind, target]) => [kind, how, target] as const)
+      )
+    )('runs nothing from a press on %s dragged away and released elsewhere in the rules, with %s', (_, how, targetOf) => {
+      const spies = pressSpies();
+      editChannelOfR1(spies);
+      const target = targetOf();
+      fireEvent.pointerDown(target);
+      fireEvent.mouseDown(target);
+      act(() => target.focus());
+      const elsewhere = card('r2');
+      fireEvent.pointerUp(elsewhere);
+      fireEvent.mouseUp(elsewhere);
+      clicksWith[how](elsewhere.parentElement ?? elsewhere);
       expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
+      expect(spies.onClearCell).not.toHaveBeenCalled();
+      expect(spies.onStartEdit).not.toHaveBeenCalled();
+      expect(valueChip('r1', 'age')).toBeInTheDocument();
+      expect(screen.getByTestId('nl-row-r3')).toBeInTheDocument();
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+    });
+
+    it.each<[string, (target: HTMLElement) => Promise<void>]>([
+      [
+        'a press the browser cancels',
+        async (target) => {
+          fireEvent.pointerCancel(target);
+        },
+      ],
+      [
+        'a press whose click lands outside the view',
+        async () => {
+          fireEvent.pointerUp(document.body);
+          fireEvent.mouseUp(document.body);
+          fireEvent.click(document.body, { detail: 1 });
+        },
+      ],
+      [
+        'a press released outside the window with no click',
+        async () => {
+          fireEvent.pointerUp(document.body);
+          fireEvent.mouseUp(document.body);
+          await afterRelease();
+        },
+      ],
+      [
+        'a Control-click, which opens the context menu on macOS',
+        async (target) => {
+          fireEvent.contextMenu(target, { ctrlKey: true });
+          fireEvent.pointerUp(target, { ctrlKey: true });
+          fireEvent.mouseUp(target, { ctrlKey: true });
+          await afterRelease();
+        },
+      ],
+    ])('commits the held edit and runs nothing from %s', async (_, end) => {
+      const spies = pressSpies();
+      editChannelOfR1(spies);
+      const value = valueChip('r1', 'age');
+      fireEvent.pointerDown(value, { ctrlKey: true });
+      fireEvent.mouseDown(value, { ctrlKey: true });
+      act(() => value.focus());
+      holdsTheEdit(value);
+      await end(value);
+      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
+      expect(spies.onStartEdit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-editor')).toBeNull();
+    });
+
+    it.each<[string, number, 'before' | 'after']>([
+      ['a right-button press that opens its menu at the release', 2, 'after'],
+      ['a right-button press that opens its menu at the press', 2, 'before'],
+      ['a middle-button press', 1, 'after'],
+    ])('commits at once and runs nothing from %s', (_, button, menuAt) => {
+      const spies = pressSpies();
+      editChannelOfR1(spies);
+      const remove = within(card('r1')).getByRole('button', { name: 'Remove age from rule 1' });
+      fireEvent.pointerDown(remove, { button });
+      fireEvent.mouseDown(remove, { button });
+      act(() => remove.focus());
+      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
+      expect(remove.isConnected).toBe(false);
+      if (menuAt === 'before') fireEvent.contextMenu(card('r1'), { button });
+      fireEvent.pointerUp(card('r1'), { button });
+      fireEvent.mouseUp(card('r1'), { button });
+      if (menuAt === 'after') fireEvent.contextMenu(card('r1'), { button });
+      expect(spies.onClearCell).not.toHaveBeenCalled();
       expect(valueChip('r1', 'age')).toBeInTheDocument();
     });
 
-    it('edits the pressed lead value at pointerup when the blur commit unmounts it and no click follows', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const age = valueChip('r1', 'age');
+    it.each(
+      CLICKS
+    )('removes the condition whose ✕ is pressed with Shift held, its key repeating, with %s', (how) => {
+      const spies = pressSpies();
+      editChannelOfR1(spies);
+      const remove = button('r2', 'Remove age from rule 2');
+      fireEvent.pointerDown(remove, { shiftKey: true });
+      fireEvent.mouseDown(remove, { shiftKey: true });
+      act(() => remove.focus());
+      fireEvent.keyDown(remove, { key: 'Shift', shiftKey: true, repeat: true });
+      fireEvent.pointerUp(remove, { shiftKey: true });
+      fireEvent.mouseUp(remove, { shiftKey: true });
+      holdsTheEdit(remove);
+      clicksWith[how](remove, { shiftKey: true });
+      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
+      expect(spies.onClearCell.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+    });
+
+    it.each(
+      CLICKS
+    )('removes the condition whose ✕ is pressed once the blur commit is refused, with %s', (how) => {
+      const { onClearCell, onCommit } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
+        refuse: true,
+      });
+      fireEvent.change(editor(), { target: { value: '' } });
+      const remove = button('r1', 'Remove income from rule 1');
+      fireEvent.pointerDown(remove);
+      fireEvent.mouseDown(remove);
+      act(() => remove.focus());
+      fireEvent.pointerUp(remove);
+      fireEvent.mouseUp(remove);
+      expect(onCommit).not.toHaveBeenCalled();
+      clicksWith[how](remove);
+      expect(onCommit.mock.calls).toEqual([
+        [{ rowId: 'r1', columnId: 'age', index: 0 }, '', 'none'],
+      ]);
+      expect(onClearCell.mock.calls).toEqual([[{ rowId: 'r1', columnId: 'income' }]]);
+    });
+
+    it.each(CLICKS)('opens the ⋯ menu at its button where the commit moved it, with %s', (how) => {
+      editChannelOfR1();
+      const trigger = button('r3', 'Rule 3 actions');
+      vi.spyOn(trigger, 'getBoundingClientRect').mockImplementation(() =>
+        committedChannel()
+          ? { ...rect(300, 324), top: 154, y: 154, bottom: 178 }
+          : { ...rect(300, 324), top: 130, y: 130, bottom: 154 }
+      );
+      fireEvent.pointerDown(trigger);
+      fireEvent.mouseDown(trigger);
+      act(() => trigger.focus());
+      fireEvent.pointerUp(trigger);
+      fireEvent.mouseUp(trigger);
+      clicksWith[how](trigger);
+      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', 'Rule 3 actions');
+      expect(screen.getByTestId('nl-context-menu-anchor')).toHaveStyle({
+        top: '178px',
+        left: '300px',
+      });
+    });
+
+    it('runs a press on a lead value in a shadow root once, after the edit it blurs commits', () => {
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const container = host
+        .attachShadow({ mode: 'open' })
+        .appendChild(document.createElement('div'));
+      const spies = pressSpies();
+      render(<TableHost initial={{ rowId: 'r1' }} {...spies} />, { container });
+      const inShadow = within(container);
+      const row = () => inShadow.getByTestId('nl-row-r1');
+      fireEvent.click(within(row()).getByRole('button', { name: 'Add condition to rule 1' }));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'channel' }));
+      fireEvent.change(inShadow.getByTestId('nl-editor'), { target: { value: '"web"' } });
+      const age = row().querySelector<HTMLElement>('[data-kind="value"][data-column-id="age"]');
+      if (!age) throw new Error('no age value in r1');
       fireEvent.pointerDown(age);
       fireEvent.mouseDown(age);
       act(() => age.focus());
-      fireEvent.pointerUp(card('r1'));
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/);
+      fireEvent.pointerUp(age);
+      fireEvent.mouseUp(age);
+      expect(
+        row().querySelector('[data-kind="value"][data-column-id="channel"]')
+      ).toHaveTextContent('Set a value');
+      browserClick(age);
+      expect(
+        row().querySelector('[data-kind="value"][data-column-id="channel"]')
+      ).toHaveTextContent('"web"');
+      expect(spies.onStartEdit).toHaveBeenCalledTimes(1);
+      expect(inShadow.getByTestId('nl-editor')).toHaveAccessibleName(/^age .*, rule 1$/);
     });
 
-    it('runs a later keyboard click on its own target after a press released outside the view, which the blur commit moved', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
+    it.each(
+      CLICKS
+    )('edits the value pressed where the commit inserts a condition before it, with %s', (how) => {
+      const spies = pressSpies();
+      render(
+        <TableHost
+          initial={{ rowId: 'r1' }}
+          start={tableWithoutCell(EDITABLE_TABLE, { rowId: 'r1', columnId: 'age' })}
+          {...spies}
+        />
+      );
       fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', 'Rule 3 actions');
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger, { pointerType: 'touch' });
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(document.body, { pointerType: 'touch' });
+      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'age' }));
+      fireEvent.change(editor(), { target: { value: '30' } });
+      spies.onStartEdit.mockClear();
+      const income = valueChip('r1', 'income');
+      fireEvent.pointerDown(income);
+      fireEvent.mouseDown(income);
+      act(() => income.focus());
+      fireEvent.pointerUp(income);
+      fireEvent.mouseUp(income);
+      clicksWith[how](income);
+      expect(valueChip('r1', 'age')).toHaveTextContent('30');
+      expect(spies.onStartEdit.mock.calls).toEqual([
+        [{ rowId: 'r1', columnId: 'income', index: 0 }],
+      ]);
+      expect(editor()).toHaveValue('40000');
+    });
+
+    interface HostControls {
+      table?: EditableTable;
+      setTable?: (change: (table: EditableTable) => EditableTable) => void;
+      setEditing?: (value: SentenceValueId | null) => void;
+    }
+    /** A host that writes each edit from the table it rendered with, as the story's host does. */
+    const RenderTimeHost = ({ controls }: { controls: HostControls }) => {
+      const [table, setTable] = useState(EDITABLE_TABLE);
+      const [selected, setSelected] = useState<SentenceSelection | null>({ rowId: 'r1' });
+      const [editing, setEditing] = useState<SentenceValueId | null>(null);
+      controls.table = table;
+      controls.setTable = setTable;
+      controls.setEditing = setEditing;
+      return view({
+        rules: wordedRules(table),
+        bands: tableBands(table),
+        header: GRID_SENTENCE_HEADER,
+        selected,
+        onSelect: setSelected,
+        edit: editWith({
+          editing,
+          onStartEdit: setEditing,
+          onCommit: (value, commit) => {
+            const [text = ''] = valuesOf(commit);
+            setTable(tableWithValue(table, value, text));
+            setEditing(null);
+          },
+          onCancel: () => setEditing(null),
+          onClearCell: (cell) => {
+            setTable(tableWithoutCell(table, cell));
+            setEditing(null);
+          },
+        }),
+      });
+    };
+    const outcomeOf = (controls: HostControls, rowId: string) =>
+      controls.table?.rules.find((rule) => rule.rowId === rowId)?.outcomes.risk;
+    const pressAndHold = (target: HTMLElement) => {
+      fireEvent.pointerDown(target);
+      fireEvent.mouseDown(target);
+      act(() => target.focus());
+    };
+
+    it('keeps a change the host makes mid-press when the press sends the edit it held', () => {
+      const controls: HostControls = {};
+      render(<RenderTimeHost controls={controls} />);
+      fireEvent.click(valueChip('r1', 'risk'));
+      fireEvent.change(editor(), { target: { value: '"low"' } });
+      const age = valueChip('r2', 'age');
+      pressAndHold(age);
+      act(() =>
+        controls.setTable?.((table) =>
+          tableWithValue(table, { rowId: 'r3', columnId: 'risk', index: 0 }, '"pushed"')
+        )
+      );
+      fireEvent.pointerUp(age);
+      fireEvent.mouseUp(age);
+      browserClick(age);
+      expect(outcomeOf(controls, 'r1')).toBe('"low"');
+      expect(outcomeOf(controls, 'r3')).toBe('"pushed"');
+    });
+
+    it('sends the edit a press holds before a key pressed mid-press, so the key acts on the committed edit', async () => {
+      const controls: HostControls = {};
+      render(<RenderTimeHost controls={controls} />);
+      fireEvent.click(valueChip('r1', 'risk'));
+      fireEvent.change(editor(), { target: { value: '"low"' } });
+      const age = valueChip('r2', 'age');
+      pressAndHold(age);
+      fireEvent.keyDown(age, { key: 'Shift', shiftKey: true });
+      fireEvent.keyDown(age, { key: 'Shift', shiftKey: true, repeat: true });
+      fireEvent.keyDown(age, { key: 'a', repeat: true });
+      expect(outcomeOf(controls, 'r1')).toBe('"high"');
+      age.addEventListener('keydown', () => flushSync(() => {}), { once: true });
+      fireEvent.keyDown(age, { key: 'Enter' });
+      expect(outcomeOf(controls, 'r1')).toBe('"low"');
+      fireEvent.pointerUp(age);
+      fireEvent.mouseUp(age);
+      await afterRelease();
+      expect(outcomeOf(controls, 'r1')).toBe('"low"');
+      expect(editor()).toHaveAccessibleName(/^risk .*, rule 1$/);
+      expect(editor()).toHaveValue('"low"');
+    });
+
+    it.each<[string, SentenceValueId | null]>([
+      ['opens another value', { rowId: 'r3', columnId: 'risk', index: 0 }],
+      ['closes it', null],
+    ])('sends the edit a press holds when the press ends, though the host %s mid-press', async (_, next) => {
+      const controls: HostControls = {};
+      render(<RenderTimeHost controls={controls} />);
+      fireEvent.click(valueChip('r1', 'risk'));
+      fireEvent.change(editor(), { target: { value: '"low"' } });
+      const age = valueChip('r2', 'age');
+      pressAndHold(age);
+      await afterRelease();
+      act(() => controls.setEditing?.(next));
+      fireEvent.pointerUp(card('r2'));
+      fireEvent.mouseUp(card('r2'));
+      browserClick(card('r2').parentElement ?? card('r2'));
+      await afterRelease();
+      expect(outcomeOf(controls, 'r1')).toBe('"low"');
+    });
+
+    it('sends the edit a press holds once the view unmounts mid-press, and stops waiting for the press', async () => {
+      const { onCommit, unmount } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
+      });
+      fireEvent.change(editor(), { target: { value: '30' } });
       const remove = button('r2', 'Remove age from rule 2');
+      fireEvent.pointerDown(remove);
+      fireEvent.mouseDown(remove);
       act(() => remove.focus());
-      fireEvent.click(remove, { detail: 0 });
-      expect(screen.queryByRole('menu')).toBeNull();
-      expect(
-        within(card('r2')).queryByRole('button', { name: 'Remove age from rule 2' })
-      ).toBeNull();
+      expect(onCommit).not.toHaveBeenCalled();
+      unmount();
+      expect(onCommit.mock.calls).toEqual([
+        [{ rowId: 'r1', columnId: 'age', index: 0 }, '30', 'none'],
+      ]);
+      fireEvent.pointerUp(document.body);
+      fireEvent.click(document.body, { detail: 1 });
+      await afterRelease();
+      expect(onCommit).toHaveBeenCalledTimes(1);
     });
 
     const activations = {
@@ -4909,123 +5066,66 @@ describe('DecisionText', () => {
         }
       },
       'a programmatic click': (target: HTMLElement) => act(() => target.click()),
+      'a new press and click': (target: HTMLElement) => {
+        fireEvent.pointerDown(target);
+        fireEvent.mouseDown(target);
+        fireEvent.pointerUp(target);
+        fireEvent.mouseUp(target);
+        browserClick(target);
+      },
     };
-    const outside = () => {
-      const element = document.body.appendChild(document.createElement('button'));
-      onTestFinished(() => element.remove());
-      return element;
-    };
-    const unmountedTouchPress = () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      tapsWith.touch(remove, () => act(() => remove.focus()), 'r1');
-      expect(remove.isConnected).toBe(false);
-      expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull();
-    };
-    const movedPressReleasedOutside = () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', 'Rule 3 actions');
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger, { pointerType: 'touch' });
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(document.body, { pointerType: 'touch' });
-    };
-    const removedAge = () =>
-      expect(
-        within(card('r2')).queryByRole('button', { name: 'Remove age from rule 2' })
-      ).toBeNull();
-    const pressAndClick = (target: HTMLElement) => {
-      fireEvent.pointerDown(target);
-      fireEvent.mouseDown(target);
-      fireEvent.pointerUp(target);
-      fireEvent.mouseUp(target);
-      fireEvent.click(target, { detail: 1 });
-    };
-    const laterGestures: [string, (target: HTMLElement) => void][] = [
+    const endedPresses: [string, () => Promise<void>][] = [
       [
-        'a key in the view, then a click with no press of its own',
-        (target) => {
-          fireEvent.keyDown(target, { key: 'Shift' });
-          fireEvent.click(target, { detail: 1 });
+        'a press dragged away from a lead value',
+        async () => {
+          const age = valueChip('r1', 'age');
+          fireEvent.pointerDown(age);
+          fireEvent.mouseDown(age);
+          act(() => age.focus());
+          fireEvent.pointerUp(card('r2'));
+          fireEvent.mouseUp(card('r2'));
+          browserClick(card('r2').parentElement ?? card('r2'));
         },
       ],
       [
-        'focus leaving the view, then a click with no press of its own',
-        (target) => {
-          act(() => outside().focus());
-          fireEvent.click(target, { detail: 1 });
+        'a press on a lead value released with no click',
+        async () => {
+          const age = valueChip('r1', 'age');
+          fireEvent.pointerDown(age);
+          fireEvent.mouseDown(age);
+          act(() => age.focus());
+          fireEvent.pointerUp(document.body);
+          fireEvent.mouseUp(document.body);
+          await afterRelease();
         },
       ],
-      ['a new press and click', pressAndClick],
+      [
+        'a press on a lead value whose click ran it',
+        async () => {
+          await pressesWith.mouse(valueChip('r1', 'age'));
+          browserClick(valueChip('r1', 'age'));
+          fireEvent.keyDown(editor(), { key: 'Escape' });
+        },
+      ],
     ];
 
     it.each(
-      (['Add condition to rule 3', 'Rule 3 actions'] as const).flatMap((name) =>
+      endedPresses.flatMap(([ended, press]) =>
         (Object.keys(activations) as (keyof typeof activations)[]).map(
-          (how) => [name, how] as const
+          (how) => [how, ended, press] as const
         )
       )
-    )('opens the %s menu from %s after a touch press the blur commit unmounted, which no click follows', (name, how) => {
-      unmountedTouchPress();
-      const trigger = button('r3', name);
-      act(() => trigger.focus());
-      activations[how](trigger);
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
-    });
-
-    it('opens a menu from a click with no press of its own after a press whose own click followed the blur commit that unmounted it', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      act(() => remove.focus());
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull();
-      fireEvent.click(button('r3', 'Add condition to rule 3'), { detail: 1 });
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', 'Add condition to rule 3');
-    });
-
-    it.each(
-      laterGestures
-    )('opens a menu from %s after a touch press the blur commit unmounted, which no click follows', (_, gesture) => {
-      unmountedTouchPress();
-      gesture(button('r3', 'Add condition to rule 3'));
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', 'Add condition to rule 3');
-    });
-
-    it.each(
-      laterGestures
-    )('runs the remove action from %s after a press the blur commit moved, released outside the view', (_, gesture) => {
-      movedPressReleasedOutside();
-      gesture(button('r2', 'Remove age from rule 2'));
-      expect(screen.queryByRole('menu')).toBeNull();
-      removedAge();
-    });
-
-    it.each(
-      Object.keys(activations) as (keyof typeof activations)[]
-    )('runs the remove action from %s after a press the blur commit moved, released outside the view', (how) => {
-      movedPressReleasedOutside();
+    )('runs only its own target from %s after %s', async (how, _, press) => {
+      const spies = pressSpies();
+      editChannelOfR1(spies);
+      await press();
+      spies.onStartEdit.mockClear();
       const remove = button('r2', 'Remove age from rule 2');
       act(() => remove.focus());
       activations[how](remove);
+      expect(spies.onClearCell.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(spies.onStartEdit).not.toHaveBeenCalled();
       expect(screen.queryByRole('menu')).toBeNull();
-      removedAge();
     });
 
     const noValueLead = [
