@@ -3309,6 +3309,38 @@ describe('DecisionText', () => {
       expect(onCommit.mock.calls).toEqual([[m2Reason, '', 'none']]);
     });
 
+    it("offers an empty outcome the host's allowed values without their empty or repeated ones, none checked", () => {
+      const m2Reason: SentenceValueId = { rowId: 'm2', columnId: 'reason', index: 0 };
+      renderEditing({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initialEditing: m2Reason,
+        valueField: () => ({ allowedValues: ['', '"prime"', ' ', '"prime"', '"low score"'] }),
+      });
+      const radios = inPopover().getAllByRole('radio');
+      expect(radios.map((radio) => radio.getAttribute('value'))).toEqual([
+        '"prime"',
+        '"low score"',
+      ]);
+      expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([]);
+    });
+
+    it("offers the host's operators without their empty or repeated ids", () => {
+      renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({
+          operators: [{ id: '', label: 'any' }, ...AGE_OPERATORS, { id: '<', label: 'below' }],
+          operator: '<',
+        }),
+      });
+      fireEvent.click(operatorSelect());
+      expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+        'is less than',
+        'is greater than',
+      ]);
+    });
+
     it('opens the operator list from an allowed value on Alt+ArrowDown, and returns focus to it on a pick', () => {
       const m3Channel: SentenceValueId = { rowId: 'm3', columnId: 'channel', index: 0 };
       const { onCommit } = renderEditing({
@@ -4397,6 +4429,25 @@ describe('DecisionText', () => {
       fireEvent.click(pill('age'));
       expect(typeSelect()).toHaveTextContent('tPeriod');
       expect(inPopover().queryByRole('textbox', { name: 'Allowed values' })).toBeNull();
+    });
+
+    it.each<[string, ColumnTypeOption[]]>([
+      ["the host's types", TYPES],
+      [
+        "the host's types without their empty or repeated ids",
+        [{ id: '', label: 'Any' }, ...TYPES, { id: 'number', label: 'Number again' }],
+      ],
+    ])('lets an untyped column pick a type from %s', (_, types) => {
+      const { onCommit } = renderColumns({ field: () => ({ ...AGE_FIELD, typeRef: '' }), types });
+      fireEvent.click(pill('age'));
+      fireEvent.click(typeSelect());
+      expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+        'Number',
+        'Text',
+      ]);
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      fireEvent.click(action('Apply'));
+      expect(vi.mocked(onCommit).mock.calls).toEqual([['age', { typeRef: 'number' }]]);
     });
 
     it('closes once the column is gone', () => {

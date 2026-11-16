@@ -23,6 +23,12 @@ export interface PopoverSelectProps
   dataTestId: string;
 }
 
+/** The options a select can offer: none with an empty id, and only the first of each id. */
+const selectable = (options: readonly PopoverSelectOption[]): readonly PopoverSelectOption[] =>
+  options.filter(
+    ({ id }, index) => id !== '' && options.findIndex((option) => option.id === id) === index
+  );
+
 /** A popover's select over the host's options. */
 export const PopoverSelect: React.FC<PopoverSelectProps> = ({
   value,
@@ -55,7 +61,7 @@ export const PopoverSelect: React.FC<PopoverSelectProps> = ({
         })
       }
     >
-      {options.map((option) => (
+      {selectable(options).map((option) => (
         <SelectItem key={option.id} value={option.id}>
           <span className={POPOVER_OPTION_CLASS}>
             {option.icon && (

@@ -57,13 +57,13 @@ export type DraftProblem = keyof DraftProblemLabels;
 
 type ValuesCommit = Extract<ValueCommit, { kind: 'values' }>;
 
-/** `held` when the condition holds a value, which a blank pick among allowed values would hide. */
+/** `hidesHeld` when the condition holds a value that allowed values show in place of, which a blank pick would hide. */
 const problemOf = (
   shape: ValueShape,
   { values }: ValuesCommit,
   field: ValueField,
   adds: boolean,
-  held: boolean
+  hidesHeld: boolean
 ): DraftProblem | null => {
   const [low = '', high = ''] = values;
   if (shape === 'range') {
@@ -71,7 +71,6 @@ const problemOf = (
     return (field.inOrder?.(low, high) ?? true) ? null : 'endsOutOfOrder';
   }
   if (shape === 'list') return values.length > 0 ? null : 'noValueChecked';
-  const hidesHeld = held && (field.allowedValues?.length ?? 0) > 0;
   return (adds || hidesHeld) && low.trim() === '' ? 'missingValue' : null;
 };
 
@@ -111,7 +110,7 @@ export const useShapeDraft = (field: ValueField, value: string, adds: boolean): 
   const [adding, setAdding] = useState('');
   const [operator, setOperator] = useState(() => operatorOf(field));
   const operators = operatorsOf(field);
-  const allowedValues = field.allowedValues ?? NO_VALUES;
+  const allowedValues = filled(field.allowedValues ?? NO_VALUES);
   const picked = operators.length === 0 ? undefined : operator;
   const shapeOf = (id: string | undefined): ValueShape =>
     operators.find((option) => option.id === id)?.shape ?? 'single';
@@ -150,7 +149,7 @@ export const useShapeDraft = (field: ValueField, value: string, adds: boolean): 
     checked,
     adding,
     current,
-    problem: problemOf(shape, current, field, adds, held.length > 0),
+    problem: problemOf(shape, current, field, adds, held.length > 0 && allowedValues.length > 0),
     setText: (next: string) => setValues([next, ...values.slice(1)]),
     setRange: (low: string, nextHigh: string, nextEnds: RangeEnds) => {
       setValues([low, nextHigh, ...values.slice(2)]);
