@@ -126,7 +126,7 @@ interface DialogBodyProps extends Omit<ByoModelDialogProps, 'open' | 'onOpenChan
 }
 
 function DialogBody({
-  api,
+  api: apiProp,
   onSaved,
   editing,
   labels: labelOverrides,
@@ -134,15 +134,21 @@ function DialogBody({
   onClose,
 }: DialogBodyProps) {
   const labels = resolveByoModelDialogLabels(labelOverrides);
-  // The body mounts once per opening, so the model being edited is fixed for its lifetime.
+  // The body mounts once per opening, so its calls and the model being edited are fixed for its
+  // lifetime: a host that recreates `api` while the dialog is open does not reload it.
+  const [api] = React.useState(apiProp);
   const [editTarget] = React.useState(editing);
 
   // A provider or connection switch, or the dialog closing, bumps this; each
   // call drops its result when it changed while the call was in flight.
   const generation = React.useRef(0);
+  // The connector form depends only on the provider, so it has its own counter: switching
+  // connection must not drop a form that is still loading.
+  const formLoad = React.useRef(0);
   React.useEffect(
     () => () => {
       generation.current += 1;
+      formLoad.current += 1;
     },
     []
   );
@@ -206,12 +212,14 @@ function DialogBody({
     }
   };
 
-  const loadForm = async (pid: string, folder: string, gen: number) => {
+  const loadForm = async (pid: string, folder: string) => {
+    formLoad.current += 1;
+    const load = formLoad.current;
     setFormState({ ...NO_FORM, status: 'loading' });
     setValues({});
     try {
       const result = await api.loadForm(pid, folder || null);
-      if (gen !== generation.current) return;
+      if (load !== formLoad.current) return;
       if (!result.ok) {
         setFormState({ ...NO_FORM, status: 'error', failure: result.failure });
         return;
@@ -220,9 +228,15 @@ function DialogBody({
       setAuthType(result.value.defaultAuthType);
       setValues(defaultsOf(result.value));
     } catch (err) {
-      if (gen === generation.current)
+      if (load === formLoad.current)
         setFormState({ ...NO_FORM, status: 'error', failure: unexpected(err) });
     }
+  };
+
+  /** Empties the credentials form back to the connector's defaults. */
+  const resetFormValues = () => {
+    setAuthType(form.defaultAuthType);
+    setValues(defaultsOf(form));
   };
 
   /** Fills every step from the saved model being edited. */
@@ -242,7 +256,7 @@ function DialogBody({
     setName(model.name);
     setNameTouched(true);
     loadModels(model.providerId, savedConnection, gen);
-    loadForm(model.providerId, savedConnection?.folderId ?? defaultFolder, gen);
+    loadForm(model.providerId, savedConnection?.folderId ?? defaultFolder);
   };
 
   // Runs once per opening: `api` and `editTarget` are fixed while the dialog is open.
@@ -303,7 +317,7 @@ function DialogBody({
     setConnect({ status: 'idle' });
     resetDownstream();
     loadModels(id, existing[0] ?? null, gen);
-    loadForm(id, folderId, gen);
+    loadForm(id, folderId);
   };
 
   const chooseConnection = (id: string) => {
@@ -312,6 +326,7 @@ function DialogBody({
     if (id === NEW) setConnName(defaultConnectionName(providerName, connections));
     setEditingConnection(false);
     setConnect({ status: 'idle' });
+    resetFormValues();
     resetDownstream();
     loadModels(providerId, connections.find((c) => c.id === id) ?? null, generation.current);
   };
@@ -326,6 +341,7 @@ function DialogBody({
     setMoreOpen(false);
     setConnect({ status: 'idle' });
     setTest({ status: 'idle' });
+    resetFormValues();
     setLoadingConnectionValues(true);
     try {
       const result = await api.loadConnectionValues(providerId, connection);
@@ -348,8 +364,7 @@ function DialogBody({
     setEditingConnection(false);
     setLoadingConnectionValues(false);
     setConnect({ status: 'idle' });
-    setAuthType(form.defaultAuthType);
-    setValues(defaultsOf(form));
+    resetFormValues();
     loadModels(providerId, connection, generation.current);
   };
 
@@ -419,6 +434,7 @@ function DialogBody({
     }
     setConnectionChoice(saved.id);
     setEditingConnection(false);
+    resetFormValues();
     setConnect({ status: 'ok', value: { connection: saved, updated: Boolean(existing) } });
     loadModels(providerId, saved, gen);
   };
@@ -454,16 +470,21 @@ function DialogBody({
     } catch (err) {
       result = { ok: false, failure: unexpected(err) };
     }
-    if (gen !== generation.current) return;
+    const stillOpen = gen === generation.current;
     if (!result.ok) {
-      setTest({ status: 'error', failure: result.failure });
+      if (stillOpen) setTest({ status: 'error', failure: result.failure });
       return;
     }
-    setTest({ status: 'ok', value: result.value });
+
+    // The model is saved, so the dialog's work is done: close it now rather than wait on
+    // the host, whose refresh can be slow. The host hears about the model even when the
+    // dialog was closed meanwhile.
+    if (stillOpen) onClose();
     try {
       await onSaved(result.value);
-    } finally {
-      if (gen === generation.current) onClose();
+    } catch (err) {
+      // The save itself succeeded; what the host does next is the host's to report.
+      console.error('ByoModelDialog: onSaved failed after the model was saved', err);
     }
   };
 
@@ -476,9 +497,11 @@ function DialogBody({
     modelsState.status === 'ok' && models.compatible.length + models.incompatible.length === 0;
 
   const modelTriggerRef = React.useRef<HTMLButtonElement & HTMLInputElement>(null);
+  const modelSearchRef = React.useRef<HTMLInputElement>(null);
+  // After Connect, the model field is the next step; it can take focus once the models are listed.
   React.useEffect(() => {
-    if (connect.status === 'ok') modelTriggerRef.current?.focus();
-  }, [connect.status]);
+    if (connect.status === 'ok' && modelsState.status === 'ok') modelTriggerRef.current?.focus();
+  }, [connect.status, modelsState.status]);
 
   const fieldInput = (f: ByoFormField, main: boolean) => {
     const keepsCurrentValue = editingConnection && f.secret;
@@ -694,7 +717,7 @@ function DialogBody({
                             aria-invalid={connNameClash}
                           />
                         </Field>
-                        <Field id="byo-folder" label={labels.storedIn}>
+                        <Field id="byo-folder" label={labels.folder}>
                           <Select
                             value={formFolderId || undefined}
                             onValueChange={setFolderId}
@@ -793,9 +816,14 @@ function DialogBody({
                     container={container}
                     align="start"
                     className="w-[var(--radix-popover-trigger-width)] overflow-hidden p-0"
+                    onOpenAutoFocus={(e) => {
+                      e.preventDefault();
+                      modelSearchRef.current?.focus();
+                    }}
                   >
                     <Command shouldFilter={false}>
                       <CommandInput
+                        ref={modelSearchRef}
                         aria-label={labels.modelStep}
                         placeholder={labels.modelSearch(
                           models.compatible.length + models.incompatible.length
@@ -859,17 +887,9 @@ function DialogBody({
         )}
       </div>
 
-      {(failure || test.status === 'ok') && (
+      {failure && (
         <div className="max-h-[40%] shrink-0 overflow-y-auto border-t border-border-subtle px-6 py-3">
-          {failure && <FailureAlert failure={failure} labels={labels} />}
-          {test.status === 'ok' && (
-            <Alert variant="success">
-              <CircleCheck />
-              <AlertTitle>
-                {labels.testPassed(test.value.modelId, (test.value.latencyMs / 1000).toFixed(1))}
-              </AlertTitle>
-            </Alert>
-          )}
+          <FailureAlert failure={failure} labels={labels} />
         </div>
       )}
 
@@ -995,34 +1015,32 @@ function Field({ id, label, hint, required, children }: FieldProps) {
   );
 }
 
-/** The provider's own answer, with the raw response one click away. */
+/** What failed, with the raw response one click away (or the message, when there is none). */
 function FailureAlert({ failure, labels }: { failure: ByoFailure; labels: ByoModelDialogLabels }) {
   const [showRaw, setShowRaw] = React.useState(false);
   return (
     <Alert variant="destructive" className="min-w-0">
       <AlertCircle />
       <AlertTitle>{failure.title}</AlertTitle>
-      {(failure.message || failure.detail) && (
+      {failure.detail && (
         <AlertDescription className="break-words">
-          {failure.message}
-          {failure.detail && (
-            <>
-              <Button
-                variant="link"
-                size="2xs"
-                className="mt-1 block h-auto p-0 text-xs"
-                onClick={() => setShowRaw((v) => !v)}
-              >
-                {showRaw ? labels.hideResponse : labels.showResponse}
-              </Button>
-              {showRaw && (
-                <pre className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-surface p-2 font-mono text-xs leading-4 text-foreground-muted">
-                  {failure.detail}
-                </pre>
-              )}
-            </>
+          <Button
+            variant="link"
+            size="2xs"
+            className="mt-1 block h-auto p-0 text-xs"
+            onClick={() => setShowRaw((v) => !v)}
+          >
+            {showRaw ? labels.hideResponse : labels.showResponse}
+          </Button>
+          {showRaw && (
+            <pre className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-surface p-2 font-mono text-xs leading-4 text-foreground-muted">
+              {failure.detail}
+            </pre>
           )}
         </AlertDescription>
+      )}
+      {!failure.detail && failure.message && (
+        <AlertDescription className="break-words">{failure.message}</AlertDescription>
       )}
     </Alert>
   );

@@ -29,7 +29,7 @@ export interface ByoModelDialogLabels {
   inUiPathTitle: string;
   inUiPathCaption: (provider: string) => string;
   connectionName: string;
-  storedIn: string;
+  folder: string;
   folderHint: string;
   connectionNameTaken: string;
   connect: string;
@@ -60,7 +60,6 @@ export interface ByoModelDialogLabels {
 
   showResponse: string;
   hideResponse: string;
-  testPassed: (model: string, seconds: string) => string;
 
   close: string;
   cancel: string;
@@ -96,7 +95,7 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   inUiPathTitle: 'In UiPath',
   inUiPathCaption: (provider) => `Your connection to ${provider} will be saved in this folder.`,
   connectionName: 'Connection name',
-  storedIn: 'Stored in',
+  folder: 'Folder',
   folderHint: 'Personal workspace keeps it to you; a shared folder lets teammates reuse it.',
   connectionNameTaken: 'You already have a connection with this name.',
   connect: 'Connect',
@@ -125,9 +124,8 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   nameHint: 'Shown in the model picker. Defaults to the model id.',
   nameTaken: (name) => `"${name}" is already in your model list. Pick another name.`,
 
-  showResponse: 'Show full response',
-  hideResponse: 'Hide full response',
-  testPassed: (model, seconds) => `${model} responded in ${seconds}s.`,
+  showResponse: 'Show LLM response',
+  hideResponse: 'Hide LLM response',
 
   close: 'Close',
   cancel: 'Cancel',

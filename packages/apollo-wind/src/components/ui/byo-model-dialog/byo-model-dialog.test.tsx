@@ -8,6 +8,9 @@ import type {
   ByoDialogContext,
   ByoModelDialogApi,
   ByoModelToEdit,
+  ByoResult,
+  ByoSavedModel,
+  ByoSaveRequest,
 } from './types';
 
 const SAVED: ByoConnection = { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'me' };
@@ -204,8 +207,9 @@ describe('ByoModelDialog', () => {
     expect(
       await screen.findByText('Azure OpenAI refused the connection (HTTP 401)')
     ).toBeInTheDocument();
-    expect(screen.getByText('Access denied')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Show full response' }));
+    // With a raw response at hand, only the raw response is shown, on request.
+    expect(screen.queryByText('Access denied')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Show LLM response' }));
     expect(screen.getByText('{"code":401}')).toBeInTheDocument();
     expect(screen.getByLabelText(/API key/)).toBeEnabled();
   });
@@ -302,7 +306,7 @@ describe('ByoModelDialog', () => {
     expect(api.loadConnectionValues).toHaveBeenCalledWith('openai', SAVED);
     // The secret may stay blank, and the connection cannot move folders.
     expect(screen.getByText('Leave blank to keep the current value.')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Stored in' })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: 'Folder' })).toBeDisabled();
     expect(screen.getByRole('textbox', { name: 'Connection name' })).toHaveValue('My OpenAI');
 
     await user.clear(endpoint);
@@ -320,5 +324,79 @@ describe('ByoModelDialog', () => {
       })
     );
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+  });
+
+  it('keeps loading the form when the connection changes meanwhile', async () => {
+    const user = userEvent.setup();
+    let finishForm: () => void = () => {};
+    const api = fakeApi({
+      loadForm: vi.fn(
+        () =>
+          new Promise<ByoResult<ByoConnectionForm>>((resolve) => {
+            finishForm = () => resolve({ ok: true as const, value: AZURE_FORM });
+          })
+      ),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await pick(user, 'Provider', 'OpenAI');
+    await pick(user, 'Connection', 'New connection…');
+    finishForm();
+
+    expect(await screen.findByLabelText(/Endpoint/)).toBeInTheDocument();
+  });
+
+  it('closes once the model is saved, without waiting for the host', async () => {
+    const user = userEvent.setup();
+    // The host's refresh never settles, as a slow catalog reload would.
+    const onSaved = vi.fn(() => new Promise<void>(() => {}));
+    const onOpenChange = vi.fn();
+    render(<ByoModelDialog open onOpenChange={onOpenChange} api={fakeApi()} onSaved={onSaved} />);
+
+    await pick(user, 'Provider', 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+    await pick(user, 'Model', 'gpt-4o');
+    await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(onSaved).toHaveBeenCalled();
+  });
+
+  it('still reports a model saved after the dialog was closed', async () => {
+    const user = userEvent.setup();
+    let finishTest: () => void = () => {};
+    const onSaved = vi.fn();
+    const api = fakeApi({
+      testAndSave: vi.fn(
+        (r: ByoSaveRequest) =>
+          new Promise<ByoResult<ByoSavedModel>>((resolve) => {
+            finishTest = () =>
+              resolve({
+                ok: true as const,
+                value: {
+                  name: r.name,
+                  modelId: r.modelId,
+                  connectionId: r.connection.id,
+                  folderId: r.connection.folderId,
+                  latencyMs: 1,
+                },
+              });
+          })
+      ),
+    });
+    const { rerender } = render(
+      <ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={onSaved} />
+    );
+
+    await pick(user, 'Provider', 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+    await pick(user, 'Model', 'gpt-4o');
+    await user.click(screen.getByRole('button', { name: 'Test and add' }));
+    rerender(<ByoModelDialog open={false} onOpenChange={vi.fn()} api={api} onSaved={onSaved} />);
+    finishTest();
+
+    await waitFor(() =>
+      expect(onSaved).toHaveBeenCalledWith(expect.objectContaining({ name: 'gpt-4o' }))
+    );
   });
 });

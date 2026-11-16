@@ -72,7 +72,8 @@ export interface ByoProviderModels {
 /**
  * A refusal, shown in the dialog until the user changes something.
  * `title` names what failed, `message` is the provider's own text,
- * `detail` the raw response behind "Show full response".
+ * `detail` the raw response behind "Show LLM response". When there is a
+ * `detail`, the dialog shows it instead of `message`.
  */
 export interface ByoFailure {
   title: string;
