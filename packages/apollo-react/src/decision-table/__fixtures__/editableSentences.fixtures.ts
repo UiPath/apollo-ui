@@ -1,5 +1,5 @@
 import type {
-  SentenceBand,
+  SentenceBandColumn,
   SentenceCellId,
   SentenceLine,
   SentenceNameToken,
@@ -7,17 +7,20 @@ import type {
   SentenceRule,
   SentenceValueId,
 } from '../sentenceTypes';
+import type { RangeEnds, ValueCommit } from '../valueTypes';
+import type { SentenceColumns } from './sentences.fixtures';
 
 /** A column of the story table, and the decision that produces it when another one does. */
-type EditableColumn = Pick<SentenceBand['columns'][number], 'id' | 'name'> &
-  Pick<SentenceNameToken, 'decisionId'>;
+type EditableColumn = Pick<SentenceBandColumn, 'id' | 'name'> &
+  Pick<SentenceNameToken, 'producedBy'>;
 
-/** One condition of a rule: its input, its operator words, its values and what joins them. */
+/** One condition of a rule: its input, its operator words, its values, what joins them, and a range's ends. */
 interface EditableCondition {
   inputId: string;
   operator: string;
   values: string[];
   joiner: string;
+  ends?: RangeEnds;
 }
 
 /** One rule of the story table: its outcome per output and its conditions. */
@@ -39,7 +42,7 @@ const nameToken = (kind: SentenceNameToken['kind'], column: EditableColumn): Sen
   kind,
   columnId: column.id,
   text: column.name,
-  decisionId: column.decisionId,
+  producedBy: column.producedBy,
 });
 
 const conditionParts = (input: EditableColumn, condition: EditableCondition): SentencePart[] => [
@@ -87,11 +90,11 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
     return { rowId: rule.rowId, heading, lead: ['when all of these are true:'], lines };
   });
 
-/** The table's inputs and outputs as bands. */
-export const tableBands = (table: EditableTable): SentenceBand[] => [
-  { id: 'inputs', label: 'Inputs', columns: table.inputs },
-  { id: 'outputs', label: 'Outputs', columns: table.outputs },
-];
+/** The table's inputs and outputs. */
+export const tableColumns = ({ inputs, outputs }: EditableTable): SentenceColumns => ({
+  inputs,
+  outputs,
+});
 
 /** Whether a column of the table is one of its outputs. */
 export const isOutput = (table: EditableTable, columnId: string): boolean =>
@@ -137,6 +140,31 @@ export const tableWithValue = (
     };
   });
 
+/** The table with a condition's committed values, operator and range ends written, the condition added when the rule has none. */
+export const tableWithCondition = (
+  table: EditableTable,
+  target: SentenceValueId,
+  { values, operator, ends }: Extract<ValueCommit, { kind: 'values' }>
+): EditableTable =>
+  mapRule(table, target.rowId, (rule) => {
+    const written: EditableCondition = {
+      inputId: target.columnId,
+      operator: operator ?? 'is',
+      values: [...values],
+      joiner: ends ? ' and ' : ', ',
+      ends,
+    };
+    const held = rule.conditions.some((condition) => condition.inputId === target.columnId);
+    return {
+      ...rule,
+      conditions: held
+        ? rule.conditions.map((condition) =>
+            condition.inputId === target.columnId ? written : condition
+          )
+        : [...rule.conditions, written],
+    };
+  });
+
 /** The table with one value written as an expression: an outcome as is, a condition as `matches` it. */
 export const tableWithExpression = (
   table: EditableTable,
@@ -163,14 +191,6 @@ export const tableWithoutCell = (table: EditableTable, cell: SentenceCellId): Ed
           conditions: rule.conditions.filter((condition) => condition.inputId !== cell.columnId),
         }
   );
-
-/** The inputs a rule has no condition for. */
-export const unusedInputs = (table: EditableTable, rowId: string): EditableColumn[] => {
-  const rule = table.rules.find((candidate) => candidate.rowId === rowId);
-  return table.inputs.filter(
-    (input) => !rule?.conditions.some((condition) => condition.inputId === input.id)
-  );
-};
 
 /** The table with a new input column, and that column's id. */
 export const tableWithNewInput = (table: EditableTable): [EditableTable, string] => {
@@ -222,18 +242,17 @@ export const tableWithDuplicate = (
 export const tableWithClearedRule = (table: EditableTable, rowId: string): EditableTable =>
   mapRule(table, rowId, (rule) => ({ ...rule, outcomes: {}, conditions: [] }));
 
-/** The table with a rule moved by `delta` places, kept inside the table. */
+/** The table with the rule at `from` moved to `to`, kept inside the table. */
 export const tableWithMovedRule = (
   table: EditableTable,
-  rowId: string,
-  delta: number
+  from: number,
+  to: number
 ): EditableTable => {
-  const index = ruleIndexOf(table, rowId);
-  const rule = table.rules[index];
-  const to = Math.max(0, Math.min(table.rules.length - 1, index + delta));
-  if (!rule || to === index) return table;
+  const rule = table.rules[from];
+  const at = Math.max(0, Math.min(table.rules.length - 1, to));
+  if (!rule || at === from) return table;
   const rules = table.rules.filter((candidate) => candidate !== rule);
-  rules.splice(to, 0, rule);
+  rules.splice(at, 0, rule);
   return { ...table, rules };
 };
 
@@ -247,8 +266,8 @@ export const tableWithoutRule = (table: EditableTable, rowId: string): EditableT
 export const EDITABLE_TABLE: EditableTable = {
   inputs: [
     { id: 'age', name: 'age' },
-    { id: 'income', name: 'income', decisionId: 'net-income' },
-    { id: 'channel', name: 'channel', decisionId: 'sales-channel' },
+    { id: 'income', name: 'income', producedBy: 'net-income' },
+    { id: 'channel', name: 'channel', producedBy: 'sales-channel' },
   ],
   outputs: [{ id: 'risk', name: 'risk' }],
   rules: [
@@ -281,29 +300,47 @@ export const EDITABLE_TABLE: EditableTable = {
 /** The table with no rules, as a host starts a new one. */
 export const EMPTY_TABLE: EditableTable = { ...EDITABLE_TABLE, rules: [] };
 
-/** `count` rules cycling through the editable table's, each with its own id, after one rule whose channel lists `values` values. */
-export const manyRulesTable = (count: number, values: number): EditableTable => ({
-  ...EDITABLE_TABLE,
-  rules: [
-    {
-      rowId: 'long-list',
-      outcomes: { risk: '"review"' },
-      conditions: [
-        {
-          inputId: 'channel',
-          operator: 'is one of',
-          values: Array.from({ length: values }, (_, index) => `"Channel ${index + 1}"`),
+/** `count` rules cycling through the editable table's, each with its own id, after one rule whose channel lists `values` values and one with a condition on each of `inputs` more inputs. */
+export const manyRulesTable = (count: number, values: number, inputs: number): EditableTable => {
+  const extra = Array.from(
+    { length: inputs },
+    (_, index): EditableColumn => ({ id: `input-${index + 1}`, name: `Input ${index + 1}` })
+  );
+  return {
+    ...EDITABLE_TABLE,
+    inputs: [...EDITABLE_TABLE.inputs, ...extra],
+    nextId: inputs + 1,
+    rules: [
+      {
+        rowId: 'long-list',
+        outcomes: { risk: '"review"' },
+        conditions: [
+          {
+            inputId: 'channel',
+            operator: 'is one of',
+            values: Array.from({ length: values }, (_, index) => `"Channel ${index + 1}"`),
+            joiner: ', ',
+          },
+        ],
+      },
+      {
+        rowId: 'many-inputs',
+        outcomes: { risk: '"review"' },
+        conditions: extra.map((input, index) => ({
+          inputId: input.id,
+          operator: 'is',
+          values: [`${index + 1}`],
           joiner: ', ',
-        },
-      ],
-    },
-    ...Array.from({ length: count }, (_, index): EditableRule => {
-      const source = EDITABLE_TABLE.rules[index % EDITABLE_TABLE.rules.length];
-      return {
-        rowId: `row-${index}`,
-        outcomes: source?.outcomes ?? {},
-        conditions: source?.conditions ?? [],
-      };
-    }),
-  ],
-});
+        })),
+      },
+      ...Array.from({ length: count }, (_, index): EditableRule => {
+        const source = EDITABLE_TABLE.rules[index % EDITABLE_TABLE.rules.length];
+        return {
+          rowId: `row-${index}`,
+          outcomes: source?.outcomes ?? {},
+          conditions: source?.conditions ?? [],
+        };
+      }),
+    ],
+  };
+};

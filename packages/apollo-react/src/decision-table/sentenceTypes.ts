@@ -1,10 +1,12 @@
+import type React from 'react';
+
 /** A column's name inside a sentence; `columnId` is the input's or output's id. */
 export interface SentenceNameToken {
   kind: 'input' | 'output';
   columnId: string;
   text: string;
-  /** The decision whose output this input is; set only on an input. */
-  decisionId?: string;
+  /** The id of the decision whose output this input is; set only on an input. */
+  producedBy?: string;
 }
 
 /** A cell's value inside a sentence, and its `index` among the cell's values, 0 for an outcome. */
@@ -39,10 +41,27 @@ export interface SentenceRule {
   lines: readonly SentenceLine[];
 }
 
+/** A kind of value a column holds, which picks its default type glyph. */
+export type SentenceValueType =
+  | 'text'
+  | 'number'
+  | 'boolean'
+  | 'date'
+  | 'time'
+  | 'dateTime'
+  | 'dayTimeDuration'
+  | 'yearMonthDuration'
+  | 'list'
+  | 'any';
+
 /** An input or output of a band, by its column's id and name. */
 export interface SentenceBandColumn {
   id: string;
   name: string;
+  /** The column's kind of value; without `icon`, its glyph. */
+  type?: SentenceValueType;
+  /** The column's type glyph, before its name, in place of its type's. */
+  icon?: React.ReactNode;
 }
 
 /** A labelled run of columns shown above the rules. */

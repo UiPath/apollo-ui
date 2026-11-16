@@ -1,46 +1,50 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { useId } from 'react';
+import { useId, useMemo } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
+import { bandsOf } from './bandColumns';
+import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
-import type { DecisionTextEdit } from './decisionTextTypes';
+import type { DecisionTextEdit, DecisionTextLabels } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
+import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
-import type { RuleCardLabels } from './ruleCardModel';
 import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
 import type {
-  SentenceBand,
+  SentenceBandColumn,
   SentenceHeader,
   SentenceRule,
   SentenceSelection,
 } from './sentenceTypes';
 import { useAddRule } from './useAddRule';
 import { useCellHover } from './useCellHover';
+import { useColumnEditing } from './useColumnEditing';
 import {
   type ContainerHandlersParams,
   type DecisionTextContainerProps,
   useContainerHandlers,
 } from './useContainerHandlers';
+import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionTextStrings';
+import { useEditState } from './useEditState';
+import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
 import { useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
 import { useValueEditing } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
 
-/** The view's own strings; the consumer passes localized values. */
-export interface DecisionTextLabels extends RuleCardLabels {
-  emptyRules: string;
-}
-
 interface DecisionTextBaseProps {
   rules: readonly SentenceRule[];
-  bands: readonly SentenceBand[];
+  /** The input columns, shown in the inputs band. */
+  inputs: readonly SentenceBandColumn[];
+  /** The output columns, shown in the outputs band. */
+  outputs: readonly SentenceBandColumn[];
   header: SentenceHeader;
   /** Shows each rule's 1-based position before its heading. */
   numbered?: boolean;
@@ -56,13 +60,13 @@ interface DecisionTextBaseProps {
   headerMark?: DecisionTextHeaderProps['mark'];
   /** Opens the decision a linked input names, from a click on it or Alt+Enter on its cell; without it inputs stay plain. */
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
-  /** The view's own strings; mounted rules re-render when it changes, so memoize it. */
-  labels: DecisionTextLabels;
+  /** Strings in place of the built-in ones, any subset; mounted rules re-render when it changes, so memoize it. */
+  labels?: Partial<DecisionTextLabels>;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Spread onto the scroll container: its handlers run after the view's and its className is added to the view's; a `data-testid` here overrides `dataTestId`. */
   containerProps?: DecisionTextContainerProps;
-  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-editor`, `-context-menu`. */
+  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
   dataTestId: string;
   /** Overlays rendered inside the scroll container (menus, notes, dialogs). */
   children?: React.ReactNode;
@@ -91,7 +95,8 @@ export type DecisionTextProps = DecisionTextBaseProps &
 /** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks. */
 export const DecisionText: React.FC<DecisionTextProps> = ({
   rules,
-  bands,
+  inputs,
+  outputs,
   header,
   numbered = false,
   marks = EMPTY_MARKS,
@@ -99,26 +104,35 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   onCellHover,
   selected,
   onSelect,
-  edit,
+  edit: hostEdit,
   policy,
   headerMark,
   onOpenDecision,
-  labels,
+  labels: hostLabels,
   ariaLabel,
   containerProps,
   dataTestId,
   children,
 }) => {
   const idPrefix = useId();
+  const labels = useDecisionTextLabels(hostLabels);
+  const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels(hostEdit?.labels));
+  const bands = useMemo(() => bandsOf(inputs, outputs, labels), [inputs, outputs, labels]);
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
-  const ruleWindow = useRuleWindow(rules, selected?.rowId, edit?.editing?.rowId ?? selected?.rowId);
+  const shown = usePendingCondition({ edit, rules, bands });
+  const ruleWindow = useRuleWindow(
+    shown.rules,
+    selected?.rowId,
+    edit?.editing?.rowId ?? selected?.rowId
+  );
   const selectable = onSelect !== undefined;
   const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
   const ruleMenus = useRuleMenus({
     edit,
     rules,
+    bands,
     selectedRowId: selected?.rowId,
     refocus: navigation.refocus,
   });
@@ -131,9 +145,6 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     navigation,
     labels,
     container: ruleWindow.container,
-    openMenu: ruleMenus.openFor,
-    onOpenDecision,
-    addRule: addRuleAction,
   });
   const sectionProps = useContainerHandlers({
     containerProps,
@@ -145,6 +156,12 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     container: ruleWindow.container,
     stopTabbable: selectable && ruleWindow.selectedRow !== null,
   });
+  const columnEditing = useColumnEditing({
+    column: edit?.column,
+    bands,
+    container: ruleWindow.container,
+  });
+  const columnEditorId = `${idPrefix}-column-editor`;
   const listStyle = sentenceListStyle(numbered, rules.length);
 
   return (
@@ -171,6 +188,9 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           idPrefix={idPrefix}
           dataTestId={dataTestId}
           labels={labels}
+          onToggleColumn={columnEditing.onToggle}
+          openColumnId={columnEditing.openId}
+          editorId={columnEditorId}
         />
       )}
       {rules.length === 0 ? (
@@ -178,7 +198,8 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
       ) : (
         <RuleList
           ref={ruleWindow.listRef}
-          rules={rules}
+          rules={shown.rules}
+          pending={shown.pending}
           segments={ruleWindow.segments}
           numbered={numbered}
           marks={rowMarks}
@@ -202,10 +223,25 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           key={valueEditing.editorKey}
           editor={valueEditing.editor}
           renderEditor={edit.renderEditor}
+          labels={edit.labels}
+          refusal={refusal}
+          onOperatorChange={shown.onOperatorChange}
           container={ruleWindow.container}
           dataTestId={dataTestId}
         />
       )}
+      {columnEditing.editor && edit?.column && (
+        <ColumnEditorOverlay
+          key={columnEditing.editor.column.id}
+          editor={columnEditing.editor}
+          edit={edit.column}
+          labels={edit.labels}
+          container={ruleWindow.container}
+          id={columnEditorId}
+          dataTestId={dataTestId}
+        />
+      )}
+      <MarkTooltip container={ruleWindow.container} dataTestId={dataTestId} />
       <GridContextMenu
         label={ruleMenus.label}
         dataTestId={dataTestId}

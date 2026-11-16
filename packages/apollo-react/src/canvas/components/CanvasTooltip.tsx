@@ -30,6 +30,9 @@ export function CanvasTooltipProviderMarker({ children }: PropsWithChildren) {
   );
 }
 
+export const isEmptyTooltipContent = (content: ReactNode) =>
+  content == null || content === false || (typeof content === 'string' && content.trim() === '');
+
 type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 interface CanvasTooltipProps extends PropsWithChildren {
@@ -70,6 +73,11 @@ interface CanvasTooltipProps extends PropsWithChildren {
    * never applies — every open waits its full delay.
    */
   disableSkipDelay?: boolean;
+  /**
+   * When true, Escape closes the tooltip without reaching other Escape handlers,
+   * e.g. a focusable trigger inside a node that would otherwise deselect it.
+   */
+  stopEscapePropagation?: boolean;
 }
 
 /**
@@ -90,6 +98,7 @@ export function CanvasTooltip({
   contentClassName,
   disableHoverableContent,
   disableSkipDelay,
+  stopEscapePropagation,
   children,
 }: Readonly<CanvasTooltipProps>) {
   const childElement = useMemo(
@@ -150,8 +159,7 @@ export function CanvasTooltip({
     [smartTooltip, truncationDetection.check]
   );
 
-  const isEmptyContent =
-    content == null || content === false || (typeof content === 'string' && content.trim() === '');
+  const isEmptyContent = isEmptyTooltipContent(content);
 
   // Priority ordering matches ApTooltip: isOpen > hide > smartTooltip
   const isTooltipHidden = useMemo(() => {
@@ -177,6 +185,7 @@ export function CanvasTooltip({
         <TooltipContent
           side={placement}
           sideOffset={sideOffset}
+          onEscapeKeyDown={stopEscapePropagation ? (e) => e.stopPropagation() : undefined}
           className={cn('z-1200 max-w-xs wrap-break-word', contentClassName)}
         >
           {content}

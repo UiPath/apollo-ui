@@ -5,52 +5,57 @@ import {
   type RenderResult,
   render,
   screen,
+  waitFor,
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import type React from 'react';
-import { useLayoutEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import { type Mock, onTestFinished, vi } from 'vitest';
 import {
   EDITABLE_TABLE,
   type EditableTable,
-  tableBands,
+  tableColumns,
   tableWithNewInput,
   tableWithoutCell,
   tableWithoutRule,
   tableWithValue,
-  unusedInputs,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
+import {
+  installEscapeCloseRequest,
+  installModalInertness,
+  pressOutside,
+} from './__fixtures__/modalDialog';
 import {
   CHANNEL,
   COUNTRY,
   channel,
   country,
-  DECISION_TEXT_EDIT_LABELS,
-  DECISION_TEXT_LABELS,
-  GRID_SENTENCE_BANDS,
+  GRID_SENTENCE_COLUMNS,
   GRID_SENTENCE_HEADER,
   GRID_SENTENCE_RULES,
   HIT_POLICY_GROUPS,
   longValueListRule,
-  MULTI_SENTENCE_BANDS,
+  MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_RULES,
-  manyColumnBands,
+  manyColumns,
   manyLinesRule,
   manySentenceRules,
+  NO_COLUMNS,
   valueList,
 } from './__fixtures__/sentences.fixtures';
-import type { AddRuleButtonProps } from './AddRuleButton';
+import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
-import type { GridMenuEntry } from './GridMenu';
+import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type {
+  SentenceBandColumn,
   SentenceCellId,
   SentencePart,
   SentenceRule,
@@ -59,7 +64,38 @@ import type {
   SentenceValueToken,
 } from './sentenceTypes';
 import { SENTENCE_RULE_OVERSCAN } from './useRuleWindow';
-import type { SentenceEditorContext } from './valueTypes';
+import type {
+  ExpressionEditorProps,
+  ValueCommit,
+  ValueField,
+  ValueOperatorOption,
+} from './valueTypes';
+
+vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
+
+/** A host's expression editor on the contract: an input that reports its text and hands over its focus. */
+const HostInput = ({ value, ariaLabel, onChange, onReady }: ExpressionEditorProps) => {
+  const attach = useCallback(
+    (input: HTMLInputElement | null) => onReady(input && { focus: () => input.focus() }),
+    [onReady]
+  );
+  return (
+    <input
+      ref={attach}
+      aria-label={ariaLabel}
+      data-testid="host-editor"
+      value={value}
+      onChange={(event) => onChange(event.currentTarget.value)}
+    />
+  );
+};
+const hostInput = (props: ExpressionEditorProps) => <HostInput {...props} />;
+
+let uninstallEscape: () => void = () => {};
+beforeAll(() => {
+  uninstallEscape = installEscapeCloseRequest();
+});
+afterAll(() => uninstallEscape());
 
 type ViewProps<Props extends DecisionTextProps = DecisionTextProps> = Props extends unknown
   ? Partial<Props> & Pick<Props, 'selected' | 'onSelect' | 'edit'>
@@ -68,9 +104,8 @@ type ViewProps<Props extends DecisionTextProps = DecisionTextProps> = Props exte
 const view = (props: ViewProps = {}) => (
   <DecisionText
     rules={MULTI_SENTENCE_RULES}
-    bands={MULTI_SENTENCE_BANDS}
+    {...MULTI_SENTENCE_COLUMNS}
     header={MULTI_SENTENCE_HEADER}
-    labels={DECISION_TEXT_LABELS}
     ariaLabel="Rules"
     dataTestId="nl"
     {...props}
@@ -106,7 +141,7 @@ const Selectable = ({ initial = null, onSelect, ...props }: SelectableProps) => 
   const [selected, setSelected] = useState(initial);
   return view({
     rules: GRID_SENTENCE_RULES,
-    bands: GRID_SENTENCE_BANDS,
+    ...GRID_SENTENCE_COLUMNS,
     header: GRID_SENTENCE_HEADER,
     ...props,
     selected,
@@ -142,6 +177,15 @@ const later = (answer: () => void) => {
   void Promise.resolve().then(answer);
 };
 const settleLater = () => act(async () => {});
+/** A press as Safari on macOS makes one: the pressed control takes no focus, and unless mousedown is prevented the focused element blurs to the body before the click. */
+const safariPress = (target: HTMLElement) => {
+  const focused = document.activeElement;
+  fireEvent.pointerDown(target);
+  if (fireEvent.mouseDown(target) && focused instanceof HTMLElement) act(() => focused.blur());
+  fireEvent.pointerUp(target);
+  fireEvent.mouseUp(target);
+  fireEvent.click(target);
+};
 const rect = (left: number, right: number): DOMRect => ({
   left,
   right,
@@ -156,9 +200,12 @@ const rect = (left: number, right: number): DOMRect => ({
 
 interface EditSpies {
   onSelect: Mock<NonNullable<DecisionTextProps['onSelect']>>;
-  onStartEdit: Mock<DecisionTextEdit['onStartEdit']>;
-  onCommit: Mock<DecisionTextEdit['onCommit']>;
-  onCancel: Mock<DecisionTextEdit['onCancel']>;
+  onStartEdit: Mock<NonNullable<DecisionTextEdit['onStartEdit']>>;
+  onCommit: Mock<
+    (value: SentenceValueId, text: string, move: CellCommitMove, operator?: string) => void
+  >;
+  onCommitValues: Mock<DecisionTextEdit['onCommit']>;
+  onCancel: Mock<NonNullable<DecisionTextEdit['onCancel']>>;
   onClearCell: Mock<DecisionTextEdit['onClearCell']>;
 }
 
@@ -169,10 +216,9 @@ interface EditingHostProps
   initialEditing?: SentenceValueId | null;
   refuse?: boolean;
   renderEditor?: DecisionTextEdit['renderEditor'];
-  conditionEntries?: (
-    rowId: string,
-    startEdit: (value: SentenceValueId) => void
-  ) => GridMenuEntry[];
+  valueField?: DecisionTextEdit['valueField'];
+  column?: DecisionTextEdit['column'];
+  inputIds?: DecisionTextEdit['inputIds'];
 }
 
 const EditingHost = ({
@@ -180,7 +226,9 @@ const EditingHost = ({
   initialEditing = null,
   refuse = false,
   renderEditor,
-  conditionEntries,
+  valueField,
+  column,
+  inputIds,
   ...props
 }: EditingHostProps) => {
   const [editing, setEditing] = useState(initialEditing);
@@ -193,13 +241,19 @@ const EditingHost = ({
         ...editWith({ onClearCell: spies.onClearCell }),
         editing,
         renderEditor,
-        conditionEntries: (rowId) => conditionEntries?.(rowId, setEditing) ?? [],
+        valueField,
+        column,
+        inputIds,
         onStartEdit: (value) => {
           spies.onStartEdit(value);
           setEditing(value);
         },
-        onCommit: (value, text, move) => {
-          spies.onCommit(value, text, move);
+        onCommit: (value, commit, move) => {
+          spies.onCommitValues(value, commit, move);
+          const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
+          const operator = commit.kind === 'values' ? commit.operator : undefined;
+          if (operator === undefined) spies.onCommit(value, text, move);
+          else spies.onCommit(value, text, move, operator);
           if (refuse) setRefusals(refusals + 1);
           else setEditing(null);
         },
@@ -212,38 +266,41 @@ const EditingHost = ({
   );
 };
 
-const renderEditing = (props: Omit<EditingHostProps, 'spies'> = {}) => {
+const renderEditing = (props: Omit<EditingHostProps, 'spies'> = {}, container?: HTMLElement) => {
   const spies: EditSpies = {
     onSelect: vi.fn(),
     onStartEdit: vi.fn(),
     onCommit: vi.fn(),
+    onCommitValues: vi.fn(),
     onCancel: vi.fn(),
     onClearCell: vi.fn(),
   };
-  const rendered = render(<EditingHost spies={spies} {...props} />);
+  const rendered = render(<EditingHost spies={spies} {...props} />, { container });
   return { ...spies, ...rendered };
 };
 
 const valueChips = (rowId: string, columnId: string) => [
   ...card(rowId).querySelectorAll<HTMLElement>(`[data-kind="value"][data-column-id="${columnId}"]`),
 ];
-const secondAge = () => {
-  const [, second] = valueChips('r2', 'age');
-  if (!second) throw new Error('second age value');
-  return second;
+const valueChipAt = (rowId: string, columnId: string, index: number) => {
+  const chip = valueChips(rowId, columnId)[index];
+  if (!chip) throw new Error(`no ${columnId} value ${index} in ${rowId}`);
+  return chip;
 };
+const secondAge = () => valueChipAt('r2', 'age', 1);
 const editor = () => screen.getByTestId('nl-editor') as HTMLInputElement;
 const r2Age = (index: number): SentenceValueId => ({ rowId: 'r2', columnId: 'age', index });
+const valuesOf = (commit: ValueCommit) => {
+  if (commit.kind !== 'values') throw new Error(`an expression commit, ${commit.text}`);
+  return commit.values;
+};
 const editWith = (overrides: Partial<DecisionTextEdit> = {}): DecisionTextEdit => ({
   editing: null,
   onStartEdit: vi.fn(),
   onCommit: vi.fn(),
   onCancel: vi.fn(),
   onClearCell: vi.fn(),
-  conditionEntries: () => [],
-  ruleEntries: () => [],
   onDeleteRule: vi.fn(),
-  labels: DECISION_TEXT_EDIT_LABELS,
   ...overrides,
 });
 
@@ -261,6 +318,74 @@ describe('DecisionText', () => {
           'OutputsDecisionCredit LimitReason',
         ]
       );
+    });
+
+    it("draws a band column's type glyph before its name, hidden from its accessible name", () => {
+      renderView({
+        inputs: [
+          {
+            id: 'score',
+            name: 'Credit Score',
+            type: 'number',
+            icon: <svg data-testid="type-icon" />,
+          },
+        ],
+        outputs: [],
+      });
+      const column = within(screen.getByTestId('nl-bands')).getByRole('listitem');
+      expect(column.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+      expect(column.firstElementChild).toContainElement(screen.getByTestId('type-icon'));
+      expect(column).toHaveTextContent(/^Credit Score$/);
+    });
+
+    it("draws a column's glyph from its kind of value, and none for a kind the view lacks", () => {
+      const unknownType = 'toString' as unknown as SentenceBandColumn['type'];
+      renderView({
+        inputs: [
+          { id: 'score', name: 'Credit Score', type: 'number' },
+          { id: 'start', name: 'Start', type: 'dateTime' },
+          { id: 'flag', name: 'Flag', type: unknownType },
+          { id: 'note', name: 'Note' },
+        ],
+      });
+      const glyphOf = (columnId: string) =>
+        screen
+          .getByTestId('nl-bands')
+          .querySelector(`[data-column-id="${columnId}"]`)
+          ?.querySelector('svg')
+          ?.getAttribute('class');
+      expect(['score', 'start', 'flag', 'note'].map(glyphOf)).toEqual([
+        'lucide lucide-hash',
+        'lucide lucide-calendar-clock',
+        undefined,
+        undefined,
+      ]);
+    });
+
+    it.each([
+      ['no outputs', { outputs: [] }, ['Inputs']],
+      ['no inputs', { inputs: [] }, ['Outputs']],
+    ])('leaves out the band of a side with %s', (_, columns, captions) => {
+      renderView(columns);
+      expect(
+        [...screen.getByTestId('nl-bands').querySelectorAll('[data-band-id]')].map(
+          (band) => band.firstElementChild?.textContent
+        )
+      ).toEqual(captions);
+    });
+
+    it('shows no bands without inputs or outputs', () => {
+      renderView(NO_COLUMNS);
+      expect(screen.queryByTestId('nl-bands')).toBeNull();
+    });
+
+    it("captions the bands with the host's labels", () => {
+      renderView({ labels: { inputs: 'Eingaben', outputs: 'Ausgaben' } });
+      expect(
+        [...screen.getByTestId('nl-bands').querySelectorAll('[data-band-id]')].map(
+          (band) => band.firstElementChild?.textContent
+        )
+      ).toEqual(['Eingaben', 'Ausgaben']);
     });
 
     it('puts a row heading first, then its lead, then one line per condition', () => {
@@ -360,7 +485,7 @@ describe('DecisionText', () => {
     ])('stays read-only without onSelect with %s selected', (_, selected) => {
       renderView({
         rules: GRID_SENTENCE_RULES,
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         header: GRID_SENTENCE_HEADER,
         selected,
       });
@@ -467,7 +592,7 @@ describe('DecisionText', () => {
     it('names a focused condition stop with its run verdict, in a lead and on a line, and an outcome without one', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: rowMarks({
           m3: { cells: { score: { matched: true }, channel: { matched: false } } },
@@ -623,6 +748,386 @@ describe('DecisionText', () => {
     });
   });
 
+  describe('mark tooltip', () => {
+    const tooltip = () => screen.queryByTestId('nl-mark-tooltip');
+    const scoreMarks = rowMarks({
+      m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 1', glyph: true } } },
+      m5: { tone: 'warning', title: 'Unreachable', glyph: true },
+    });
+
+    it("shows a mark's message while the pointer is on it, and hides it off any mark", async () => {
+      renderView({ marks: scoreMarks });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(valueChip('m1', 'score'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it('keeps the message open while the pointer crosses onto it, and hides it once the pointer rests off any mark', async () => {
+      renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      fireEvent.pointerOver(card('m3'));
+      const shown = tooltip();
+      if (!shown) throw new Error('no tooltip');
+      fireEvent.pointerOver(shown);
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m3'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it("shows the header's and a band column's mark on hover", () => {
+      renderView({
+        headerMark: { tone: 'error', title: 'Collect returns a list', glyph: true },
+        marks: {
+          rows: new Map(),
+          columns: new Map([['country', { tone: 'error', title: 'No expression', glyph: true }]]),
+        },
+      });
+      const headerBadge = screen.getByTestId('nl-header').querySelector('[data-mark-title]');
+      if (!headerBadge) throw new Error('header badge');
+      fireEvent.pointerOver(headerBadge);
+      expect(tooltip()).toHaveTextContent('Collect returns a list');
+      const country = screen.getByTestId('nl-bands').querySelector('[data-column-id="country"]');
+      if (!country) throw new Error('country column');
+      fireEvent.pointerOver(country);
+      expect(tooltip()).toHaveTextContent('No expression');
+    });
+
+    it("follows the host's change to the mark under the pointer, hiding the message once the mark is gone", async () => {
+      const { rerender } = renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      rerender(
+        view({
+          marks: rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 2', glyph: true } } },
+          }),
+        })
+      );
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 2'));
+      rerender(view({ marks: rowMarks({}) }));
+      await waitFor(() => expect(tooltip()).toBeNull());
+      rerender(view({ marks: scoreMarks }));
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 1'));
+    });
+
+    it("follows the host's change to a mark while the pointer rests on its message", async () => {
+      const { rerender } = renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      fireEvent.pointerOver(card('m3'));
+      const shown = tooltip();
+      if (!shown) throw new Error('no tooltip');
+      fireEvent.pointerOver(shown);
+      rerender(
+        view({
+          marks: rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 2', glyph: true } } },
+          }),
+        })
+      );
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 2'));
+      rerender(view({ marks: rowMarks({}) }));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it("moves the message with the mark under the pointer when the host's change moves it", async () => {
+      const { rerender } = renderView({ marks: scoreMarks });
+      const marked = valueChip('m3', 'score').closest<HTMLElement>('[data-mark-title]');
+      if (!marked) throw new Error('m3 score mark');
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      const anchor = document.querySelector<HTMLElement>('span[aria-hidden][data-state]');
+      expect(anchor).toHaveStyle({ top: '0px' });
+      vi.spyOn(marked, 'getBoundingClientRect').mockReturnValue(DOMRect.fromRect({ y: 40 }));
+      rerender(
+        view({
+          marks: rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 1', glyph: true } } },
+            m1: { tone: 'warning', title: 'Unreachable', glyph: true },
+          }),
+        })
+      );
+      await waitFor(() => expect(anchor).toHaveStyle({ top: '40px' }));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+    });
+
+    it("follows the host's change to the marks of the focused rule: a new message, none, then a mark added", async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm5' },
+      };
+      const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      rerender(
+        <Selectable
+          {...shared}
+          marks={rowMarks({ m5: { tone: 'error', title: 'Never matches', glyph: true } })}
+        />
+      );
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Never matches'));
+      rerender(<Selectable {...shared} marks={rowMarks({})} />);
+      await waitFor(() => expect(tooltip()).toBeNull());
+      rerender(<Selectable {...shared} marks={scoreMarks} />);
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Unreachable'));
+      expect(document.activeElement).toBe(card('m5'));
+    });
+
+    it('keeps a message a scroll hid hidden when the host changes the marks under the pointer and focus', async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm5' },
+      };
+      const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
+      act(() => card('m5').focus());
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.scroll(screen.getByTestId('nl'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+      rerender(
+        <Selectable
+          {...shared}
+          marks={rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 2', glyph: true } } },
+            m5: { tone: 'error', title: 'Never matches', glyph: true },
+          })}
+        />
+      );
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(tooltip()).toBeNull();
+    });
+
+    it('keeps a message dismissed by Escape dismissed when the host changes its mark', async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm5' },
+      };
+      const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
+      act(() => card('m5').focus());
+      press('Escape');
+      expect(tooltip()).toBeNull();
+      rerender(
+        <Selectable
+          {...shared}
+          marks={rowMarks({ m5: { tone: 'error', title: 'Never matches', glyph: true } })}
+        />
+      );
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(tooltip()).toBeNull();
+    });
+
+    it('shows the mark a focused element carries or is described by, without adding to its description', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
+      act(() => valueChip('m3', 'score').focus());
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+    });
+
+    it("shows every message a focused rule's marks on several lines describe it with", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+    });
+
+    it('shows every message of a focused rule whose first mark the pointer is on, until Escape', async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
+            },
+          },
+        }),
+        initial: { rowId: 'm1' },
+      });
+      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
+      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
+      if (!first) throw new Error('m1 first badge');
+      fireEvent.pointerOver(first);
+      expect(tooltip()).not.toHaveTextContent('Overlaps row 2');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
+      fireEvent.keyDown(card('m1'), { key: 'Escape' });
+      fireEvent.pointerOver(first);
+      expect(tooltip()).toBeNull();
+    });
+
+    it('keeps every message of a focused rule whose first mark the pointer is on when the host changes its marks', async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm1' },
+      };
+      const marksWith = (country: string) =>
+        rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: country, glyph: true },
+            },
+          },
+        });
+      const { rerender } = render(<Selectable {...shared} marks={marksWith('Overlaps row 2')} />);
+      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
+      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
+      if (!first) throw new Error('m1 first badge');
+      fireEvent.pointerOver(first);
+      act(() => card('m1').focus());
+      rerender(<Selectable {...shared} marks={marksWith('Overlaps row 3')} />);
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 3'));
+      expect(tooltip()).toHaveTextContent('Not a number');
+    });
+
+    it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
+      const host = document.createElement('div');
+      document.body.append(host);
+      onTestFinished(() => host.remove());
+      const container = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).append(container);
+      render(
+        <Selectable
+          rules={MULTI_SENTENCE_RULES}
+          {...MULTI_SENTENCE_COLUMNS}
+          header={MULTI_SENTENCE_HEADER}
+          marks={scoreMarks}
+          initial={{ rowId: 'm5' }}
+        />,
+        { container }
+      );
+      const inShadow = within(container);
+      act(() => inShadow.getByTestId('nl-row-m5').focus());
+      expect(inShadow.queryByTestId('nl-mark-tooltip')).toHaveTextContent('Unreachable');
+    });
+
+    it("keeps a focused rule's message once the pointer leaves the view or rests off any mark, back from another mark, until Escape", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      const restOffMarks = () => act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(card('m1'));
+      await restOffMarks();
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(card('m1'));
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      await restOffMarks();
+      expect(tooltip()).toBeNull();
+    });
+
+    it("keeps a focused rule's message dismissed after Escape once the pointer leaves another mark", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.keyDown(card('m5'), { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerLeave(screen.getByTestId('nl'));
+      expect(tooltip()).toBeNull();
+    });
+
+    it('keeps the message of the mark under the pointer when focus moves to a rule with none', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm1' },
+      });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m1').focus());
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
+    it("brings a focused rule's message back once the pointer rests off any mark after another", async () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        marks: scoreMarks,
+        initial: { rowId: 'm5' },
+      });
+      act(() => card('m5').focus());
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.pointerOver(card('m1'));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
+    it('hides the message on Escape until another mark is reached', () => {
+      renderView({ marks: scoreMarks });
+      const score = valueChip('m3', 'score');
+      fireEvent.pointerOver(score);
+      fireEvent.keyDown(score, { key: 'Escape' });
+      expect(tooltip()).toBeNull();
+      fireEvent.pointerOver(score);
+      expect(tooltip()).toBeNull();
+      const heading = card('m5').querySelector('[data-mark-title="Unreachable"]');
+      if (!heading) throw new Error('m5 heading');
+      fireEvent.pointerOver(heading);
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+  });
+
   describe('hover', () => {
     it('reports the cell a hovered chip stands for once a re-render rewords it', () => {
       const onCellHover = vi.fn();
@@ -694,7 +1199,7 @@ describe('DecisionText', () => {
       const onAdd = vi.fn();
       const props = {
         rules: GRID_SENTENCE_RULES,
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         selected: { rowId: 'r1' },
         onSelect: vi.fn(),
         addRule: { label: 'Add rule', onAdd },
@@ -1001,7 +1506,7 @@ describe('DecisionText', () => {
     });
 
     it('keeps 50 band columns on one list, named once by its caption', () => {
-      renderView({ bands: manyColumnBands(50) });
+      renderView({ ...manyColumns(50) });
       const inputs = screen.getByRole('list', { name: 'Inputs' });
       expect(within(inputs).getAllByRole('listitem')).toHaveLength(50);
       expect(inputs.previousElementSibling).toHaveAttribute('aria-hidden', 'true');
@@ -1057,7 +1562,7 @@ describe('DecisionText', () => {
     });
 
     it('makes a band list a tab stop only while its columns overflow it', async () => {
-      renderView({ bands: manyColumnBands(50) });
+      renderView({ ...manyColumns(50) });
       expect(inputs()).not.toHaveAttribute('tabindex');
       expect(await tabStops()).toEqual(['Rules']);
       setWidths(inputs(), 3000, 400);
@@ -1077,19 +1582,39 @@ describe('DecisionText', () => {
       resize(first);
       expect(inputs()).toHaveAttribute('tabindex', '0');
       setWidths(inputs(), 400, 400);
-      const [inputBand, ...rest] = MULTI_SENTENCE_BANDS;
-      if (!inputBand) throw new Error('no band');
-      const grown = [
-        { ...inputBand, columns: [...inputBand.columns, { id: 'age', name: 'Age' }] },
-        ...rest,
-      ];
-      await act(async () => rerender(view({ bands: grown })));
+      const grown = [...MULTI_SENTENCE_COLUMNS.inputs, { id: 'age', name: 'Age' }];
+      await act(async () => rerender(view({ inputs: grown })));
       expect(inputs()).not.toHaveAttribute('tabindex');
       setWidths(inputs(), 700, 400);
       const added = within(inputs()).getAllByRole('listitem').at(-1);
       if (!added) throw new Error('no added column');
       resize(added);
       expect(inputs()).toHaveAttribute('tabindex', '0');
+    });
+
+    it("drops a band list's tab stop while its columns are buttons, even as they overflow it", () => {
+      renderView({
+        ...manyColumns(50),
+        selected: null,
+        onSelect: vi.fn(),
+        edit: editWith({
+          column: {
+            field: () => ({
+              kind: 'input',
+              label: 'x',
+              binding: 'x',
+              required: false,
+              typeRef: 't',
+            }),
+            types: [],
+            onCommit: vi.fn(),
+          },
+        }),
+      });
+      setWidths(inputs(), 3000, 400);
+      resize(inputs());
+      expect(within(inputs()).getAllByRole('button').length).toBeGreaterThan(0);
+      expect(inputs()).not.toHaveAttribute('tabindex');
     });
   });
 
@@ -1204,17 +1729,16 @@ describe('DecisionText', () => {
       expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
     });
 
-    it('takes no cell labels from a read-only view, and names a stop by its column and values without them', () => {
-      const { cell: _cell, emptyValue: _emptyValue, ...readOnly } = DECISION_TEXT_LABELS;
+    it('takes no cell labels from a read-only view', () => {
       const namesWith = (labels: DecisionTextProps['labels']) => {
         const { unmount } = renderView({ labels });
         const names = mountedRows().map((row) => row.getAttribute('aria-label'));
         unmount();
         return names;
       };
-      expect(namesWith(readOnly)).toEqual(namesWith(DECISION_TEXT_LABELS));
-      renderSelectable({ labels: readOnly, initial: { rowId: 'r2', columnId: 'age' } });
-      expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60');
+      expect(namesWith({ cell: () => 'a cell', emptyValue: 'nothing' })).toEqual(
+        namesWith(undefined)
+      );
     });
 
     it('names an empty value by its word, never by the dash it shows', () => {
@@ -1226,10 +1750,13 @@ describe('DecisionText', () => {
     });
 
     it('re-renders only the rules a selection leaves and enters', () => {
-      const cell = vi.fn(DECISION_TEXT_LABELS.cell);
+      const cell = vi.fn(
+        (column: string, values: string, position: number) =>
+          `${column} ${values}, rule ${position}`
+      );
       renderSelectable({
         rules: manySentenceRules(2000),
-        labels: { ...DECISION_TEXT_LABELS, cell },
+        labels: { cell },
         initial: { rowId: 'row-0' },
       });
       act(() => card('row-0').focus());
@@ -1334,7 +1861,7 @@ describe('DecisionText', () => {
         hostSelect = setSelected;
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           header: GRID_SENTENCE_HEADER,
           selected,
           onSelect: setSelected,
@@ -1474,7 +2001,7 @@ describe('DecisionText', () => {
       ['a rule', { rowId: 'r2' }, 'r2'],
       ['a cell', { rowId: 'r2', columnId: 'age' }, 'r2:age'],
     ])('lands Tab into the view on the selected stop with %s selected, and Tab or Shift+Tab from it leaves the view', async (_, initial, stop) => {
-      const { onSelect } = renderSelectable({ initial, bands: [] });
+      const { onSelect } = renderSelectable({ initial, ...NO_COLUMNS });
       const { before, after } = aroundView();
       act(() => before.focus());
       await tabs(1);
@@ -1624,7 +2151,7 @@ describe('DecisionText', () => {
       if (overflowing) overflowingBandLists();
       const { onSelect } = renderSelectable({
         initial: { rowId: 'r2', columnId: 'age' },
-        ...(!overflowing && { bands: [] }),
+        ...(!overflowing && NO_COLUMNS),
       });
       const view = screen.getByTestId('nl');
       const header = screen.getByTestId('nl-header');
@@ -1649,7 +2176,7 @@ describe('DecisionText', () => {
     });
 
     it('lands Tab into the view on the view itself with nothing selected', async () => {
-      const { onSelect } = renderSelectable({ bands: [] });
+      const { onSelect } = renderSelectable({ ...NO_COLUMNS });
       const { before, after } = aroundView();
       act(() => before.focus());
       expect(await tabs(2)).toEqual([screen.getByTestId('nl'), after]);
@@ -1669,7 +2196,7 @@ describe('DecisionText', () => {
       onTestFinished(() => outside.remove());
       const container = (shadow ?? host).appendChild(document.createElement('div'));
       const onSelect = vi.fn();
-      const props = { rules: GRID_SENTENCE_RULES, bands: GRID_SENTENCE_BANDS, onSelect };
+      const props = { rules: GRID_SENTENCE_RULES, ...GRID_SENTENCE_COLUMNS, onSelect };
       const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }), { container });
       const r2 = within(container).getByTestId('nl-row-r2');
       act(() => r2.focus());
@@ -1690,7 +2217,7 @@ describe('DecisionText', () => {
         const [saving, setSaving] = useState(false);
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           header: GRID_SENTENCE_HEADER,
           containerProps: { 'data-saving': String(saving) },
           selected,
@@ -1718,7 +2245,7 @@ describe('DecisionText', () => {
         const [saving, setSaving] = useState(false);
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           header: GRID_SENTENCE_HEADER,
           containerProps: { 'data-saving': String(saving) },
           selected,
@@ -1742,7 +2269,7 @@ describe('DecisionText', () => {
     it("keeps no focus pending from a move a host refused a moment later, so the host's own later select of it leaves focus alone", async () => {
       const outside = document.body.appendChild(document.createElement('button'));
       onTestFinished(() => outside.remove());
-      const props = { rules: GRID_SENTENCE_RULES, bands: GRID_SENTENCE_BANDS, onSelect: vi.fn() };
+      const props = { rules: GRID_SENTENCE_RULES, ...GRID_SENTENCE_COLUMNS, onSelect: vi.fn() };
       const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }));
       act(() => card('r2').focus());
       press('ArrowRight');
@@ -1983,7 +2510,7 @@ describe('DecisionText', () => {
         });
         return view({
           rules,
-          bands: manyColumnBands(10),
+          ...manyColumns(10),
           selected,
           onSelect: setSelected,
           edit: editWith({
@@ -2131,9 +2658,8 @@ describe('DecisionText', () => {
         // @ts-expect-error
         <DecisionText
           rules={GRID_SENTENCE_RULES}
-          bands={GRID_SENTENCE_BANDS}
+          {...GRID_SENTENCE_COLUMNS}
           header={GRID_SENTENCE_HEADER}
-          labels={DECISION_TEXT_LABELS}
           ariaLabel="Rules"
           dataTestId="nl"
           edit={editWith()}
@@ -2192,7 +2718,7 @@ describe('DecisionText', () => {
       expect(screen.getAllByTestId('nl-editor')).toHaveLength(1);
       expect(editor()).toHaveValue('60');
       expect(editor()).toHaveAccessibleName('age 60, rule 2');
-      expect(screen.getByRole('group', { name: 'age 60, rule 2' })).toContainElement(editor());
+      expect(screen.getByRole('dialog', { name: 'age 60, rule 2' })).toContainElement(editor());
       expect(card('r2').closest('ul')?.contains(editor())).toBe(false);
       expect(document.activeElement).toBe(editor());
       expect(await axe(container)).toHaveNoViolations();
@@ -2209,7 +2735,7 @@ describe('DecisionText', () => {
       const width = vi
         .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
         .mockImplementation(function (this: HTMLElement) {
-          return this.tagName === 'FIELDSET' ? 256 : 0;
+          return this.tagName === 'DIALOG' ? 256 : 0;
         });
       const { onStartEdit } = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
       Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 400 });
@@ -2221,6 +2747,89 @@ describe('DecisionText', () => {
       expect(onStartEdit).toHaveBeenCalledWith(r2Age(1));
       expect(lefts).toEqual(['144px']);
       expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ left: '144px' });
+    });
+
+    it.each<[string, number, number, number, { top: string; left: string }]>([
+      ['under its value when it fits below', 900, 1280, 600, { top: '624px', left: '600px' }],
+      ['above its value when only that fits', 700, 1280, 600, { top: '400px', left: '600px' }],
+      ['at the window bottom when neither fits', 300, 1280, 150, { top: '100px', left: '150px' }],
+      ['inside the window right edge', 900, 700, 600, { top: '624px', left: '444px' }],
+    ])('places the open editor %s', (_, innerHeight, innerWidth, at, expected) => {
+      const size = vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(innerHeight);
+      const across = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(innerWidth);
+      const height = vi
+        .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+        .mockImplementation(function (this: HTMLElement) {
+          return this.tagName === 'DIALOG' ? 200 : 0;
+        });
+      const width = vi
+        .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+        .mockImplementation(function (this: HTMLElement) {
+          return this.tagName === 'DIALOG' ? 256 : 0;
+        });
+      renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 2000 });
+      const chip = secondAge();
+      vi.spyOn(chip, 'getBoundingClientRect').mockReturnValue({
+        ...rect(at, at + 40),
+        top: at,
+        bottom: at + 24,
+        y: at,
+      });
+      fireEvent.click(chip);
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle(expected);
+      for (const spy of [size, across, height, width]) spy.mockRestore();
+    });
+
+    it('places an editor open on mount once when the page leaves its dialog the browser margins', () => {
+      const computed = window.getComputedStyle;
+      const spies = [
+        vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(700),
+        vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+          this: HTMLElement
+        ) {
+          return this.tagName === 'DIALOG' ? 200 : 0;
+        }),
+        vi
+          .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+          .mockReturnValue({ ...rect(0, 40), top: 600, bottom: 624, y: 600 }),
+        vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+          const style = computed(element, pseudo);
+          if (!(element instanceof HTMLDialogElement)) return style;
+          const between = (700 - (Number.parseFloat(element.style.top) || 0) - 200) / 2;
+          const marginTop = element.style.bottom === 'auto' ? '0px' : `${between}px`;
+          return new Proxy(style, {
+            get: (target, key) => (key === 'marginTop' ? marginTop : Reflect.get(target, key)),
+          });
+        }),
+      ];
+      onTestFinished(() => {
+        for (const spy of spies) spy.mockRestore();
+      });
+      renderEditing({ initialEditing: r2Age(1) });
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '400px' });
+    });
+
+    it('places the editor once at the right edge when the page leaves its dialog to fit its content', () => {
+      const spies = [
+        vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(640),
+        vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+          this: HTMLElement
+        ) {
+          if (this.tagName !== 'DIALOG') return 0;
+          if (!this.querySelector('input')) return 40;
+          return Math.min(298, 640 - (Number.parseFloat(this.style.left) || 0));
+        }),
+      ];
+      onTestFinished(() => {
+        for (const spy of spies) spy.mockRestore();
+      });
+      renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 639 });
+      const chip = secondAge();
+      vi.spyOn(chip, 'getBoundingClientRect').mockReturnValue(rect(500, 540));
+      fireEvent.click(chip);
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ left: '341px' });
     });
 
     it('moves the open editor with its value once a web font moves it', async () => {
@@ -2241,6 +2850,33 @@ describe('DecisionText', () => {
       });
       expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ left: '420px' });
       Reflect.deleteProperty(document, 'fonts');
+    });
+
+    it.each<[string]>([
+      ['the page'],
+      ['a shadow-root panel the view is slotted into'],
+    ])('moves the open editor with its value once %s scrolls', async (scroller) => {
+      const slotted = scroller !== 'the page';
+      const panel = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => panel.remove());
+      const inner = panel.attachShadow({ mode: 'open' }).appendChild(document.createElement('div'));
+      const slot = inner.appendChild(document.createElement('slot'));
+      const container = panel.appendChild(document.createElement('div'));
+      if (slotted) Object.defineProperty(container, 'assignedSlot', { value: slot });
+      renderEditing({ initial: { rowId: 'r1', columnId: 'age' } }, container);
+      Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 800 });
+      const [chip] = valueChips('r2', 'age');
+      if (!chip) throw new Error('age value');
+      let start = 100;
+      vi.spyOn(chip, 'getBoundingClientRect').mockImplementation(() => rect(start, start + 45));
+      fireEvent.click(chip);
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ left: '100px' });
+      start = 300;
+      await act(async () => {
+        fireEvent.scroll(slotted ? inner : document);
+        await new Promise(requestAnimationFrame);
+      });
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ left: '300px' });
     });
 
     it('moves the open editor with its value once a mark wraps it onto the next line', () => {
@@ -2270,12 +2906,12 @@ describe('DecisionText', () => {
         });
       const spies = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
       fireEvent.click(secondAge());
-      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '200px' });
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '224px' });
       const [first] = GRID_SENTENCE_RULES;
       const inserted = first ? [{ ...first, rowId: 'r0' }] : [];
       spies.rerender(<EditingHost spies={spies} rules={[...inserted, ...GRID_SENTENCE_RULES]} />);
       boxes.mockRestore();
-      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '300px' });
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '324px' });
     });
 
     it('commits once on Enter, then selects and focuses the same cell of the next rule', () => {
@@ -2289,31 +2925,6 @@ describe('DecisionText', () => {
       expect(screen.queryByTestId('nl-editor')).toBeNull();
       expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3', columnId: 'age' }]]);
       expect(focusedStop()).toBe('r3:age');
-    });
-
-    it("tabs to the cell's next value, and from its last value to the next cell", () => {
-      const { onCommit, onStartEdit, onSelect } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
-        initialEditing: r2Age(0),
-      });
-      fireEvent.keyDown(editor(), { key: 'Tab' });
-      expect(onCommit.mock.calls).toEqual([[r2Age(0), '25', 'right']]);
-      expect(onStartEdit.mock.calls).toEqual([[r2Age(1)]]);
-      expect(editor()).toHaveValue('60');
-      fireEvent.keyDown(editor(), { key: 'Tab' });
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'income' }]]);
-      expect(focusedStop()).toBe('r2:income');
-    });
-
-    it("tabs back from a cell's later value to its previous one", () => {
-      const { onCommit, onStartEdit } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
-        initialEditing: r2Age(1),
-      });
-      fireEvent.keyDown(editor(), { key: 'Tab', shiftKey: true });
-      expect(onCommit.mock.calls).toEqual([[r2Age(1), '60', 'left']]);
-      expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
-      expect(editor()).toHaveValue('25');
     });
 
     it.each([
@@ -2332,7 +2943,7 @@ describe('DecisionText', () => {
             </button>
             {view({
               rules: GRID_SENTENCE_RULES,
-              bands: GRID_SENTENCE_BANDS,
+              ...GRID_SENTENCE_COLUMNS,
               selected: { rowId: 'r2', columnId: 'age' },
               onSelect: vi.fn(),
               edit: editWith({
@@ -2370,7 +2981,7 @@ describe('DecisionText', () => {
           </button>
           {view({
             rules: GRID_SENTENCE_RULES,
-            bands: GRID_SENTENCE_BANDS,
+            ...GRID_SENTENCE_COLUMNS,
             selected,
             onSelect: setSelected,
             edit: editWith({ editing, onStartEdit: setEditing, onCommit: close, onCancel: close }),
@@ -2380,7 +2991,6 @@ describe('DecisionText', () => {
     };
 
     it.each<[string, KeyboardEventInit, string, string]>([
-      ['Tab', { key: 'Tab' }, '60', 'nl-editor'],
       ['Enter', { key: 'Enter' }, '', 'r3:age'],
       ['Escape', { key: 'Escape' }, '', 'r2:age'],
     ])('moves on from %s once the host closes the editor a moment later', async (_, key, opened, stop) => {
@@ -2402,7 +3012,7 @@ describe('DecisionText', () => {
         const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           selected: { rowId: 'r2', columnId: 'age' },
           onSelect: vi.fn(),
           edit: editWith({
@@ -2430,7 +3040,7 @@ describe('DecisionText', () => {
         const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           selected: { rowId: 'r2', columnId: 'age' },
           onSelect,
           edit: editWith({
@@ -2478,7 +3088,7 @@ describe('DecisionText', () => {
     it('cancels once the edit of a rule the host removes another way, as by undo or another client', () => {
       const onCancel = vi.fn();
       const props = {
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         selected: { rowId: 'r2', columnId: 'age' },
         onSelect: vi.fn(),
         edit: editWith({ editing: r2Age(0), onCancel }),
@@ -2497,7 +3107,7 @@ describe('DecisionText', () => {
         const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
         return view({
           rules,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           selected: { rowId: 'r2', columnId: 'age' },
           onSelect: vi.fn(),
           edit: editWith({ editing, onCancel: () => setEditing(null) }),
@@ -2512,7 +3122,7 @@ describe('DecisionText', () => {
       expect(screen.queryByTestId('nl-editor')).toBeNull();
     });
 
-    it('cancels on Escape back to the chip, and commits in place on a click outside', () => {
+    it('cancels on Escape back to the chip, and commits in place on a press outside, focusing the chip again', () => {
       const { onCancel, onCommit } = renderEditing({
         initial: { rowId: 'r2', columnId: 'age' },
         initialEditing: r2Age(1),
@@ -2524,8 +3134,11 @@ describe('DecisionText', () => {
       const outside = document.createElement('button');
       document.body.append(outside);
       act(() => outside.focus());
+      expect(onCommit).not.toHaveBeenCalled();
+      act(() => editor().focus());
+      pressOutside(screen.getByTestId('nl-value-editor'));
       expect(onCommit.mock.calls).toEqual([[r2Age(1), '60', 'none']]);
-      expect(document.activeElement).toBe(outside);
+      expect(focusedStop()).toBe('r2:age');
       outside.remove();
     });
 
@@ -2543,25 +3156,31 @@ describe('DecisionText', () => {
       fireEvent.blur(editor());
       expect(onCommit).toHaveBeenCalledTimes(1);
       fireEvent.change(editor(), { target: { value: '62' } });
-      fireEvent.blur(editor());
+      pressOutside(screen.getByTestId('nl-value-editor'));
       expect(onCommit.mock.calls).toEqual([
         [r2Age(1), '61', 'down'],
         [r2Age(1), '62', 'none'],
       ]);
     });
 
-    it("hands the host's editor the value it edits and the edit's commit", () => {
-      const contexts: SentenceEditorContext[] = [];
-      const renderEditor = (context: SentenceEditorContext) => {
+    it("swaps in the host's editor from Edit expression, handing it the value it edits, applying only from the popover", () => {
+      const contexts: ExpressionEditorProps[] = [];
+      const renderEditor = (context: ExpressionEditorProps) => {
         contexts.push(context);
         return <textarea aria-label={context.ariaLabel} defaultValue={context.value} />;
       };
       const { onCommit } = renderEditing({ initialEditing: r2Age(1), renderEditor });
+      expect(editor()).toHaveValue('60');
+      expect(contexts).toEqual([]);
+      fireEvent.click(screen.getByRole('button', { name: 'Edit expression' }));
       expect(screen.queryByTestId('nl-editor')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Edit expression' })).toBeNull();
       expect(screen.getByRole('textbox', { name: 'age 60, rule 2' })).toHaveValue('60');
       const context = contexts.at(-1);
       expect(context?.target).toEqual(r2Age(1));
-      act(() => context?.onCommit('x', 'none'));
+      act(() => context?.onChange('x'));
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
       expect(onCommit.mock.calls).toEqual([[r2Age(1), 'x', 'none']]);
     });
 
@@ -2569,7 +3188,7 @@ describe('DecisionText', () => {
       const rules = manySentenceRules(400);
       renderEditing({
         rules,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         initialEditing: { rowId: 'row-300', columnId: 'decision', index: 0 },
       });
@@ -2604,6 +3223,1471 @@ describe('DecisionText', () => {
         's',
         'z',
       ]);
+    });
+  });
+
+  describe('value popover', () => {
+    let uninstallInertness: () => void = () => {};
+    beforeAll(() => {
+      uninstallInertness = installModalInertness();
+    });
+    afterAll(() => uninstallInertness());
+    const AGE_OPERATORS = [
+      { id: '<', label: 'is less than' },
+      { id: '>', label: 'is greater than' },
+    ];
+    const RISKS = ['"high"', '"standard"', '"review"'];
+    const r1Age: SentenceValueId = { rowId: 'r1', columnId: 'age', index: 0 };
+    const r1Risk: SentenceValueId = { rowId: 'r1', columnId: 'risk', index: 0 };
+    const r3Channel: SentenceValueId = { rowId: 'r3', columnId: 'channel', index: 0 };
+    const CHANNEL_COLUMNS = {
+      ...GRID_SENTENCE_COLUMNS,
+      inputs: [...GRID_SENTENCE_COLUMNS.inputs, { id: 'channel', name: 'channel' }],
+    };
+    const field = (cell: SentenceCellId): ValueField => {
+      if (cell.columnId === 'risk') return { allowedValues: RISKS };
+      if (cell.columnId === 'channel') return { operators: AGE_OPERATORS, operator: '>' };
+      return {
+        icon: <svg data-testid="type-icon" />,
+        operators: AGE_OPERATORS,
+        operator: '<',
+        expression: '< 25',
+      };
+    };
+    const popover = () => screen.getByTestId('nl-value-editor');
+    const inPopover = () => within(popover());
+    const operatorSelect = () => inPopover().getByRole('combobox', { name: 'Operator' });
+    const action = (name: string) => inPopover().getByRole('button', { name });
+    const pressApply = () => {
+      const apply = action('Apply');
+      const hit = (apply.matches(':disabled') && apply.parentElement) || apply;
+      fireEvent.pointerDown(hit);
+      if (fireEvent.mouseDown(hit) && !apply.matches(':disabled')) act(() => apply.focus());
+      fireEvent.pointerUp(hit);
+      fireEvent.mouseUp(hit);
+      fireEvent.click(hit);
+    };
+
+    it('cancels from Cancel an expression typed into a host editor', () => {
+      const { onCommit, onCancel } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: hostInput,
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      const cancel = action('Cancel');
+      act(() => cancel.focus());
+      fireEvent.click(cancel);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('applies from Apply the text a host editor reports through onChange', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: hostInput,
+      });
+      fireEvent.click(action('Edit expression'));
+      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
+    it('applies from Apply the text a refused Enter submitted from a host editor', async () => {
+      const user = userEvent.setup();
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        refuse: true,
+        renderEditor: hostInput,
+      });
+      await user.click(action('Edit expression'));
+      await user.clear(screen.getByTestId('host-editor'));
+      await user.type(screen.getByTestId('host-editor'), 'x{Enter}');
+      await user.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([
+        [r1Age, 'x', 'down'],
+        [r1Age, 'x', 'none'],
+      ]);
+    });
+
+    it('applies an expression a host editor held as focus moved to the footer, on a press outside', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor: hostInput,
+      });
+      fireEvent.click(action('Edit expression'));
+      const expression = screen.getByRole('textbox', { name: 'age 25, rule 1' });
+      act(() => expression.focus());
+      fireEvent.change(expression, { target: { value: 'x' } });
+      act(() => action('Apply').focus());
+      expect(onCommit).not.toHaveBeenCalled();
+      act(() => screen.getByTestId('nl').focus());
+      expect(onCommit).not.toHaveBeenCalled();
+      pressOutside(popover());
+      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
+    });
+
+    it('returns focus to the value from Apply when the view is in a shadow root', () => {
+      const host = document.body.appendChild(document.createElement('div'));
+      onTestFinished(() => host.remove());
+      const shadow = host.attachShadow({ mode: 'open' });
+      const container = shadow.appendChild(document.createElement('div'));
+      renderEditing(
+        { initial: { rowId: 'r1', columnId: 'age' }, initialEditing: r1Age, valueField: field },
+        container
+      );
+      const inShadow = within(container);
+      fireEvent.click(
+        within(inShadow.getByTestId('nl-value-editor')).getByRole('button', { name: 'Apply' })
+      );
+      expect(inShadow.queryByTestId('nl-value-editor')).toBeNull();
+      expect(shadow.activeElement).toBe(
+        inShadow.getByTestId('nl-row-r1').querySelector('[data-kind="value"][data-column-id="age"]')
+      );
+    });
+
+    it.each([
+      ['its column', undefined, 'lucide lucide-hash'],
+      ['the host', <svg key="host" data-testid="host-icon" />, null],
+    ])('titles the popover with the glyph %s gives', (_, icon, glyph) => {
+      renderEditing({
+        initialEditing: r1Age,
+        valueField: (cell) => ({ ...field(cell), icon }),
+        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
+      });
+      const svg = popover().querySelector('svg');
+      expect(svg?.getAttribute('class') ?? null).toBe(glyph);
+      expect(inPopover().queryByTestId('host-icon') !== null).toBe(icon !== undefined);
+    });
+
+    it("titles the popover with the column's type glyph and name, over the cell's operator and value", () => {
+      renderEditing({ initialEditing: r1Age, valueField: field });
+      expect(inPopover().getByTestId('type-icon')).toBeInTheDocument();
+      expect(inPopover().getByText('age')).toBeInTheDocument();
+      expect(operatorSelect()).toHaveTextContent('is less than');
+      expect(editor()).toHaveValue('25');
+      expect(
+        inPopover()
+          .getAllByRole('button')
+          .map((button) => button.textContent)
+      ).toEqual(['Edit expression', 'Cancel', 'Apply']);
+    });
+
+    it('opens the operator list from the value input on Alt+ArrowDown or Alt+ArrowUp, and returns focus to it on a pick', () => {
+      const { onCommit, onCancel } = renderEditing({ initialEditing: r1Age, valueField: field });
+      expect(editor()).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
+      fireEvent.keyDown(editor(), { key: 'ArrowDown' });
+      expect(screen.queryByRole('listbox')).toBeNull();
+      fireEvent.keyDown(editor(), { key: 'ArrowDown', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      expect(screen.queryByRole('listbox')).toBeNull();
+      expect(document.activeElement).toBe(editor());
+      fireEvent.keyDown(editor(), { key: 'ArrowUp', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
+      expect(document.activeElement).toBe(editor());
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onCancel).not.toHaveBeenCalled();
+      fireEvent.keyDown(editor(), { key: 'ArrowDown', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '>']]);
+    });
+
+    it('shows no operator select or shortcut for a cell the host offers none for', () => {
+      renderEditing({ initialEditing: r2Age(1) });
+      expect(inPopover().queryByRole('combobox')).toBeNull();
+      expect(inPopover().getByText('age')).toBeInTheDocument();
+      expect(editor()).toHaveValue('60');
+      expect(editor()).not.toHaveAttribute('aria-keyshortcuts');
+      fireEvent.keyDown(editor(), { key: 'ArrowDown', altKey: true });
+      expect(screen.queryByRole('listbox')).toBeNull();
+      expect(editor()).toBeInTheDocument();
+    });
+
+    it("shows an operator the host's operators lack as it is, and keeps it offered once another is picked", async () => {
+      const user = userEvent.setup();
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({ operators: AGE_OPERATORS, operator: '!=' }),
+      });
+      expect(operatorSelect()).toHaveTextContent('!=');
+      await user.click(operatorSelect());
+      await user.click(screen.getByRole('option', { name: 'is greater than' }));
+      await user.click(operatorSelect());
+      await user.click(screen.getByRole('option', { name: '!=' }));
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '!=']]);
+    });
+
+    it('starts a condition whose field offers operators but names none on the first of them, and commits it', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({ operators: AGE_OPERATORS }),
+      });
+      const [first] = AGE_OPERATORS;
+      if (!first) throw new Error('no age operator');
+      expect(operatorSelect()).toHaveTextContent(first.label);
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', first.id]]);
+    });
+
+    it('commits the picked operator with the value on Enter, and moves down as before', () => {
+      const { onCommit, onSelect } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: r1Age,
+        valueField: field,
+      });
+      fireEvent.click(operatorSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      expect(operatorSelect()).toHaveTextContent('is greater than');
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.keyDown(editor(), { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '>']]);
+      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(focusedStop()).toBe('r2:age');
+    });
+
+    it('commits an allowed value from a click on its radio, offering no text field beside them', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Risk,
+        valueField: field,
+        renderEditor: () => null,
+      });
+      const high = inPopover().getByRole('radio', { name: '"high"' });
+      expect(high).toBeChecked();
+      expect(document.activeElement).toBe(high);
+      expect(inPopover().queryByRole('textbox')).toBeNull();
+      expect(action('Edit expression')).toBeInTheDocument();
+      fireEvent.click(inPopover().getByRole('radio', { name: '"review"' }));
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"review"', 'none']]);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+    });
+
+    it('moves the choice with an arrow key without committing, and commits it on Enter', async () => {
+      const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+      const standard = inPopover().getByRole('radio', { name: '"standard"' });
+      fireEvent.keyDown(inPopover().getByRole('radio', { name: '"high"' }), { key: 'ArrowDown' });
+      await waitFor(() => expect(standard).toBeChecked());
+      fireEvent.keyUp(standard, { key: 'ArrowDown' });
+      expect(document.activeElement).toBe(standard);
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.keyDown(standard, { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"standard"', 'down']]);
+    });
+
+    it('commits the value an arrow key moved to on Space', async () => {
+      const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+      const user = userEvent.setup();
+      const standard = inPopover().getByRole('radio', { name: '"standard"' });
+      await user.keyboard('{ArrowDown}');
+      await waitFor(() => expect(standard).toBeChecked());
+      expect(document.activeElement).toBe(standard);
+      await user.keyboard(' ');
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"standard"', 'none']]);
+    });
+
+    it('shows a value the column does not allow as the checked radio after the allowed ones, marked not allowed', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r1Risk,
+        valueField: () => ({ allowedValues: ['"standard"', '"review"'] }),
+      });
+      const high = inPopover().getByRole('radio', { name: '"high"' });
+      expect(inPopover().getAllByRole('radio').indexOf(high)).toBe(2);
+      expect(high).toBeChecked();
+      expect(high).toHaveAccessibleDescription('Not one of the allowed values');
+      expect(
+        inPopover().getByRole('radio', { name: '"standard"' })
+      ).not.toHaveAccessibleDescription();
+      expect(popover().querySelectorAll('[data-glyph="error"]')).toHaveLength(1);
+      fireEvent.click(inPopover().getByRole('radio', { name: '"review"' }));
+      expect(onCommit.mock.calls).toEqual([[r1Risk, '"review"', 'none']]);
+    });
+
+    it("focuses an empty outcome's first allowed value without choosing it", () => {
+      const m2Reason: SentenceValueId = { rowId: 'm2', columnId: 'reason', index: 0 };
+      const { onCommit } = renderEditing({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initialEditing: m2Reason,
+        valueField: () => ({ allowedValues: ['"prime"', '"low score"'] }),
+      });
+      const radios = inPopover().getAllByRole('radio');
+      expect(radios).toHaveLength(2);
+      expect(document.activeElement).toBe(radios[0]);
+      expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([]);
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[m2Reason, '', 'none']]);
+    });
+
+    it("offers an empty outcome the host's allowed values without their empty or repeated ones, none checked", () => {
+      const m2Reason: SentenceValueId = { rowId: 'm2', columnId: 'reason', index: 0 };
+      renderEditing({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initialEditing: m2Reason,
+        valueField: () => ({ allowedValues: ['', '"prime"', ' ', '"prime"', '"low score"'] }),
+      });
+      const radios = inPopover().getAllByRole('radio');
+      expect(radios.map((radio) => radio.getAttribute('value'))).toEqual([
+        '"prime"',
+        '"low score"',
+      ]);
+      expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([]);
+    });
+
+    it("offers the host's operators without their empty or repeated ids", () => {
+      renderEditing({
+        initialEditing: r1Age,
+        valueField: () => ({
+          operators: [{ id: '', label: 'any' }, ...AGE_OPERATORS, { id: '<', label: 'below' }],
+          operator: '<',
+        }),
+      });
+      fireEvent.click(operatorSelect());
+      expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+        'is less than',
+        'is greater than',
+      ]);
+    });
+
+    it('opens the operator list from an allowed value on Alt+ArrowDown, and returns focus to it on a pick', () => {
+      const m3Channel: SentenceValueId = { rowId: 'm3', columnId: 'channel', index: 0 };
+      const { onCommit } = renderEditing({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initialEditing: m3Channel,
+        valueField: () => ({
+          operators: AGE_OPERATORS,
+          operator: '<',
+          allowedValues: ['"web"', '"branch"'],
+        }),
+      });
+      const branch = inPopover().getByRole('radio', { name: '"branch"' });
+      expect(branch).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
+      fireEvent.keyDown(branch, { key: 'ArrowDown', altKey: true });
+      fireEvent.keyUp(branch, { key: 'ArrowDown', altKey: true });
+      fireEvent.click(screen.getByRole('option', { name: 'is greater than' }));
+      expect(document.activeElement).toBe(branch);
+      expect(branch).toBeChecked();
+      fireEvent.keyDown(branch, { key: 'Enter' });
+      expect(onCommit.mock.calls).toEqual([[m3Channel, '"branch"', 'down', '>']]);
+    });
+
+    it('clears an outcome with a value from Clear, and offers no Clear on a condition', () => {
+      const { onClearCell, onCancel, onCommit } = renderEditing({
+        initialEditing: r1Risk,
+        valueField: field,
+      });
+      fireEvent.click(action('Clear'));
+      expect(onClearCell.mock.calls).toEqual([[{ rowId: 'r1', columnId: 'risk' }]]);
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      fireEvent.click(valueChip('r1', 'age'));
+      expect(inPopover().queryByRole('button', { name: 'Clear' })).toBeNull();
+    });
+
+    it('cancels from Cancel back to the chip, committing nothing', () => {
+      const { onCancel, onCommit } = renderEditing({
+        initial: { rowId: 'r2', columnId: 'age' },
+        initialEditing: r2Age(1),
+      });
+      fireEvent.change(editor(), { target: { value: '61' } });
+      fireEvent.click(action('Cancel'));
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(focusedStop()).toBe('r2:age');
+    });
+
+    describe('settling', () => {
+      it('commits the allowed value a press picks though the press leaves focus nowhere, as Safari does', () => {
+        const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
+        safariPress(inPopover().getByRole('radio', { name: '"review"' }));
+        expect(onCommit.mock.calls).toEqual([[r1Risk, '"review"', 'none']]);
+      });
+
+      it.each([
+        ['its operator select', () => operatorSelect()],
+        ['its header', () => inPopover().getByText('age')],
+      ])('keeps the popover open from a press on %s that leaves focus nowhere, as Safari does, and Escape still cancels it', (_, target) => {
+        const { onCommit, onCancel } = renderEditing({ initialEditing: r1Age, valueField: field });
+        safariPress(target());
+        expect(onCommit).not.toHaveBeenCalled();
+        expect(popover()).toBeInTheDocument();
+        {
+          const focused = document.activeElement;
+          if (focused instanceof HTMLElement) act(() => focused.blur());
+        }
+        if (screen.queryByRole('listbox')) {
+          fireEvent.keyDown(document.body, { key: 'Escape' });
+          expect(screen.queryByRole('listbox')).toBeNull();
+          expect(onCancel).not.toHaveBeenCalled();
+        }
+        fireEvent.keyDown(document.body, { key: 'Escape' });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+      });
+
+      it('applies the draft a host editor reports through onDraftChange on a press outside, not as focus leaves', () => {
+        const { onCommit } = renderEditing({
+          initialEditing: r1Age,
+          valueField: field,
+          renderEditor: hostInput,
+        });
+        fireEvent.click(action('Edit expression'));
+        const input = screen.getByTestId('host-editor');
+        act(() => input.focus());
+        fireEvent.change(input, { target: { value: '< 30' } });
+        act(() => screen.getByTestId('nl').focus());
+        expect(onCommit).not.toHaveBeenCalled();
+        pressOutside(popover());
+        expect(onCommit.mock.calls).toEqual([[r1Age, '< 30', 'none']]);
+      });
+
+      it('shows the popover again when the browser closes its dialog while the host keeps it open', () => {
+        const { onCancel } = renderEditing({ initialEditing: r1Age, valueField: field });
+        const dialog = screen.getByRole('dialog');
+        if (!(dialog instanceof HTMLDialogElement)) throw new Error('dialog');
+        act(() => dialog.close());
+        expect(dialog.open).toBe(true);
+        expect(onCancel).not.toHaveBeenCalled();
+      });
+
+      it('opens Edit expression on the whole condition the host gives, and applies one left as it opened as the popover draft', () => {
+        const { onCommitValues } = renderEditing({
+          initialEditing: r1Age,
+          valueField: field,
+          renderEditor: hostInput,
+        });
+        fireEvent.click(action('Edit expression'));
+        expect(screen.getByTestId('host-editor')).toHaveValue('< 25');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [r1Age, { kind: 'values', values: ['25'], operator: '<' }, 'none'],
+        ]);
+      });
+
+      it('offers no Edit expression on a condition with operators the host gives no expression for', () => {
+        renderEditing({
+          initialEditing: r1Age,
+          valueField: () => ({ operators: AGE_OPERATORS, operator: '<' }),
+          renderEditor: hostInput,
+        });
+        expect(inPopover().queryByRole('button', { name: 'Edit expression' })).toBeNull();
+      });
+
+      it('tells the host an expression commit from a values commit by its kind', () => {
+        const { onCommitValues } = renderEditing({
+          initialEditing: r1Age,
+          valueField: field,
+          renderEditor: hostInput,
+        });
+        fireEvent.change(editor(), { target: { value: '30' } });
+        fireEvent.keyDown(editor(), { key: 'Enter' });
+        fireEvent.click(valueChip('r1', 'age'));
+        fireEvent.click(action('Edit expression'));
+        const input = screen.getByTestId('host-editor');
+        fireEvent.change(input, { target: { value: '< 30' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+        expect(onCommitValues.mock.calls.map(([, commit]) => commit)).toEqual([
+          { kind: 'values', values: ['30'], operator: '<' },
+          { kind: 'expression', text: '< 30' },
+        ]);
+      });
+
+      it('commits nothing from a host editor once Escape cancelled the popover and focus left before the host closed it', async () => {
+        const outside = document.body.appendChild(document.createElement('button'));
+        onTestFinished(() => outside.remove());
+        const onCommit = vi.fn();
+        const SlowCancelHost = () => {
+          const [editing, setEditing] = useState<SentenceValueId | null>(r1Age);
+          return view({
+            rules: GRID_SENTENCE_RULES,
+            ...GRID_SENTENCE_COLUMNS,
+            selected: { rowId: 'r1', columnId: 'age' },
+            onSelect: vi.fn(),
+            edit: editWith({
+              editing,
+              onStartEdit: setEditing,
+              valueField: field,
+              renderEditor: hostInput,
+              onCommit: (...args) => {
+                onCommit(...args);
+                setEditing(null);
+              },
+              onCancel: () => later(() => setEditing(null)),
+            }),
+          });
+        };
+        render(<SlowCancelHost />);
+        fireEvent.click(action('Edit expression'));
+        const input = screen.getByTestId('host-editor');
+        act(() => input.focus());
+        fireEvent.change(input, { target: { value: 'cancelled' } });
+        fireEvent.keyDown(input, { key: 'Escape' });
+        act(() => outside.focus());
+        await settleLater();
+        expect(onCommit).not.toHaveBeenCalled();
+      });
+
+      it('commits nothing from a condition added from + while it has no value, and says why Apply is off', () => {
+        const { onCommit } = renderEditing({
+          initialEditing: r3Channel,
+          valueField: field,
+          ...CHANNEL_COLUMNS,
+        });
+        expect(action('Apply')).toBeDisabled();
+        expect(editor()).toHaveAttribute('aria-invalid', 'true');
+        expect(editor()).toHaveAccessibleDescription('Enter a value');
+        fireEvent.keyDown(editor(), { key: 'Enter' });
+        fireEvent.keyDown(editor(), { key: 'Tab' });
+        act(() => screen.getByTestId('nl').focus());
+        pressOutside(popover());
+        expect(onCommit).not.toHaveBeenCalled();
+        expect(popover()).toBeInTheDocument();
+        fireEvent.change(editor(), { target: { value: '"web"' } });
+        expect(editor()).not.toHaveAccessibleDescription();
+        expect(action('Apply')).toBeEnabled();
+      });
+
+      it('applies from Apply an expression typed for a condition added from + into a host editor', async () => {
+        const user = userEvent.setup();
+        const { onCommitValues } = renderEditing({
+          initialEditing: r3Channel,
+          valueField: () => ({}),
+          ...CHANNEL_COLUMNS,
+          renderEditor: hostInput,
+        });
+        await user.click(action('Edit expression'));
+        pressApply();
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(popover()).toBeInTheDocument();
+        await user.type(screen.getByTestId('host-editor'), '"web"');
+        pressApply();
+        expect(onCommitValues.mock.calls).toEqual([
+          [r3Channel, { kind: 'expression', text: '"web"' }, 'none'],
+        ]);
+      });
+
+      it('applies an expression typed for a condition added from +, though its own fields hold no value', () => {
+        const { onCommitValues } = renderEditing({
+          initialEditing: r3Channel,
+          valueField: () => ({}),
+          ...CHANNEL_COLUMNS,
+          renderEditor: hostInput,
+        });
+        fireEvent.click(action('Edit expression'));
+        expect(action('Apply')).toHaveAttribute('aria-disabled', 'true');
+        fireEvent.change(screen.getByTestId('host-editor'), { target: { value: '"web"' } });
+        expect(action('Apply')).not.toHaveAttribute('aria-disabled');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [r3Channel, { kind: 'expression', text: '"web"' }, 'none'],
+        ]);
+      });
+
+      it.each<[string, ValueField, string]>([
+        [
+          'the first operator when the field names none',
+          { operators: AGE_OPERATORS },
+          'is less than',
+        ],
+        [
+          'an operator the host lacks, as the select shows it',
+          { operators: AGE_OPERATORS, operator: '!=' },
+          '!=',
+        ],
+      ])('words a pending line with %s', (_, pendingField, words) => {
+        renderEditing({
+          initialEditing: r3Channel,
+          valueField: () => pendingField,
+          ...CHANNEL_COLUMNS,
+        });
+        expect(operatorSelect()).toHaveTextContent(words);
+        expect(card('r3').querySelector('li[data-pending]')).toHaveTextContent(
+          new RegExp(`^channel ${words} Set a value$`)
+        );
+      });
+    });
+
+    it('applies the draft in place from Apply, with its operator', () => {
+      const { onCommit } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: r1Age,
+        valueField: field,
+      });
+      fireEvent.change(editor(), { target: { value: '30' } });
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r1Age, '30', 'none', '<']]);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      expect(focusedStop()).toBe('r1:age');
+    });
+
+    it('keeps the edit open while focus moves anywhere, and commits once on a press outside', () => {
+      const renderEditor = () => <textarea aria-label="expression" />;
+      const { onCommit } = renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        renderEditor,
+      });
+      fireEvent.change(editor(), { target: { value: '30' } });
+      for (const inside of [
+        operatorSelect(),
+        action('Edit expression'),
+        action('Cancel'),
+        action('Apply'),
+      ]) {
+        fireEvent.blur(editor(), { relatedTarget: inside });
+      }
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(editor()).toHaveValue('30');
+      fireEvent.blur(editor(), { relatedTarget: card('r2') });
+      fireEvent.blur(editor());
+      expect(onCommit).not.toHaveBeenCalled();
+      pressOutside(popover());
+      expect(onCommit.mock.calls).toEqual([[r1Age, '30', 'none', '<']]);
+    });
+
+    it.each<[string, Parameters<typeof pressOutside>[1]]>([
+      ['a left click', {}],
+      ['a middle click', { button: 1 }],
+      ['a right click', { button: 2 }],
+      ['a touch tap', { pointerType: 'touch' }],
+    ])('applies the typed draft once from %s outside the popover, and runs nothing else', (_, init) => {
+      const onOpenDecision = vi.fn();
+      const onAdd = vi.fn();
+      const { onCommit, onStartEdit, onClearCell, onCancel } = renderEditing({
+        initial: { rowId: 'r1', columnId: 'age' },
+        initialEditing: r1Age,
+        onOpenDecision,
+        addRule: { label: 'Add rule', onAdd },
+      });
+      fireEvent.change(editor(), { target: { value: '30' } });
+      pressOutside(popover(), init);
+      expect(onCommit.mock.calls).toEqual([[r1Age, '30', 'none']]);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      expect(screen.queryByRole('menu')).toBeNull();
+      expect(
+        [onStartEdit, onClearCell, onCancel, onOpenDecision, onAdd].map(
+          (spy) => spy.mock.calls.length
+        )
+      ).toEqual([0, 0, 0, 0, 0]);
+    });
+
+    it('applies nothing from a press that starts inside the popover and is released outside it', () => {
+      const { onCommit } = renderEditing({ initialEditing: r1Age });
+      fireEvent.change(editor(), { target: { value: '30' } });
+      fireEvent.pointerDown(editor(), { clientX: 5, clientY: 5 });
+      fireEvent.mouseDown(editor(), { clientX: 5, clientY: 5 });
+      fireEvent.click(popover(), { clientX: -10, clientY: -10, detail: 1 });
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(editor()).toHaveValue('30');
+    });
+
+    it('keeps focus where it is on a press outside, which the backdrop takes', () => {
+      renderEditing({ initialEditing: r1Age });
+      expect(document.activeElement).toBe(editor());
+      const at = { clientX: -10, clientY: -10 };
+      expect(fireEvent.mouseDown(popover(), at)).toBe(false);
+      expect(fireEvent.mouseDown(editor(), at)).toBe(true);
+    });
+
+    it('shows a pending line for a condition added from +, opens on it, and drops it on Cancel', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r3Channel,
+        valueField: field,
+        ...CHANNEL_COLUMNS,
+      });
+      const line = card('r3').querySelector<HTMLElement>('li[data-pending]');
+      expect(line).toHaveTextContent('channel is greater than Set a value');
+      expect(
+        within(card('r3')).queryByRole('button', { name: 'Remove channel from rule 3' })
+      ).toBeNull();
+      expect(editor()).toHaveValue('');
+      expect(editor()).toHaveAccessibleName('New channel condition, rule 3');
+      fireEvent.click(action('Cancel'));
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(card('r3').querySelector('li[data-pending]')).toBeNull();
+      expect(card('r3').querySelector('[data-column-id="channel"]')).toBeNull();
+    });
+
+    it('words the pending line with the operator the select picks before Apply', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r3Channel,
+        valueField: field,
+        ...CHANNEL_COLUMNS,
+        inputIds: ['channel'],
+      });
+      const pendingLine = () => card('r3').querySelector('li[data-pending]');
+      fireEvent.click(operatorSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
+      expect(pendingLine()).toHaveTextContent(/^channel is less than Set a value$/);
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.click(action('Cancel'));
+      fireEvent.click(within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' }));
+      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
+      expect(pendingLine()).toHaveTextContent(/^channel is greater than Set a value$/);
+    });
+
+    it('commits a pending condition only on Apply, with its operator, and words it without a placeholder', () => {
+      const { onCommit } = renderEditing({
+        initialEditing: r3Channel,
+        valueField: field,
+        ...CHANNEL_COLUMNS,
+      });
+      fireEvent.change(editor(), { target: { value: '"web"' } });
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.click(action('Apply'));
+      expect(onCommit.mock.calls).toEqual([[r3Channel, '"web"', 'none', '>']]);
+      expect(card('r3').querySelector('li[data-pending]')).toBeNull();
+    });
+
+    it('words a pending line without an operator when the host offers none', () => {
+      renderEditing({ initialEditing: r3Channel, ...CHANNEL_COLUMNS });
+      expect(card('r3').querySelector('li[data-pending]')).toHaveTextContent(
+        /^channel Set a value$/
+      );
+    });
+
+    describe('ranges and lists', () => {
+      const SHAPED_OPERATORS: ValueOperatorOption[] = [
+        { id: '<', label: 'is less than' },
+        { id: 'between', label: 'is between', shape: 'range' },
+        { id: 'oneOf', label: 'is one of', shape: 'list' },
+        { id: 'noneOf', label: 'is none of', shape: 'list' },
+      ];
+      const COUNTRIES = ['"US"', '"CA"', '"MX"', '"GB"', '"DE"'];
+      const BOTH_INCLUDED = { lowInclusive: true, highInclusive: true };
+      const inOrder = (low: string, high: string) => Number(low) <= Number(high);
+      const at = (rowId: string, columnId: string, index = 0): SentenceValueId => ({
+        rowId,
+        columnId,
+        index,
+      });
+      const shapedField = (cell: SentenceCellId): ValueField => {
+        const base = { operators: SHAPED_OPERATORS, inOrder };
+        if (cell.rowId === 'm1' && cell.columnId === 'score') {
+          return { ...base, operator: 'between', values: ['700', '850'], ends: BOTH_INCLUDED };
+        }
+        if (cell.rowId === 'm1' && cell.columnId === 'country') {
+          return { ...base, operator: 'oneOf', values: COUNTRIES };
+        }
+        if (cell.rowId === 'm2' && cell.columnId === 'country') {
+          return { ...base, operator: 'noneOf', values: ['"RU"', '"KP"'] };
+        }
+        return { ...base, operator: '<' };
+      };
+      const renderShaped = (props: Omit<EditingHostProps, 'spies'> = {}) =>
+        renderEditing({
+          rules: MULTI_SENTENCE_RULES,
+          ...MULTI_SENTENCE_COLUMNS,
+          header: MULTI_SENTENCE_HEADER,
+          valueField: shapedField,
+          ...props,
+        });
+      const end = (name: 'From' | 'To') => within(inPopover().getByRole('group', { name }));
+      const endField = (name: 'From' | 'To') => end(name).getByRole('textbox', { name });
+      const included = (name: 'From' | 'To') =>
+        end(name).getByRole('checkbox', { name: 'Included' });
+      const box = (name: string) => inPopover().getByRole('checkbox', { name });
+      const addField = () => inPopover().getByRole('textbox', { name: 'Add value' });
+
+      it('edits both ends of a range and whether each is included in one popover, focused on the clicked end', async () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'score', 1) });
+        expect(operatorSelect()).toHaveTextContent('is between');
+        expect(endField('From')).toHaveValue('700');
+        expect(endField('To')).toHaveValue('850');
+        expect(document.activeElement).toBe(endField('To'));
+        expect(included('From')).toBeChecked();
+        expect(included('To')).toBeChecked();
+        expect(await axe(popover())).toHaveNoViolations();
+        fireEvent.change(endField('From'), { target: { value: '650' } });
+        fireEvent.click(included('To'));
+        expect(included('To')).not.toBeChecked();
+        expect(onCommitValues).not.toHaveBeenCalled();
+        fireEvent.keyDown(endField('From'), { key: 'Enter' });
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'score', 1),
+            {
+              kind: 'values',
+              values: ['650', '850'],
+              operator: 'between',
+              ends: { lowInclusive: true, highInclusive: false },
+            },
+            'down',
+          ],
+        ]);
+      });
+
+      it('keeps Apply off while an end is empty or the ends are out of order, committing nothing on Enter or a blur', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'score') });
+        fireEvent.change(endField('To'), { target: { value: '' } });
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.keyDown(endField('From'), { key: 'Enter' });
+        fireEvent.change(endField('To'), { target: { value: '600' } });
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.keyDown(included('To'), { key: 'Enter' });
+        fireEvent.blur(endField('To'), { relatedTarget: card('m2') });
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(popover()).toBeInTheDocument();
+        fireEvent.change(endField('To'), { target: { value: '700' } });
+        expect(action('Apply')).toBeEnabled();
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'score'),
+            { kind: 'values', values: ['700', '700'], operator: 'between', ends: BOTH_INCLUDED },
+            'none',
+          ],
+        ]);
+      });
+
+      it('turns a single value into a range from it, with an empty To and both ends included', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m3', 'score') });
+        fireEvent.click(operatorSelect());
+        fireEvent.click(screen.getByRole('option', { name: 'is between' }));
+        expect(endField('From')).toHaveValue('600');
+        expect(endField('To')).toHaveValue('');
+        expect(included('From')).toBeChecked();
+        expect(included('To')).toBeChecked();
+        expect(document.activeElement).toBe(endField('From'));
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.change(endField('To'), { target: { value: '650' } });
+        fireEvent.keyDown(endField('To'), { key: 'Enter' });
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m3', 'score'),
+            { kind: 'values', values: ['600', '650'], operator: 'between', ends: BOTH_INCLUDED },
+            'down',
+          ],
+        ]);
+      });
+
+      it("opens the operator list from a range's Included box on Alt+ArrowDown, and carries its ends into a list", () => {
+        renderShaped({ initialEditing: at('m1', 'score') });
+        expect(included('To')).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
+        fireEvent.keyDown(included('To'), { key: 'ArrowDown', altKey: true });
+        fireEvent.click(screen.getByRole('option', { name: 'is one of' }));
+        expect(box('700')).toBeChecked();
+        expect(box('850')).toBeChecked();
+        expect(document.activeElement).toBe(box('700'));
+      });
+
+      it('edits a list as checkboxes of its values with a field that adds one, focused on the clicked value', async () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'country', 2) });
+        expect(operatorSelect()).toHaveTextContent('is one of');
+        expect(inPopover().getAllByRole('checkbox')).toHaveLength(5);
+        for (const country of COUNTRIES) expect(box(country)).toBeChecked();
+        expect(document.activeElement).toBe(box('"MX"'));
+        expect(await axe(popover())).toHaveNoViolations();
+        fireEvent.click(box('"MX"'));
+        expect(box('"MX"')).not.toBeChecked();
+        fireEvent.change(addField(), { target: { value: '"FR"' } });
+        fireEvent.keyDown(addField(), { key: 'Enter' });
+        expect(addField()).toHaveValue('');
+        expect(box('"FR"')).toBeChecked();
+        fireEvent.change(addField(), { target: { value: '"IT"' } });
+        fireEvent.click(action('Add value'));
+        expect(box('"IT"')).toBeChecked();
+        expect(onCommitValues).not.toHaveBeenCalled();
+        fireEvent.keyDown(addField(), { key: 'Enter' });
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'country', 2),
+            {
+              kind: 'values',
+              values: ['"US"', '"CA"', '"GB"', '"DE"', '"FR"', '"IT"'],
+              operator: 'oneOf',
+            },
+            'down',
+          ],
+        ]);
+      });
+
+      it.each<[string, () => void, string]>([
+        ['a list', () => {}, '"RU"'],
+        [
+          'a range whose From was typed',
+          () => {
+            fireEvent.click(operatorSelect());
+            fireEvent.click(screen.getByRole('option', { name: 'is between' }));
+            fireEvent.change(endField('From'), { target: { value: '"XX"' } });
+          },
+          '"XX"',
+        ],
+      ])('checks and applies the value a single operator keeps from %s, outside the allowed values', (_, before, kept) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country', 1),
+          valueField: (cell) => ({ ...shapedField(cell), allowedValues: ['"CN"'] }),
+        });
+        before();
+        fireEvent.click(operatorSelect());
+        fireEvent.click(screen.getByRole('option', { name: 'is less than' }));
+        const radios = inPopover().getAllByRole('radio');
+        expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([
+          inPopover().getByRole('radio', { name: kept }),
+        ]);
+        expect(inPopover().getByRole('radio', { name: kept })).toHaveAccessibleDescription(
+          'Not one of the allowed values'
+        );
+        expect(inPopover().getByRole('radio', { name: '"KP"' })).toBeInTheDocument();
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m2', 'country', 1), { kind: 'values', values: [kept], operator: '<' }, 'none'],
+        ]);
+      });
+
+      it("offers a list the column's allowed values with no field to add one, keeping a held value outside them marked", () => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({ ...shapedField(cell), allowedValues: ['"RU"', '"CN"'] }),
+        });
+        const boxes = inPopover().getAllByRole('checkbox');
+        expect(boxes.map((checkbox) => checkbox.getAttribute('aria-checked'))).toEqual([
+          'true',
+          'false',
+          'true',
+        ]);
+        expect(boxes[2]).toBe(box('"KP"'));
+        expect(box('"KP"')).toHaveAccessibleDescription('Not one of the allowed values');
+        expect(inPopover().queryByRole('textbox')).toBeNull();
+        fireEvent.click(box('"CN"'));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m2', 'country'),
+            { kind: 'values', values: ['"RU"', '"KP"', '"CN"'], operator: 'noneOf' },
+            'none',
+          ],
+        ]);
+      });
+
+      it('keeps a list’s values in their sentence order, adding a checked one after them and putting a re-checked one back', () => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({
+            ...shapedField(cell),
+            values: ['"KP"', '"RU"'],
+            allowedValues: ['"RU"', '"CN"'],
+          }),
+        });
+        fireEvent.click(action('Apply'));
+        fireEvent.click(valueChip('m2', 'country'));
+        fireEvent.click(box('"CN"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([
+          ['"KP"', '"RU"'],
+          ['"KP"', '"RU"', '"CN"'],
+        ]);
+      });
+
+      it.each<[string, string[]]>([
+        ['checking an allowed value', ['"CN"']],
+        ['unchecking and re-checking a held value', ['"KP"', '"KP"']],
+      ])('commits a list in its sentence order after %s', (_, clicks) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m2', 'country'),
+          valueField: (cell) => ({
+            ...shapedField(cell),
+            values: ['"KP"', '"RU"'],
+            allowedValues: ['"RU"', '"CN"'],
+          }),
+        });
+        for (const option of clicks) fireEvent.click(box(option));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([
+          clicks.includes('"CN"') ? ['"KP"', '"RU"', '"CN"'] : ['"KP"', '"RU"'],
+        ]);
+      });
+
+      it("lists every value of a long list, past the sentence's +N more", () => {
+        const countries = Array.from({ length: 25 }, (_, index) => `"Country ${index + 1}"`);
+        renderShaped({
+          rules: [longValueListRule(25)],
+          initialEditing: at('long-list', 'country'),
+          valueField: () => ({ operators: SHAPED_OPERATORS, operator: 'oneOf', values: countries }),
+        });
+        expect(inPopover().getAllByRole('checkbox')).toHaveLength(25);
+        expect(box('"Country 25"')).toBeChecked();
+      });
+
+      it('keeps Apply off with nothing checked, and commits one checked value as the list', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        fireEvent.click(box('"RU"'));
+        fireEvent.click(box('"KP"'));
+        expect(action('Apply')).toBeDisabled();
+        fireEvent.keyDown(addField(), { key: 'Enter' });
+        expect(onCommitValues).not.toHaveBeenCalled();
+        fireEvent.click(box('"KP"'));
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m2', 'country'), { kind: 'values', values: ['"KP"'], operator: 'noneOf' }, 'none'],
+        ]);
+      });
+
+      it('toggles the box a press lands on, keeping the list open, though the press leaves focus nowhere, as Safari does, and Escape still cancels', () => {
+        const { onCommitValues, onCancel } = renderShaped({
+          initialEditing: at('m1', 'country', 2),
+        });
+        safariPress(box('"CA"'));
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(box('"CA"')).not.toBeChecked();
+        expect(document.activeElement).toBe(document.body);
+        fireEvent.keyDown(document.body, { key: 'Escape' });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+      });
+
+      it.each([
+        ['box', () => included('To')],
+        ['label', () => end('To').getByText('Included')],
+      ])("toggles a range end's Included from a press on its %s, keeping the range open, though the press leaves focus nowhere, as Safari does, and Escape still cancels", (_, target) => {
+        const { onCommitValues, onCancel } = renderShaped({ initialEditing: at('m1', 'score') });
+        safariPress(target());
+        expect(onCommitValues).not.toHaveBeenCalled();
+        expect(included('To')).not.toBeChecked();
+        expect(document.activeElement).toBe(document.body);
+        fireEvent.keyDown(document.body, { key: 'Escape' });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+      });
+
+      it('says why Apply is off: an empty end, ends out of order, or nothing checked', async () => {
+        renderShaped({ initialEditing: at('m1', 'score') });
+        fireEvent.change(endField('To'), { target: { value: '' } });
+        expect(action('Apply')).toBeDisabled();
+        expect(endField('To')).toHaveAttribute('aria-invalid', 'true');
+        expect(endField('To')).toHaveAccessibleDescription('Enter both ends');
+        expect(endField('From')).toHaveAttribute('aria-invalid', 'false');
+        expect(await axe(popover())).toHaveNoViolations();
+        fireEvent.change(endField('To'), { target: { value: '600' } });
+        expect(endField('To')).toHaveAccessibleDescription('From must not be past To');
+        fireEvent.change(endField('To'), { target: { value: '900' } });
+        expect(endField('To')).not.toHaveAccessibleDescription();
+        expect(action('Apply')).toBeEnabled();
+        cleanup();
+        renderShaped({ initialEditing: at('m2', 'country') });
+        fireEvent.click(box('"RU"'));
+        fireEvent.click(box('"KP"'));
+        expect(action('Apply')).toBeDisabled();
+        expect(box('"RU"').closest('fieldset')).toHaveAccessibleDescription('Check a value');
+        expect(await axe(popover())).toHaveNoViolations();
+      });
+
+      it.each<[string, ValueField, ValueCommit]>([
+        [
+          'range',
+          {
+            operators: AGE_OPERATORS,
+            operator: 'between',
+            values: ['700', '850'],
+            ends: BOTH_INCLUDED,
+          },
+          { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
+        ],
+        [
+          'list',
+          { operators: AGE_OPERATORS, operator: 'anyOf', values: ['"US"', '"CA"'] },
+          { kind: 'values', values: ['"US"', '"CA"'], operator: 'anyOf' },
+        ],
+      ])('keeps the %s of an operator the host does not offer, applying all its values', (_, lacking, applied) => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m1', 'score'),
+          valueField: () => lacking,
+        });
+        expect(operatorSelect()).toHaveTextContent(lacking.operator ?? '');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([[at('m1', 'score'), applied, 'none']]);
+      });
+
+      it.each<[string, () => void]>([
+        ['Apply', () => fireEvent.click(action('Apply'))],
+        ['a press outside', () => pressOutside(popover())],
+      ])('applies the text left in Add value with the list on %s', (_, settle) => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        act(() => addField().focus());
+        fireEvent.change(addField(), { target: { value: ' "FR" ' } });
+        settle();
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([
+          ['"RU"', '"KP"', '"FR"'],
+        ]);
+      });
+
+      it('counts the text left in Add value as a value of a list with nothing checked', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        fireEvent.click(box('"RU"'));
+        fireEvent.click(box('"KP"'));
+        fireEvent.change(addField(), { target: { value: '"FR"' } });
+        expect(action('Apply')).toBeEnabled();
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls.map(([, commit]) => valuesOf(commit))).toEqual([['"FR"']]);
+      });
+
+      it('keeps focus in Add value from a press on its + button, adding the text', () => {
+        const { onCommitValues } = renderShaped({ initialEditing: at('m2', 'country') });
+        act(() => addField().focus());
+        fireEvent.change(addField(), { target: { value: '"FR"' } });
+        safariPress(inPopover().getByRole('button', { name: 'Add value' }));
+        expect(document.activeElement).toBe(addField());
+        expect(addField()).toHaveValue('');
+        expect(box('"FR"')).toBeChecked();
+        expect(onCommitValues).not.toHaveBeenCalled();
+      });
+
+      it('applies from Apply an expression typed for an incomplete range into a host editor', async () => {
+        const user = userEvent.setup();
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m3', 'score'),
+          valueField: (cell) => ({ ...shapedField(cell), expression: '< 600' }),
+          renderEditor: hostInput,
+        });
+        await user.click(operatorSelect());
+        await user.click(screen.getByRole('option', { name: 'is between' }));
+        await user.click(action('Edit expression'));
+        await user.clear(screen.getByTestId('host-editor'));
+        await user.type(screen.getByTestId('host-editor'), '[[600..650]');
+        pressApply();
+        expect(onCommitValues.mock.calls).toEqual([
+          [at('m3', 'score'), { kind: 'expression', text: '[600..650]' }, 'none'],
+        ]);
+      });
+
+      it('opens Edit expression on a whole range the host gives, applying it as it opened unchanged', () => {
+        const { onCommitValues } = renderShaped({
+          initialEditing: at('m1', 'score', 1),
+          valueField: (cell) => ({ ...shapedField(cell), expression: '[700..850]' }),
+          renderEditor: ({ value, ariaLabel }) => (
+            <input aria-label={ariaLabel} data-testid="host-editor" defaultValue={value} />
+          ),
+        });
+        fireEvent.click(action('Edit expression'));
+        expect(screen.getByTestId('host-editor')).toHaveValue('[700..850]');
+        fireEvent.click(action('Apply'));
+        expect(onCommitValues.mock.calls).toEqual([
+          [
+            at('m1', 'score', 1),
+            { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
+            'none',
+          ],
+        ]);
+      });
+    });
+  });
+
+  describe('column popover', () => {
+    let uninstallInertness: () => void = () => {};
+    beforeAll(() => {
+      uninstallInertness = installModalInertness();
+    });
+    afterAll(() => uninstallInertness());
+    const TYPES: ColumnTypeOption[] = [
+      {
+        id: 'number',
+        label: 'Number',
+        icon: <svg data-testid="number-icon" />,
+        allowedValuesPlaceholder: 'e.g. 10, 20',
+      },
+      { id: 'string', label: 'Text', allowedValuesPlaceholder: 'e.g. "a", "b"' },
+    ];
+    const AGE_FIELD: ColumnField = {
+      kind: 'input',
+      label: 'age',
+      binding: 'applicant.age',
+      required: true,
+      typeRef: 'string',
+      allowedValues: '',
+    };
+    const FIELDS: Record<string, ColumnField> = {
+      age: AGE_FIELD,
+      risk: {
+        kind: 'output',
+        label: 'risk',
+        binding: 'risk',
+        required: false,
+        typeRef: 'string',
+        allowedValues: '"high", "low"',
+      },
+    };
+    const columnEdit = (overrides: Partial<ColumnEdit> = {}): ColumnEdit => ({
+      field: (columnId) => FIELDS[columnId] ?? AGE_FIELD,
+      types: TYPES,
+      onCommit: vi.fn(),
+      ...overrides,
+    });
+    const pill = (name: string) =>
+      within(screen.getByTestId('nl-bands')).getByRole('button', { name });
+    const popover = () => screen.getByTestId('nl-column-editor');
+    const inPopover = () => within(popover());
+    const field = (name: string) => inPopover().getByRole('textbox', { name }) as HTMLInputElement;
+    const typeSelect = () => inPopover().getByRole('combobox', { name: 'Data type' });
+    const action = (name: string) => inPopover().getByRole('button', { name });
+    const renderColumns = (overrides: Partial<ColumnEdit> = {}) => {
+      const column = columnEdit(overrides);
+      renderEditing({ column });
+      return column;
+    };
+
+    it('keeps the pills plain without column editing', () => {
+      renderEditing();
+      expect(within(screen.getByTestId('nl-bands')).queryAllByRole('button')).toEqual([]);
+    });
+
+    it("opens an input's popover from its pill, titled by its kind and name, over its label, expression, type and allowed values", async () => {
+      const { container } = renderEditing({ column: columnEdit() });
+      expect(pill('age')).toHaveAttribute('aria-expanded', 'false');
+      fireEvent.click(pill('age'));
+      expect(pill('age')).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByRole('dialog', { name: 'Input · age' })).toBe(popover());
+      expect(inPopover().getByText('Input · age')).toBeInTheDocument();
+      expect(field('Label')).toHaveValue('age');
+      expect(document.activeElement).toBe(field('Label'));
+      expect(field('Input expression')).toHaveValue('applicant.age');
+      expect(field('Input expression')).toBeRequired();
+      expect(typeSelect()).toHaveTextContent('Text');
+      expect(field('Allowed values')).toHaveValue('');
+      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. "a", "b"');
+      expect(field('Allowed values')).toHaveAccessibleDescription('Separate values with commas.');
+      expect(
+        inPopover()
+          .getAllByRole('button')
+          .map((button) => button.textContent)
+      ).toEqual(['Cancel', 'Apply']);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it("titles a column's popover with its kind of value's glyph, and offers each type with its own", () => {
+      renderEditing({
+        column: columnEdit({
+          types: [
+            { id: 'string', label: 'Text', type: 'text' },
+            { ...TYPES[0], id: 'number', label: 'Number', type: 'number' },
+          ],
+        }),
+        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
+      });
+      fireEvent.click(pill('age'));
+      const header = inPopover().getByText('Input · age').parentElement;
+      expect(header?.querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-hash');
+      expect(typeSelect().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-type');
+      fireEvent.click(typeSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      expect(typeSelect().querySelector('svg')).toBe(inPopover().getByTestId('number-icon'));
+    });
+
+    it("names an output's binding as its output name, required only when the host says so", () => {
+      renderColumns();
+      fireEvent.click(pill('risk'));
+      expect(inPopover().getByText('Output · risk')).toBeInTheDocument();
+      expect(field('Output name')).toHaveValue('risk');
+      expect(field('Output name')).not.toBeRequired();
+      expect(field('Allowed values')).toHaveValue('"high", "low"');
+    });
+
+    it('opens from Enter or Space on the pill, and closes from it again', async () => {
+      const user = userEvent.setup();
+      renderColumns();
+      act(() => pill('age').focus());
+      await user.keyboard('{Enter}');
+      expect(popover()).toBeInTheDocument();
+      await user.keyboard('{Escape}');
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).toBe(pill('age'));
+      await user.keyboard(' ');
+      expect(popover()).toBeInTheDocument();
+      fireEvent.click(pill('age'));
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+    });
+
+    it('applies only the changed fields from Apply, with the picked type, and returns focus to the pill', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: '  Age  ' } });
+      fireEvent.click(typeSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      expect(typeSelect()).toHaveTextContent('Number');
+      expect(inPopover().getByTestId('number-icon')).toBeInTheDocument();
+      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. 10, 20');
+      fireEvent.click(action('Apply'));
+      expect(vi.mocked(onCommit).mock.calls).toEqual([
+        ['age', { label: 'Age', typeRef: 'number' }],
+      ]);
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).toBe(pill('age'));
+    });
+
+    it('applies on Enter in a field, never mid-composition', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('risk'));
+      fireEvent.change(field('Output name'), { target: { value: 'riskLevel' } });
+      fireEvent.change(field('Allowed values'), { target: { value: '"high"' } });
+      fireEvent.keyDown(field('Allowed values'), { key: 'Enter', isComposing: true });
+      expect(onCommit).not.toHaveBeenCalled();
+      fireEvent.keyDown(field('Allowed values'), { key: 'Enter' });
+      expect(vi.mocked(onCommit).mock.calls).toEqual([
+        ['risk', { binding: 'riskLevel', allowedValues: '"high"' }],
+      ]);
+      expect(document.activeElement).toBe(pill('risk'));
+    });
+
+    it('closes without a commit when nothing changed', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.keyDown(field('Label'), { key: 'Enter' });
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+    });
+
+    it('cancels from Cancel or Escape back to the pill, keeping Escape in an open type list to the list', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: 'Age' } });
+      fireEvent.click(action('Cancel'));
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).toBe(pill('age'));
+      fireEvent.click(pill('age'));
+      expect(field('Label')).toHaveValue('age');
+      fireEvent.click(typeSelect());
+      fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' });
+      expect(popover()).toBeInTheDocument();
+      fireEvent.keyDown(field('Label'), { key: 'Escape' });
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(onCommit).not.toHaveBeenCalled();
+    });
+
+    it('opens as a modal dialog, leaving Tab and Shift+Tab to the browser', () => {
+      const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal');
+      onTestFinished(() => showModal.mockRestore());
+      renderColumns({ onMoreProperties: vi.fn() });
+      fireEvent.click(pill('age'));
+      expect(popover().tagName).toBe('DIALOG');
+      expect(showModal.mock.contexts).toEqual([popover()]);
+      act(() => action('Apply').focus());
+      expect(fireEvent.keyDown(action('Apply'), { key: 'Tab' })).toBe(true);
+      expect(fireEvent.keyDown(field('Label'), { key: 'Tab', shiftKey: true })).toBe(true);
+      expect(popover()).toBeInTheDocument();
+    });
+
+    it('closes without a commit on a press outside, and stays open on a press inside', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: 'Age' } });
+      fireEvent.pointerDown(field('Label'));
+      fireEvent.click(field('Label'));
+      expect(popover()).toBeInTheDocument();
+      pressOutside(popover());
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).not.toBe(pill('age'));
+      expect(onCommit).not.toHaveBeenCalled();
+    });
+
+    it('refuses Apply while a required binding is empty, and says why', () => {
+      const { onCommit } = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Input expression'), { target: { value: '  ' } });
+      expect(field('Input expression')).toHaveAttribute('aria-invalid', 'true');
+      expect(field('Input expression')).toHaveAccessibleDescription(
+        'This input column has no expression'
+      );
+      expect(action('Apply')).toBeDisabled();
+      fireEvent.keyDown(field('Input expression'), { key: 'Enter' });
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(popover()).toBeInTheDocument();
+    });
+
+    it('refuses Apply while the label is empty, and says why', () => {
+      const column = renderColumns();
+      fireEvent.click(pill('age'));
+      fireEvent.change(field('Label'), { target: { value: '   ' } });
+      expect(action('Apply')).toBeDisabled();
+      expect(field('Label')).toHaveAttribute('aria-invalid', 'true');
+      expect(field('Label')).toHaveAccessibleDescription('Enter a label');
+      fireEvent.keyDown(field('Label'), { key: 'Enter' });
+      expect(column.onCommit).not.toHaveBeenCalled();
+    });
+
+    it('keeps the popover open from a press off its fields or on a label that leaves focus nowhere, as Safari does, and Escape still cancels it', () => {
+      const column = renderColumns();
+      fireEvent.click(pill('age'));
+      safariPress(inPopover().getByText('Input · age'));
+      expect(document.activeElement).toBe(document.body);
+      safariPress(inPopover().getByText('Input expression'));
+      expect(popover()).toBeInTheDocument();
+      {
+        const focused = document.activeElement;
+        if (focused instanceof HTMLElement) act(() => focused.blur());
+      }
+      press('Escape');
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(column.onCommit).not.toHaveBeenCalled();
+    });
+
+    it("offers More properties only with the host's action, which closes the popover", () => {
+      const onMoreProperties = vi.fn();
+      const { onCommit } = renderColumns({ onMoreProperties });
+      fireEvent.click(pill('risk'));
+      fireEvent.click(action('More properties'));
+      expect(onMoreProperties.mock.calls).toEqual([['risk']]);
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).not.toBe(pill('risk'));
+    });
+
+    it("offers the column's own type when the host's types lack it, and no allowed values the host leaves out", () => {
+      renderColumns({
+        field: () => ({
+          kind: 'input',
+          label: 'age',
+          binding: 'age',
+          required: true,
+          typeRef: 'tPeriod',
+        }),
+      });
+      fireEvent.click(pill('age'));
+      expect(typeSelect()).toHaveTextContent('tPeriod');
+      expect(inPopover().queryByRole('textbox', { name: 'Allowed values' })).toBeNull();
+    });
+
+    it.each<[string, ColumnTypeOption[]]>([
+      ["the host's types", TYPES],
+      [
+        "the host's types without their empty or repeated ids",
+        [{ id: '', label: 'Any' }, ...TYPES, { id: 'number', label: 'Number again' }],
+      ],
+    ])('lets an untyped column pick a type from %s', (_, types) => {
+      const { onCommit } = renderColumns({ field: () => ({ ...AGE_FIELD, typeRef: '' }), types });
+      fireEvent.click(pill('age'));
+      fireEvent.click(typeSelect());
+      expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+        'Number',
+        'Text',
+      ]);
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      fireEvent.click(action('Apply'));
+      expect(vi.mocked(onCommit).mock.calls).toEqual([['age', { typeRef: 'number' }]]);
+    });
+
+    it('closes once the column is gone', () => {
+      const column = columnEdit();
+      const { rerender, onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell } =
+        renderEditing({ column });
+      fireEvent.click(pill('age'));
+      rerender(
+        <EditingHost
+          spies={{ onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell }}
+          column={column}
+          {...GRID_SENTENCE_COLUMNS}
+          inputs={GRID_SENTENCE_COLUMNS.inputs.filter((c) => c.id !== 'age')}
+        />
+      );
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
     });
   });
 
@@ -2676,41 +4760,38 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it("opens the host's add-condition entries from +, and edits a condition the rule lacks under it", () => {
-      const conditionEntries = vi.fn(
-        (rowId: string, startEdit: (value: SentenceValueId) => void): GridMenuEntry[] => [
-          {
-            label: 'income',
-            focusesOwnSurface: true,
-            onClick: () => startEdit({ rowId, columnId: 'income', index: 0 }),
-          },
-        ]
-      );
+    it('opens the inputs a rule has no condition on from +, and edits one on its pending line', () => {
       const { onSelect } = renderEditing({
-        conditionEntries,
+        inputIds: ['age', 'income'],
         initial: { rowId: 'r1', columnId: 'age' },
       });
-      expect(conditionEntries).not.toHaveBeenCalled();
       const add = button('r3', 'Add condition to rule 3');
       expect(add).toHaveAttribute('aria-haspopup', 'menu');
       const frame = screen.getByTestId('nl');
       Object.defineProperty(frame, 'clientWidth', { value: 800 });
       Object.defineProperty(frame, 'clientHeight', { value: 400 });
-      vi.spyOn(add, 'getBoundingClientRect').mockReturnValue({
-        ...rect(300, 324),
-        top: 130,
-        bottom: 154,
-      });
+      const boxes = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: HTMLElement) {
+          return this.closest('[data-pending]') && this.dataset.kind === 'value'
+            ? { ...rect(300, 380), top: 130, bottom: 154 }
+            : rect(0, 0);
+        });
       fireEvent.click(add);
       const menu = screen.getByRole('menu');
       expect(menu).toHaveAttribute('aria-label', 'Add condition to rule 3');
-      expect(new Set(conditionEntries.mock.calls.map(([rowId]) => rowId))).toEqual(new Set(['r3']));
+      expect(
+        within(menu)
+          .getAllByRole('menuitem')
+          .map((item) => item.textContent)
+      ).toEqual(['income']);
       fireEvent.click(within(menu).getByRole('menuitem', { name: 'income' }));
       expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3', columnId: 'income' }]]);
       const input = editor();
       expect(input).toHaveValue('');
       expect(input).toHaveAccessibleName('New income condition, rule 3');
       expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '154px', left: '300px' });
+      boxes.mockRestore();
       expect(document.activeElement).toBe(input);
       fireEvent.keyDown(input, { key: 'Escape' });
       expect(document.activeElement).toBe(add);
@@ -2718,7 +4799,9 @@ describe('DecisionText', () => {
     });
 
     it('returns focus to + when a new condition is cancelled with nothing selected', () => {
-      renderEditing({ initialEditing: { rowId: 'r3', columnId: 'channel', index: 0 } });
+      renderEditing({
+        initialEditing: { rowId: 'r3', columnId: 'income', index: 0 },
+      });
       fireEvent.keyDown(editor(), { key: 'Escape' });
       expect(document.activeElement).toBe(button('r3', 'Add condition to rule 3'));
     });
@@ -2734,33 +4817,24 @@ describe('DecisionText', () => {
       initial: SentenceSelection | null;
       start?: EditableTable;
       late?: boolean;
-      onOpenDecision?: DecisionTextProps['onOpenDecision'];
-      onAddRule?: AddRuleButtonProps['onAdd'];
     }
 
-    const TableHost = ({
-      initial,
-      start = EDITABLE_TABLE,
-      late = false,
-      onOpenDecision,
-      onAddRule,
-    }: TableHostProps) => {
+    const TableHost = ({ initial, start = EDITABLE_TABLE, late = false }: TableHostProps) => {
       const [table, setTable] = useState(start);
       const [selected, setSelected] = useState(initial);
       const [editing, setEditing] = useState<SentenceValueId | null>(null);
       return view({
         rules: wordedRules(table),
-        bands: tableBands(table),
+        ...tableColumns(table),
         header: GRID_SENTENCE_HEADER,
         selected,
         onSelect: setSelected,
-        onOpenDecision,
-        addRule: onAddRule && { label: 'Add rule', onAdd: onAddRule },
         edit: editWith({
           editing,
           onStartEdit: setEditing,
           onDeleteRule: (rowId) => setTable((current) => tableWithoutRule(current, rowId)),
-          onCommit: (value, text) => {
+          onCommit: (value, commit) => {
+            const [text = ''] = valuesOf(commit);
             setTable((current) =>
               text === '' ? tableWithoutCell(current, value) : tableWithValue(current, value, text)
             );
@@ -2771,13 +4845,7 @@ describe('DecisionText', () => {
             if (late) later(clear);
             else clear();
           },
-          ruleEntries: () => [{ label: 'Delete rule', onClick: vi.fn() }],
-          conditionEntries: (rowId) =>
-            unusedInputs(table, rowId).map((input) => ({
-              label: input.name,
-              focusesOwnSurface: true,
-              onClick: () => setEditing({ rowId, columnId: input.id, index: 0 }),
-            })),
+          inputIds: table.inputs.map((input) => input.id),
         }),
       });
     };
@@ -2814,19 +4882,6 @@ describe('DecisionText', () => {
 
     it.each<[string, SentenceCellId, KeyboardEventInit, string]>([
       ['Enter to the next rule', { rowId: 'r1', columnId: 'age' }, { key: 'Enter' }, 'r2:age'],
-      ['Tab to the next cell', { rowId: 'r1', columnId: 'age' }, { key: 'Tab' }, 'r1:income'],
-      [
-        'Shift+Tab to the previous cell',
-        { rowId: 'r1', columnId: 'income' },
-        { key: 'Tab', shiftKey: true },
-        'r1:age',
-      ],
-      [
-        'Tab from the last cell to the rule',
-        { rowId: 'r1', columnId: 'income' },
-        { key: 'Tab' },
-        'r1',
-      ],
     ])('moves by %s when committing an empty value removes its condition', (_, cell, key, stop) => {
       render(<TableHost initial={cell} />);
       act(() => valueChip(cell.rowId, cell.columnId).focus());
@@ -2839,8 +4894,6 @@ describe('DecisionText', () => {
 
     it.each<[string, KeyboardEventInit, string]>([
       ['Enter to the next rule', { key: 'Enter' }, 'r2:channel'],
-      ['Tab from the last cell in place', { key: 'Tab' }, 'r1:channel'],
-      ['Shift+Tab to the previous cell', { key: 'Tab', shiftKey: true }, 'r1:income'],
     ])('moves by %s when committing a condition added from +', (_, key, stop) => {
       render(<TableHost initial={{ rowId: 'r1' }} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
@@ -2860,7 +4913,7 @@ describe('DecisionText', () => {
     });
 
     it.each([
-      ['blur', () => fireEvent.blur(editor())],
+      ['press outside', () => pressOutside(screen.getByTestId('nl-value-editor'))],
       ['Enter', () => fireEvent.keyDown(editor(), { key: 'Enter' })],
     ])('closes the editor of the condition its ✕ removes after a refused %s commit, staying on its rule', (_, settle) => {
       const { onCancel, onClearCell, onSelect } = renderEditing({
@@ -2877,119 +4930,7 @@ describe('DecisionText', () => {
       expect(onSelect).not.toHaveBeenCalled();
     });
 
-    it('removes the condition whose ✕ was pressed when the blur commit adds a line before it', () => {
-      const start = tableWithoutCell(FOUR_LINES, { rowId: 'r2', columnId: 'income' });
-      render(<TableHost initial={{ rowId: 'r2' }} start={start} />);
-      fireEvent.click(button('r2', 'Add condition to rule 2'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'income' }));
-      fireEvent.change(editor(), { target: { value: '50000' } });
-      const remove = button('r2', 'Remove channel from rule 2');
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      act(() => remove.focus());
-      fireEvent.mouseUp(remove);
-      fireEvent.click(remove);
-      const lines = [...card('r2').querySelectorAll<HTMLElement>('li[data-column-id]')];
-      expect(lines.map((line) => line.dataset.columnId)).toEqual(['age', 'income', regionId]);
-    });
-
-    it('removes the condition whose ✕ the refused blur commit moved from under the press', () => {
-      const { onClearCell } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
-        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
-        refuse: true,
-      });
-      fireEvent.change(editor(), { target: { value: '' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      const position = vi.spyOn(remove, 'getBoundingClientRect').mockReturnValue(rect(791, 811));
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      fireEvent.blur(editor());
-      position.mockReturnValue(rect(776, 796));
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(onClearCell).toHaveBeenCalledWith({ rowId: 'r1', columnId: 'age' });
-      expect(screen.queryByTestId('nl-editor')).toBeNull();
-    });
-
-    it('removes the condition whose ✕ the refused blur commit moved while a held key repeats', () => {
-      const { onClearCell } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
-        initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
-        refuse: true,
-      });
-      fireEvent.change(editor(), { target: { value: '' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      const position = vi.spyOn(remove, 'getBoundingClientRect').mockReturnValue(rect(791, 811));
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      fireEvent.blur(editor());
-      position.mockReturnValue(rect(776, 796));
-      fireEvent.keyDown(card('r1'), { key: 'Shift', shiftKey: true, repeat: true });
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1, shiftKey: true });
-      expect(onClearCell).toHaveBeenCalledWith({ rowId: 'r1', columnId: 'age' });
-    });
-
-    it.each([
-      'Add condition to rule 3',
-      'Rule 3 actions',
-    ])('opens the %s menu whose button the blur commit moved from under the press', (name) => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', name);
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger);
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(card('r3'));
-      fireEvent.mouseUp(card('r3'));
-      fireEvent.click(card('r3'), { detail: 1 });
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
-      expect(screen.getByTestId('nl-context-menu-anchor')).toHaveStyle({
-        top: '178px',
-        left: '300px',
-      });
-    });
-
-    it.each([
-      ['the card', 'card'],
-      ['the menu button itself', 'trigger'],
-    ])('runs a later keyboard click on a remove action after a press the blur commit moved, whose click lands on %s', (_, clickOn) => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', 'Rule 3 actions');
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger);
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(card('r3'));
-      fireEvent.mouseUp(card('r3'));
-      fireEvent.click(clickOn === 'card' ? card('r3') : trigger, { detail: 1 });
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', 'Rule 3 actions');
-      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
-      const remove = button('r2', 'Remove age from rule 2');
-      act(() => remove.focus());
-      fireEvent.click(remove, { detail: 0 });
-      expect(
-        within(card('r2')).queryByRole('button', { name: 'Remove age from rule 2' })
-      ).toBeNull();
-    });
-
-    it('returns focus to the rule after its ✕ removes a condition whose refused blur commit left focus on the view', () => {
+    it('returns focus to the rule after its ✕ removes a condition whose commit was refused while focus is on the view', () => {
       renderEditing({
         initial: { rowId: 'r1', columnId: 'age' },
         initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
@@ -3000,381 +4941,6 @@ describe('DecisionText', () => {
       act(() => screen.getByTestId('nl').focus());
       fireEvent.click(button('r1', 'Remove age from rule 1'));
       expect(card('r1').contains(document.activeElement)).toBe(true);
-    });
-
-    it('removes the lead condition whose ✕ was pressed when the blur commit moves the lead into lines', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      act(() => remove.focus());
-      expect(remove.isConnected).toBe(false);
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull();
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-    });
-
-    it('edits the lead value that was pressed when the blur commit moves the lead into lines', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const age = valueChip('r1', 'age');
-      fireEvent.pointerDown(age);
-      fireEvent.mouseDown(age);
-      act(() => age.focus());
-      expect(age.isConnected).toBe(false);
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/);
-      expect(valueChip('r1', 'age')).toHaveAttribute('tabindex', '0');
-    });
-
-    interface PressSpies {
-      onOpenDecision: Mock;
-      onAddRule: Mock;
-    }
-    interface PressCase {
-      kind: string;
-      target: () => HTMLElement;
-      landsOn: string;
-      outcome: (spies: PressSpies) => void;
-    }
-    const menuNamed = (name: string) => () =>
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
-    const pressCases: PressCase[] = [
-      {
-        kind: 'a lead value',
-        target: () => valueChip('r1', 'age'),
-        landsOn: 'r1',
-        outcome: () => expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/),
-      },
-      {
-        kind: 'a lead ✕',
-        target: () => button('r1', 'Remove age from rule 1'),
-        landsOn: 'r1',
-        outcome: () => expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull(),
-      },
-      {
-        kind: 'a lead decision link',
-        target: () => button('r1', 'Open the income decision'),
-        landsOn: 'r1',
-        outcome: ({ onOpenDecision }) =>
-          expect(onOpenDecision.mock.calls).toEqual([['net-income']]),
-      },
-      {
-        kind: 'the + of a later rule',
-        target: () => button('r3', 'Add condition to rule 3'),
-        landsOn: 'r3',
-        outcome: menuNamed('Add condition to rule 3'),
-      },
-      {
-        kind: 'the ⋯ of a later rule',
-        target: () => button('r3', 'Rule 3 actions'),
-        landsOn: 'r3',
-        outcome: menuNamed('Rule 3 actions'),
-      },
-      {
-        kind: 'the delete action of a later rule',
-        target: () => button('r3', 'Delete rule 3'),
-        landsOn: 'r3',
-        outcome: () => expect(screen.queryByTestId('nl-row-r3')).toBeNull(),
-      },
-      {
-        kind: 'the add-rule action',
-        target: () => screen.getByRole('button', { name: 'Add rule' }),
-        landsOn: 'nl',
-        outcome: ({ onAddRule }) => expect(onAddRule).toHaveBeenCalledTimes(1),
-      },
-    ];
-    const landing = (rowId: string) =>
-      screen.queryByTestId(`nl-row-${rowId}`) ?? screen.getByTestId('nl');
-    const clickUnlessGone = (target: HTMLElement, landsOn: string) => {
-      if (target.isConnected) fireEvent.click(landing(landsOn), { detail: 1 });
-    };
-    const tapsWith = {
-      mouse: (target: HTMLElement, commit: () => void, landsOn: string) => {
-        fireEvent.pointerDown(target, { pointerType: 'mouse' });
-        fireEvent.mouseDown(target);
-        commit();
-        fireEvent.pointerUp(landing(landsOn), { pointerType: 'mouse' });
-        fireEvent.mouseUp(landing(landsOn));
-        clickUnlessGone(target, landsOn);
-      },
-      touch: (target: HTMLElement, commit: () => void, landsOn: string) => {
-        fireEvent.pointerDown(target, { pointerType: 'touch' });
-        fireEvent.pointerUp(target, { pointerType: 'touch' });
-        fireEvent.mouseDown(target);
-        commit();
-        fireEvent.mouseUp(landing(landsOn));
-        clickUnlessGone(target, landsOn);
-      },
-    };
-
-    it.each(
-      (['mouse', 'touch'] as const).flatMap((pointer) =>
-        pressCases.map((press) => [pointer, press.kind, press] as const)
-      )
-    )('runs a %s press on %s once when the blur commit moves or unmounts it under the press', (pointer, _, {
-      target: targetOf,
-      landsOn,
-      outcome,
-    }) => {
-      const spies: PressSpies = { onOpenDecision: vi.fn(), onAddRule: vi.fn() };
-      render(<TableHost initial={{ rowId: 'r1' }} {...spies} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const target = targetOf();
-      const position = vi
-        .spyOn(target, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      tapsWith[pointer](
-        target,
-        () => {
-          act(() => target.focus());
-          position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-        },
-        landsOn
-      );
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      outcome(spies);
-    });
-
-    it.each([
-      'mouse',
-      'touch',
-    ] as const)('runs a %s press on the add-rule action once when the blur commit moves it and the click still lands on it', (pointer) => {
-      const onAddRule = vi.fn();
-      render(<TableHost initial={{ rowId: 'r1' }} onAddRule={onAddRule} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const add = screen.getByRole('button', { name: 'Add rule' });
-      const icon = add.querySelector('svg');
-      if (!icon) throw new Error('no add-rule icon');
-      const position = vi.spyOn(icon, 'getBoundingClientRect').mockReturnValue(rect(300, 316));
-      fireEvent.pointerDown(icon, { pointerType: pointer });
-      if (pointer === 'touch') fireEvent.pointerUp(icon, { pointerType: pointer });
-      fireEvent.mouseDown(icon);
-      act(() => add.focus());
-      position.mockReturnValue({ ...rect(300, 316), top: 12, y: 12, bottom: 36 });
-      if (pointer === 'mouse') fireEvent.pointerUp(add, { pointerType: pointer });
-      fireEvent.click(add, { detail: 1 });
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(onAddRule).toHaveBeenCalledTimes(1);
-    });
-
-    it('edits the pressed outcome again when its blur commit shrinks it from under the press', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(valueChip('r1', 'risk'));
-      fireEvent.change(editor(), { target: { value: '"hi"' } });
-      const risk = valueChip('r1', 'risk');
-      const size = vi.spyOn(risk, 'getBoundingClientRect').mockReturnValue(rect(300, 400));
-      fireEvent.pointerDown(risk);
-      fireEvent.mouseDown(risk);
-      act(() => risk.focus());
-      size.mockReturnValue(rect(300, 330));
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(valueChip('r1', 'risk')).toHaveTextContent('"hi"');
-      expect(editor()).toHaveAccessibleName(/^risk .*, rule 1$/);
-    });
-
-    it.each<[string, { button: number; ctrlKey?: boolean }, 'before' | 'after']>([
-      ['a right-button press', { button: 2 }, 'after'],
-      ['a right-button press that opens its menu at the press', { button: 2 }, 'before'],
-      ['a Control-click, which opens the menu on macOS', { button: 0, ctrlKey: true }, 'before'],
-    ])('runs nothing from %s whose blur commit unmounts the ✕ it landed on', (_, init, menuAt) => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      fireEvent.pointerDown(remove, init);
-      fireEvent.mouseDown(remove, init);
-      act(() => remove.focus());
-      expect(remove.isConnected).toBe(false);
-      if (menuAt === 'before') fireEvent.contextMenu(card('r1'), init);
-      fireEvent.pointerUp(card('r1'), init);
-      fireEvent.mouseUp(card('r1'), init);
-      if (menuAt === 'after') fireEvent.contextMenu(card('r1'), init);
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(valueChip('r1', 'age')).toBeInTheDocument();
-    });
-
-    it('edits the pressed lead value at pointerup when the blur commit unmounts it and no click follows', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const age = valueChip('r1', 'age');
-      fireEvent.pointerDown(age);
-      fireEvent.mouseDown(age);
-      act(() => age.focus());
-      fireEvent.pointerUp(card('r1'));
-      expect(valueChip('r1', 'channel')).toHaveTextContent('"web"');
-      expect(editor()).toHaveAccessibleName(/^age .*, rule 1$/);
-    });
-
-    it('runs a later keyboard click on its own target after a press released outside the view, which the blur commit moved', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', 'Rule 3 actions');
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger, { pointerType: 'touch' });
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(document.body, { pointerType: 'touch' });
-      const remove = button('r2', 'Remove age from rule 2');
-      act(() => remove.focus());
-      fireEvent.click(remove, { detail: 0 });
-      expect(screen.queryByRole('menu')).toBeNull();
-      expect(
-        within(card('r2')).queryByRole('button', { name: 'Remove age from rule 2' })
-      ).toBeNull();
-    });
-
-    const activations = {
-      Enter: (target: HTMLElement) => {
-        if (fireEvent.keyDown(target, { key: 'Enter' })) fireEvent.click(target, { detail: 0 });
-      },
-      Space: (target: HTMLElement) => {
-        if (fireEvent.keyDown(target, { key: ' ' }) && fireEvent.keyUp(target, { key: ' ' })) {
-          fireEvent.click(target, { detail: 0 });
-        }
-      },
-      'a programmatic click': (target: HTMLElement) => act(() => target.click()),
-    };
-    const outside = () => {
-      const element = document.body.appendChild(document.createElement('button'));
-      onTestFinished(() => element.remove());
-      return element;
-    };
-    const unmountedTouchPress = () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      tapsWith.touch(remove, () => act(() => remove.focus()), 'r1');
-      expect(remove.isConnected).toBe(false);
-      expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull();
-    };
-    const movedPressReleasedOutside = () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const trigger = button('r3', 'Rule 3 actions');
-      const position = vi
-        .spyOn(trigger, 'getBoundingClientRect')
-        .mockReturnValue({ ...rect(300, 324), top: 130, y: 130, bottom: 154 });
-      fireEvent.pointerDown(trigger, { pointerType: 'touch' });
-      fireEvent.mouseDown(trigger);
-      act(() => trigger.focus());
-      position.mockReturnValue({ ...rect(300, 324), top: 154, y: 154, bottom: 178 });
-      fireEvent.pointerUp(document.body, { pointerType: 'touch' });
-    };
-    const removedAge = () =>
-      expect(
-        within(card('r2')).queryByRole('button', { name: 'Remove age from rule 2' })
-      ).toBeNull();
-    const pressAndClick = (target: HTMLElement) => {
-      fireEvent.pointerDown(target);
-      fireEvent.mouseDown(target);
-      fireEvent.pointerUp(target);
-      fireEvent.mouseUp(target);
-      fireEvent.click(target, { detail: 1 });
-    };
-    const laterGestures: [string, (target: HTMLElement) => void][] = [
-      [
-        'a key in the view, then a click with no press of its own',
-        (target) => {
-          fireEvent.keyDown(target, { key: 'Shift' });
-          fireEvent.click(target, { detail: 1 });
-        },
-      ],
-      [
-        'focus leaving the view, then a click with no press of its own',
-        (target) => {
-          act(() => outside().focus());
-          fireEvent.click(target, { detail: 1 });
-        },
-      ],
-      ['a new press and click', pressAndClick],
-    ];
-
-    it.each(
-      (['Add condition to rule 3', 'Rule 3 actions'] as const).flatMap((name) =>
-        (Object.keys(activations) as (keyof typeof activations)[]).map(
-          (how) => [name, how] as const
-        )
-      )
-    )('opens the %s menu from %s after a touch press the blur commit unmounted, which no click follows', (name, how) => {
-      unmountedTouchPress();
-      const trigger = button('r3', name);
-      act(() => trigger.focus());
-      activations[how](trigger);
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', name);
-    });
-
-    it('opens a menu from a click with no press of its own after a press whose own click followed the blur commit that unmounted it', () => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
-      fireEvent.click(button('r1', 'Add condition to rule 1'));
-      fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
-      fireEvent.change(editor(), { target: { value: '"web"' } });
-      const remove = button('r1', 'Remove age from rule 1');
-      fireEvent.pointerDown(remove);
-      fireEvent.mouseDown(remove);
-      act(() => remove.focus());
-      fireEvent.pointerUp(card('r1'));
-      fireEvent.mouseUp(card('r1'));
-      fireEvent.click(card('r1'), { detail: 1 });
-      expect(card('r1').querySelector('[data-column-id="age"]')).toBeNull();
-      fireEvent.click(button('r3', 'Add condition to rule 3'), { detail: 1 });
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', 'Add condition to rule 3');
-    });
-
-    it.each(
-      laterGestures
-    )('opens a menu from %s after a touch press the blur commit unmounted, which no click follows', (_, gesture) => {
-      unmountedTouchPress();
-      gesture(button('r3', 'Add condition to rule 3'));
-      expect(screen.getByRole('menu')).toHaveAttribute('aria-label', 'Add condition to rule 3');
-    });
-
-    it.each(
-      laterGestures
-    )('runs the remove action from %s after a press the blur commit moved, released outside the view', (_, gesture) => {
-      movedPressReleasedOutside();
-      gesture(button('r2', 'Remove age from rule 2'));
-      expect(screen.queryByRole('menu')).toBeNull();
-      removedAge();
-    });
-
-    it.each(
-      Object.keys(activations) as (keyof typeof activations)[]
-    )('runs the remove action from %s after a press the blur commit moved, released outside the view', (how) => {
-      movedPressReleasedOutside();
-      const remove = button('r2', 'Remove age from rule 2');
-      act(() => remove.focus());
-      activations[how](remove);
-      expect(screen.queryByRole('menu')).toBeNull();
-      removedAge();
     });
 
     const noValueLead = [
@@ -3422,8 +4988,6 @@ describe('DecisionText', () => {
     it.each<[string, KeyboardEventInit, string]>([
       ['Escape back to its input', { key: 'Escape' }, 'r1:income'],
       ['Enter down to the next rule', { key: 'Enter' }, 'r2:income'],
-      ['Tab from the last cell in place', { key: 'Tab' }, 'r1:income'],
-      ['Shift+Tab to the previous cell', { key: 'Tab', shiftKey: true }, 'r1:age'],
     ])('moves by %s from the editor of a condition with no value', (_, key, stop) => {
       renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1', columnId: 'income' } });
       act(() => card('r1').querySelector<HTMLElement>('[data-column-id="income"]')?.focus());
@@ -3436,7 +5000,7 @@ describe('DecisionText', () => {
       renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1', columnId: 'income' } });
       act(() => card('r1').querySelector<HTMLElement>('[data-column-id="income"]')?.focus());
       press('Enter');
-      expect(editor()).toHaveAccessibleName(DECISION_TEXT_LABELS.cell('income', '', 1));
+      expect(editor()).toHaveAccessibleName('income, rule 1');
     });
 
     it('keeps focus on the rule after its ✕ re-words it, selecting that rule first', () => {
@@ -3470,19 +5034,22 @@ describe('DecisionText', () => {
   describe('rule menu', () => {
     const actions = (rowId: string) =>
       within(card(rowId)).getByRole('button', { name: `Rule ${rowId.slice(1)} actions` });
-    const deleteEntry = (): GridMenuEntry[] => [{ label: 'Delete rule', onClick: vi.fn() }];
     const renderMenus = (overrides: Partial<DecisionTextEdit> = {}) =>
       render(
         view({
           rules: GRID_SENTENCE_RULES,
+          ...GRID_SENTENCE_COLUMNS,
           selected: null,
           onSelect: vi.fn(),
-          edit: editWith({ ruleEntries: deleteEntry, ...overrides }),
+          edit: editWith(overrides),
         })
       );
+    const menuItems = () =>
+      within(screen.getByRole('menu'))
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent);
     type RuleChange = (rules: readonly SentenceRule[], rowId: string) => readonly SentenceRule[];
     interface RuleChangeHostProps {
-      label: string;
       change: RuleChange;
       next?: string;
       initial?: string;
@@ -3490,7 +5057,6 @@ describe('DecisionText', () => {
       late?: boolean;
     }
     const RuleChangeHost = ({
-      label,
       change,
       next,
       initial = 'r2',
@@ -3508,7 +5074,7 @@ describe('DecisionText', () => {
         selected,
         onSelect: setSelected,
         edit: editWith({
-          ruleEntries: (rowId) => [{ label, onClick: () => apply(rowId) }],
+          onInsertRule: (index) => apply(rules[index - 1]?.rowId ?? ''),
           onDeleteRule: (rowId) => {
             onDeleteRule?.(rowId);
             if (late) later(() => apply(rowId));
@@ -3521,34 +5087,16 @@ describe('DecisionText', () => {
     const insertBelow: RuleChange = (rules, rowId) =>
       rules.flatMap((rule) => (rule.rowId === rowId ? [rule, { ...rule, rowId: 'r2b' }] : [rule]));
 
-    it("opens the host's entries for its own rule from ⋯, and focuses ⋯ again on close", () => {
-      const onDelete = vi.fn();
-      const ruleEntries = vi.fn((_rowId: string): GridMenuEntry[] => [
-        {
-          label: 'Move up',
-          disabled: true,
-          disabledReason: 'Already the first rule',
-          onClick: vi.fn(),
-        },
-        { divider: true },
-        { label: 'Delete rule', destructive: true, onClick: onDelete },
-      ]);
-      renderMenus({ ruleEntries });
-      expect(ruleEntries).not.toHaveBeenCalled();
+    it("opens its own rule's menu from ⋯, runs the picked action for that rule, and focuses ⋯ again on close", () => {
+      const onDeleteRule = vi.fn();
+      renderMenus({ onDeleteRule });
       expect(actions('r2')).toHaveAttribute('aria-haspopup', 'menu');
       fireEvent.click(actions('r2'));
       const menu = screen.getByRole('menu');
       expect(menu).toHaveAttribute('aria-label', 'Rule 2 actions');
-      expect(new Set(ruleEntries.mock.calls.map(([rowId]) => rowId))).toEqual(new Set(['r2']));
-      expect(within(menu).getByRole('menuitem', { name: /^Move up/ })).toHaveAttribute(
-        'aria-disabled',
-        'true'
-      );
-      expect(screen.getByTestId('nl-menu-disabled-reason')).toHaveTextContent(
-        'Already the first rule'
-      );
-      fireEvent.click(within(menu).getByRole('menuitem', { name: 'Delete rule' }));
-      expect(onDelete).toHaveBeenCalledTimes(1);
+      expect(menuItems()).toEqual(['Delete rule 2']);
+      fireEvent.click(within(menu).getByRole('menuitem', { name: 'Delete rule 2' }));
+      expect(onDeleteRule.mock.calls).toEqual([['r2']]);
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(actions('r2'));
       fireEvent.click(actions('r2'));
@@ -3557,21 +5105,115 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(actions('r2'));
     });
 
-    it('opens no menu from + or ⋯ while the host has no entries for it', () => {
-      const conditionEntries = vi.fn((): GridMenuEntry[] => []);
-      renderMenus({ conditionEntries, ruleEntries: () => [] });
+    const RULE_ACTIONS = [
+      'onInsertRule',
+      'onDuplicateRule',
+      'onClearRule',
+      'onMoveRule',
+      'onDeleteRule',
+    ] as const;
+    const ruleActionSpies = () => ({
+      onInsertRule: vi.fn(),
+      onDuplicateRule: vi.fn(),
+      onClearRule: vi.fn(),
+      onMoveRule: vi.fn(),
+      onDeleteRule: vi.fn(),
+    });
+
+    it("words a rule's menu in groups, insert to clear, move, delete, each pick calling its action for that rule", () => {
+      const spies = ruleActionSpies();
+      renderMenus(spies);
+      const pick = (rowId: string, name: string) => {
+        fireEvent.click(actions(rowId));
+        fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name }));
+      };
+      fireEvent.click(actions('r2'));
+      expect(menuItems()).toEqual([
+        'Insert rule above',
+        'Insert rule below',
+        'Duplicate rule',
+        'Clear rule',
+        'Move up',
+        'Move down',
+        'Delete rule 2',
+      ]);
+      expect(screen.getByRole('menu').querySelectorAll('[role="separator"]')).toHaveLength(2);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      pick('r2', 'Insert rule above');
+      pick('r2', 'Insert rule below');
+      pick('r2', 'Duplicate rule');
+      pick('r2', 'Clear rule');
+      pick('r2', 'Move up');
+      pick('r2', 'Move down');
+      pick('r2', 'Delete rule 2');
+      expect(RULE_ACTIONS.map((name) => spies[name].mock.calls)).toEqual([
+        [[1], [2]],
+        [['r2']],
+        [['r2']],
+        [
+          [1, 0],
+          [1, 2],
+        ],
+        [['r2']],
+      ]);
+    });
+
+    it.each<[string, string, string]>([
+      ['first', 'r1', 'Move up'],
+      ['last', 'r3', 'Move down'],
+    ])('offers no move past the %s rule', (_, rowId, name) => {
+      const spies = ruleActionSpies();
+      renderMenus(spies);
+      fireEvent.click(actions(rowId));
+      const item = within(screen.getByRole('menu')).getByRole('menuitem', { name });
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(item);
+      expect(spies.onMoveRule).not.toHaveBeenCalled();
+    });
+
+    it.each<['onInsertRule' | 'onMoveRule', readonly string[], number]>([
+      [
+        'onInsertRule',
+        ['Duplicate rule', 'Clear rule', 'Move up', 'Move down', 'Delete rule 2'],
+        2,
+      ],
+      [
+        'onMoveRule',
+        ['Insert rule above', 'Insert rule below', 'Duplicate rule', 'Clear rule', 'Delete rule 2'],
+        1,
+      ],
+    ])('leaves out the entries of an action the host omits, %s, and a divider left without a group', (omitted, items, dividers) => {
+      renderMenus({ ...ruleActionSpies(), [omitted]: undefined });
+      fireEvent.click(actions('r2'));
+      expect(menuItems()).toEqual(items);
+      expect(screen.getByRole('menu').querySelectorAll('[role="separator"]')).toHaveLength(
+        dividers
+      );
+    });
+
+    it("words a rule's add-condition menu from the inputs it has no condition on, then Add input", () => {
+      const onAddInput = vi.fn();
+      renderMenus({ inputIds: ['income', 'age', 'gone', 'income'], onAddInput });
+      fireEvent.click(within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' }));
+      expect(menuItems()).toEqual(['income', 'Add input column']);
+      expect(screen.getByRole('menu').querySelectorAll('[role="separator"]')).toHaveLength(1);
+      fireEvent.click(
+        within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Add input column' })
+      );
+      expect(onAddInput.mock.calls).toEqual([['r3']]);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+    });
+
+    it('opens no menu from + while there is no input to add and no Add input', () => {
+      renderMenus({ inputIds: ['age'] });
       const add = within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' });
       fireEvent.click(add);
-      expect(conditionEntries).toHaveBeenCalledWith('r3');
       expect(screen.queryByRole('menu')).toBeNull();
       expect(add).not.toHaveAttribute('aria-expanded', 'true');
-      fireEvent.click(actions('r3'));
-      expect(screen.queryByRole('menu')).toBeNull();
-      expect(actions('r3')).not.toHaveAttribute('aria-expanded', 'true');
     });
 
     it('marks only the button whose menu is open as expanded', () => {
-      renderMenus({ conditionEntries: deleteEntry });
+      renderMenus({ onAddInput: vi.fn() });
       const add = (rowId: string) =>
         within(card(rowId)).getByRole('button', {
           name: `Add condition to rule ${rowId.slice(1)}`,
@@ -3593,10 +5235,10 @@ describe('DecisionText', () => {
     });
 
     it.each<[string, string, RuleChange, string, string]>([
-      ["removes the menu's own rule", 'Delete rule', removeRule, 'r3', 'r3'],
+      ["removes the menu's own rule", 'Delete rule 2', removeRule, 'r3', 'r3'],
       ['inserts it, and walks on from there', 'Insert rule below', insertBelow, 'r2b', 'r3'],
     ])('focuses the rule the host selects once a menu pick %s', (_, label, change, next, below) => {
-      render(<RuleChangeHost label={label} change={change} next={next} />);
+      render(<RuleChangeHost change={change} next={next} />);
       fireEvent.click(actions('r2'));
       fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: label }));
       expect(screen.queryAllByTestId('nl-row-r2')).toHaveLength(change === removeRule ? 0 : 1);
@@ -3634,7 +5276,7 @@ describe('DecisionText', () => {
           rules: GRID_SENTENCE_RULES,
           selected: null,
           onSelect: vi.fn(),
-          edit: editWith({ ruleEntries: deleteEntry }),
+          edit: editWith(),
         }),
         { container }
       );
@@ -3667,7 +5309,7 @@ describe('DecisionText', () => {
           rules: GRID_SENTENCE_RULES,
           selected: null,
           onSelect: vi.fn(),
-          edit: editWith({ ruleEntries: deleteEntry }),
+          edit: editWith(),
         }),
         { container }
       );
@@ -3684,19 +5326,18 @@ describe('DecisionText', () => {
     it.each<[string, readonly SentenceRule[], boolean]>([
       ['its rule is gone', GRID_SENTENCE_RULES.filter((rule) => rule.rowId !== 'r2'), true],
       ['editing is gone', GRID_SENTENCE_RULES, false],
-    ])('closes the rule menu once %s, asking no entries for it, and focuses the view', (_, rules, editable) => {
-      const ruleEntries = vi.fn(deleteEntry);
-      const edit = editWith({ ruleEntries });
+    ])('closes the rule menu once %s, running nothing, and focuses the view', (_, rules, editable) => {
+      const onDeleteRule = vi.fn();
+      const edit = editWith({ onDeleteRule });
       const onSelect = vi.fn();
       const { rerender } = render(
         view({ rules: GRID_SENTENCE_RULES, selected: null, onSelect, edit })
       );
       fireEvent.click(actions('r2'));
       expect(screen.getByRole('menu')).toBeInTheDocument();
-      ruleEntries.mockClear();
       rerender(view({ rules, selected: null, onSelect, edit: editable ? edit : undefined }));
       expect(screen.queryByRole('menu')).toBeNull();
-      expect(ruleEntries).not.toHaveBeenCalled();
+      expect(onDeleteRule).not.toHaveBeenCalled();
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
     });
 
@@ -3709,7 +5350,7 @@ describe('DecisionText', () => {
           const top = mountedRows().findIndex((row) => row.contains(this)) * 40;
           return { ...rect(10, 30), top, y: top, bottom: top + 24 };
         });
-      const edit = editWith({ ruleEntries: deleteEntry });
+      const edit = editWith();
       const onSelect = vi.fn();
       const { rerender } = render(
         view({ rules: GRID_SENTENCE_RULES, selected: null, onSelect, edit })
@@ -3734,11 +5375,11 @@ describe('DecisionText', () => {
     it('closes the rule menu when rules inserted above move its rule out of the mounted rules', () => {
       const rules = manySentenceRules(2000);
       const props = {
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         selected: null,
         onSelect: vi.fn(),
-        edit: editWith({ ruleEntries: deleteEntry }),
+        edit: editWith(),
       };
       const { rerender } = render(view({ ...props, rules }));
       const trigger = card('row-2').querySelector<HTMLElement>('[data-rule-action="rule"]');
@@ -3758,10 +5399,10 @@ describe('DecisionText', () => {
     it('leaves the rules where they scrolled when the scroll that closes a menu unmounts its rule', () => {
       renderSelectable({
         rules: manySentenceRules(2000),
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         initial: { rowId: 'row-0' },
-        edit: editWith({ ruleEntries: deleteEntry }),
+        edit: editWith(),
       });
       const trigger = card('row-2').querySelector<HTMLElement>('[data-rule-action="rule"]');
       if (!trigger) throw new Error('no ⋯ in row-2');
@@ -3808,14 +5449,7 @@ describe('DecisionText', () => {
 
     it('deletes its rule from the delete action, leaves Delete on the rule to the host, and focuses the rule the host selects', () => {
       const onDeleteRule = vi.fn();
-      render(
-        <RuleChangeHost
-          label="Delete rule"
-          change={removeRule}
-          next="r3"
-          onDeleteRule={onDeleteRule}
-        />
-      );
+      render(<RuleChangeHost change={removeRule} next="r3" onDeleteRule={onDeleteRule} />);
       act(() => card('r2').focus());
       expect(press('Delete')).toBe(true);
       expect(onDeleteRule).not.toHaveBeenCalled();
@@ -3848,7 +5482,7 @@ describe('DecisionText', () => {
     it('leaves no refocus pending from a clear the host refused, so its later select of another rule takes no focus', () => {
       const props = {
         rules: GRID_SENTENCE_RULES,
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         onSelect: vi.fn(),
         edit: editWith({ onClearCell: vi.fn() }),
       };
@@ -3870,9 +5504,7 @@ describe('DecisionText', () => {
       ['r1', 'selects the next rule a moment later', { next: 'r3', late: true }, 'r3'],
       ['r1', 'keeps its selection', {}, 'r1'],
     ])('with %s selected, focuses what the host %s once it removes the rule of the delete action pressed', async (initial, _, answer, focused) => {
-      render(
-        <RuleChangeHost label="Delete rule" change={removeRule} initial={initial} {...answer} />
-      );
+      render(<RuleChangeHost change={removeRule} initial={initial} {...answer} />);
       const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
       act(() => remove.focus());
       fireEvent.click(remove);
@@ -3930,7 +5562,7 @@ describe('DecisionText', () => {
       onTestFinished(() => host.remove());
       const shadow = host.attachShadow({ mode: 'open' });
       const container = shadow.appendChild(document.createElement('div'));
-      render(<RuleChangeHost label="Delete rule" change={removeRule} next="r3" />, { container });
+      render(<RuleChangeHost change={removeRule} next="r3" />, { container });
       const inView = within(container);
       const remove = within(inView.getByTestId('nl-row-r2')).getByRole('button', {
         name: 'Delete rule 2',
@@ -4043,17 +5675,17 @@ describe('DecisionText', () => {
       ...rule,
       lead: rule.lead.map((part) =>
         typeof part !== 'string' && part.kind === 'input' && part.columnId === 'income'
-          ? { ...part, decisionId: 'income-decision' }
+          ? { ...part, producedBy: 'income-decision' }
           : part
       ),
     }));
     const link = (rowId: string) =>
-      within(card(rowId)).getByRole('button', { name: 'Open the income decision' });
+      within(card(rowId)).getByRole('button', { name: "Open income's decision" });
     const noValueLinkedRules: SentenceRule[] = GRID_SENTENCE_RULES.map((rule) => ({
       ...rule,
       lead: [
         'when ',
-        { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
+        { kind: 'input', columnId: 'income', text: 'income', producedBy: 'income-decision' },
         ' is not empty',
       ],
     }));
@@ -4095,9 +5727,8 @@ describe('DecisionText', () => {
         // @ts-expect-error
         <DecisionText
           rules={linkedRules}
-          bands={GRID_SENTENCE_BANDS}
+          {...GRID_SENTENCE_COLUMNS}
           header={GRID_SENTENCE_HEADER}
-          labels={DECISION_TEXT_LABELS}
           ariaLabel="Rules"
           dataTestId="nl"
           onOpenDecision={vi.fn()}
@@ -4107,7 +5738,7 @@ describe('DecisionText', () => {
       const controls = document.querySelectorAll<HTMLElement>(
         'li[data-row-id], li[data-row-id] [tabindex], li[data-row-id] button'
       );
-      expect(screen.getAllByRole('button', { name: 'Open the income decision' })).toHaveLength(2);
+      expect(screen.getAllByRole('button', { name: "Open income's decision" })).toHaveLength(2);
       expect([...controls].filter((control) => control.tabIndex >= 0)).toEqual([]);
     });
 
@@ -4116,7 +5747,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: noValueLinkedRules,
         onOpenDecision,
-        bands: [],
+        ...NO_COLUMNS,
         initial: { rowId: 'r1', columnId: 'income' },
       });
       const user = userEvent.setup();
@@ -4183,13 +5814,13 @@ describe('DecisionText', () => {
       const onOpenDecision = vi.fn();
       const lead = [
         'when ',
-        { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
+        { kind: 'input', columnId: 'income', text: 'income', producedBy: 'income-decision' },
         ' is set and ',
         { kind: 'input', columnId: 'age', text: 'age' },
         ' is ',
         { kind: 'value', columnId: 'age', index: 0, text: '25' },
         ' and ',
-        { kind: 'input', columnId: 'channel', text: 'channel', decisionId: 'channel-decision' },
+        { kind: 'input', columnId: 'channel', text: 'channel', producedBy: 'channel-decision' },
         ' is set',
       ] satisfies SentencePart[];
       const rules = GRID_SENTENCE_RULES.map((rule) => ({ ...rule, lead }));
@@ -4206,13 +5837,13 @@ describe('DecisionText', () => {
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
     });
 
-    it('takes no links’ label from a view without onOpenDecision, and names a link by its input without one', () => {
-      const { openDecision: _, ...unlinked } = DECISION_TEXT_LABELS;
-      const { rerender } = renderView({ rules: linkedRules, labels: unlinked });
+    it('takes no links’ label from a view without onOpenDecision, and names a link by the host’s label over its own', () => {
+      const labels = { openDecision: (input: string) => `Go to ${input}` };
+      const { rerender } = renderView({ rules: linkedRules, labels });
       expect(within(card('r1')).queryAllByRole('button')).toEqual([]);
       const onOpenDecision = vi.fn();
-      rerender(view({ rules: linkedRules, labels: unlinked, onOpenDecision }));
-      fireEvent.click(within(card('r1')).getByRole('button', { name: 'income' }));
+      rerender(view({ rules: linkedRules, labels, onOpenDecision }));
+      fireEvent.click(within(card('r1')).getByRole('button', { name: 'Go to income' }));
       expect(onOpenDecision).toHaveBeenCalledWith('income-decision');
     });
 
@@ -4221,7 +5852,7 @@ describe('DecisionText', () => {
       const { rerender } = renderView(props);
       expect(link('r1')).not.toHaveAttribute('tabindex');
       rerender(view({ ...props, onOpenDecision: undefined }));
-      expect(screen.queryByRole('button', { name: 'Open the income decision' })).toBeNull();
+      expect(screen.queryByRole('button', { name: "Open income's decision" })).toBeNull();
     });
   });
 });

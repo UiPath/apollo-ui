@@ -16,12 +16,12 @@ import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes'
 import type { CellStop } from './TokenChip';
 
 export interface RuleCardLabels extends MarkBadgeLabels, LineTextLabels {
-  /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position; without it a stop is named by its column and values. */
-  cell?: (column: string, values: string, position: number) => string;
-  /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash; without it the dash is read. */
-  emptyValue?: string;
-  /** An input's link to the decision that produces it, e.g. "Open the income decision"; without it a link is named by its input. */
-  openDecision?: (input: string) => string;
+  /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position. */
+  cell: (column: string, values: string, position: number) => string;
+  /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash. */
+  emptyValue: string;
+  /** An input's link to the decision that produces it, e.g. "Open income's decision". */
+  openDecision: (input: string) => string;
 }
 
 /** A card's remove and clear buttons' strings. */
@@ -61,14 +61,6 @@ export const firstValuesOf = (rule: SentenceRule) => {
   }
   return first;
 };
-
-/** A cell's name as a stop or an editor reads it: the host's `cell` label, else its column and values. */
-export const cellName = (
-  { cell }: Pick<RuleCardLabels, 'cell'>,
-  column: string,
-  values: string,
-  position: number
-): string => cell?.(column, values, position) ?? [column, values].filter(Boolean).join(' ');
 
 /** A condition's run verdict as its line reads it out, or nothing for an outcome or a cell the run did not judge. */
 const verdictOf = (
@@ -187,8 +179,7 @@ export const ruleCardModel = ({
         token,
         labelId: `${id}-cell-${index}`,
         label: [
-          cellName(
-            labels,
+          labels.cell(
             columnNameOf(rule, columnId),
             shownValuesOf(parts, columnId, labels),
             position
@@ -237,10 +228,10 @@ export const ruleCardModel = ({
     stops,
     stopOf: (token) => stopByToken.get(token),
     linkOf: (token) =>
-      decisionLinks && token.kind === 'input' && token.decisionId !== undefined
+      decisionLinks && token.kind === 'input' && token.producedBy !== undefined
         ? {
-            decisionId: token.decisionId,
-            label: labels.openDecision?.(token.text),
+            decisionId: token.producedBy,
+            label: labels.openDecision(token.text),
             tabbable: !selectable,
           }
         : undefined,

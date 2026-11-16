@@ -413,7 +413,13 @@ export const ExecutionStatus: Story = {
                 },
               ],
             ],
-            headerChips: [{ type: StageHeaderChipType.EndsCase, label: 'Ended case' }],
+            headerChips: [
+              {
+                type: StageHeaderChipType.EndsCase,
+                label: 'Ended case',
+                tooltip: 'The case ended when this stage completed',
+              },
+            ],
           },
           execution: {
             stageStatus: {
@@ -501,8 +507,12 @@ export const ExecutionStatus: Story = {
               [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
             ],
             headerChips: [
-              { type: StageHeaderChipType.Optional },
-              { type: StageHeaderChipType.EndsCase, variant: 'outline' },
+              { type: StageHeaderChipType.Optional, tooltip: 'Not required for case completion' },
+              {
+                type: StageHeaderChipType.EndsCase,
+                variant: 'outline',
+                tooltip: 'The case completes when this stage exits or completes',
+              },
             ],
           },
           onTaskClick: (id: string) => window.alert(`Task clicked: ${id}`),

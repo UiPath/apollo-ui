@@ -1,10 +1,10 @@
 import { Icon } from '@uipath/apollo-core';
 import { cn } from '@uipath/apollo-wind';
 import { Flag } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useId } from 'react';
 import { ChecklistIcon } from '../../../icons';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
-import { CanvasTooltip } from '../CanvasTooltip';
+import { CanvasTooltip, isEmptyTooltipContent } from '../CanvasTooltip';
 import { StageChip } from './StageNode.styles';
 import type { StageHeaderChip } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
@@ -66,7 +66,8 @@ const STATUS_BADGE_BASE_CLASS =
 /**
  * Status pill (e.g. "Optional", "Ends case"). Interactive when an `onClick` is supplied —
  * it then renders a focusable button with hover that navigates the consumer to the related control;
- * otherwise it renders a plain, non-interactive label.
+ * otherwise it renders a plain label, focusable only when it has a tooltip to open.
+ * A text tooltip also follows the pill in the DOM as its description, so screen readers get it while the tooltip is closed.
  */
 const StageStatusBadge = ({
   label,
@@ -83,32 +84,67 @@ const StageStatusBadge = ({
   testId: string;
   onClick?: () => void;
 }) => {
-  const badge = onClick ? (
-    <button
-      type="button"
-      data-testid={testId}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      className={`${STATUS_BADGE_BASE_CLASS} ${className} ${hoverClassName} cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2`}
-    >
-      {label}
-    </button>
-  ) : (
-    <span data-testid={testId} className={`${STATUS_BADGE_BASE_CLASS} ${className}`}>
-      {label}
-    </span>
-  );
+  const descriptionId = useId();
+  const hasTooltip = !isEmptyTooltipContent(tooltip);
+  // Rich content is not copied: its links or controls would be hidden tab stops. The open tooltip describes the pill instead.
+  const hasTextDescription =
+    hasTooltip && (typeof tooltip === 'string' || typeof tooltip === 'number');
+  // Left out rather than undefined, so Radix can point it at the open tooltip.
+  const describedBy = hasTextDescription ? { 'aria-describedby': descriptionId } : {};
 
-  if (tooltip) {
-    return (
-      <CanvasTooltip placement="bottom" content={tooltip}>
-        {badge}
-      </CanvasTooltip>
+  let badge: React.ReactElement;
+  if (onClick) {
+    badge = (
+      <button
+        type="button"
+        data-testid={testId}
+        {...describedBy}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        className={`${STATUS_BADGE_BASE_CLASS} ${className} ${hoverClassName} cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--canvas-primary)`}
+      >
+        {label}
+      </button>
+    );
+  } else if (hasTooltip) {
+    badge = (
+      <span
+        data-testid={testId}
+        role="img"
+        aria-label={label}
+        {...describedBy}
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: Focusable so keyboard users can open the tooltip. It has no action, so it stays an image rather than a button.
+        tabIndex={0}
+        className={`${STATUS_BADGE_BASE_CLASS} ${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--canvas-primary)`}
+      >
+        {label}
+      </span>
+    );
+  } else {
+    badge = (
+      <span data-testid={testId} className={`${STATUS_BADGE_BASE_CLASS} ${className}`}>
+        {label}
+      </span>
     );
   }
-  return badge;
+
+  if (!hasTooltip) {
+    return badge;
+  }
+  return (
+    <>
+      <CanvasTooltip placement="bottom" content={tooltip} stopEscapePropagation>
+        {badge}
+      </CanvasTooltip>
+      {hasTextDescription && (
+        <span id={descriptionId} className="sr-only">
+          {tooltip}
+        </span>
+      )}
+    </>
+  );
 };
 
 export interface StageHeaderChipsProps {

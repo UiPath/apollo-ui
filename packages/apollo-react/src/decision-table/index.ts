@@ -5,12 +5,17 @@
 // catalog (see `ApI18nProvider`).
 
 export type { AddRuleButtonProps } from './AddRuleButton';
+export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
-export { DecisionText, type DecisionTextLabels, type DecisionTextProps } from './DecisionText';
+export { DecisionText, type DecisionTextProps } from './DecisionText';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
-export type { DecisionTextEdit, DecisionTextEditLabels } from './decisionTextTypes';
+export type {
+  DecisionTextEdit,
+  DecisionTextEditLabels,
+  DecisionTextLabels,
+} from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
@@ -61,7 +66,6 @@ export type { PolicyOption } from './PolicyOptionItem';
 export type { PolicyGroup, PolicyPickerProps } from './PolicyPicker';
 export type { GlyphTone } from './sentenceMarks';
 export type {
-  SentenceBand,
   SentenceBandColumn,
   SentenceCellId,
   SentenceHeader,
@@ -73,6 +77,7 @@ export type {
   SentenceToken,
   SentenceValueId,
   SentenceValueToken,
+  SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
 export { usePressDrag } from './useDragReorder';
@@ -93,5 +98,13 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
-export type { ValueEditorOverlayProps } from './ValueEditorOverlay';
-export type { SentenceEditorContext } from './valueTypes';
+export type { ValuePopoverProps } from './ValuePopover';
+export type {
+  ExpressionEditorHandle,
+  ExpressionEditorProps,
+  RangeEnds,
+  ValueCommit,
+  ValueField,
+  ValueOperatorOption,
+  ValueShape,
+} from './valueTypes';

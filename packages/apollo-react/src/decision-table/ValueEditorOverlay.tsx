@@ -1,60 +1,54 @@
 import type React from 'react';
-import { CellTextEditor } from './CellTextEditor';
-import { BODY_ROW_HEIGHT_PX } from './constants';
+import { useRef } from 'react';
+import { EditorOverlay } from './EditorOverlay';
 import { VALUE_EDITOR_CLASS } from './sentenceStyles';
-import { type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
+import { valueAnchor } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
-import type { SentenceEditorContext } from './valueTypes';
+import { ValuePopover, type ValuePopoverHandle, type ValuePopoverProps } from './ValuePopover';
 
-/** The overlay's inline style: its placement, and the row height a grid cell editor sizes itself from. */
-type ValueEditorStyle = React.CSSProperties & Record<'--grid-row-height', string>;
+/** The open value's editor as the view derives it; the host's editor, the strings and the testid come apart. */
+export type OpenValueEditor = Omit<
+  ValuePopoverProps,
+  'renderEditor' | 'labels' | 'refusal' | 'onOperatorChange' | 'dataTestId'
+>;
 
-const UNPLACED: EditorPlacement = { top: 0, left: 0 };
-
-const overlayStyle = ({ top, left }: EditorPlacement): ValueEditorStyle => ({
-  top,
-  left,
-  '--grid-row-height': `${BODY_ROW_HEIGHT_PX}px`,
-});
-
-const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation();
-
-export interface ValueEditorOverlayProps {
-  editor: SentenceEditorContext;
-  renderEditor: ((context: SentenceEditorContext) => React.ReactNode) | undefined;
+export interface ValueEditorOverlayProps
+  extends Pick<ValuePopoverProps, 'renderEditor' | 'labels' | 'refusal' | 'onOperatorChange'> {
+  editor: OpenValueEditor;
   container: RuleWindow['container'];
   dataTestId: string;
 }
 
-/** The open value's editor, over the rules at its value, keeping its clicks from the view: the host's editor, else the grid's plain one. */
+/** The open value's popover, over the rules at its value; a press outside applies it in place. */
 export const ValueEditorOverlay: React.FC<ValueEditorOverlayProps> = ({
   editor,
   renderEditor,
+  labels,
+  refusal,
+  onOperatorChange,
   container,
   dataTestId,
 }) => {
-  const { overlayRef, placement } = useEditorPlacement({ container, target: editor.target });
+  const popoverRef = useRef<ValuePopoverHandle>(null);
   return (
-    <fieldset
-      ref={overlayRef}
-      aria-label={editor.ariaLabel}
+    <EditorOverlay
+      anchor={valueAnchor(editor.target)}
+      container={container}
+      ariaLabel={editor.ariaLabel}
       className={VALUE_EDITOR_CLASS}
-      style={overlayStyle(placement ?? UNPLACED)}
-      data-testid={`${dataTestId}-value-editor`}
-      onClick={stopPropagation}
+      dataTestId={`${dataTestId}-value-editor`}
+      onPressOutside={() => popoverRef.current?.apply()}
+      onCancel={editor.onCancel}
     >
-      {placement &&
-        (renderEditor ? (
-          renderEditor(editor)
-        ) : (
-          <CellTextEditor
-            value={editor.value}
-            ariaLabel={editor.ariaLabel}
-            dataTestId={`${dataTestId}-editor`}
-            onCommit={editor.onCommit}
-            onCancel={editor.onCancel}
-          />
-        ))}
-    </fieldset>
+      <ValuePopover
+        {...editor}
+        ref={popoverRef}
+        renderEditor={renderEditor}
+        labels={labels}
+        refusal={refusal}
+        onOperatorChange={onOperatorChange}
+        dataTestId={`${dataTestId}-editor`}
+      />
+    </EditorOverlay>
   );
 };
