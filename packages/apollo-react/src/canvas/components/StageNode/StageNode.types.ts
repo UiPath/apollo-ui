@@ -21,6 +21,9 @@ export type StageTaskStatus = `${ElementStatusValues}`;
 
 export type StageSlaIcon = 'warning' | 'error';
 
+/** The click, or the keypress, that opened a task. */
+export type StageTaskActivationEvent = React.MouseEvent | React.KeyboardEvent;
+
 export interface StageTaskItem {
   id: string;
   label: string;
@@ -119,7 +122,12 @@ export interface StageNodeBaseProps {
   onTaskAdd?: () => void;
   onAddTaskFromToolbox?: (taskItem: ListItem) => void;
   onTaskToolboxSearch?: ToolboxSearchHandler;
-  onTaskClick?: (taskElementId: string) => void;
+  /**
+   * A task was opened. `event` is the click or the keypress that opened it, so a host can tell a
+   * keyboard activation (`event.type === 'keydown'`) from a pointer one, e.g. to move focus into
+   * the panel it opens. It is undefined when Apollo opens the task itself, as "Replace task" does.
+   */
+  onTaskClick?: (taskElementId: string, event?: StageTaskActivationEvent) => void;
   onTaskGroupModification?: (
     groupModificationType: GroupModificationType,
     groupIndex: number,

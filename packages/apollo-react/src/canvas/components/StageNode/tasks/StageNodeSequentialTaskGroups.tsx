@@ -28,7 +28,7 @@ import {
   StageParallelLabel,
   StageTaskGroupContainer,
 } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskActivationEvent, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { DraggableTask } from './DraggableTask';
@@ -52,7 +52,7 @@ export const StageNodeSequentialTaskGroups = ({
   isReadOnly: boolean;
   selectedTaskId?: string;
   taskWidthStyle?: CSSProperties;
-  handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
+  handleTaskClick: (e: StageTaskActivationEvent, taskElementId: string) => void;
   handleReorderSequentialTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,

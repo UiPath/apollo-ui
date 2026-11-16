@@ -1,7 +1,11 @@
 import { memo, useCallback, useRef } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import { StageItemPill } from '../StageNode.styles';
-import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
+import type {
+  StageTaskActivationEvent,
+  StageTaskExecution,
+  StageTaskItem,
+} from '../StageNode.types';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
@@ -14,7 +18,7 @@ interface EventDrivenTaskItemProps {
   /** Receives the task so parents can pass one stable function to every item
    * instead of a per-task closure (which would defeat the memo below). */
   getContextMenuItems?: (task: StageTaskItem) => NodeMenuItem[];
-  onTaskClick: (e: React.MouseEvent, taskId: string) => void;
+  onTaskClick: (e: StageTaskActivationEvent, taskId: string) => void;
   isTaskLoading?: boolean;
   /** Read-only (Debug) view: the task's "⋮" button is dropped, right-click still opens the menu. */
   isReadOnly?: boolean;

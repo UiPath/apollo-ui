@@ -8,6 +8,7 @@ export type {
   StageNodeCanvasProps,
   StageNodeProps,
   StageStatus,
+  StageTaskActivationEvent,
   StageTaskContextMenuArgs,
   StageTaskItem,
   StageTaskStatus,
