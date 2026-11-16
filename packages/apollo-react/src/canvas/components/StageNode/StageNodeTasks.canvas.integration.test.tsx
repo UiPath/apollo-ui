@@ -3,7 +3,7 @@ import type { Node, NodeChange, NodeProps } from '@uipath/apollo-react/canvas/xy
 import { ReactFlowProvider, useNodesState } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '../../utils/testing';
+import { fireEvent, render, screen, waitFor } from '../../utils/testing';
 import { BaseCanvas } from '../BaseCanvas';
 import { StageNode } from './StageNode';
 import type { StageNodeBaseProps } from './StageNode.types';
@@ -103,6 +103,8 @@ describe('StageNode task activation in a real canvas', () => {
     row?.focus();
 
     await user.keyboard('{Enter}');
+    // A held key repeats its keydown, which must not open the task again.
+    if (row) fireEvent.keyDown(row, { key: 'Enter', code: 'Enter', repeat: true });
 
     expect(onTaskClick).toHaveBeenCalledTimes(1);
     expect(onTaskClick).toHaveBeenCalledWith(
