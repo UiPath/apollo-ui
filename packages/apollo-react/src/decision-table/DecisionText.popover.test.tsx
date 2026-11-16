@@ -443,9 +443,9 @@ describe('DecisionText value popover whose view stops rendering', () => {
     ) {
       focusedBefore.set(this, document.activeElement);
       showModal.call(this);
-      [...this.querySelectorAll<HTMLElement>('*')]
-        .find((element) => element.tabIndex >= 0 && !element.matches(':disabled'))
-        ?.focus();
+      this.querySelector<HTMLElement>(
+        ':is(button, input, select, textarea, [tabindex]):not(:disabled)'
+      )?.focus();
     });
     vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (
       this: HTMLDialogElement
