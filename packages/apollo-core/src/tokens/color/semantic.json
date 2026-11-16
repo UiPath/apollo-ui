@@ -1296,7 +1296,7 @@
     },
     "warningIcon": {
       "light": {
-        "value": "{color.yellow.500.value}"
+        "value": "{color.yellow.700.value}"
       },
       "light-hc": {
         "value": "{color.yellow.800.value}"
