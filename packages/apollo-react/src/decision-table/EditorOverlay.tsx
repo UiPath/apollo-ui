@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX } from './constants';
-import { activeElementOf, isComposing } from './gridEvents';
+import { isComposing } from './gridEvents';
 import { lastActionIn } from './PopoverFooter';
 import { isRendered } from './renderedTree';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
@@ -26,8 +26,15 @@ const onBackdrop = (event: React.MouseEvent<HTMLDialogElement>): boolean => {
   return clientX < box.left || clientX > box.right || clientY < box.top || clientY > box.bottom;
 };
 
+/** Opens the dialog as modal, so it focuses its first control rather than the stop before it. */
+const showModalPast = (dialog: HTMLDialogElement, start: HTMLElement | null) => {
+  if (start) start.tabIndex = -1;
+  dialog.showModal();
+  if (start) start.tabIndex = 0;
+};
+
 const isPlainTab = (event: React.KeyboardEvent): boolean =>
-  event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey && !isComposing(event);
+  event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey;
 
 export interface EditorOverlayProps {
   anchor: EditorAnchor;
@@ -63,7 +70,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   const attach = useCallback(
     (dialog: HTMLDialogElement | null) => {
       overlayRef.current = dialog;
-      if (dialog?.isConnected && !dialog.open) dialog.showModal();
+      if (dialog?.isConnected && !dialog.open) showModalPast(dialog, startRef.current);
     },
     [overlayRef]
   );
@@ -79,7 +86,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
       dialog.close();
       onCancel();
     } else if (!hidden && !dialog.open && dialog.isConnected) {
-      dialog.showModal();
+      showModalPast(dialog, startRef.current);
     }
   };
   useLayoutEffect(() => {
@@ -122,17 +129,10 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
         const { currentTarget, target, shiftKey } = event;
         if (event.key === 'Escape' && isComposing(event)) event.preventDefault();
         if (event.defaultPrevented || !isPlainTab(event)) return;
-        if (target instanceof HTMLElement && target.tabIndex > 0) {
-          event.preventDefault();
-          lastActionIn(currentTarget)?.focus();
-        } else if (!shiftKey && target === lastActionIn(currentTarget)) {
+        if (!shiftKey && target === lastActionIn(currentTarget)) {
           wrappingRef.current = true;
           startRef.current?.focus({ preventScroll: true });
           wrappingRef.current = false;
-          requestAnimationFrame(() => {
-            const start = startRef.current;
-            if (start && activeElementOf(start) === start) toLastAction();
-          });
         }
       }}
       onCancel={(event) => {
