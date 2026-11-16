@@ -23,6 +23,8 @@ export interface DecisionTextHeaderProps {
   /** The hit policy's change in a diff, shown in place of the label or picker. */
   hitPolicy: DecisionTextDiff['hitPolicy'];
   labels: MarkBadgeProps['labels'] & Pick<DiffLabels, 'previousValue' | 'currentValue'>;
+  /** Sticks to the top of the view's own scroll frame. */
+  sticky: boolean;
   dataTestId: string;
 }
 
@@ -48,12 +50,16 @@ const HitPolicyChange: React.FC<HitPolicyChangeProps> = ({ change, describedBy, 
 
 /** The sticky line above the rules: its label, or the picker in its place, its mark, then its hint. */
 export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderProps>(
-  ({ header, policy, mark, hitPolicy, labels, dataTestId }, ref) => {
+  ({ header, policy, mark, hitPolicy, labels, sticky, dataTestId }, ref) => {
     const badgeId = useId();
     const marks: LineMarks | null = isLineMark(mark) ? [mark] : null;
     const describedBy = marks ? markIds(badgeId, marks).join(' ') : undefined;
     return (
-      <div ref={ref} className={DECISION_TEXT_HEADER_CLASS} data-testid={`${dataTestId}-header`}>
+      <div
+        ref={ref}
+        className={sticky ? DECISION_TEXT_HEADER_CLASS : cn(DECISION_TEXT_HEADER_CLASS, 'static')}
+        data-testid={`${dataTestId}-header`}
+      >
         {hitPolicy ? (
           <HitPolicyChange change={hitPolicy} describedBy={describedBy} labels={labels} />
         ) : policy ? (

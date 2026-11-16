@@ -132,6 +132,15 @@ export const useValueEditing = ({
     stopAwaitingRef.current = pending && view ? onNextGesture(view, () => awaitHost(null)) : null;
   };
   useEffect(() => () => stopAwaitingRef.current?.(), []);
+  const openRef = useRef({ open: false, onCancel: edit?.onCancel });
+  openRef.current = { open: target !== null, onCancel: edit?.onCancel };
+  useEffect(() => {
+    const view = container();
+    return () =>
+      queueMicrotask(() => {
+        if (view && !view.isConnected && openRef.current.open) openRef.current.onCancel?.();
+      });
+  }, [container]);
 
   const start = (value: SentenceValueId) => {
     if (!edit) return;
