@@ -1,21 +1,53 @@
 import userEvent from '@testing-library/user-event';
 import type { Node, NodeChange, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ReactFlowProvider, useNodesState } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '../../utils/testing';
 import { BaseCanvas } from '../BaseCanvas';
 import { StageNode } from './StageNode';
-import type { StageNodeBaseProps } from './StageNode.types';
+import type { StageNodeBaseProps, StageTaskItem } from './StageNode.types';
 
 // The shared setup mocks XYFlow; whether a key reaches the stage depends on the real node wrapper.
 vi.unmock('@uipath/apollo-react/canvas/xyflow/react');
+
+// Without layout in happy-dom a keyboard drag never travels, so the drop is forced to rotate the group.
+const dropMock = vi.hoisted(() => ({ rotateOnDrop: false }));
+vi.mock('./hooks/useStageTaskDragHandler', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./hooks/useStageTaskDragHandler')>();
+  return {
+    ...original,
+    useStageTaskDragHandler: (args: Parameters<typeof original.useStageTaskDragHandler>[0]) => {
+      const handler = original.useStageTaskDragHandler(args);
+      if (!dropMock.rotateOnDrop) {
+        return handler;
+      }
+      return {
+        ...handler,
+        handleDragEnd: () => {
+          const [group = [], ...rest] = args.taskGroups;
+          const rotated = [[...group.slice(1), ...group.slice(0, 1)], ...rest];
+          // The host commits after dnd-kit has already restored focus.
+          setTimeout(() => args.onTaskReorder(rotated), 100);
+        },
+      };
+    },
+  };
+});
 
 type StageFlowNode = Node<StageNodeBaseProps & Record<string, unknown>>;
 
 const onNodesChangeSpy = vi.fn<(changes: NodeChange<StageFlowNode>[]) => void>();
 
 const tasks = [[{ id: 'task-1', label: 'Task 1' }], [{ id: 'task-2', label: 'Task 2' }]];
+
+const parallelTasks = [
+  [
+    { id: 'task-1', label: 'Task 1' },
+    { id: 'task-2', label: 'Task 2' },
+    { id: 'task-3', label: 'Task 3' },
+  ],
+];
 
 const stageWithTasks = (data: Partial<StageNodeBaseProps> = {}): StageFlowNode => ({
   id: 'stage-1',
@@ -31,7 +63,22 @@ function TestStageNode({ id, selected, dragging, width, data }: NodeProps<StageF
   return <StageNode id={id} selected={selected} dragging={dragging} width={width} {...data} />;
 }
 
-const nodeTypes = { stage: TestStageNode };
+function ReorderableStageNode(props: NodeProps<StageFlowNode>) {
+  const [groups, setGroups] = useState<StageTaskItem[][]>(parallelTasks);
+  return (
+    <TestStageNode
+      {...props}
+      data={{
+        ...props.data,
+        stageDetails: { label: 'Stage 1', tasks: groups },
+        onTaskReorder: setGroups,
+        onTaskClick: vi.fn(),
+      }}
+    />
+  );
+}
+
+const nodeTypes = { stage: TestStageNode, reorderable: ReorderableStageNode };
 
 function StageCanvas({ node }: { node: StageFlowNode }) {
   const [nodes, , onNodesChange] = useNodesState([node]);
@@ -81,6 +128,7 @@ const renderStage = (node: StageFlowNode) =>
 
 beforeEach(() => {
   onNodesChangeSpy.mockReset();
+  dropMock.rotateOnDrop = false;
 });
 
 describe('StageNode task activation in a real canvas', () => {
@@ -144,6 +192,25 @@ describe('StageNode task activation in a real canvas', () => {
     await waitFor(() => expect(taskRow('task-1')).toHaveFocus());
     expect(onTaskClick).not.toHaveBeenCalled();
     expect(canvasHandledKey()).toBe(false);
+  });
+
+  it('keeps focus on a task whose parallel group is reordered by the host', async () => {
+    const user = userEvent.setup();
+    dropMock.rotateOnDrop = true;
+    renderStage({ ...stageWithTasks(), type: 'reorderable' });
+    taskRow('task-1')?.focus();
+
+    await user.keyboard(' ');
+    await waitFor(() => expect(dragAnnouncement()).toMatch(/item task-1/));
+    await user.keyboard('{Enter}');
+
+    await waitFor(() =>
+      expect(screen.getAllByTestId(/^stage-task-card-/)[0]).toHaveAttribute(
+        'data-testid',
+        'stage-task-card-task-2'
+      )
+    );
+    await waitFor(() => expect(taskRow('task-1')).toHaveFocus());
   });
 
   it('drops a picked-up task with Enter instead of opening it', async () => {

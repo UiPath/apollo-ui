@@ -78,6 +78,7 @@ const SortableTaskRowComponent = ({
       {...attributes}
       {...listeners}
       onKeyDown={handleKeyDown}
+      data-task-row-id={taskId}
       aria-label={isDragging ? label : undefined}
     >
       {isDragging ? <StageTaskDragPlaceholder isTargetParallel={isParallel} /> : children}
