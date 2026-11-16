@@ -134,7 +134,12 @@ const StageNodeEventDrivenTaskGroupsInner = ({
         return isDragDisabled ? (
           row
         ) : (
-          <SortableTaskRow key={task.id} taskId={task.id} onActivate={handleTaskClick}>
+          <SortableTaskRow
+            key={task.id}
+            taskId={task.id}
+            label={task.label}
+            onActivate={handleTaskClick}
+          >
             {row}
           </SortableTaskRow>
         );

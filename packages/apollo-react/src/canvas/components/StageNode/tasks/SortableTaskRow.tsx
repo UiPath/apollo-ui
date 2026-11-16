@@ -19,11 +19,14 @@ import type { StageTaskActivationEvent } from '../StageNode.types';
  * Space picks it up to reorder it. */
 const SortableTaskRowComponent = ({
   taskId,
+  label,
   isParallel,
   onActivate,
   children,
 }: {
   taskId: string;
+  /** Names the row while its task is picked up, when the card that otherwise names it is gone. */
+  label: string;
   isParallel?: boolean;
   onActivate: (e: StageTaskActivationEvent, taskId: string) => void;
   children: ReactNode;
@@ -75,6 +78,7 @@ const SortableTaskRowComponent = ({
       {...attributes}
       {...listeners}
       onKeyDown={handleKeyDown}
+      aria-label={isDragging ? label : undefined}
     >
       {isDragging ? <StageTaskDragPlaceholder isTargetParallel={isParallel} /> : children}
     </StageTaskWrapper>
