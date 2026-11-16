@@ -176,6 +176,22 @@ describe('DecisionText scroll', () => {
     expect(outer.scrollTop).toBe((sentenceRuleOffsets(RULES)[10] ?? 0) - 60);
   });
 
+  it('hides a mark tooltip when the ancestor scrolls', () => {
+    render(
+      scroller(
+        text({ scroll: 'ancestor', headerMark: { tone: 'error', title: 'Bad', glyph: true } })
+      )
+    );
+    const badge = screen.getByTestId('nl-header').querySelector('[data-mark-title]');
+    if (!badge) throw new Error('header badge');
+    fireEvent.pointerOver(badge);
+    expect(screen.getByTestId('nl-mark-tooltip')).toHaveTextContent('Bad');
+    act(() => {
+      fireEvent.scroll(screen.getByTestId('scroller'));
+    });
+    expect(screen.queryByTestId('nl-mark-tooltip')).toBeNull();
+  });
+
   it('windows again when its list moves inside the ancestor', () => {
     render(scroller(text({ scroll: 'ancestor' })));
     const outer = screen.getByTestId('scroller');
