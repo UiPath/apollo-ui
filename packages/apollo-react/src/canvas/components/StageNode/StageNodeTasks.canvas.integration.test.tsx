@@ -109,6 +109,8 @@ describe('StageNode task activation in a real canvas', () => {
     expect(stageSelected()).toBe(false);
     expect(row).toHaveFocus();
     expect(dragAnnouncement()).toBe('');
+    // The row is the tab stop, so the card inside it must not be a second one.
+    expect(screen.getByTestId('stage-task-card-task-1')).not.toHaveAttribute('tabindex');
   });
 
   it('tells screen reader users that Enter opens a task and Space reorders it', () => {
@@ -150,6 +152,32 @@ describe('StageNode task activation in a real canvas', () => {
 
     expect(await screen.findByRole('menu')).toBeInTheDocument();
     expect(dragAnnouncement()).toBe('');
+    expect(stageSelected()).toBe(false);
+  });
+
+  it('opens a task with Enter or Space in a read-only stage, where the card is the tab stop', async () => {
+    const user = userEvent.setup();
+    const onTaskClick = vi.fn();
+    renderStage(
+      stageWithTasks({
+        onTaskClick,
+        onTaskReorder: vi.fn(),
+        stageDetails: { label: 'Stage 1', tasks, isReadOnly: true },
+      })
+    );
+    const card = screen.getByTestId('stage-task-card-task-1');
+    expect(card).toHaveAttribute('role', 'button');
+    card.focus();
+
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
+
+    expect(onTaskClick).toHaveBeenCalledTimes(2);
+    expect(onTaskClick).toHaveBeenNthCalledWith(
+      1,
+      'task-1',
+      expect.objectContaining({ type: 'keydown', key: 'Enter' })
+    );
     expect(stageSelected()).toBe(false);
   });
 });

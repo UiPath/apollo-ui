@@ -122,6 +122,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
             isTaskLoading={loadingTaskIds?.has(task.id)}
             isReadOnly={isReadOnly}
             onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+            isSortable={!isDragDisabled}
             getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
           />
         );

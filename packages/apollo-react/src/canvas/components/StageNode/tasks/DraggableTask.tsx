@@ -6,6 +6,7 @@ import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 import { TaskMockedChip } from './TaskMockedChip';
+import { useTaskCardActivation } from './useTaskCardActivation';
 
 const DraggableTaskComponent = ({
   task,
@@ -33,6 +34,8 @@ const DraggableTaskComponent = ({
     menuRef.current?.handleContextMenu(e);
   }, []);
 
+  const activation = useTaskCardActivation(task.id, onTaskClick, !!isDragDisabled);
+
   const taskElement = (
     <StageItemPill
       ref={taskRef}
@@ -44,6 +47,7 @@ const DraggableTaskComponent = ({
       isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
+      {...activation}
     >
       <TaskBreakpointDot
         taskId={task.id}

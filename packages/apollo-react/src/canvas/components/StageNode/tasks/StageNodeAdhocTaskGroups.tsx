@@ -121,6 +121,7 @@ const StageNodeAdhocTaskGroupsInner = ({
             isTaskLoading={loadingTaskIds?.has(task.id)}
             isReadOnly={isReadOnly}
             onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+            isSortable={!isDragDisabled}
             getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
           />
         );
