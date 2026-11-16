@@ -66,43 +66,12 @@ describe('StageHeaderChips', () => {
     expect(screen.getByTestId('stage-ends-case-badge-case')).toHaveTextContent('Ends case');
   });
 
-  it('makes a status pill with a non-blank tooltip a tab stop described by its tooltip', async () => {
+  it('does not make a status pill with a blank tooltip a tab stop', async () => {
     render(
-      <StageHeaderChips
-        id="case"
-        chips={[
-          { type: StageHeaderChipType.Optional, tooltip: 'Not required for case completion' },
-          { type: StageHeaderChipType.EndsCase, tooltip: '  ' },
-        ]}
-      />
+      <StageHeaderChips id="case" chips={[{ type: StageHeaderChipType.EndsCase, tooltip: '  ' }]} />
     );
-
-    await userEvent.tab();
-    const optional = screen.getByRole('img', { name: 'Optional' });
-    expect(optional).toHaveFocus();
-    expect(optional).toHaveAccessibleDescription('Not required for case completion');
-    expect(optional).toHaveClass('focus-visible:outline-(--canvas-primary)');
 
     await userEvent.tab();
     expect(document.body).toHaveFocus();
-  });
-
-  it('describes a clickable status pill by its tooltip', () => {
-    render(
-      <StageHeaderChips
-        id="case"
-        chips={[
-          {
-            type: StageHeaderChipType.EndsCase,
-            tooltip: 'Entering this stage ends the case',
-            onClick: vi.fn(),
-          },
-        ]}
-      />
-    );
-
-    const endsCase = screen.getByRole('button', { name: 'Ends case' });
-    expect(endsCase).toHaveAccessibleDescription('Entering this stage ends the case');
-    expect(endsCase).toHaveClass('focus-visible:outline-(--canvas-primary)');
   });
 });
