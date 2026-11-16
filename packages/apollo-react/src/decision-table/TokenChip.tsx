@@ -40,7 +40,7 @@ export interface CellStop {
 /** An input's link to the decision that produces it; the section resolves its click. */
 export interface DecisionLink {
   decisionId: string;
-  label: string | undefined;
+  label: string;
   /** False when the input's cell stop opens it with Alt+Enter instead. */
   tabbable: boolean;
 }

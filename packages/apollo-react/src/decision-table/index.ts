@@ -9,9 +9,13 @@ export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
-export { DecisionText, type DecisionTextLabels, type DecisionTextProps } from './DecisionText';
+export { DecisionText, type DecisionTextProps } from './DecisionText';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
-export type { DecisionTextEdit, DecisionTextEditLabels } from './decisionTextTypes';
+export type {
+  DecisionTextEdit,
+  DecisionTextEditLabels,
+  DecisionTextLabels,
+} from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {

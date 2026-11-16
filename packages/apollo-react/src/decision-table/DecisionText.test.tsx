@@ -1703,17 +1703,16 @@ describe('DecisionText', () => {
       expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
     });
 
-    it('takes no cell labels from a read-only view, and names a stop by its column and values without them', () => {
-      const { cell: _cell, emptyValue: _emptyValue, ...readOnly } = DECISION_TEXT_LABELS;
+    it('takes no cell labels from a read-only view', () => {
       const namesWith = (labels: DecisionTextProps['labels']) => {
         const { unmount } = renderView({ labels });
         const names = mountedRows().map((row) => row.getAttribute('aria-label'));
         unmount();
         return names;
       };
-      expect(namesWith(readOnly)).toEqual(namesWith(DECISION_TEXT_LABELS));
-      renderSelectable({ labels: readOnly, initial: { rowId: 'r2', columnId: 'age' } });
-      expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60');
+      expect(namesWith({ cell: () => 'a cell', emptyValue: 'nothing' })).toEqual(
+        namesWith(undefined)
+      );
     });
 
     it('names an empty value by its word, never by the dash it shows', () => {
@@ -5809,13 +5808,13 @@ describe('DecisionText', () => {
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
     });
 
-    it('takes no links’ label from a view without onOpenDecision, and names a link by its input without one', () => {
-      const { openDecision: _, ...unlinked } = DECISION_TEXT_LABELS;
-      const { rerender } = renderView({ rules: linkedRules, labels: unlinked });
+    it('takes no links’ label from a view without onOpenDecision, and names a link by the host’s label over its own', () => {
+      const labels = { openDecision: (input: string) => `Go to ${input}` };
+      const { rerender } = renderView({ rules: linkedRules, labels });
       expect(within(card('r1')).queryAllByRole('button')).toEqual([]);
       const onOpenDecision = vi.fn();
-      rerender(view({ rules: linkedRules, labels: unlinked, onOpenDecision }));
-      fireEvent.click(within(card('r1')).getByRole('button', { name: 'income' }));
+      rerender(view({ rules: linkedRules, labels, onOpenDecision }));
+      fireEvent.click(within(card('r1')).getByRole('button', { name: 'Go to income' }));
       expect(onOpenDecision).toHaveBeenCalledWith('income-decision');
     });
 

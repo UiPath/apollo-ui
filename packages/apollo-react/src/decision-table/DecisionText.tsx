@@ -3,16 +3,15 @@ import type React from 'react';
 import { useId, useMemo } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
-import { type BandLabels, bandsOf } from './bandColumns';
+import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
-import type { DecisionTextEdit } from './decisionTextTypes';
+import type { DecisionTextEdit, DecisionTextLabels } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
 import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
-import type { RuleCardLabels } from './ruleCardModel';
 import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
@@ -31,6 +30,7 @@ import {
   type DecisionTextContainerProps,
   useContainerHandlers,
 } from './useContainerHandlers';
+import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionTextStrings';
 import { useEditState } from './useEditState';
 import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
@@ -38,11 +38,6 @@ import { useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
 import { useValueEditing } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
-
-/** The view's own strings; the consumer passes localized values. */
-export interface DecisionTextLabels extends RuleCardLabels, BandLabels {
-  emptyRules: string;
-}
 
 interface DecisionTextBaseProps {
   rules: readonly SentenceRule[];
@@ -65,8 +60,8 @@ interface DecisionTextBaseProps {
   headerMark?: DecisionTextHeaderProps['mark'];
   /** Opens the decision a linked input names, from a click on it or Alt+Enter on its cell; without it inputs stay plain. */
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
-  /** The view's own strings; mounted rules re-render when it changes, so memoize it. */
-  labels: DecisionTextLabels;
+  /** Strings in place of the built-in ones, any subset; mounted rules re-render when it changes, so memoize it. */
+  labels?: Partial<DecisionTextLabels>;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Spread onto the scroll container: its handlers run after the view's and its className is added to the view's; a `data-testid` here overrides `dataTestId`. */
@@ -113,14 +108,15 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   policy,
   headerMark,
   onOpenDecision,
-  labels,
+  labels: hostLabels,
   ariaLabel,
   containerProps,
   dataTestId,
   children,
 }) => {
   const idPrefix = useId();
-  const { edit, refusal } = useEditState(hostEdit);
+  const labels = useDecisionTextLabels(hostLabels);
+  const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels(hostEdit?.labels));
   const bands = useMemo(() => bandsOf(inputs, outputs, labels), [inputs, outputs, labels]);
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
