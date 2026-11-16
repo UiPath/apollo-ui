@@ -1,3 +1,25 @@
+## [@uipath/apollo-react-v7.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.19.1...@uipath/apollo-react@7.20.0) (2026-11-16)
+
+### Features
+
+* **apollo-react:** edit decision text values and columns in popovers [ECS-2141] ([d5a8b61](https://github.com/UiPath/apollo-ui/commit/d5a8b61fd3a75963b07b92d1193e29b4eac98937))
+* **apollo-react:** offer a plain text expression editor when the host supplies none [ECS-2159] ([03ba917](https://github.com/UiPath/apollo-ui/commit/03ba9179aa5823001439c11f41af0eb1c463fc1d))
+* **apollo-react:** own the expression editor's focus and keys in decision text popovers [ECS-2159] ([298eefb](https://github.com/UiPath/apollo-ui/commit/298eefb88b94f49528ad4fbaad25d42841cad1df))
+* **apollo-react:** show a decision text mark's message in a tooltip [ECS-2141] ([7e1ae55](https://github.com/UiPath/apollo-ui/commit/7e1ae556a80a82d46c8b83e74cffb2301ae0f77e))
+
+### Bug Fixes
+
+* **apollo-react:** cancel a decision text popover once its view stops rendering [ECS-2159] ([922d175](https://github.com/UiPath/apollo-ui/commit/922d17560f90fab2b16574c27c33245a43e2b891))
+* **apollo-react:** decide a composing Escape from its keydown in a decision text popover [ECS-2159] ([3819da7](https://github.com/UiPath/apollo-ui/commit/3819da796741c80d1e272a3108412286f842e965))
+* **apollo-react:** drop the start stop's tabindex while a decision text popover opens [ECS-2159] ([e7dad08](https://github.com/UiPath/apollo-ui/commit/e7dad08bd2f84d530d66268453ff95b336cb00d0))
+* **apollo-react:** forward the decision text popover's refs on React 18 [ECS-2159] ([fb3445d](https://github.com/UiPath/apollo-ui/commit/fb3445d15c156cbacf02bf126f4f02725e571c9d))
+* **apollo-react:** keep a decision text popover open on Escape while text composes [ECS-2159] ([5c3b79c](https://github.com/UiPath/apollo-ui/commit/5c3b79c460a56869bcb801996830eb96e0993767))
+* **apollo-react:** keep Tab cycling inside a decision text popover dialog [ECS-2159] ([41ba49c](https://github.com/UiPath/apollo-ui/commit/41ba49c9563f8552f66945682909d11d4b24c6c2))
+* **apollo-react:** keep Tab inside a decision text popover [ECS-2141] ([7a05150](https://github.com/UiPath/apollo-ui/commit/7a051504a3de0a5503d9e18a42c350d43e84494b))
+* **apollo-react:** open decision text popovers where checkVisibility is missing [ECS-2159] ([e028909](https://github.com/UiPath/apollo-ui/commit/e028909db9c61ea6bae19029f91ed3d4df9f62bc))
+* **apollo-react:** reopen a decision text popover on its first control [ECS-2159] ([7af8b44](https://github.com/UiPath/apollo-ui/commit/7af8b44ea3ac3e06861cf243aa90b67fdac69a2b))
+* **apollo-react:** show the value a popover applies, and let Apply take editor text [ECS-2141] ([54fcb9a](https://github.com/UiPath/apollo-ui/commit/54fcb9a6a8b345fe6c374cc6fab4235ed522fd9d))
+
 ## [@uipath/apollo-react-v7.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.19.0...@uipath/apollo-react@7.19.1) (2026-11-13)
 
 ### Bug Fixes
