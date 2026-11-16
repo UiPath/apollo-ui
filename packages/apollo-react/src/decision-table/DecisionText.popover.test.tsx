@@ -6,7 +6,7 @@ import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
 import {
   DECISION_TEXT_EDIT_LABELS,
   DECISION_TEXT_LABELS,
-  MULTI_SENTENCE_BANDS,
+  MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_RULES,
 } from './__fixtures__/sentences.fixtures';
@@ -53,7 +53,7 @@ const Host = ({
   return (
     <DecisionText
       rules={MULTI_SENTENCE_RULES}
-      bands={MULTI_SENTENCE_BANDS}
+      {...MULTI_SENTENCE_COLUMNS}
       header={MULTI_SENTENCE_HEADER}
       labels={DECISION_TEXT_LABELS}
       ariaLabel="Rules"

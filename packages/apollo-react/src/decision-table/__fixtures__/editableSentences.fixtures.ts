@@ -1,5 +1,5 @@
 import type {
-  SentenceBand,
+  SentenceBandColumn,
   SentenceCellId,
   SentenceLine,
   SentenceNameToken,
@@ -8,9 +8,10 @@ import type {
   SentenceValueId,
 } from '../sentenceTypes';
 import type { RangeEnds, ValueCommit } from '../valueTypes';
+import type { SentenceColumns } from './sentences.fixtures';
 
 /** A column of the story table, and the decision that produces it when another one does. */
-type EditableColumn = Pick<SentenceBand['columns'][number], 'id' | 'name'> &
+type EditableColumn = Pick<SentenceBandColumn, 'id' | 'name'> &
   Pick<SentenceNameToken, 'producedBy'>;
 
 /** One condition of a rule: its input, its operator words, its values, what joins them, and a range's ends. */
@@ -89,11 +90,11 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
     return { rowId: rule.rowId, heading, lead: ['when all of these are true:'], lines };
   });
 
-/** The table's inputs and outputs as bands. */
-export const tableBands = (table: EditableTable): SentenceBand[] => [
-  { id: 'inputs', label: 'Inputs', columns: table.inputs },
-  { id: 'outputs', label: 'Outputs', columns: table.outputs },
-];
+/** The table's inputs and outputs. */
+export const tableColumns = ({ inputs, outputs }: EditableTable): SentenceColumns => ({
+  inputs,
+  outputs,
+});
 
 /** Whether a column of the table is one of its outputs. */
 export const isOutput = (table: EditableTable, columnId: string): boolean =>

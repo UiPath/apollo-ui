@@ -1,8 +1,9 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { useId } from 'react';
+import { useId, useMemo } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
+import { type BandLabels, bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
 import type { DecisionTextEdit } from './decisionTextTypes';
@@ -17,7 +18,7 @@ import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
 import type {
-  SentenceBand,
+  SentenceBandColumn,
   SentenceHeader,
   SentenceRule,
   SentenceSelection,
@@ -38,13 +39,16 @@ import { useValueEditing } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
 
 /** The view's own strings; the consumer passes localized values. */
-export interface DecisionTextLabels extends RuleCardLabels {
+export interface DecisionTextLabels extends RuleCardLabels, BandLabels {
   emptyRules: string;
 }
 
 interface DecisionTextBaseProps {
   rules: readonly SentenceRule[];
-  bands: readonly SentenceBand[];
+  /** The input columns, shown in the inputs band. */
+  inputs: readonly SentenceBandColumn[];
+  /** The output columns, shown in the outputs band. */
+  outputs: readonly SentenceBandColumn[];
   header: SentenceHeader;
   /** Shows each rule's 1-based position before its heading. */
   numbered?: boolean;
@@ -95,7 +99,8 @@ export type DecisionTextProps = DecisionTextBaseProps &
 /** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks. */
 export const DecisionText: React.FC<DecisionTextProps> = ({
   rules,
-  bands,
+  inputs,
+  outputs,
   header,
   numbered = false,
   marks = EMPTY_MARKS,
@@ -114,6 +119,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   children,
 }) => {
   const idPrefix = useId();
+  const bands = useMemo(() => bandsOf(inputs, outputs, labels), [inputs, outputs, labels]);
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
   const shown = usePendingCondition({ edit, rules, bands });

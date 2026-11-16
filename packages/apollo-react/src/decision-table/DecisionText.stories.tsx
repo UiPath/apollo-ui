@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Calendar, Hash, Plus, ToggleLeft, Type } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -8,7 +8,7 @@ import {
   EMPTY_TABLE,
   isOutput,
   manyRulesTable,
-  tableBands,
+  tableColumns,
   tableWithClearedRule,
   tableWithCondition,
   tableWithDuplicate,
@@ -27,6 +27,7 @@ import {
   DECISION_TEXT_LABELS,
   HIT_POLICY_GROUPS,
 } from './__fixtures__/sentences.fixtures';
+import { valueTypeIcon } from './bandColumns';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
@@ -35,7 +36,7 @@ import type { Mark, RowMark, TableMarks } from './marks';
 import { pickedOption } from './PolicyOptionItem';
 import { valueTokenOf } from './sentenceParts';
 import type {
-  SentenceBand,
+  SentenceBandColumn,
   SentenceCellId,
   SentenceRule,
   SentenceSelection,
@@ -112,34 +113,17 @@ const ALLOWED_VALUES: Readonly<Record<string, readonly string[]>> = {
   channel: ['"web"', '"app"', '"branch"'],
 };
 
-const TYPE_ICON_CLASS = 'text-foreground-de-emp';
-
-/** The types the story's column popover offers, each with its glyph and an example of its values. */
+/** The types the story's column popover offers, each with its kind of value and an example of its values. */
 const COLUMN_TYPES: readonly ColumnTypeOption[] = [
-  {
-    id: 'string',
-    label: 'Text',
-    icon: <Type className={TYPE_ICON_CLASS} />,
-    allowedValuesPlaceholder: 'e.g. "web", "app"',
-  },
+  { id: 'string', label: 'Text', type: 'text', allowedValuesPlaceholder: 'e.g. "web", "app"' },
   {
     id: 'number',
     label: 'Number',
-    icon: <Hash className={TYPE_ICON_CLASS} />,
+    type: 'number',
     allowedValuesPlaceholder: 'e.g. 10, 20, [30..40]',
   },
-  {
-    id: 'boolean',
-    label: 'Boolean',
-    icon: <ToggleLeft className={TYPE_ICON_CLASS} />,
-    allowedValuesPlaceholder: 'e.g. true',
-  },
-  {
-    id: 'date',
-    label: 'Date',
-    icon: <Calendar className={TYPE_ICON_CLASS} />,
-    allowedValuesPlaceholder: 'e.g. date("2026-01-01")',
-  },
+  { id: 'boolean', label: 'Boolean', type: 'boolean', allowedValuesPlaceholder: 'e.g. true' },
+  { id: 'date', label: 'Date', type: 'date', allowedValuesPlaceholder: 'e.g. date("2026-01-01")' },
 ];
 
 /** What the story host keeps of a column beyond its name, once the column popover changes it. */
@@ -150,8 +134,8 @@ const NO_COLUMN_EDITS: ColumnEdits = {};
 const columnTypeOf = (columnId: string, edits: ColumnEdits = NO_COLUMN_EDITS): string =>
   edits[columnId]?.typeRef ?? (NUMERIC_INPUTS.has(columnId) ? 'number' : 'string');
 
-const columnIcon = (columnId: string, edits?: ColumnEdits) =>
-  COLUMN_TYPES.find((type) => type.id === columnTypeOf(columnId, edits))?.icon;
+const columnValueType = (columnId: string, edits?: ColumnEdits) =>
+  COLUMN_TYPES.find((type) => type.id === columnTypeOf(columnId, edits))?.type;
 
 const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[] | undefined => {
   const text = edits[columnId]?.allowedValues;
@@ -160,12 +144,13 @@ const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[
   return values.length > 0 ? values : undefined;
 };
 
-/** Bands whose columns carry their type glyph, as a host draws them. */
-const typedBands = (bands: readonly SentenceBand[], edits?: ColumnEdits): SentenceBand[] =>
-  bands.map((band) => ({
-    ...band,
-    columns: band.columns.map((column) => ({ ...column, icon: columnIcon(column.id, edits) })),
-  }));
+/** The table's columns, each with its kind of value. */
+const typedColumns = (table: EditableTable, edits?: ColumnEdits) => {
+  const { inputs, outputs } = tableColumns(table);
+  const typed = (columns: readonly SentenceBandColumn[]) =>
+    columns.map((column) => ({ ...column, type: columnValueType(column.id, edits) }));
+  return { inputs: typed(inputs), outputs: typed(outputs) };
+};
 
 /** What the story host's column popover edits: the column's name as its label, and what the popover changed. */
 const storyColumnField = (
@@ -212,7 +197,7 @@ const storyValueField = (
   const multiple = offered?.shape !== undefined && offered.shape !== 'single';
   const test = condition ? FEEL_TESTS[condition.operator]?.(condition.values, condition.ends) : '';
   return {
-    icon: columnIcon(cell.columnId, edits),
+    icon: valueTypeIcon(columnValueType(cell.columnId, edits)),
     operators: switchable ? CONDITION_OPERATORS : undefined,
     operator: condition?.operator ?? 'is',
     allowedValues: allowedValuesOf(cell.columnId, edits),
@@ -305,7 +290,7 @@ const TableHost = ({
   const [columnEdits, setColumnEdits] = useState<ColumnEdits>(NO_COLUMN_EDITS);
   const [moreProperties, setMoreProperties] = useState<string | null>(null);
   const rules = useMemo(() => wordedRules(table), [table]);
-  const bands = useMemo(() => typedBands(tableBands(table), columnEdits), [table, columnEdits]);
+  const columns = useMemo(() => typedColumns(table, columnEdits), [table, columnEdits]);
   const marks = useMemo(
     () => fixedMarks ?? (validate ? validationMarks(table) : NO_MARKS),
     [fixedMarks, table, validate]
@@ -338,7 +323,7 @@ const TableHost = ({
     const unused = unusedInputs(table, rowId).map(
       (input): GridMenuEntry => ({
         label: input.name,
-        icon: columnIcon(input.id, columnEdits),
+        icon: valueTypeIcon(columnValueType(input.id, columnEdits)),
         focusesOwnSurface: true,
         onClick: () => open({ rowId, columnId: input.id, index: 0 }),
       })
@@ -440,7 +425,7 @@ const TableHost = ({
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
       <DecisionText
         rules={rules}
-        bands={bands}
+        {...columns}
         header={header}
         labels={DECISION_TEXT_LABELS}
         ariaLabel="Rules"

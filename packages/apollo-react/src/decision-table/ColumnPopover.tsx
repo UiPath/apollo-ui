@@ -1,6 +1,7 @@
 import { Input, Label } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useId, useState } from 'react';
+import { valueTypeIcon } from './bandColumns';
 import { isComposing } from './gridEvents';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
 import { PopoverHeader } from './PopoverHeader';
@@ -15,7 +16,7 @@ import {
   POPOVER_ERROR_CLASS,
   POPOVER_FIELD_CLASS,
 } from './sentenceStyles';
-import type { SentenceBand, SentenceNameToken } from './sentenceTypes';
+import type { SentenceBand, SentenceNameToken, SentenceValueType } from './sentenceTypes';
 
 /** What a band column's popover edits, from the host's column. */
 export interface ColumnField {
@@ -38,6 +39,8 @@ export type ColumnChange = Partial<
 
 /** A type the popover offers. */
 export interface ColumnTypeOption extends PopoverSelectOption {
+  /** The type's kind of value; without `icon`, its glyph. */
+  type?: SentenceValueType;
   /** The allowed values' placeholder while this type is picked, e.g. "e.g. 10, 20". */
   allowedValuesPlaceholder?: string;
 }
@@ -125,9 +128,10 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
   });
   const missing = field.required && draft.binding.trim() === '';
   const missingLabel = draft.label.trim() === '';
+  const typed = types.map((type) => ({ ...type, icon: type.icon ?? valueTypeIcon(type.type) }));
   const options = types.some((type) => type.id === field.typeRef)
-    ? types
-    : [{ id: field.typeRef, label: field.typeRef }, ...types];
+    ? typed
+    : [{ id: field.typeRef, label: field.typeRef }, ...typed];
   const placeholder = types.find((type) => type.id === draft.typeRef)?.allowedValuesPlaceholder;
   const set = (key: keyof ColumnChange) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value;

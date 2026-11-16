@@ -1,8 +1,8 @@
-import type { DecisionTextLabels } from '../DecisionText';
+import type { DecisionTextLabels, DecisionTextProps } from '../DecisionText';
 import type { DecisionTextEditLabels } from '../decisionTextTypes';
 import type { PolicyGroup } from '../PolicyPicker';
 import type {
-  SentenceBand,
+  SentenceBandColumn,
   SentenceHeader,
   SentenceLine,
   SentenceNameToken,
@@ -29,11 +29,14 @@ const line = (name: SentenceNameToken, ...parts: SentencePart[]): SentenceLine =
   parts: [name, ...parts],
 });
 
-const band = (id: string, label: string, names: readonly SentenceNameToken[]): SentenceBand => ({
-  id,
-  label,
-  columns: names.map(({ columnId, text }) => ({ id: columnId, name: text })),
-});
+/** A view's input and output columns. */
+export type SentenceColumns = Pick<DecisionTextProps, 'inputs' | 'outputs'>;
+
+/** No inputs and no outputs, so no bands. */
+export const NO_COLUMNS: SentenceColumns = { inputs: [], outputs: [] };
+
+const columnsOf = (names: readonly SentenceNameToken[]): SentenceBandColumn[] =>
+  names.map(({ columnId, text }) => ({ id: columnId, name: text }));
 
 /** Values as `{first}, {second}`. */
 export const valueList = (value: ValueMaker, texts: readonly string[]) =>
@@ -88,10 +91,10 @@ export const GRID_SENTENCE_RULES: SentenceRule[] = [
 ];
 
 /** The grid story's inputs and outputs. */
-export const GRID_SENTENCE_BANDS: SentenceBand[] = [
-  band('inputs', 'Inputs', [AGE, INCOME]),
-  band('outputs', 'Outputs', [RISK]),
-];
+export const GRID_SENTENCE_COLUMNS: SentenceColumns = {
+  inputs: columnsOf([AGE, INCOME]),
+  outputs: columnsOf([RISK]),
+};
 
 /** The grid story's hit policy, Unique. */
 export const GRID_SENTENCE_HEADER: SentenceHeader = {
@@ -199,10 +202,10 @@ export const MULTI_SENTENCE_RULES: SentenceRule[] = [
 ];
 
 /** Credit Score, Debt Ratio, Country, Start Date and Channel → Decision, Credit Limit and Reason. */
-export const MULTI_SENTENCE_BANDS: SentenceBand[] = [
-  band('inputs', 'Inputs', [SCORE, DEBT, COUNTRY, START, CHANNEL]),
-  band('outputs', 'Outputs', [DECISION, LIMIT, REASON]),
-];
+export const MULTI_SENTENCE_COLUMNS: SentenceColumns = {
+  inputs: columnsOf([SCORE, DEBT, COUNTRY, START, CHANNEL]),
+  outputs: columnsOf([DECISION, LIMIT, REASON]),
+};
 
 /** The Collect hit policy. */
 export const MULTI_SENTENCE_HEADER: SentenceHeader = {
@@ -212,6 +215,8 @@ export const MULTI_SENTENCE_HEADER: SentenceHeader = {
 
 export const DECISION_TEXT_LABELS = {
   emptyRules: 'No rules yet',
+  inputs: 'Inputs',
+  outputs: 'Outputs',
   markStatus: (tone, message) => {
     const status = tone === 'error' ? 'Error' : 'Warning';
     return message ? `${status}: ${message}` : status;
@@ -301,11 +306,7 @@ export const manyLinesRule = (count: number): SentenceRule => ({
 });
 
 /** `count` generated input columns, then the multi outputs. */
-export const manyColumnBands = (count: number): SentenceBand[] => [
-  band(
-    'inputs',
-    'Inputs',
-    Array.from({ length: count }, (_, index) => generatedInput(index)[0])
-  ),
-  ...MULTI_SENTENCE_BANDS.slice(1),
-];
+export const manyColumns = (count: number): SentenceColumns => ({
+  ...MULTI_SENTENCE_COLUMNS,
+  inputs: columnsOf(Array.from({ length: count }, (_, index) => generatedInput(index)[0])),
+});
