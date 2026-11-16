@@ -88,10 +88,19 @@ export interface TaskContentProps {
   isDragging?: boolean;
   onTaskPlay?: (taskId: string) => Promise<void>;
   trailingContent?: React.ReactNode;
+  /** Makes the label a button that opens the task from the keyboard, for cards no sortable row wraps. */
+  onOpenKeyDown?: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
 }
 
 export const TaskContent = memo(
-  ({ task, taskExecution, isDragging, onTaskPlay, trailingContent }: TaskContentProps) => {
+  ({
+    task,
+    taskExecution,
+    isDragging,
+    onTaskPlay,
+    trailingContent,
+    onOpenKeyDown,
+  }: TaskContentProps) => {
     const { _, locale } = useSafeLingui();
     const getStatusName = useExecutionStatusLabel();
     const hasExecutionStatus = !!taskExecution?.status;
@@ -176,13 +185,26 @@ export const TaskContent = memo(
               smartTooltip
               {...(isDragging && { isOpen: false })}
             >
-              <span
-                data-testid={`stage-task-label-${task.id}`}
-                className="text-sm truncate"
-                style={{ minWidth: 0 }}
-              >
-                {task.label}
-              </span>
+              {onOpenKeyDown ? (
+                // A click reaches the card's own handler; only the keyboard needs this button.
+                <button
+                  type="button"
+                  data-testid={`stage-task-label-${task.id}`}
+                  className="stage-task-open m-0 cursor-[inherit] truncate border-0 bg-transparent p-0 text-left font-[inherit] text-inherit text-sm focus-visible:outline-none"
+                  style={{ minWidth: 0 }}
+                  onKeyDown={onOpenKeyDown}
+                >
+                  {task.label}
+                </button>
+              ) : (
+                <span
+                  data-testid={`stage-task-label-${task.id}`}
+                  className="text-sm truncate"
+                  style={{ minWidth: 0 }}
+                >
+                  {task.label}
+                </span>
+              )}
             </CanvasTooltip>
             {showRequiredMarker && (
               <span

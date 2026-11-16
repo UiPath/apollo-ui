@@ -173,19 +173,21 @@ describe('StageNode task activation in a real canvas', () => {
     expect(stageSelected()).toBe(false);
   });
 
-  it('opens a task with Enter or Space in a read-only stage, where the card is the tab stop', async () => {
+  it('opens a read-only task from its label button, which no other control contains', async () => {
     const user = userEvent.setup();
     const onTaskClick = vi.fn();
     renderStage(
       stageWithTasks({
         onTaskClick,
         onTaskReorder: vi.fn(),
+        onTaskBreakpointToggle: vi.fn(),
         stageDetails: { label: 'Stage 1', tasks, isReadOnly: true },
       })
     );
-    const card = screen.getByTestId('stage-task-card-task-1');
-    expect(card).toHaveAttribute('role', 'button');
-    card.focus();
+    const open = screen.getByRole('button', { name: 'Task 1' });
+    expect(screen.getByTestId('stage-task-card-task-1')).not.toHaveAttribute('role');
+    expect(open.parentElement?.closest('button, [role="button"]')).toBeNull();
+    open.focus();
 
     await user.keyboard('{Enter}');
     await user.keyboard(' ');
