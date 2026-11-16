@@ -86,6 +86,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     let focusTarget: Element | null = null;
     let focused: FocusedMark | null = null;
     let dismissed = false;
+    let byFocus = false;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
     const show = (element: HTMLElement | null, title = element?.dataset.markTitle) => {
       clearTimeout(hideTimer);
@@ -101,12 +102,16 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       setShown((was) => (was && sameShown(was, next) ? was : next));
     };
     const hide = () => show(null);
-    const showFocused = () => show(focused?.element ?? null, focused?.title);
+    const showFocused = () => {
+      byFocus = true;
+      show(focused?.element ?? null, focused?.title);
+    };
     const onPointerOver = (event: PointerEvent) => {
       const marked = markedAt(event.target);
       pointed = event.target instanceof Element ? event.target : null;
       hovered = marked;
       clearTimeout(hideTimer);
+      if (marked) byFocus = false;
       if (marked || !current) show(marked);
       else if (current !== focused?.element && !isOnTooltip(event.target)) {
         hideTimer = setTimeout(showFocused, HIDE_DELAY_MS);
@@ -121,7 +126,8 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       hovered = pointed?.isConnected ? markedAt(pointed) : null;
       const was = focused?.element;
       if (focusTarget) focused = focusTarget.isConnected ? focusedMarkOf(focusTarget) : null;
-      if (hovered) show(hovered);
+      if (byFocus && focused) showFocused();
+      else if (hovered) show(hovered);
       else if (current === null ? focusTarget !== null : current === was || !isMarked(current)) {
         showFocused();
       } else if (isOnTooltip(pointed)) show(current);
