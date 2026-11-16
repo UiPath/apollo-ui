@@ -219,19 +219,13 @@ const asList = (data: unknown): Record<string, unknown>[] => {
   return [];
 };
 
-const plainText = (html?: string) =>
-  html
-    ? html
-        .replace(/<br\s*\/?>/gi, ' ')
-        .replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/\s+/g, ' ')
-        .trim()
-    : '';
+// The connector's hints are HTML. The parser reads their text without running anything in them.
+const plainText = (html?: string) => {
+  if (!html) return '';
+  const withBreaks = html.replace(/<br\s*\/?>/gi, ' ');
+  const text = new DOMParser().parseFromString(withBreaks, 'text/html').body.textContent ?? '';
+  return text.replace(/\s+/g, ' ').trim();
+};
 
 const failure = (result: CallResult, title: string): ByoFailure => {
   const d =
@@ -288,6 +282,25 @@ export function createCommunityByoApi(
   const createdAt = new Map<string, number>();
   // A failed connect leaves its session open; a retry reuses it.
   let openSession: IsSession | null = null;
+
+  /**
+   * Makes a gateway call about a connection, repeating it while a connection created in
+   * this dialog is not yet visible to the gateway, which takes up to a minute.
+   * Returns the last result and when its attempt started.
+   */
+  async function whileNewConnectionInvisible(
+    connectionId: string,
+    attempt: () => Promise<CallResult>
+  ): Promise<{ result: CallResult; startedAt: number }> {
+    const retryUntil = (createdAt.get(connectionId) ?? 0) + graceMs;
+    for (;;) {
+      const startedAt = Date.now();
+      const result = await attempt();
+      const notFoundYet = JSON.stringify(result.data ?? '').includes(NEW_CONNECTION_NOT_FOUND);
+      if (!notFoundYet || Date.now() + RETRY_MS > retryUntil) return { result, startedAt };
+      await sleep(RETRY_MS);
+    }
+  }
 
   async function call(
     method: string,
@@ -643,17 +656,19 @@ export function createCommunityByoApi(
   const listModels: ByoModelDialogApi['listModels'] = async (providerId, connection) => {
     const provider = byId(providerId);
     if (!provider) return fail({ title: `Unknown provider ${providerId}` });
-    const r = await call('POST', buildGatewayUrl(ctx, 'api/byom/available-models'), {
-      body: {
-        product,
-        connectorType: provider.connectorType,
-        connectionId: connection.id,
-        organizationId: ctx.organizationId,
-        tenantId: ctx.tenantId,
-        desiredModel: '',
-        customerModel: '',
-      },
-    });
+    const { result: r } = await whileNewConnectionInvisible(connection.id, () =>
+      call('POST', buildGatewayUrl(ctx, 'api/byom/available-models'), {
+        body: {
+          product,
+          connectorType: provider.connectorType,
+          connectionId: connection.id,
+          organizationId: ctx.organizationId,
+          tenantId: ctx.tenantId,
+          desiredModel: '',
+          customerModel: '',
+        },
+      })
+    );
     if (!r.ok) return fail(failure(r, `Could not list your ${provider.name} models`));
     const ids = [...new Set(Array.isArray(r.data) ? (r.data as string[]) : [])];
     const rows: ByoProviderModel[] = ids.map((id) => {
@@ -753,28 +768,16 @@ export function createCommunityByoApi(
       llmConfigurations: [llmConfiguration(customFieldMappings)],
     });
 
-    // A connection IS just created is invisible to the gateway for up to a minute.
-    let attemptStarted = Date.now();
-    const retryUntil = (createdAt.get(connection.id) ?? 0) + graceMs;
-    let validation: CallResult;
-    for (;;) {
-      attemptStarted = Date.now();
-      validation = await call(
-        'POST',
-        buildGatewayUrl(ctx, 'api/byo/product/llm-configurations/validate'),
-        {
-          body: newConfiguration(),
-          headers: {
-            'X-UiPath-LlmGateway-ByoConfigMode': 'add',
-            'X-UiPath-LLMGateway-AllowFull4xxResponse': 'true',
-          },
-        }
-      );
-      const notFoundYet = JSON.stringify(validation.data ?? '').includes(NEW_CONNECTION_NOT_FOUND);
-      if (!notFoundYet || Date.now() + RETRY_MS > retryUntil) break;
-      await sleep(RETRY_MS);
-    }
-    const latencyMs = Date.now() - attemptStarted;
+    const { result: validation, startedAt } = await whileNewConnectionInvisible(connection.id, () =>
+      call('POST', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations/validate'), {
+        body: newConfiguration(),
+        headers: {
+          'X-UiPath-LlmGateway-ByoConfigMode': 'add',
+          'X-UiPath-LLMGateway-AllowFull4xxResponse': 'true',
+        },
+      })
+    );
+    const latencyMs = Date.now() - startedAt;
     if (!validation.ok) return fail(failure(validation, 'The gateway refused the test'));
     const res = (Object.values((validation.data as Record<string, unknown>) ?? {})[0] ?? {}) as {
       isAvailable?: boolean;

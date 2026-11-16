@@ -83,7 +83,7 @@ const AZURE_DEFINITION = {
       configScreenType: 'pre',
       displayOrder: 1,
       groupBy: 'customApiKey',
-      hintText: 'Key 1 <i>or</i> Key 2<br>from the portal',
+      hintText: 'Key 1 <i>or</i> Key&nbsp;2<br>from the portal',
     },
     {
       key: 'url',
@@ -111,6 +111,39 @@ const AZURE_DEFINITION = {
     },
     { key: 'internal', name: 'Internal', configScreenType: '' },
   ],
+};
+
+/** Routes the calls that create the connection `conn-1` through a provisioning session. */
+const routeNewConnection = () =>
+  routes.push(
+    on('POST', `${TENANT}/connections_/api/v1/Connections/`, () => ({
+      body: { sessionId: 'sid', expiresAt: Date.now() + 600_000 },
+    })),
+    on(
+      'GET',
+      `${TENANT}/elements_/v1/elements/normalized-instances/applications/sessions/sid`,
+      () => ({ body: {} })
+    ),
+    on('POST', `${TENANT}/elements_/v1/elements/normalized-instances/authenticate`, () => ({
+      body: { elementInstance: { connectionId: 'conn-1' } },
+    })),
+    on('GET', `${TENANT}/connections_/api/v1/Sessions/sid`, () => ({
+      body: { status: 'success', connectionId: 'conn-1' },
+    })),
+    on('PATCH', `${TENANT}/connections_/api/v1/Connections/conn-1/rename`, () => ({ body: {} }))
+  );
+
+const connectNewConnection = async (client: ReturnType<typeof api>) => {
+  const created = await client.connect({
+    providerId: 'openai',
+    form: { authTypes: [], defaultAuthType: null, fields: [] },
+    authType: null,
+    values: {},
+    name: 'OpenAI – personal',
+    folderId: 'folder-key',
+  });
+  if (!created.ok) throw new Error('connect failed');
+  return created.value;
 };
 
 describe('createCommunityByoApi', () => {
@@ -323,24 +356,30 @@ describe('createCommunityByoApi', () => {
     });
   });
 
+  it('retries the model list while a new connection is not yet visible', async () => {
+    let listings = 0;
+    routeNewConnection();
+    routes.push(
+      on('POST', `${GATEWAY}/api/byom/available-models`, () => {
+        listings += 1;
+        return listings < 3
+          ? { status: 400, body: { Message: 'IntegrationServiceConfigurationNotFound' } }
+          : { body: ['gpt-4o'] };
+      })
+    );
+    const client = api();
+    const connection = await connectNewConnection(client);
+
+    const result = await client.listModels('openai', connection);
+
+    expect(listings).toBe(3);
+    expect(result.ok && result.value.compatible.map((m) => m.id)).toEqual(['gpt-4o']);
+  });
+
   it('retries the test while a new connection is not yet visible, then saves the configuration', async () => {
     let validations = 0;
+    routeNewConnection();
     routes.push(
-      on('POST', `${TENANT}/connections_/api/v1/Connections/`, () => ({
-        body: { sessionId: 'sid', expiresAt: Date.now() + 600_000 },
-      })),
-      on(
-        'GET',
-        `${TENANT}/elements_/v1/elements/normalized-instances/applications/sessions/sid`,
-        () => ({ body: {} })
-      ),
-      on('POST', `${TENANT}/elements_/v1/elements/normalized-instances/authenticate`, () => ({
-        body: { elementInstance: { connectionId: 'conn-1' } },
-      })),
-      on('GET', `${TENANT}/connections_/api/v1/Sessions/sid`, () => ({
-        body: { status: 'success', connectionId: 'conn-1' },
-      })),
-      on('PATCH', `${TENANT}/connections_/api/v1/Connections/conn-1/rename`, () => ({ body: {} })),
       on('POST', `${GATEWAY}/api/byo/product/llm-configurations/validate`, () => {
         validations += 1;
         return validations < 3
@@ -358,19 +397,11 @@ describe('createCommunityByoApi', () => {
       on('POST', `${GATEWAY}/api/byo/product/llm-configurations`, () => ({ body: { id: 'cfg' } }))
     );
     const client = api();
-    const created = await client.connect({
-      providerId: 'openai',
-      form: { authTypes: [], defaultAuthType: null, fields: [] },
-      authType: null,
-      values: {},
-      name: 'OpenAI – personal',
-      folderId: 'folder-key',
-    });
-    if (!created.ok) throw new Error('connect failed');
+    const connection = await connectNewConnection(client);
 
     const result = await client.testAndSave({
       providerId: 'openai',
-      connection: created.value,
+      connection,
       modelId: 'gpt-4o',
       name: 'my-gpt',
     });
