@@ -4,8 +4,6 @@ import { Activity, createElement, StrictMode, useEffect, useRef, useState } from
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installEscapeCloseRequest, installModalInertness } from './__fixtures__/modalDialog';
 import {
-  DECISION_TEXT_EDIT_LABELS,
-  DECISION_TEXT_LABELS,
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_RULES,
@@ -64,7 +62,6 @@ const Host = ({
       rules={MULTI_SENTENCE_RULES}
       {...MULTI_SENTENCE_COLUMNS}
       header={MULTI_SENTENCE_HEADER}
-      labels={DECISION_TEXT_LABELS}
       ariaLabel="Rules"
       dataTestId="nl"
       selected={selected}
@@ -83,7 +80,6 @@ const Host = ({
         },
         onClearCell: () => {},
         onDeleteRule: () => {},
-        labels: DECISION_TEXT_EDIT_LABELS,
         valueField,
         renderEditor,
       }}

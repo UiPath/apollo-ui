@@ -33,8 +33,6 @@ import {
   COUNTRY,
   channel,
   country,
-  DECISION_TEXT_EDIT_LABELS,
-  DECISION_TEXT_LABELS,
   GRID_SENTENCE_COLUMNS,
   GRID_SENTENCE_HEADER,
   GRID_SENTENCE_RULES,
@@ -108,7 +106,6 @@ const view = (props: ViewProps = {}) => (
     rules={MULTI_SENTENCE_RULES}
     {...MULTI_SENTENCE_COLUMNS}
     header={MULTI_SENTENCE_HEADER}
-    labels={DECISION_TEXT_LABELS}
     ariaLabel="Rules"
     dataTestId="nl"
     {...props}
@@ -304,7 +301,6 @@ const editWith = (overrides: Partial<DecisionTextEdit> = {}): DecisionTextEdit =
   onCancel: vi.fn(),
   onClearCell: vi.fn(),
   onDeleteRule: vi.fn(),
-  labels: DECISION_TEXT_EDIT_LABELS,
   ...overrides,
 });
 
@@ -384,7 +380,7 @@ describe('DecisionText', () => {
     });
 
     it("captions the bands with the host's labels", () => {
-      renderView({ labels: { ...DECISION_TEXT_LABELS, inputs: 'Eingaben', outputs: 'Ausgaben' } });
+      renderView({ labels: { inputs: 'Eingaben', outputs: 'Ausgaben' } });
       expect(
         [...screen.getByTestId('nl-bands').querySelectorAll('[data-band-id]')].map(
           (band) => band.firstElementChild?.textContent
@@ -1724,10 +1720,13 @@ describe('DecisionText', () => {
     });
 
     it('re-renders only the rules a selection leaves and enters', () => {
-      const cell = vi.fn(DECISION_TEXT_LABELS.cell);
+      const cell = vi.fn(
+        (column: string, values: string, position: number) =>
+          `${column} ${values}, rule ${position}`
+      );
       renderSelectable({
         rules: manySentenceRules(2000),
-        labels: { ...DECISION_TEXT_LABELS, cell },
+        labels: { cell },
         initial: { rowId: 'row-0' },
       });
       act(() => card('row-0').focus());
@@ -2631,7 +2630,6 @@ describe('DecisionText', () => {
           rules={GRID_SENTENCE_RULES}
           {...GRID_SENTENCE_COLUMNS}
           header={GRID_SENTENCE_HEADER}
-          labels={DECISION_TEXT_LABELS}
           ariaLabel="Rules"
           dataTestId="nl"
           edit={editWith()}
@@ -4970,7 +4968,7 @@ describe('DecisionText', () => {
       renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1', columnId: 'income' } });
       act(() => card('r1').querySelector<HTMLElement>('[data-column-id="income"]')?.focus());
       press('Enter');
-      expect(editor()).toHaveAccessibleName(DECISION_TEXT_LABELS.cell('income', '', 1));
+      expect(editor()).toHaveAccessibleName('income, rule 1');
     });
 
     it('keeps focus on the rule after its ✕ re-words it, selecting that rule first', () => {
@@ -5699,7 +5697,6 @@ describe('DecisionText', () => {
           rules={linkedRules}
           {...GRID_SENTENCE_COLUMNS}
           header={GRID_SENTENCE_HEADER}
-          labels={DECISION_TEXT_LABELS}
           ariaLabel="Rules"
           dataTestId="nl"
           onOpenDecision={vi.fn()}
