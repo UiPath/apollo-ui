@@ -37,7 +37,8 @@ const SortableTaskRowComponent = ({
     (e: KeyboardEvent<HTMLDivElement>) => {
       // While the task is picked up its keys belong to the drag. Keys pressed on the task's own
       // controls, such as its menu button, belong to them.
-      if (isDragging || e.target !== e.currentTarget) {
+      // A held key repeats its keydown; act on the first press only.
+      if (isDragging || e.repeat || e.target !== e.currentTarget) {
         return;
       }
       if (e.key === 'Enter') {

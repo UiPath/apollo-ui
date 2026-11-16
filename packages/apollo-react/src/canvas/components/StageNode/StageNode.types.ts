@@ -124,8 +124,9 @@ export interface StageNodeBaseProps {
   onTaskToolboxSearch?: ToolboxSearchHandler;
   /**
    * A task was opened. `event` is the click or the keypress that opened it, so a host can tell a
-   * keyboard activation (`event.type === 'keydown'`) from a pointer one, e.g. to move focus into
-   * the panel it opens. It is undefined when Apollo opens the task itself, as "Replace task" does.
+   * keyboard activation from a pointer one, e.g. to move focus into the panel it opens:
+   * `event && 'key' in event` is true, and narrows `event` to the `KeyboardEvent`, only for a
+   * keypress. It is undefined when Apollo opens the task itself, as "Replace task" does.
    */
   onTaskClick?: (taskElementId: string, event?: StageTaskActivationEvent) => void;
   onTaskGroupModification?: (

@@ -18,7 +18,10 @@ export function useTaskLabelOpen(
       }
       // Opening on keydown hands the host the keypress; preventing it stops the button's own click.
       e.preventDefault();
-      onTaskClick(e, taskId);
+      // A held key repeats its keydown; open on the first press only.
+      if (!e.repeat) {
+        onTaskClick(e, taskId);
+      }
     },
     [onTaskClick, taskId]
   );
