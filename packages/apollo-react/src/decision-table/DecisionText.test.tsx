@@ -135,7 +135,9 @@ const scrollTo = (px: number) => {
   fireEvent.scroll(frame);
 };
 
-type SelectableProps = Partial<DecisionTextProps> & { initial?: SentenceSelection | null };
+type SelectableProps = Partial<Exclude<DecisionTextProps, { diff: object }>> & {
+  initial?: SentenceSelection | null;
+};
 
 const Selectable = ({ initial = null, onSelect, ...props }: SelectableProps) => {
   const [selected, setSelected] = useState(initial);
@@ -210,7 +212,7 @@ interface EditSpies {
 }
 
 interface EditingHostProps
-  extends Partial<Omit<DecisionTextProps, 'selected' | 'onSelect' | 'edit'>> {
+  extends Partial<Omit<DecisionTextProps, 'selected' | 'onSelect' | 'edit' | 'diff'>> {
   spies: EditSpies;
   initial?: SentenceSelection | null;
   initialEditing?: SentenceValueId | null;

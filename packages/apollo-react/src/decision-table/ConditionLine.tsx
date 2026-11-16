@@ -4,14 +4,24 @@ import { LineLead } from './LineLead';
 import { LineText, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { RemoveConditionButton, type RemoveConditionButtonProps } from './RemoveConditionButton';
-import { LINE_CLASS, MATCHED_LINE_CLASS, PENDING_LINE_CLASS } from './sentenceStyles';
+import {
+  LINE_CLASS,
+  MATCHED_LINE_CLASS,
+  PENDING_LINE_CLASS,
+  REMOVED_LINE_CLASS,
+} from './sentenceStyles';
 import type { SentenceLine } from './sentenceTypes';
 
 export interface ConditionLineProps
-  extends Pick<LineTextProps, 'cells' | 'selectedColumnId' | 'stopOf' | 'linkOf' | 'labels'> {
+  extends Pick<
+    LineTextProps,
+    'cells' | 'selectedColumnId' | 'stopOf' | 'linkOf' | 'diffOf' | 'labels'
+  > {
   line: SentenceLine;
   /** A condition the open editor adds, its value a placeholder. */
   pending: boolean;
+  /** A condition a diff removed, struck. */
+  removed?: boolean;
   badge: MarkBadgeProps | null;
   removal: RemoveConditionButtonProps | null;
 }
@@ -20,6 +30,7 @@ export interface ConditionLineProps
 export const ConditionLine: React.FC<ConditionLineProps> = ({
   line,
   pending,
+  removed = false,
   badge,
   removal,
   ...lineProps
@@ -27,12 +38,19 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
   const matched = lineProps.cells?.[line.columnId]?.matched;
   return (
     <li
-      className={cn(LINE_CLASS, MATCHED_LINE_CLASS, pending && PENDING_LINE_CLASS)}
+      className={cn(
+        LINE_CLASS,
+        MATCHED_LINE_CLASS,
+        pending && PENDING_LINE_CLASS,
+        removed && REMOVED_LINE_CLASS
+      )}
       data-column-id={line.columnId}
       data-pending={pending || undefined}
+      data-change={removed ? 'delete' : undefined}
       data-matched={matched}
     >
       <LineLead matched={matched} labels={lineProps.labels} />
+      {removed && <span className="sr-only">{lineProps.labels.changeStatus('delete')}</span>}
       <LineText parts={line.parts} {...lineProps} />
       {removal && <RemoveConditionButton {...removal} />}
       {badge && <MarkBadge {...badge} />}

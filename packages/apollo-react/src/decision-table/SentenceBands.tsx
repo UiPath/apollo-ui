@@ -5,7 +5,10 @@ import { BAND_CAPTION_CLASS, DECISION_TEXT_BANDS_CLASS } from './sentenceStyles'
 import type { SentenceBand } from './sentenceTypes';
 
 export interface SentenceBandsProps
-  extends Pick<BandListProps, 'marks' | 'labels' | 'onToggleColumn' | 'openColumnId' | 'editorId'> {
+  extends Pick<
+    BandListProps,
+    'marks' | 'changes' | 'labels' | 'onToggleColumn' | 'openColumnId' | 'editorId'
+  > {
   bands: readonly SentenceBand[];
   style: SentenceListStyle;
   idPrefix: string;
@@ -16,6 +19,7 @@ export interface SentenceBandsProps
 export const SentenceBands: React.FC<SentenceBandsProps> = ({
   bands,
   marks,
+  changes,
   style,
   idPrefix,
   dataTestId,
@@ -33,6 +37,7 @@ export const SentenceBands: React.FC<SentenceBandsProps> = ({
         <BandList
           band={band}
           marks={marks}
+          changes={changes}
           badgeIdPrefix={`${idPrefix}-band-${bandIndex}`}
           labels={labels}
           onToggleColumn={onToggleColumn}

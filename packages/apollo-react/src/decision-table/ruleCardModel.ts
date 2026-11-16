@@ -1,3 +1,4 @@
+import type { DiffLabels, RuleDiff } from './decisionTextDiff';
 import type { LineTextLabels, LineTextProps } from './LineText';
 import type { MarkBadgeLabels, MarkBadgeProps } from './MarkBadge';
 import { markIds } from './MarkBadge';
@@ -15,7 +16,10 @@ import {
 import type { SentencePart, SentenceRule, SentenceToken } from './sentenceTypes';
 import type { CellStop } from './TokenChip';
 
-export interface RuleCardLabels extends MarkBadgeLabels, LineTextLabels {
+export interface RuleCardLabels
+  extends MarkBadgeLabels,
+    LineTextLabels,
+    Pick<DiffLabels, 'movedFrom'> {
   /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position. */
   cell: (column: string, values: string, position: number) => string;
   /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash. */
@@ -129,6 +133,8 @@ export interface RuleCardModelParams {
   /** Whether an input another decision produces links to that decision. */
   decisionLinks: boolean;
   editLabels: RuleRemovalLabels | undefined;
+  /** The rule's change and number in a diff. */
+  diff: RuleDiff | undefined;
   idPrefix: string;
   labels: RuleCardLabels;
 }
@@ -136,8 +142,12 @@ export interface RuleCardModelParams {
 /** What a rule card renders, derived from its rule, its mark and its strings. */
 interface RuleCardModel
   extends Pick<RowMark, 'tone' | 'dim' | 'title' | 'cells'>,
-    Pick<LineTextProps, 'stopOf' | 'linkOf'> {
+    Pick<LineTextProps, 'stopOf' | 'linkOf' | 'diffOf'> {
   ariaLabel: string;
+  /** The number the card shows, or null for none. */
+  number: number | null;
+  /** The diff's change as read aloud, or empty. */
+  changeStatus: string;
   describedBy: string | undefined;
   stops: CellStop[];
   badges: RuleBadges;
@@ -171,8 +181,16 @@ export const ruleCardModel = ({
   idPrefix,
   labels,
   editLabels,
+  diff,
 }: RuleCardModelParams): RuleCardModel => {
   const id = `${idPrefix}-${position}`;
+  const number = diff ? diff.number : position;
+  const changeStatus = [
+    diff?.change && labels.changeStatus(diff.change),
+    diff?.movedFrom !== undefined && labels.movedFrom(diff.movedFrom),
+  ]
+    .filter(Boolean)
+    .join(', ');
   const { tone, dim, title, cells } = cardMark(mark);
   const stops: CellStop[] = selectable
     ? [...firstValuesOf(rule)].map(([columnId, { token, parts }], index) => ({
@@ -214,8 +232,11 @@ export const ruleCardModel = ({
     dim,
     title,
     cells,
+    number: numbered ? number : null,
+    changeStatus,
     ariaLabel: [
-      numbered ? String(position) : '',
+      changeStatus,
+      numbered && number !== null ? String(number) : '',
       shownLineText(rule.heading, labels),
       shownLineText(rule.lead, labels),
     ]
@@ -227,6 +248,7 @@ export const ruleCardModel = ({
         .join(' ') || undefined,
     stops,
     stopOf: (token) => stopByToken.get(token),
+    diffOf: (token) => (token.kind === 'value' ? diff?.tokens.get(token) : undefined),
     linkOf: (token) =>
       decisionLinks && token.kind === 'input' && token.producedBy !== undefined
         ? {

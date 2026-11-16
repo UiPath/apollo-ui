@@ -10,6 +10,8 @@ export interface BandListProps {
   marks: TableMarks['columns'];
   /** Prefix of its columns' badge ids, each followed by the column's index. */
   badgeIdPrefix: string;
+  /** Each column's change by id, in a diff. */
+  changes: ReadonlyMap<string, NonNullable<BandColumnProps['change']>> | undefined;
   labels: BandColumnProps['labels'];
   onToggleColumn: BandColumnProps['onToggle'];
   /** The column whose popover is open, or null. */
@@ -22,6 +24,7 @@ export const BandList: React.FC<BandListProps> = ({
   band,
   marks,
   badgeIdPrefix,
+  changes,
   labels,
   onToggleColumn,
   openColumnId,
@@ -41,6 +44,7 @@ export const BandList: React.FC<BandListProps> = ({
           column={column}
           mark={marks.get(column.id)}
           badgeId={`${badgeIdPrefix}-${columnIndex}`}
+          change={changes?.get(column.id)}
           labels={labels}
           onToggle={onToggleColumn}
           editorId={column.id === openColumnId ? editorId : undefined}
