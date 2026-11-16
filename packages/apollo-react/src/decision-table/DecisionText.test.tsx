@@ -2754,6 +2754,57 @@ describe('DecisionText', () => {
       for (const spy of [size, across, height, width]) spy.mockRestore();
     });
 
+    it('places an editor open on mount once when the page leaves its dialog the browser margins', () => {
+      const computed = window.getComputedStyle;
+      const spies = [
+        vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(700),
+        vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+          this: HTMLElement
+        ) {
+          return this.tagName === 'DIALOG' ? 200 : 0;
+        }),
+        vi
+          .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+          .mockReturnValue({ ...rect(0, 40), top: 600, bottom: 624, y: 600 }),
+        vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+          const style = computed(element, pseudo);
+          if (!(element instanceof HTMLDialogElement)) return style;
+          const between = (700 - (Number.parseFloat(element.style.top) || 0) - 200) / 2;
+          const marginTop = element.style.bottom === 'auto' ? '0px' : `${between}px`;
+          return new Proxy(style, {
+            get: (target, key) => (key === 'marginTop' ? marginTop : Reflect.get(target, key)),
+          });
+        }),
+      ];
+      onTestFinished(() => {
+        for (const spy of spies) spy.mockRestore();
+      });
+      renderEditing({ initialEditing: r2Age(1) });
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '400px' });
+    });
+
+    it('places the editor once at the right edge when the page leaves its dialog to fit its content', () => {
+      const spies = [
+        vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(640),
+        vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+          this: HTMLElement
+        ) {
+          if (this.tagName !== 'DIALOG') return 0;
+          if (!this.querySelector('input')) return 40;
+          return Math.min(298, 640 - (Number.parseFloat(this.style.left) || 0));
+        }),
+      ];
+      onTestFinished(() => {
+        for (const spy of spies) spy.mockRestore();
+      });
+      renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 639 });
+      const chip = secondAge();
+      vi.spyOn(chip, 'getBoundingClientRect').mockReturnValue(rect(500, 540));
+      fireEvent.click(chip);
+      expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ left: '341px' });
+    });
+
     it('moves the open editor with its value once a web font moves it', async () => {
       const fonts = new EventTarget();
       Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
