@@ -155,7 +155,7 @@ export const RuleCard = memo<RuleCardProps>(
                   key={`removed-${line.columnId}`}
                   line={line}
                   pending={false}
-                  removed
+                  change={line.change}
                   badge={null}
                   removal={null}
                   {...lineProps}

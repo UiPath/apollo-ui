@@ -19,10 +19,9 @@ export interface DiffRuleChange {
 }
 
 /** A value's change, or its cell's without `index`; `previous` is its old text, or a condition's words after its column's name when the rule no longer words it; a removed value shows before the value now at its `index`, else after the cell's last. */
-export interface DiffValueChange extends SentenceCellId, Partial<Pick<SentenceValueId, 'index'>> {
-  change: DiffChange;
-  previous?: string;
-}
+export type DiffValueChange = SentenceCellId &
+  Partial<Pick<SentenceValueId, 'index'>> &
+  ({ change: 'add' } | { change: 'update' | 'delete'; previous: string });
 
 /** A removed rule, shown under the rule `after` names, or first when null. */
 export interface DiffRemovedRule {
@@ -94,9 +93,10 @@ export interface TokenDiff {
   after: readonly StruckValue[];
 }
 
-/** A removed condition's line: its column's name, then its old text. */
+/** A condition line the rule's card does not word: a removed one's column name then its old text, or an added one's column name. */
 export interface RemovedLine {
   columnId: string;
+  change: Extract<DiffChange, 'add' | 'delete'>;
   parts: readonly SentencePart[];
 }
 
@@ -176,9 +176,7 @@ const valueTokens = (rule: SentenceRule): SentenceValueToken[] =>
   );
 
 const struckOf = (value: DiffValueChange): StruckValue[] =>
-  value.change === 'add' || (value.change === 'update' && value.previous === undefined)
-    ? []
-    : [{ text: value.previous ?? '', change: value.change }];
+  value.change === 'add' ? [] : [{ text: value.previous, change: value.change }];
 
 /** Each value token's change by token, and a struck line for each changed column the rule no longer shows. */
 const tokenDiffsOf = (
@@ -202,15 +200,18 @@ const tokenDiffsOf = (
     const [first] = cellTokens;
     const last = cellTokens.at(-1);
     if (!first || !last) {
-      const texts = changes.flatMap((value) => struckOf({ ...value, change: 'delete' }));
-      if (changes.some((value) => value.change !== 'add')) {
+      const texts = changes.flatMap(struckOf);
+      if (texts.length > 0) {
         const token: SentenceValueToken = {
           kind: 'value',
           columnId,
           index: 0,
           text: texts.map(({ text }) => text).join(', '),
         };
-        removedLines.push({ columnId, parts: [nameOf(columnId), ' ', token] });
+        removedLines.push({ columnId, change: 'delete', parts: [nameOf(columnId), ' ', token] });
+      }
+      if (changes.some((value) => value.change === 'add')) {
+        removedLines.push({ columnId, change: 'add', parts: [nameOf(columnId)] });
       }
       continue;
     }
@@ -254,7 +255,7 @@ export const diffRowsOf = (
     shownIds.add(rowId);
     const rule = rowId === item.rowId ? item : { ...item, rowId };
     const ruleChange = removed ? undefined : ruleChanges.get(item.rowId);
-    const rowValues = values.get(item.rowId) ?? NO_VALUES;
+    const rowValues = values.get(rowId) ?? NO_VALUES;
     const change: DiffChange | undefined = removed
       ? 'delete'
       : (ruleChange?.change ?? (rowValues.size > 0 ? 'update' : undefined));
