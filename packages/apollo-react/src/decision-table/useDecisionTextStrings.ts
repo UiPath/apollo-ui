@@ -31,14 +31,7 @@ export const useDecisionTextLabels = (
       emptyRules: _({ id: 'decision-text.empty_rules', message: 'No rules yet' }),
       inputs: _({ id: 'decision-text.band_inputs', message: 'Inputs' }),
       outputs: _({ id: 'decision-text.band_outputs', message: 'Outputs' }),
-      markStatus: (tone, message) =>
-        message
-          ? _({
-              id: 'decision-text.mark_status',
-              message: '{status}: {message}',
-              values: { status: tones[tone], message },
-            })
-          : tones[tone],
+      markStatus: (tone, message) => message || tones[tone],
       moreValues: (count) =>
         _({
           id: 'decision-text.more_values',
@@ -56,7 +49,7 @@ export const useDecisionTextLabels = (
       openDecision: (input) =>
         _({
           id: 'decision-text.open_decision',
-          message: 'Open the {input} decision',
+          message: "Open {input}'s decision",
           values: { input },
         }),
     };
@@ -107,7 +100,7 @@ export const useDecisionTextEditLabels = (
       clearRule: _({ id: 'decision-text.clear_rule', message: 'Clear rule' }),
       moveRuleUp: _({ id: 'decision-text.move_rule_up', message: 'Move up' }),
       moveRuleDown: _({ id: 'decision-text.move_rule_down', message: 'Move down' }),
-      addInput: _({ id: 'decision-text.add_input', message: 'New input' }),
+      addInput: _({ id: 'decision-text.add_input', message: 'Add input column' }),
       newCondition: (column, position) =>
         _({
           id: 'decision-text.new_condition',
@@ -142,11 +135,12 @@ export const useDecisionTextEditLabels = (
       outputName: _({ id: 'decision-text.output_name', message: 'Output name' }),
       missingInputExpression: _({
         id: 'decision-text.missing_input_expression',
-        message: 'This input has no expression',
+        message: 'This input column has no expression',
       }),
       missingOutputName: _({
         id: 'decision-text.missing_output_name',
-        message: 'This output has no name',
+        message:
+          'This output column has no name — every output in a multi-output table must be named',
       }),
       dataType: _({ id: 'decision-text.data_type', message: 'Data type' }),
       allowedValues: _({ id: 'decision-text.allowed_values', message: 'Allowed values' }),

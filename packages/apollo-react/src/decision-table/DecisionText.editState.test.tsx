@@ -152,7 +152,7 @@ describe('DecisionText editing state', () => {
       fireEvent.keyDown(field(), { key: 'Escape' });
       fireEvent.click(add);
       fireEvent.click(
-        within(screen.getByRole('menu')).getByRole('menuitem', { name: 'New input' })
+        within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Add input column' })
       );
       expect(field()).toHaveAccessibleName('New Input 4 condition, rule 3');
     });
@@ -164,7 +164,7 @@ describe('DecisionText editing state', () => {
       render(<Host controlled={controlled} addInput={() => 'ghost'} />);
       fireEvent.click(within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' }));
       fireEvent.click(
-        within(screen.getByRole('menu')).getByRole('menuitem', { name: 'New input' })
+        within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Add input column' })
       );
       expect(dialog()).toBeNull();
       expect(card('r3').querySelector('li[data-pending]')).toBeNull();
