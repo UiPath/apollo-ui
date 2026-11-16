@@ -1,12 +1,19 @@
+import type { BandLabels } from './bandColumns';
 import type { ColumnEdit, ColumnPopoverLabels } from './ColumnPopover';
 import type { CellCommitMove } from './gridTypes';
 import type { RuleCardEditLabels } from './RuleCard';
+import type { RuleCardLabels } from './ruleCardModel';
 import type { RuleMenuActions, RuleMenuLabels } from './ruleMenuEntries';
 import type { SentenceCellId, SentenceValueId } from './sentenceTypes';
 import type { ValuePopoverLabels, ValuePopoverProps } from './ValuePopover';
 import type { ValueCommit } from './valueTypes';
 
-/** The editing strings; the consumer passes localized values. */
+/** The view's own strings, built in from the `decision-table` catalog. */
+export interface DecisionTextLabels extends RuleCardLabels, BandLabels {
+  emptyRules: string;
+}
+
+/** The editing strings, built in from the `decision-table` catalog. */
 export interface DecisionTextEditLabels
   extends RuleCardEditLabels,
     ValuePopoverLabels,
@@ -35,10 +42,12 @@ export interface DecisionTextEdit extends RuleMenuActions {
   column?: ColumnEdit;
   /** A condition's remove action, or Delete or Backspace on a selected value: the grid's clear, for one cell. */
   onClearCell: (cell: SentenceCellId) => void;
-  /** The editing strings; mounted rules re-render when it changes, so memoize it. */
-  labels: DecisionTextEditLabels;
+  /** Strings in place of the built-in ones, any subset; mounted rules re-render when it changes, so memoize it. */
+  labels?: Partial<DecisionTextEditLabels>;
 }
 
-/** The host's edit as the view runs it, with which value is open settled. */
-export type ViewEdit = DecisionTextEdit &
-  Required<Pick<DecisionTextEdit, 'editing' | 'onStartEdit' | 'onCancel'>>;
+/** The host's edit as the view runs it, with which value is open and every string settled. */
+export type ViewEdit = Omit<DecisionTextEdit, 'labels'> &
+  Required<Pick<DecisionTextEdit, 'editing' | 'onStartEdit' | 'onCancel'>> & {
+    labels: DecisionTextEditLabels;
+  };

@@ -1,5 +1,5 @@
-import type { DecisionTextLabels, DecisionTextProps } from '../DecisionText';
-import type { DecisionTextEditLabels } from '../decisionTextTypes';
+import type { DecisionTextProps } from '../DecisionText';
+import type { DecisionTextEditLabels, DecisionTextLabels } from '../decisionTextTypes';
 import type { PolicyGroup } from '../PolicyPicker';
 import type {
   SentenceBandColumn,

@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { ViewEdit } from './decisionTextTypes';
 import { activeElementOf, focusStays, hasLostFocus, onNextGesture } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
-import { cellName, type RuleCardLabels } from './ruleCardModel';
+import type { RuleCardLabels } from './ruleCardModel';
 import {
   bandColumnNameOf,
   bandColumnOf,
@@ -160,7 +160,7 @@ export const useValueEditing = ({
       target,
       value: token?.text ?? '',
       ariaLabel: held
-        ? cellName(labels, column, token ? tokenText(token, labels.emptyValue) : '', row + 1)
+        ? labels.cell(column, token ? tokenText(token, labels.emptyValue) : '', row + 1)
         : edit.labels.newCondition(column, row + 1),
       column,
       field,

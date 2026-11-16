@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { DecisionTextEdit, ViewEdit } from './decisionTextTypes';
+import type { DecisionTextEdit, DecisionTextEditLabels, ViewEdit } from './decisionTextTypes';
 import type { SentenceValueId } from './sentenceTypes';
 import { valueKey } from './useValueEditing';
 import type { CommitRefusal } from './valueTypes';
@@ -18,8 +18,11 @@ export interface EditState {
 const keyOf = (value: SentenceValueId | null): string | undefined =>
   value ? valueKey(value) : undefined;
 
-/** Which value is open, the host's when it passes `editing` and the view's own otherwise, and what the host last refused of it. */
-export const useEditState = (edit: DecisionTextEdit | undefined): EditState => {
+/** Which value is open, the host's when it passes `editing` and the view's own otherwise, what the host last refused of it, and the editing strings. */
+export const useEditState = (
+  edit: DecisionTextEdit | undefined,
+  labels: DecisionTextEditLabels
+): EditState => {
   const [held, setHeld] = useState<SentenceValueId | null>(edit?.editing ?? null);
   const [refusal, setRefusal] = useState<HeldRefusal | null>(null);
   const controlled = edit?.editing !== undefined;
@@ -36,6 +39,7 @@ export const useEditState = (edit: DecisionTextEdit | undefined): EditState => {
   return {
     edit: {
       ...edit,
+      labels,
       editing,
       onStartEdit: (value) => {
         edit.onStartEdit?.(value);
