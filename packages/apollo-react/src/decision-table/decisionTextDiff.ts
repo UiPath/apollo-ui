@@ -4,6 +4,7 @@ import type {
   SentenceNameToken,
   SentencePart,
   SentenceRule,
+  SentenceToken,
   SentenceValueId,
   SentenceValueToken,
 } from './sentenceTypes';
@@ -86,7 +87,7 @@ export interface StruckValue {
   change: Exclude<DiffChange, 'add'>;
 }
 
-/** How a value token shows its change: its own wash, and the old values struck around it. */
+/** How a token shows its change: its own wash, and the old values struck around it. */
 export interface TokenDiff {
   change: DiffChange | undefined;
   before: readonly StruckValue[];
@@ -105,7 +106,7 @@ export interface RuleDiff {
   change: DiffChange | undefined;
   movedFrom: number | undefined;
   number: number | null;
-  tokens: ReadonlyMap<SentenceValueToken, TokenDiff>;
+  tokens: ReadonlyMap<SentenceToken, TokenDiff>;
   removedLines: readonly RemovedLine[];
 }
 
@@ -144,11 +145,16 @@ export const withRemoved = <T>(
   const placed: { item: T; removed: boolean }[] = [];
   const seen = new Set<T>();
   const emitFollowers = (key: string | null) => {
-    for (const item of followers.get(key) ?? []) {
+    const stack: T[] = [];
+    const push = (from: string | null) => {
+      for (const follower of [...(followers.get(from) ?? [])].reverse()) stack.push(follower);
+    };
+    push(key);
+    for (let item = stack.pop(); item !== undefined; item = stack.pop()) {
       if (seen.has(item)) continue;
       seen.add(item);
       placed.push({ item, removed: true });
-      emitFollowers(idOf(item));
+      push(idOf(item));
     }
   };
   emitFollowers(null);
@@ -175,6 +181,14 @@ const valueTokens = (rule: SentenceRule): SentenceValueToken[] =>
     parts.flatMap((part) => (typeof part !== 'string' && part.kind === 'value' ? [part] : []))
   );
 
+const nameTokenOf = (rule: SentenceRule, columnId: string): SentenceNameToken | undefined =>
+  [rule.heading, rule.lead, ...rule.lines.map((line) => line.parts)]
+    .flat()
+    .find(
+      (part): part is SentenceNameToken =>
+        typeof part !== 'string' && part.kind !== 'value' && part.columnId === columnId
+    );
+
 const struckOf = (value: DiffValueChange): StruckValue[] =>
   value.change === 'add' ? [] : [{ text: value.previous, change: value.change }];
 
@@ -185,9 +199,9 @@ const tokenDiffsOf = (
   nameOf: (columnId: string) => SentenceNameToken
 ): Pick<RuleDiff, 'tokens' | 'removedLines'> => {
   const tokens = valueTokens(rule);
-  const diffs = new Map<SentenceValueToken, TokenDiff>();
+  const diffs = new Map<SentenceToken, TokenDiff>();
   const removedLines: RemovedLine[] = [];
-  const add = (token: SentenceValueToken, change: Partial<TokenDiff>) => {
+  const add = (token: SentenceToken, change: Partial<TokenDiff>) => {
     const current = diffs.get(token) ?? { change: undefined, before: [], after: [] };
     diffs.set(token, {
       change: change.change ?? current.change,
@@ -199,6 +213,16 @@ const tokenDiffsOf = (
     const cellTokens = tokens.filter((token) => token.columnId === columnId);
     const [first] = cellTokens;
     const last = cellTokens.at(-1);
+    const name = nameTokenOf(rule, columnId);
+    if ((!first || !last) && name) {
+      for (const value of changes) {
+        add(name, {
+          change: value.change === 'delete' ? undefined : value.change,
+          after: struckOf(value),
+        });
+      }
+      continue;
+    }
     if (!first || !last) {
       const texts = changes.flatMap(struckOf);
       if (texts.length > 0) {
@@ -299,7 +323,9 @@ export const diffRowsOf = (
     const run = all.slice(index, end);
     const [first] = run;
     if (first && run.length >= DIFF_MIN_FOLDED && !expanded.has(first.rule.rowId)) {
-      const rowId = `${FOLD_PREFIX}${first.rule.rowId}`;
+      let rowId = `${FOLD_PREFIX}${first.rule.rowId}`;
+      while (shownIds.has(rowId)) rowId = `${FOLD_PREFIX}${rowId}`;
+      shownIds.add(rowId);
       rows.set(rowId, {
         kind: 'fold',
         fold: {

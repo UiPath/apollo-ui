@@ -92,6 +92,7 @@ interface DiffDecisionText {
   onSelect?: undefined;
   edit?: undefined;
   addRule?: undefined;
+  policy?: undefined;
 }
 
 /** A view whose selection the host controls, which selecting and editing require. */
@@ -229,7 +230,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
       <DecisionTextHeader
         ref={ruleWindow.headerRef}
         header={header}
-        policy={policy}
+        policy={diff ? undefined : policy}
         mark={headerMark}
         hitPolicy={diff?.hitPolicy}
         labels={labels}

@@ -91,10 +91,11 @@ export const LineText: React.FC<LineTextProps> = ({
   diffOf,
   labels,
 }) => {
-  const changed = parts.some((part) => typeof part !== 'string' && diffOf(part) !== undefined);
-  const { shown, clamped } = changed
-    ? { shown: parts, clamped: [] }
-    : boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+  const { shown, clamped } = boundedParts(
+    parts,
+    SENTENCE_LINE_VALUE_LIMIT,
+    (part) => diffOf(part) !== undefined
+  );
   const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, 'flex-1');
   const wordClass = testsInput(parts) ? MUTED_TEXT_CLASS : undefined;
   const verdictOf = (token: SentenceToken) => {

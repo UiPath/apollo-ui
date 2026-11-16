@@ -8,7 +8,7 @@ import {
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
-import type { DecisionTextDiff } from './decisionTextDiff';
+import { type DecisionTextDiff, withRemoved } from './decisionTextDiff';
 import type { SentencePart, SentenceRule } from './sentenceTypes';
 
 const renderDiff = (
@@ -109,5 +109,107 @@ describe('DecisionText diff edges', () => {
       />
     );
     expect(screen.queryByTestId('nl-fold-row-1')).not.toBeNull();
+  });
+});
+
+const valuelessRule = (rowId: string): SentenceRule => ({
+  rowId,
+  heading: [
+    { kind: 'output', columnId: 'risk', text: 'risk' },
+    ' is ',
+    { kind: 'value', columnId: 'risk', index: 0, text: '"high"' },
+  ],
+  lead: ['when ', { kind: 'input', columnId: 'income', text: 'income' }, ' is not empty'],
+  lines: [],
+});
+
+describe('DecisionText diff review edges', () => {
+  it('shows no hit-policy picker on a diff', () => {
+    render(
+      // @ts-expect-error
+      <DecisionText
+        rules={DIFF_RULES}
+        {...DIFF_COLUMNS}
+        header={DIFF_HEADER}
+        ariaLabel="Rules"
+        dataTestId="nl"
+        diff={{ mode: 'full' }}
+        policy={{ value: 'FIRST', groups: [], onChange: () => undefined, label: 'Hit policy' }}
+      />
+    );
+    expect(screen.queryByTestId('nl-policy')).toBeNull();
+  });
+
+  it('keeps a long line clamped around its one changed value', () => {
+    const rule: SentenceRule = {
+      ...LONG_RULE,
+      lead: [...LONG_RULE.lead.slice(0, 3), ...manyValues(10_000)],
+    };
+    renderDiff(
+      {
+        mode: 'full',
+        values: [
+          { rowId: 'long', columnId: 'channel', index: 5000, change: 'update', previous: '"old"' },
+        ],
+      },
+      { rules: [rule] }
+    );
+    const card = screen.getByTestId('nl-row-long');
+    const chips = card.querySelectorAll('[data-kind="value"][data-column-id="channel"]');
+    const hidden = [...card.querySelectorAll('[data-more-values]')].reduce(
+      (sum, more) => sum + Number(more.getAttribute('data-more-values')),
+      0
+    );
+    expect(chips.length).toBeLessThanOrEqual(25);
+    expect(chips.length + hidden).toBe(10_000);
+    expect(card.querySelector('[data-value-index="5000"]')).toHaveAttribute(
+      'data-change',
+      'update'
+    );
+    expect(within(card).queryByText('"old"', { selector: 'del' })).not.toBeNull();
+  });
+
+  it.each([
+    ['update', { change: 'update' as const, previous: 'is at most 20000' }],
+    ['add', { change: 'add' as const }],
+  ])('marks a valueless condition line for a cell %s', (change, value) => {
+    renderDiff(
+      { mode: 'full', values: [{ rowId: 'ne', columnId: 'income', ...value }] },
+      { rules: [valuelessRule('ne')] }
+    );
+    const card = screen.getByTestId('nl-row-ne');
+    const names = card.querySelectorAll('[data-kind="input"][data-column-id="income"]');
+    expect(names).toHaveLength(1);
+    expect(names[0]).toHaveAttribute('data-change', change);
+  });
+
+  it('keeps a fold apart from a rule whose id is the fold id', () => {
+    const first = DIFF_RULES[0] as SentenceRule;
+    const last = DIFF_RULES.at(-1) as SentenceRule;
+    const rules = [...DIFF_RULES.slice(0, -1), { ...last, rowId: `fold:${first.rowId}` }];
+    renderDiff(
+      {
+        mode: 'compact',
+        rules: [
+          { rowId: 'r3', change: 'update' },
+          { rowId: `fold:${first.rowId}`, change: 'update' },
+        ],
+      },
+      { rules }
+    );
+    expect(screen.getByTestId(`nl-fold-${first.rowId}`)).not.toBeNull();
+    expect(screen.getByTestId(`nl-row-fold:${first.rowId}`)).toHaveAttribute(
+      'data-change',
+      'update'
+    );
+  });
+
+  it('places a 20,000-long chain of removed items in order', () => {
+    const chain = Array.from({ length: 20_000 }, (_, index) => ({
+      item: `x${index}`,
+      after: index === 0 ? 'k' : `x${index - 1}`,
+    }));
+    const placed = withRemoved(['k'], chain, (id) => id);
+    expect(placed.map(({ item }) => item)).toEqual(['k', ...chain.map(({ item }) => item)]);
   });
 });
