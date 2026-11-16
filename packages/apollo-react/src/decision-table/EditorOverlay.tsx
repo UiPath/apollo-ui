@@ -60,7 +60,6 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
   const pressedOutsideRef = useRef(false);
   const startRef = useRef<HTMLSpanElement>(null);
   const wrappingRef = useRef(false);
-  const composingRef = useRef(false);
   const attach = useCallback(
     (dialog: HTMLDialogElement | null) => {
       overlayRef.current = dialog;
@@ -121,6 +120,7 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
       onContextMenu={takePress}
       onKeyDown={(event) => {
         const { currentTarget, target, shiftKey } = event;
+        if (event.key === 'Escape' && isComposing(event)) event.preventDefault();
         if (event.defaultPrevented || !isPlainTab(event)) return;
         if (target instanceof HTMLElement && target.tabIndex > 0) {
           event.preventDefault();
@@ -135,15 +135,9 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
           });
         }
       }}
-      onCompositionStart={() => {
-        composingRef.current = true;
-      }}
-      onCompositionEnd={() => {
-        composingRef.current = false;
-      }}
       onCancel={(event) => {
         event.preventDefault();
-        if (!composingRef.current) onCancel();
+        onCancel();
       }}
       onClose={(event) => {
         if (overlayRef.current === event.currentTarget) showWhileRendered(event.currentTarget);
