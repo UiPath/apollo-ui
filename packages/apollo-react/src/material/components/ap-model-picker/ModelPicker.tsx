@@ -676,11 +676,16 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     }, []);
     const handleCommunitySaved = React.useCallback(
       async (model: ByoSavedModel) => {
-        if (selfFetchCtx) await refetchDiscovery();
+        // A model saved in another folder than the one shown would never appear, so the
+        // picker shows its folder; the folder switch refetches the catalog itself.
+        const showsOtherFolder =
+          folder !== null && folder.toLowerCase() !== model.folderId.toLowerCase();
+        if (showsOtherFolder) handleFolderChange(model.folderId);
+        else if (selfFetchCtx) await refetchDiscovery();
         await onCustomModelSaved?.(model);
         setPendingSelection(model);
       },
-      [selfFetchCtx, refetchDiscovery, onCustomModelSaved]
+      [folder, handleFolderChange, selfFetchCtx, refetchDiscovery, onCustomModelSaved]
     );
     React.useEffect(() => {
       if (!pendingSelection) return;

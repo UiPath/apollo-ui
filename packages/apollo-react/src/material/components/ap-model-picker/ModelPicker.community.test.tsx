@@ -83,6 +83,19 @@ const ADDED: DiscoveryModel = {
   byomDetails: { integrationServiceConnectionId: 'conn-1', byoConfigurationId: 'cfg-1' },
 };
 
+/** Fills the open dialog with gpt-4o through the saved "My OpenAI" connection, as `my-gpt`. */
+const addMyGptThroughMyOpenAi = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(await screen.findByRole('combobox', { name: 'Provider' }));
+  await user.click(await screen.findByRole('option', { name: 'OpenAI' }));
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+  await user.click(screen.getByRole('combobox', { name: 'Model' }));
+  await user.click(await screen.findByRole('option', { name: 'gpt-4o' }));
+  const name = screen.getByRole('textbox', { name: 'Name in your model list' });
+  await user.clear(name);
+  await user.type(name, 'my-gpt');
+  await user.click(screen.getByRole('button', { name: 'Test and add' }));
+};
+
 describe('<ModelPicker isCommunity>', () => {
   it('adds a model in the dialog, lets the host refetch, then selects it', async () => {
     const user = userEvent.setup();
@@ -109,15 +122,7 @@ describe('<ModelPicker isCommunity>', () => {
     expect(await screen.findByRole('dialog', { name: 'Use your own model' })).toBeInTheDocument();
     expect(onUseCustomModel).not.toHaveBeenCalled();
 
-    await user.click(await screen.findByRole('combobox', { name: 'Provider' }));
-    await user.click(await screen.findByRole('option', { name: 'OpenAI' }));
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-    await user.click(screen.getByRole('combobox', { name: 'Model' }));
-    await user.click(await screen.findByRole('option', { name: 'gpt-4o' }));
-    const name = screen.getByRole('textbox', { name: 'Name in your model list' });
-    await user.clear(name);
-    await user.type(name, 'my-gpt');
-    await user.click(screen.getByRole('button', { name: 'Test and add' }));
+    await addMyGptThroughMyOpenAi(user);
 
     await waitFor(() => expect(onChange).toHaveBeenCalledWith(ADDED));
     expect(onCustomModelSaved).toHaveBeenCalledWith(
@@ -126,6 +131,30 @@ describe('<ModelPicker isCommunity>', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Use your own model' })).toBeNull()
     );
+  });
+
+  it("shows the saved model's folder when another folder is shown", async () => {
+    const user = userEvent.setup();
+    const onFolderChange = vi.fn();
+    render(
+      <ModelPicker
+        models={[HOSTED]}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        isCommunity
+        requestContext={CTX}
+        folder="shared-folder"
+        onFolderChange={onFolderChange}
+        onCustomModelSaved={() => {}}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(await screen.findByText(/use custom model/i));
+    await addMyGptThroughMyOpenAi(user);
+
+    await waitFor(() => expect(onFolderChange).toHaveBeenCalledWith('me'));
   });
 
   it("edits a BYO row's model in the same dialog", async () => {
