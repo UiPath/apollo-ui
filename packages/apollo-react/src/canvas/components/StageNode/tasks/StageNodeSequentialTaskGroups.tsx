@@ -9,6 +9,7 @@ import {
   moveGroupUp,
 } from '../../../utils/GroupModificationUtils';
 import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageTaskDragAccessibility } from '../hooks/useStageTaskDragAccessibility';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
 import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
 import {
@@ -173,6 +174,7 @@ export const StageNodeSequentialTaskGroups = ({
   );
 
   const sensors = useStageTaskSensors();
+  const dragAccessibility = useStageTaskDragAccessibility();
 
   // Swallow the canvas drag/pan only while these rows are drag handles.
   const taskList = (
@@ -239,6 +241,7 @@ export const StageNodeSequentialTaskGroups = ({
         <DndContext
           collisionDetection={closestCenter}
           sensors={sensors}
+          accessibility={dragAccessibility}
           onDragStart={handleDragStart}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}

@@ -2,6 +2,7 @@ import { closestCenter, DndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { type CSSProperties, memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageTaskDragAccessibility } from '../hooks/useStageTaskDragAccessibility';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
 import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
@@ -62,6 +63,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   });
 
   const sensors = useStageTaskSensors();
+  const dragAccessibility = useStageTaskDragAccessibility();
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -151,6 +153,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
         <DndContext
           collisionDetection={closestCenter}
           sensors={sensors}
+          accessibility={dragAccessibility}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
