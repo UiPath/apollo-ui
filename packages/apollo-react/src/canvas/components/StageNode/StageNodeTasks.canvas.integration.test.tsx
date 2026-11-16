@@ -135,8 +135,9 @@ describe('StageNode task activation in a real canvas', () => {
 
     await user.keyboard(' ');
     await waitFor(() => expect(dragAnnouncement()).toMatch(/item task-1/));
-    // The same row stays mounted and focused while the task is picked up.
+    // The same row stays mounted, focused and named while the task is picked up.
     expect(row).toHaveFocus();
+    expect(row).toHaveAccessibleName('Task 1');
 
     await user.keyboard('{Escape}');
     await waitFor(() => expect(dragAnnouncement()).toMatch(/Dragging was cancelled/));
