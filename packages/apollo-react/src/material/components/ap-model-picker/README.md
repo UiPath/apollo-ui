@@ -238,7 +238,7 @@ The dialog itself is `ByoModelDialog` from `@uipath/apollo-wind`, which takes th
 <ModelPicker
   models={models}
   requestContext={requestContext}
-  isCommunity={isCommunityAccount && flags.EnableCommunityByoModelDialog}
+  isCommunity={isByoOnlyAccount && flags.EnableByoModelInlineDialog}
   onCustomModelSaved={() => refetch()}
   communityDialogHost={ModalHost}
   value={value}

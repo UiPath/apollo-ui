@@ -180,6 +180,9 @@ interface LlmConfigurationEntry {
   connectorType?: string;
   connectionId?: string;
   customFieldMappings?: Record<string, string> | null;
+  /** Set on a model that replaces a UiPath model, which only AI Trust Layer edits. */
+  defaultModel?: string | null;
+  apiFlavor?: string | null;
   [field: string]: unknown;
 }
 
@@ -253,6 +256,15 @@ const entryNamed = (configuration: ProductLlmConfiguration, name: string) =>
   configuration.llmConfigurations.find(
     (entry) => entry.desiredModel?.toLowerCase() === name.toLowerCase()
   );
+
+/** `text` re-indented when it is JSON, as is otherwise. */
+const prettyJson = (text: string) => {
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return text;
+  }
+};
 
 const ok = <T>(value: T): ByoResult<T> => ({ ok: true, value });
 const fail = <T>(f: ByoFailure): ByoResult<T> => ({ ok: false, failure: f });
@@ -443,7 +455,7 @@ export function createCommunityByoApi(
     const provider = providers.find(
       (p) => p.connectorType.toLowerCase() === entry?.connectorType?.toLowerCase()
     );
-    if (!entry || !provider || !entry.connectionId) {
+    if (!entry || !provider || !entry.connectionId || entry.defaultModel) {
       return fail({
         title: `${name} cannot be edited here`,
         detail: JSON.stringify(saved, null, 2),
@@ -529,12 +541,15 @@ export function createCommunityByoApi(
   }) => {
     const provider = byId(providerId);
     if (!provider) return fail({ title: `Unknown provider ${providerId}` });
-    const entered = Object.fromEntries(
-      form.fields
-        .filter((f) => !f.group || f.group === authType)
-        .map((f) => [f.key, (values[f.key] ?? '').trim()] as const)
-        .filter(([, v]) => v)
-    );
+    // An empty field is left out, so the connector's default applies. Editing, an emptied
+    // setting is sent empty so it is cleared, while an empty secret is left out so IS keeps it.
+    const entered: Record<string, string> = {};
+    for (const field of form.fields) {
+      if (field.group && field.group !== authType) continue;
+      const value = (values[field.key] ?? '').trim();
+      if (value) entered[field.key] = value;
+      else if (existing && !field.secret) entered[field.key] = '';
+    }
 
     const s = await session(provider, folderId, existing?.id ?? null);
     if (!s.ok) return s;
@@ -559,12 +574,13 @@ export function createCommunityByoApi(
       provider.derive?.(entered)
     );
 
+    // IS needs a name here; the user's name is set by the rename below.
+    const nameInIs = existing?.name ?? new Date().toISOString();
     const body: Record<string, unknown> = {
       element: { key: provider.connector },
       sessionID: sid,
       configuration,
-      // IS needs a name here; the real one is set by the rename below.
-      name: existing?.name ?? new Date().toISOString(),
+      name: nameInIs,
     };
     // A session that edits a saved connection names its element instance, which IS
     // updates with PUT. Without it, IS would create a new instance and leave the
@@ -601,20 +617,27 @@ export function createCommunityByoApi(
         break;
       }
       if (d?.status && d.status !== 'pending') {
+        openSession = null;
         return fail(failure({ ...st, data: d.errorResponse ?? d }, `Connection ${d.status}`));
       }
       await sleep(SESSION_POLL_MS);
     }
     openSession = null;
     if (!id) return fail({ title: 'Integration Service did not return the connection' });
-    if (name !== existing?.name) {
-      await call('PATCH', tenantUrl(`connections_/api/v1/Connections/${id}/rename`), {
-        folderKey: folderId,
-        body: { newName: name },
-      });
+    let savedName = nameInIs;
+    if (name !== nameInIs) {
+      const renamed = await call(
+        'PATCH',
+        tenantUrl(`connections_/api/v1/Connections/${id}/rename`),
+        {
+          folderKey: folderId,
+          body: { newName: name },
+        }
+      );
+      if (renamed.ok) savedName = name;
     }
     if (!existing) createdAt.set(id, Date.now());
-    return ok({ id, providerId, name, folderId });
+    return ok({ id, providerId, name: savedName, folderId });
   };
 
   const listModels: ByoModelDialogApi['listModels'] = async (providerId, connection) => {
@@ -647,23 +670,51 @@ export function createCommunityByoApi(
     });
   };
 
-  /** Replaces the edited model's entry in its saved configuration and writes the configuration back. */
+  /**
+   * Writes the edited model's new entry into its saved configuration.
+   * Returns what failed, or `null` once saved.
+   */
   async function updateConfiguration(
     editing: ByoModelToEdit,
     entry: LlmConfigurationEntry,
     folderId: string
-  ): Promise<CallResult> {
+  ): Promise<ByoFailure | null> {
+    const notSaved = 'The model passed its test but could not be saved';
     const current = await call('GET', configurationUrl(editing.configurationId));
-    if (!current.ok) return current;
+    if (!current.ok) return failure(current, notSaved);
     const configuration = current.data as ProductLlmConfiguration;
     const edited = entryNamed(configuration, editing.name);
-    const llmConfigurations = configuration.llmConfigurations.map((other) => {
-      if (other !== edited) return other;
-      return { id: other.id, ...entry };
+    if (!edited) {
+      return {
+        title: `${editing.name} is no longer in its configuration`,
+        detail: JSON.stringify(configuration, null, 2),
+      };
+    }
+
+    // Fields this dialog does not edit (configuration type, API flavor, …) are kept, apart from
+    // an API flavor chosen for another provider and the old model's field mappings.
+    const updated: LlmConfigurationEntry = {
+      ...edited,
+      ...entry,
+      customFieldMappings: entry.customFieldMappings ?? null,
+    };
+    const providerChanged =
+      edited.connectorType?.toLowerCase() !== entry.connectorType?.toLowerCase();
+    if (providerChanged) updated.apiFlavor = null;
+    const llmConfigurations = configuration.llmConfigurations.map((other) =>
+      other === edited ? updated : other
+    );
+
+    // The configuration moves to the connection's folder only when this is its one model.
+    const onlyModel = configuration.llmConfigurations.length === 1;
+    const saved = await call('PUT', configurationUrl(editing.configurationId), {
+      body: {
+        ...configuration,
+        folderId: onlyModel ? folderId : configuration.folderId,
+        llmConfigurations,
+      },
     });
-    return call('PUT', configurationUrl(editing.configurationId), {
-      body: { ...configuration, folderId, llmConfigurations },
-    });
+    return saved.ok ? null : failure(saved, notSaved);
   }
 
   const testAndSave: ByoModelDialogApi['testAndSave'] = async ({
@@ -734,36 +785,32 @@ export function createCommunityByoApi(
       customFieldMappings?: Record<string, string>;
     };
     if (!res.isAvailable || !res.isCompatible) {
-      let vendor = res.vendorRawResponse;
-      try {
-        vendor = (JSON.parse(vendor ?? '') as { message?: string }).message ?? vendor;
-      } catch {
-        // Not JSON: shown as is.
-      }
       const reason =
         res.unavailabilityReason ||
         res.incompatibilityReason ||
         (res.isAvailable ? 'Not compatible' : 'Not reachable');
-      return fail({
-        title: `The test call failed: ${reason}`,
-        message: vendor || undefined,
-        detail: JSON.stringify(res, null, 2),
-      });
+      // The model's own answer, when the gateway passed one on; otherwise its whole summary.
+      const detail = res.vendorRawResponse
+        ? prettyJson(res.vendorRawResponse)
+        : JSON.stringify(res, null, 2);
+      return fail({ title: `The test call failed: ${reason}`, detail });
     }
 
-    let saved: CallResult;
     if (editing) {
-      saved = await updateConfiguration(
+      const notSaved = await updateConfiguration(
         editing,
         llmConfiguration(res.customFieldMappings),
         connection.folderId
       );
+      if (notSaved) return fail(notSaved);
     } else {
-      saved = await call('POST', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations'), {
+      const saved = await call('POST', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations'), {
         body: newConfiguration(res.customFieldMappings),
       });
+      if (!saved.ok) {
+        return fail(failure(saved, 'The model passed its test but could not be saved'));
+      }
     }
-    if (!saved.ok) return fail(failure(saved, 'The model passed its test but could not be saved'));
     return ok<ByoSavedModel>({
       name,
       modelId,

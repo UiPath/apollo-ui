@@ -564,11 +564,22 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       });
     }, [catalog, connectionNames]);
 
+    // A model the Community dialog saved, selected as soon as it appears in the catalog.
+    // The user's own pick cancels it, so a late catalog refresh cannot override that pick.
+    const [pendingSelection, setPendingSelection] = React.useState<ByoSavedModel | null>(null);
+    const handleUserChange = React.useCallback(
+      (model: DiscoveryModel) => {
+        setPendingSelection(null);
+        onChange?.(model);
+      },
+      [onChange]
+    );
+
     const state = useModelPickerState({
       models: effectiveModels,
       value,
       valueConnectionId,
-      onChange,
+      onChange: handleUserChange,
       groupBy,
       recommendedModelIds,
       previewModelIds,
@@ -663,7 +674,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const closeCommunityDialog = React.useCallback((open: boolean) => {
       if (!open) setCommunityDialog(null);
     }, []);
-    const [pendingSelection, setPendingSelection] = React.useState<ByoSavedModel | null>(null);
     const handleCommunitySaved = React.useCallback(
       async (model: ByoSavedModel) => {
         if (selfFetchCtx) await refetchDiscovery();
@@ -784,34 +794,37 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
       // Edit needs the dialog or the navigation target; delete only needs the host handler.
       // Render whichever actions are available (both gated on BYO-management).
-      let onEdit: ((model: DiscoveryModel) => void) | undefined;
-      if (communityApi) {
-        onEdit = (model) => {
-          const configurationId = model.byomDetails?.byoConfigurationId;
-          if (!configurationId) return;
-          setCommunityDialog({ editing: { configurationId, name: model.modelName } });
-          closePopup();
-        };
-      } else if (navigateToLlmConfigurations) {
-        onEdit = (model) =>
-          navigateToLlmConfigurations({
-            intent: 'edit',
-            configurationId: model.byomDetails?.byoConfigurationId,
-          });
-      }
-      if (!onEdit && !handleDeleteModel) return () => null;
+      const editInDialog = communityApi
+        ? (model: DiscoveryModel) => {
+            const configurationId = model.byomDetails?.byoConfigurationId;
+            if (!configurationId) return;
+            setCommunityDialog({ editing: { configurationId, name: model.modelName } });
+            closePopup();
+          }
+        : undefined;
+      const editInTrustLayer = navigateToLlmConfigurations
+        ? (model: DiscoveryModel) =>
+            navigateToLlmConfigurations({
+              intent: 'edit',
+              configurationId: model.byomDetails?.byoConfigurationId,
+            })
+        : undefined;
+      if (!editInDialog && !editInTrustLayer && !handleDeleteModel) return () => null;
 
       return (m: DiscoveryModel) => {
         const hasConfigurationId = !!m.byomDetails?.byoConfigurationId;
-        // The Community dialog edits a configuration, so it needs the row's id.
-        const editable = !communityApi || hasConfigurationId;
+        // The Community dialog edits a model the user added; a model that replaces a UiPath
+        // one is still edited in AI Trust Layer.
+        const editsInDialog =
+          editInDialog && hasConfigurationId && m.modelSubscriptionType === 'BYOMAdded';
+        const onEdit = editsInDialog ? editInDialog : editInTrustLayer;
         // When the picker owns the DELETE it needs a configuration id to
         // target, so rows lacking one get edit only. A host-supplied
         // handler may know another way, so it always gets the action.
         const deletable = handleDeleteModel && (onDeleteModel || hasConfigurationId);
         return defaultRowActions(m, {
           i18n,
-          onEdit: editable ? onEdit : undefined,
+          onEdit,
           onDelete: deletable ? handleDeleteModel : undefined,
         });
       };
