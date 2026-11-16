@@ -55,3 +55,9 @@ export interface ValueField {
 export type ValueCommit =
   | { kind: 'values'; values: readonly string[]; operator: string | undefined; ends?: RangeEnds }
   | { kind: 'expression'; text: string };
+
+/** The host's refusal of a commit, and which refusal of the open editor it is. */
+export interface CommitRefusal {
+  message: string;
+  attempt: number;
+}

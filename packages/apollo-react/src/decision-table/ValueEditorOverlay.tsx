@@ -9,11 +9,11 @@ import { ValuePopover, type ValuePopoverHandle, type ValuePopoverProps } from '.
 /** The open value's editor as the view derives it; the host's editor, the strings and the testid come apart. */
 export type OpenValueEditor = Omit<
   ValuePopoverProps,
-  'renderEditor' | 'labels' | 'onOperatorChange' | 'dataTestId'
+  'renderEditor' | 'labels' | 'refusal' | 'onOperatorChange' | 'dataTestId'
 >;
 
 export interface ValueEditorOverlayProps
-  extends Pick<ValuePopoverProps, 'renderEditor' | 'labels' | 'onOperatorChange'> {
+  extends Pick<ValuePopoverProps, 'renderEditor' | 'labels' | 'refusal' | 'onOperatorChange'> {
   editor: OpenValueEditor;
   container: RuleWindow['container'];
   dataTestId: string;
@@ -24,6 +24,7 @@ export const ValueEditorOverlay: React.FC<ValueEditorOverlayProps> = ({
   editor,
   renderEditor,
   labels,
+  refusal,
   onOperatorChange,
   container,
   dataTestId,
@@ -44,6 +45,7 @@ export const ValueEditorOverlay: React.FC<ValueEditorOverlayProps> = ({
         ref={popoverRef}
         renderEditor={renderEditor}
         labels={labels}
+        refusal={refusal}
         onOperatorChange={onOperatorChange}
         dataTestId={`${dataTestId}-editor`}
       />
