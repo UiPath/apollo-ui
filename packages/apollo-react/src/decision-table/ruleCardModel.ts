@@ -20,7 +20,7 @@ export interface RuleCardLabels extends MarkBadgeLabels, LineTextLabels {
   cell: (column: string, values: string, position: number) => string;
   /** An empty value as read aloud in a cell's name, e.g. "empty", where the line shows a dash. */
   emptyValue: string;
-  /** An input's link to the decision that produces it, e.g. "Open the income decision". */
+  /** An input's link to the decision that produces it, e.g. "Open income's decision". */
   openDecision: (input: string) => string;
 }
 
