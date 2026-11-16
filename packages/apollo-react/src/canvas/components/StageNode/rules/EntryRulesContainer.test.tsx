@@ -13,14 +13,11 @@ const entryRules: StageRule[] = [
   { id: 'rule-2', label: 'Rule 2' },
 ];
 
-const makeProps = (stageDetails: Partial<StageNodeProps['stageDetails']>): StageNodeProps =>
-  ({
-    id: 'stage-1',
-    selected: false,
-    dragging: false,
-    width: 300,
-    stageDetails: { label: 'Test Stage', tasks: [], ...stageDetails },
-  }) as StageNodeProps;
+const makeProps = (stageDetails: Partial<StageNodeProps['stageDetails']>) => ({
+  id: 'stage-1',
+  entryRules: stageDetails.entryRules,
+  sectionState: stageDetails.sectionStates?.entryRules,
+});
 
 describe('EntryRulesContainer', () => {
   beforeEach(() => {
@@ -28,20 +25,20 @@ describe('EntryRulesContainer', () => {
   });
 
   it('renders nothing when there are no entry rules', () => {
-    render(<EntryRulesContainer props={makeProps({})} isReadOnly={false} />);
+    render(<EntryRulesContainer {...makeProps({})} isReadOnly={false} />);
 
     expect(screen.queryByTestId('entry-rules-container-stage-1')).not.toBeInTheDocument();
   });
 
   it('renders nothing when the entry rules array is empty', () => {
-    render(<EntryRulesContainer props={makeProps({ entryRules: [] })} isReadOnly={false} />);
+    render(<EntryRulesContainer {...makeProps({ entryRules: [] })} isReadOnly={false} />);
 
     expect(screen.queryByTestId('entry-rules-container-stage-1')).not.toBeInTheDocument();
   });
 
   describe('without section state (static header)', () => {
     it('renders the container, a static header and a pill per rule', () => {
-      render(<EntryRulesContainer props={makeProps({ entryRules })} isReadOnly={false} />);
+      render(<EntryRulesContainer {...makeProps({ entryRules })} isReadOnly={false} />);
 
       expect(screen.getByTestId('entry-rules-container-stage-1')).toBeInTheDocument();
       expect(screen.getByTestId('entry-rules-header-stage-1')).toHaveTextContent('Entry rules');
@@ -50,7 +47,7 @@ describe('EntryRulesContainer', () => {
     });
 
     it('does not render a collapsible accordion button', () => {
-      render(<EntryRulesContainer props={makeProps({ entryRules })} isReadOnly={false} />);
+      render(<EntryRulesContainer {...makeProps({ entryRules })} isReadOnly={false} />);
 
       expect(
         screen.queryByTestId('entry-rules-header-stage-1-accordion-button')
@@ -63,7 +60,7 @@ describe('EntryRulesContainer', () => {
       const onCollapsedToggle = vi.fn();
       render(
         <EntryRulesContainer
-          props={makeProps({
+          {...makeProps({
             entryRules,
             sectionStates: { entryRules: { isCollapsed: false, onCollapsedToggle } },
           })}
@@ -79,7 +76,7 @@ describe('EntryRulesContainer', () => {
       const onCollapsedToggle = vi.fn();
       render(
         <EntryRulesContainer
-          props={makeProps({
+          {...makeProps({
             entryRules,
             sectionStates: { entryRules: { isCollapsed: true, onCollapsedToggle } },
           })}
@@ -95,7 +92,7 @@ describe('EntryRulesContainer', () => {
       const onCollapsedToggle = vi.fn();
       render(
         <EntryRulesContainer
-          props={makeProps({
+          {...makeProps({
             entryRules,
             sectionStates: { entryRules: { isCollapsed: false, onCollapsedToggle } },
           })}

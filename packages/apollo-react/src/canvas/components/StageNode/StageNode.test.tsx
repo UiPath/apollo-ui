@@ -110,7 +110,7 @@ vi.mock('../Toolbox', () => ({
 }));
 
 // Mock DraggableTask
-vi.mock('./tasks/DraggableTask', () => ({
+vi.mock('./tasks/shared/DraggableTask', () => ({
   DraggableTask: ({
     task,
     isDragDisabled,

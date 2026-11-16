@@ -60,29 +60,7 @@ export interface StageHeaderChip {
 
 export interface StageNodeBaseProps {
   pendingReplaceTask?: boolean;
-  stageDetails: {
-    label: string;
-    defaultContent?: string;
-    icon?: React.ReactElement;
-    sla?: string;
-    slaBreached?: boolean;
-    escalation?: string;
-    escalationsTriggered?: boolean;
-    isException?: boolean;
-    isReadOnly?: boolean;
-    tasks: StageTaskItem[][];
-    selectedTaskId?: string;
-    headerChips?: StageHeaderChip[];
-    sectionStates?: {
-      tasks?: SectionState;
-      entryRules?: SectionState;
-      exitRules?: SectionState;
-      completionRules?: SectionState;
-    };
-    entryRules?: StageRule[];
-    exitRules?: StageRule[];
-    completionRules?: StageRule[];
-  };
+  stageDetails: StageNodeDetailsProps;
   taskOptions?: ListItem[];
   /**
    * Overrides the title of the replace-task toolbox, for consumers that open it to answer a
@@ -90,29 +68,7 @@ export interface StageNodeBaseProps {
    * places it, since the wording belongs to the consumer's catalogues. Defaults to "Replace task".
    */
   replaceTaskToolboxTitle?: string;
-  execution?: {
-    stageStatus: {
-      status?: StageStatus;
-      label?: string;
-      /** How long the stage has run, in milliseconds. Rendered as its 3 largest units. */
-      durationMs?: number;
-      /**
-       * Optional localised label rendered in front of the duration, e.g. `"Duration:"` giving
-       * `"Duration: 1h, 2m"`. Supply it already translated and carrying its own punctuation —
-       * Apollo only places it, since the wording belongs to the consumer's catalogues.
-       */
-      durationLabel?: string;
-      /**
-       * @deprecated Pass `durationMs` instead and let Apollo format it. A pre-formatted string
-       * is rendered verbatim, so it cannot be shortened to the largest units in a way that
-       * holds across locales.
-       */
-      duration?: string;
-      slaText?: string;
-      slaIcon?: StageSlaIcon;
-    };
-    taskStatus: Record<string, StageTaskExecution>;
-  };
+  execution?: StageNodeExecutionProps;
   menuItems?: NodeMenuItem[];
   onStageClick?: () => void;
   onStatusClick?: () => void;
@@ -139,6 +95,58 @@ export interface StageNodeBaseProps {
   getTaskContextMenuItems?: (args: StageTaskContextMenuArgs) => NodeMenuItem[] | undefined;
   hideParallelOptions?: boolean;
   loadingTaskIds?: ReadonlySet<string>;
+}
+
+export interface StageNodeDetailsProps {
+  label: string;
+  defaultContent?: string;
+  icon?: React.ReactElement;
+  sla?: string;
+  slaBreached?: boolean;
+  escalation?: string;
+  escalationsTriggered?: boolean;
+  isException?: boolean;
+  isReadOnly?: boolean;
+  tasks: StageTaskItem[][];
+  selectedTaskId?: string;
+  headerChips?: StageHeaderChip[];
+  sectionStates?: {
+    tasks?: SectionState;
+    entryRules?: SectionState;
+    exitRules?: SectionState;
+    completionRules?: SectionState;
+  };
+  entryRules?: StageRule[];
+  exitRules?: StageRule[];
+  completionRules?: StageRule[];
+}
+
+export interface StageNodeExecutionProps {
+  stageStatus: StageNodeStageExecution;
+  taskStatus: StageNodeTaskExecutionsProps;
+}
+
+export type StageNodeTaskExecutionsProps = Record<string, StageTaskExecution>;
+
+export interface StageNodeStageExecution {
+  status?: StageStatus;
+  label?: string;
+  /** How long the stage has run, in milliseconds. Rendered as its 3 largest units. */
+  durationMs?: number;
+  /**
+   * Optional localised label rendered in front of the duration, e.g. `"Duration:"` giving
+   * `"Duration: 1h, 2m"`. Supply it already translated and carrying its own punctuation —
+   * Apollo only places it, since the wording belongs to the consumer's catalogues.
+   */
+  durationLabel?: string;
+  /**
+   * @deprecated Pass `durationMs` instead and let Apollo format it. A pre-formatted string
+   * is rendered verbatim, so it cannot be shortened to the largest units in a way that
+   * holds across locales.
+   */
+  duration?: string;
+  slaText?: string;
+  slaIcon?: StageSlaIcon;
 }
 
 export interface SectionState {

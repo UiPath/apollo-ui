@@ -1,18 +1,22 @@
 import { StageItemsSection } from '../StageNode.styles';
-import type { StageNodeProps } from '../StageNode.types';
+import type { SectionState, StageRule } from '../StageNode.types';
 import { CollapsibleStageHeader } from '../shared/CollapsibleStageHeader';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { StageRulesContainer } from './StageRulesContainer';
 
 interface CompletionRulesContainerProps {
-  props: StageNodeProps;
+  id: string;
+  completionRules?: StageRule[];
+  sectionState?: SectionState;
   isReadOnly: boolean;
 }
 
-export const CompletionRulesContainer = ({ props, isReadOnly }: CompletionRulesContainerProps) => {
-  const { id, stageDetails } = props;
-  const { completionRules, sectionStates } = stageDetails;
-
+export const CompletionRulesContainer = ({
+  id,
+  completionRules,
+  sectionState,
+  isReadOnly,
+}: CompletionRulesContainerProps) => {
   if (!completionRules || completionRules.length === 0) {
     return null;
   }
@@ -21,13 +25,13 @@ export const CompletionRulesContainer = ({ props, isReadOnly }: CompletionRulesC
     <StageRulesContainer rules={completionRules} ruleType="completion" isReadOnly={isReadOnly} />
   );
 
-  if (sectionStates?.completionRules) {
+  if (sectionState) {
     rulesContainer = (
       <CollapsibleStageHeader
-        isOpen={!sectionStates.completionRules.isCollapsed}
+        isOpen={!sectionState.isCollapsed}
         label="Completion rules"
         testId={`completion-rules-header-${id}`}
-        onToggle={sectionStates.completionRules.onCollapsedToggle}
+        onToggle={sectionState.onCollapsedToggle}
       >
         {rulesContainer}
       </CollapsibleStageHeader>
