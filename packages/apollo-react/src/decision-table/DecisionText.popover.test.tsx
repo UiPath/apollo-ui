@@ -578,8 +578,11 @@ describe('DecisionText popover Shift+Tab at its start', () => {
   });
 });
 
-describe('DecisionText popover cancel during composition', () => {
-  it('keeps the popover open on a cancel while text is composing, and cancels once it ends', () => {
+describe('DecisionText popover Escape during composition', () => {
+  it.each([
+    { isComposing: true },
+    { keyCode: 229 },
+  ])('keeps the popover open on an Escape while text composes (%o), and cancels on the next', (composing) => {
     const onCommit = vi.fn();
     render(
       <Host
@@ -589,13 +592,9 @@ describe('DecisionText popover cancel during composition', () => {
       />
     );
     const text = popover().getByRole('textbox');
-    const cancel = () =>
-      fireEvent(screen.getByTestId('nl-value-editor'), new Event('cancel', { cancelable: true }));
-    fireEvent.compositionStart(text);
-    cancel();
+    fireEvent.keyDown(text, { key: 'Escape', ...composing });
     expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
-    fireEvent.compositionEnd(text);
-    cancel();
+    fireEvent.keyDown(text, { key: 'Escape' });
     expect(screen.queryByTestId('nl-value-editor')).not.toBeInTheDocument();
     expect(onCommit).not.toHaveBeenCalled();
   });
