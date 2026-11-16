@@ -28,7 +28,7 @@ const onBackdrop = (event: React.MouseEvent<HTMLDialogElement>): boolean => {
 
 /** Opens the dialog as modal, so it focuses its first control rather than the stop before it. */
 const showModalPast = (dialog: HTMLDialogElement, start: HTMLElement | null) => {
-  if (start) start.tabIndex = -1;
+  start?.removeAttribute('tabindex');
   dialog.showModal();
   if (start) start.tabIndex = 0;
 };
