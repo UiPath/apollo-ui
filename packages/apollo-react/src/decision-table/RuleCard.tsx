@@ -3,7 +3,7 @@ import { ArrowUpDown } from 'lucide-react';
 import type React from 'react';
 import { memo } from 'react';
 import { ConditionLine } from './ConditionLine';
-import type { DiffChange, RuleDiff } from './decisionTextDiff';
+import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
 import { RuleLine } from './RuleLine';
 import { type RuleCardModelParams, type RuleRemovalLabels, ruleCardModel } from './ruleCardModel';
@@ -153,7 +153,7 @@ export const RuleCard = memo<RuleCardProps>(
               ))}
               {removedLines.map((line) => (
                 <ConditionLine
-                  key={`removed-${line.columnId}`}
+                  key={removedLineKey(line)}
                   line={line}
                   pending={false}
                   change={line.change}

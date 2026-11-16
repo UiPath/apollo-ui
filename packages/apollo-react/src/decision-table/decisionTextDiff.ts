@@ -81,6 +81,8 @@ const FOLD_PREFIX = 'fold:';
 
 const REMOVED_PREFIX = 'removed:';
 
+const DUPLICATE_PREFIX = 'duplicate:';
+
 /** A value's struck old text, shown before or after a value token. */
 export interface StruckValue {
   text: string;
@@ -100,6 +102,9 @@ export interface RemovedLine {
   change: Extract<DiffChange, 'add' | 'delete'>;
   parts: readonly SentencePart[];
 }
+
+/** A removed or added line's React key, unique within its rule. */
+export const removedLineKey = ({ columnId, change }: RemovedLine) => `${change}:${columnId}`;
 
 /** A rule card's change, its after-state number (null when removed), its tokens' changes, and the outputs and inputs it does not word. */
 export interface RuleDiff {
@@ -303,11 +308,20 @@ export const diffRowsOf = (
   const keptIds = rules.map(({ rowId }) => rowId);
   const removedPrefix = freePrefix(REMOVED_PREFIX, keptIds);
   const foldPrefix = freePrefix(FOLD_PREFIX, keptIds);
+  const duplicatePrefix = freePrefix(DUPLICATE_PREFIX, keptIds);
+  const seenIds = new Set<string>();
+  const shownRules = rules.map((rule, index) => {
+    if (!seenIds.has(rule.rowId)) {
+      seenIds.add(rule.rowId);
+      return { rule, rowId: rule.rowId };
+    }
+    return { rule: { ...rule, rowId: `${duplicatePrefix}${index}` }, rowId: rule.rowId };
+  });
   let number = 0;
   const all = withRemoved(
-    rules,
+    shownRules,
     diff.removedRules ?? [],
-    (rule) => rule.rowId,
+    ({ rowId }) => rowId,
     ({ rule }) => rule.rowId
   ).map((placed) => {
     if (placed.kind === 'removed') {
@@ -322,9 +336,9 @@ export const diffRowsOf = (
       };
       return { rule, diff: ruleDiff };
     }
-    const rule = placed.item;
-    const ruleChange = ruleChanges.get(rule.rowId);
-    const rowValues = values.get(rule.rowId) ?? NO_VALUES;
+    const { rule, rowId } = placed.item;
+    const ruleChange = ruleChanges.get(rowId);
+    const rowValues = values.get(rowId) ?? NO_VALUES;
     number += 1;
     const ruleDiff: RuleDiff = {
       change: ruleChange?.change ?? (rowValues.size > 0 ? 'update' : undefined),

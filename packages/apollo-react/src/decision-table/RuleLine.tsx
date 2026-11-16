@@ -2,7 +2,7 @@ import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { LineText, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
-import type { RemovedLine } from './decisionTextDiff';
+import { type RemovedLine, removedLineKey } from './decisionTextDiff';
 import { RemoveConditionButton, type RemoveConditionButtonProps } from './RemoveConditionButton';
 import { ADDED_LINE_CLASS, LINE_CLASS, REMOVED_LINE_CLASS } from './sentenceStyles';
 
@@ -40,7 +40,7 @@ export const RuleLine: React.FC<RuleLineProps> = ({
     <LineText {...lineProps} />
     {unworded.map((line) => (
       <span
-        key={line.columnId}
+        key={removedLineKey(line)}
         className={line.change === 'delete' ? REMOVED_LINE_CLASS : ADDED_LINE_CLASS}
         data-column-id={line.columnId}
         data-change={line.change}
