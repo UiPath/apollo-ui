@@ -15,7 +15,7 @@ import { type CSSProperties, memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskActivationEvent, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { EventDrivenTaskItem } from './EventDrivenTask';
@@ -39,7 +39,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   isReadOnly: boolean;
   selectedTaskId?: string;
   taskWidthStyle?: CSSProperties;
-  handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
+  handleTaskClick: (e: StageTaskActivationEvent, taskElementId: string) => void;
   handleReorderEventDrivenTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,
