@@ -132,19 +132,28 @@ export const useValueEditing = ({
     stopAwaitingRef.current = pending && view ? onNextGesture(view, () => awaitHost(null)) : null;
   };
   useEffect(() => () => stopAwaitingRef.current?.(), []);
-  const openRef = useRef({ open: false, onCancel: edit?.onCancel });
-  openRef.current = { open: target !== null, onCancel: edit?.onCancel };
+  const settledRef = useRef<string | null>(null);
+  const openRef = useRef({ key: openedRef.current, onCancel: edit?.onCancel });
+  openRef.current = { key: target ? valueKey(target) : undefined, onCancel: edit?.onCancel };
   useEffect(() => {
     const view = container();
     return () =>
       queueMicrotask(() => {
-        if (view && !view.isConnected && openRef.current.open) openRef.current.onCancel?.();
+        const { key, onCancel } = openRef.current;
+        if (view && !view.isConnected && key !== undefined && key !== settledRef.current) {
+          onCancel?.();
+        }
       });
   }, [container]);
+  const cancelOpen = (open: ViewEdit) => {
+    settledRef.current = open.editing ? valueKey(open.editing) : null;
+    open.onCancel();
+  };
 
   const start = (value: SentenceValueId) => {
     if (!edit) return;
     awaitHost(null);
+    settledRef.current = null;
     if (selected?.rowId !== value.rowId || selected?.columnId !== value.columnId) {
       navigation.select({ rowId: value.rowId, columnId: value.columnId }, () => null, false);
     }
@@ -163,7 +172,7 @@ export const useValueEditing = ({
     const held = hasStop(rule, target.columnId);
     const cancel = () => {
       awaitHost({ from: target, move: 'cancel', rules, refocus: true });
-      edit.onCancel();
+      cancelOpen(edit);
     };
     return {
       target,
@@ -176,7 +185,8 @@ export const useValueEditing = ({
       adds: !held,
       onCommit: (commit, move, refocus) => {
         awaitHost({ from: target, move, rules, refocus });
-        edit.onCommit(target, commit, move);
+        settledRef.current =
+          edit.onCommit(target, commit, move) === undefined ? valueKey(target) : null;
       },
       onCancel: cancel,
       onClear:
@@ -243,7 +253,7 @@ export const useValueEditing = ({
     if (target?.rowId !== cell.rowId || (cell.columnId && target.columnId !== cell.columnId))
       return;
     awaitHost(null);
-    edit?.onCancel();
+    if (edit) cancelOpen(edit);
   };
 
   const clear = (cell: SentenceCellId, refocusNow: boolean, scroll: boolean) => {

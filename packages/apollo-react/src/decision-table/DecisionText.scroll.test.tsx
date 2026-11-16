@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { StrictMode, useState } from 'react';
 import { vi } from 'vitest';
+import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
 import {
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_HEADER,
@@ -231,6 +232,59 @@ describe('DecisionText unmount', () => {
     const { unmount } = render(text({ edit: edit(onCancel, false) }));
     unmount();
     await flush();
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  const Host = ({
+    onCancel,
+    unmountOnCommit,
+  }: {
+    onCancel: () => void;
+    unmountOnCommit: boolean;
+  }) => {
+    const [shown, setShown] = useState(true);
+    const [editing, setEditing] = useState<DecisionTextEdit['editing']>({
+      rowId: 'row-1',
+      columnId: 'country',
+      index: 0,
+    });
+    if (!shown) return null;
+    return text({
+      edit: {
+        editing,
+        onStartEdit: setEditing,
+        onCancel: () => {
+          onCancel();
+          setShown(false);
+        },
+        onCommit: () => {
+          if (unmountOnCommit) setShown(false);
+          else setEditing(null);
+        },
+        onClearCell: vi.fn(),
+        onDeleteRule: vi.fn(),
+      },
+    });
+  };
+
+  it('cancels once when the host unmounts it from onCancel', async () => {
+    const uninstall = installEscapeCloseRequest();
+    const onCancel = vi.fn();
+    render(<Host onCancel={onCancel} unmountOnCommit={false} />);
+    fireEvent.keyDown(screen.getByTestId('nl-editor'), { key: 'Escape' });
+    await flush();
+    uninstall();
+    expect(screen.queryByTestId('nl')).toBeNull();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels nothing when the host unmounts it from an accepted commit', async () => {
+    const onCancel = vi.fn();
+    render(<Host onCancel={onCancel} unmountOnCommit />);
+    fireEvent.change(screen.getByTestId('nl-editor'), { target: { value: 'NL' } });
+    fireEvent.keyDown(screen.getByTestId('nl-editor'), { key: 'Enter' });
+    await flush();
+    expect(screen.queryByTestId('nl')).toBeNull();
     expect(onCancel).not.toHaveBeenCalled();
   });
 
