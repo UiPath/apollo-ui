@@ -798,6 +798,134 @@ describe('DecisionText', () => {
       expect(tooltip()).toHaveTextContent('No expression');
     });
 
+    it("follows the host's change to the mark under the pointer, hiding the message once the mark is gone", async () => {
+      const { rerender } = renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      rerender(
+        view({
+          marks: rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 2', glyph: true } } },
+          }),
+        })
+      );
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 2'));
+      rerender(view({ marks: rowMarks({}) }));
+      await waitFor(() => expect(tooltip()).toBeNull());
+      rerender(view({ marks: scoreMarks }));
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 1'));
+    });
+
+    it("follows the host's change to a mark while the pointer rests on its message", async () => {
+      const { rerender } = renderView({ marks: scoreMarks });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      fireEvent.pointerOver(card('m3'));
+      const shown = tooltip();
+      if (!shown) throw new Error('no tooltip');
+      fireEvent.pointerOver(shown);
+      rerender(
+        view({
+          marks: rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 2', glyph: true } } },
+          }),
+        })
+      );
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 2'));
+      rerender(view({ marks: rowMarks({}) }));
+      await waitFor(() => expect(tooltip()).toBeNull());
+    });
+
+    it("moves the message with the mark under the pointer when the host's change moves it", async () => {
+      const { rerender } = renderView({ marks: scoreMarks });
+      const marked = valueChip('m3', 'score').closest<HTMLElement>('[data-mark-title]');
+      if (!marked) throw new Error('m3 score mark');
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      const anchor = document.querySelector<HTMLElement>('span[aria-hidden][data-state]');
+      expect(anchor).toHaveStyle({ top: '0px' });
+      vi.spyOn(marked, 'getBoundingClientRect').mockReturnValue(DOMRect.fromRect({ y: 40 }));
+      rerender(
+        view({
+          marks: rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 1', glyph: true } } },
+            m1: { tone: 'warning', title: 'Unreachable', glyph: true },
+          }),
+        })
+      );
+      await waitFor(() => expect(anchor).toHaveStyle({ top: '40px' }));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+    });
+
+    it("follows the host's change to the marks of the focused rule: a new message, none, then a mark added", async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm5' },
+      };
+      const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
+      act(() => card('m5').focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      rerender(
+        <Selectable
+          {...shared}
+          marks={rowMarks({ m5: { tone: 'error', title: 'Never matches', glyph: true } })}
+        />
+      );
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Never matches'));
+      rerender(<Selectable {...shared} marks={rowMarks({})} />);
+      await waitFor(() => expect(tooltip()).toBeNull());
+      rerender(<Selectable {...shared} marks={scoreMarks} />);
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Unreachable'));
+      expect(document.activeElement).toBe(card('m5'));
+    });
+
+    it('keeps a message a scroll hid hidden when the host changes the marks under the pointer and focus', async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm5' },
+      };
+      const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
+      act(() => card('m5').focus());
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      expect(tooltip()).toHaveTextContent('Overlaps row 1');
+      fireEvent.scroll(screen.getByTestId('nl'));
+      await waitFor(() => expect(tooltip()).toBeNull());
+      rerender(
+        <Selectable
+          {...shared}
+          marks={rowMarks({
+            m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 2', glyph: true } } },
+            m5: { tone: 'error', title: 'Never matches', glyph: true },
+          })}
+        />
+      );
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(tooltip()).toBeNull();
+    });
+
+    it('keeps a message dismissed by Escape dismissed when the host changes its mark', async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm5' },
+      };
+      const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
+      act(() => card('m5').focus());
+      press('Escape');
+      expect(tooltip()).toBeNull();
+      rerender(
+        <Selectable
+          {...shared}
+          marks={rowMarks({ m5: { tone: 'error', title: 'Never matches', glyph: true } })}
+        />
+      );
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(tooltip()).toBeNull();
+    });
+
     it('shows the mark a focused element carries or is described by, without adding to its description', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
