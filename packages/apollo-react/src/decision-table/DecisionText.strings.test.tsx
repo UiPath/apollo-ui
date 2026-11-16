@@ -33,6 +33,7 @@ type Calls<Labels> = {
 
 const VIEW_CALLS: Calls<DecisionTextLabels> = {
   markStatus: [
+    ['error', 'Rules 2 and 3 overlap'],
     ['error', undefined],
     ['warning', undefined],
   ],
@@ -99,7 +100,7 @@ describe('DecisionText strings', () => {
   it("words each built-in string as the English catalog does, the host's locale or none", () => {
     const fallback = builtInStrings(null);
     expect(builtInStrings(i18nWith('en', english))).toEqual(fallback);
-    expect(fallback).toContain('Error');
+    expect(fallback).toContain('Error: Rules 2 and 3 overlap');
     expect(fallback).toContain('+9,980 more');
     expect(fallback).toContain('income, rule 1');
   });

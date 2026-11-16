@@ -32,6 +32,7 @@
   "decision-text.insert_rule_above": "Insert rule above",
   "decision-text.insert_rule_below": "Insert rule below",
   "decision-text.mark_error": "Error",
+  "decision-text.mark_status": "{status}: {message}",
   "decision-text.mark_warning": "Warning",
   "decision-text.missing_end": "Enter both ends",
   "decision-text.missing_input_expression": "This input column has no expression",

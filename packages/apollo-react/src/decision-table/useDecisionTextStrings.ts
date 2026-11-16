@@ -31,7 +31,14 @@ export const useDecisionTextLabels = (
       emptyRules: _({ id: 'decision-text.empty_rules', message: 'No rules yet' }),
       inputs: _({ id: 'decision-text.band_inputs', message: 'Inputs' }),
       outputs: _({ id: 'decision-text.band_outputs', message: 'Outputs' }),
-      markStatus: (tone, message) => message || tones[tone],
+      markStatus: (tone, message) =>
+        message
+          ? _({
+              id: 'decision-text.mark_status',
+              message: '{status}: {message}',
+              values: { status: tones[tone], message },
+            })
+          : tones[tone],
       moreValues: (count) =>
         _({
           id: 'decision-text.more_values',

@@ -617,7 +617,7 @@ describe('DecisionText', () => {
       const badge = debtLine?.lastElementChild;
       expect(badge?.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'error');
       expect(badge).toHaveAttribute('data-mark-title', '"-" never matches');
-      expect(card('m1')).toHaveAccessibleDescription('"-" never matches');
+      expect(card('m1')).toHaveAccessibleDescription('Error: "-" never matches');
     });
 
     const twoMarks = rowMarks({
@@ -631,8 +631,8 @@ describe('DecisionText', () => {
 
     it('announces each mark of a line in its own tone, under one glyph of the worst tone', () => {
       renderView({ marks: twoMarks });
-      expect(card('m3')).toHaveAccessibleDescription('Overlaps row 1 Not a number');
-      expect(screen.getByText('Overlaps row 1').closest('[hidden]')).not.toBeNull();
+      expect(card('m3')).toHaveAccessibleDescription('Warning: Overlaps row 1 Error: Not a number');
+      expect(screen.getByText('Warning: Overlaps row 1').closest('[hidden]')).not.toBeNull();
       const glyphs = card('m3').querySelectorAll('[data-glyph]');
       expect(glyphs).toHaveLength(1);
       expect(glyphs[0]).toHaveAttribute('data-glyph', 'error');
@@ -665,13 +665,17 @@ describe('DecisionText', () => {
           },
         }),
       });
-      expect(card('m3')).toHaveAccessibleDescription('Overlaps row 1');
+      expect(card('m3')).toHaveAccessibleDescription('Warning: Overlaps row 1');
       expect(ruleLine('m3', 1)?.querySelector('[data-mark-title]')).toHaveAttribute(
         'data-mark-title',
         'Overlaps row 1'
       );
-      expect(card('m4')).toHaveAccessibleDescription('Overlaps row 1 Overlaps row 1');
-      expect(card('m2')).toHaveAccessibleDescription('Overlaps row 1 Overlaps row 4');
+      expect(card('m4')).toHaveAccessibleDescription(
+        'Warning: Overlaps row 1 Error: Overlaps row 1'
+      );
+      expect(card('m2')).toHaveAccessibleDescription(
+        'Warning: Overlaps row 1 Warning: Overlaps row 4'
+      );
     });
 
     it('shows no glyph for a mark without one, or for a success tone', () => {
@@ -699,7 +703,7 @@ describe('DecisionText', () => {
       expect(card('m1')).toHaveAttribute('data-dim', 'true');
       const headingLine = card('m5').querySelector('[data-mark-title="Unreachable"]');
       expect(headingLine?.querySelector('[data-glyph="warning"]')).not.toBeNull();
-      expect(card('m5')).toHaveAccessibleDescription('Unreachable');
+      expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
     });
 
     it('puts the glyph of a cell its sentence leaves out on the heading line, once', () => {
@@ -724,7 +728,7 @@ describe('DecisionText', () => {
         'Overlaps row 1'
       );
       expect(card('m3').querySelectorAll('[data-glyph]')).toHaveLength(2);
-      expect(card('m3')).toHaveAccessibleDescription('Not a number Overlaps row 1');
+      expect(card('m3')).toHaveAccessibleDescription('Error: Not a number Warning: Overlaps row 1');
     });
 
     it('marks a band column with its column mark', () => {
@@ -740,7 +744,7 @@ describe('DecisionText', () => {
       expect(column).toHaveAttribute('data-tone', 'error');
       expect(column).toHaveAttribute('data-mark-title', 'No expression');
       expect(column?.querySelector('[data-glyph="error"]')).not.toBeNull();
-      expect(column).toHaveAccessibleDescription('No expression');
+      expect(column).toHaveAccessibleDescription('Error: No expression');
     });
   });
 
@@ -928,7 +932,7 @@ describe('DecisionText', () => {
       });
       act(() => card('m5').focus());
       expect(tooltip()).toHaveTextContent('Unreachable');
-      expect(card('m5')).toHaveAccessibleDescription('Unreachable');
+      expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
       act(() => valueChip('m3', 'score').focus());
       expect(tooltip()).toHaveTextContent('Overlaps row 1');
     });
@@ -5652,7 +5656,7 @@ describe('DecisionText', () => {
       const badge = screen.getByTestId('nl-header').querySelector('[data-glyph]')?.parentElement;
       expect(badge?.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'error');
       expect(badge).toHaveAttribute('data-mark-title', 'Priority needs ranked output values');
-      expect(trigger()).toHaveAccessibleDescription('Priority needs ranked output values');
+      expect(trigger()).toHaveAccessibleDescription('Error: Priority needs ranked output values');
     });
 
     it('ends the plain label with the header mark when there is no picker', () => {
@@ -5662,7 +5666,7 @@ describe('DecisionText', () => {
       });
       const header = screen.getByTestId('nl-header');
       expect(header.querySelector('[data-glyph="warning"]')).not.toBeNull();
-      expect(screen.getByText('Unique')).toHaveAccessibleDescription('No rules');
+      expect(screen.getByText('Unique')).toHaveAccessibleDescription('Warning: No rules');
     });
   });
 
