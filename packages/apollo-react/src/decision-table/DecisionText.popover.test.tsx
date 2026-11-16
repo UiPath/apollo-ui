@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import userEvent from '@testing-library/user-event';
 import { Activity, createElement, StrictMode, useEffect, useRef, useState } from 'react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
+import { installEscapeCloseRequest, installModalInertness } from './__fixtures__/modalDialog';
 import {
   DECISION_TEXT_EDIT_LABELS,
   DECISION_TEXT_LABELS,
@@ -18,10 +18,15 @@ import type { ExpressionEditorProps, ValueField, ValueOperatorOption } from './v
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 afterEach(cleanup);
 let uninstallEscape: () => void = () => {};
+let uninstallInertness: () => void = () => {};
 beforeAll(() => {
   uninstallEscape = installEscapeCloseRequest();
+  uninstallInertness = installModalInertness();
 });
-afterAll(() => uninstallEscape());
+afterAll(() => {
+  uninstallEscape();
+  uninstallInertness();
+});
 
 const OPS: ValueOperatorOption[] = [
   { id: '<', label: 'is less than' },
