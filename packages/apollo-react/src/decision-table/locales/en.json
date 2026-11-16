@@ -1,6 +1,13 @@
 {
   "decision-graph.empty": "No decisions yet",
   "decision-graph.graph": "Decisions",
+  "decision-graph.minimap": "Browse rules",
+  "decision-graph.minimap_clear": "Clear search",
+  "decision-graph.minimap_decision": "{name}, {count, plural, one {# rule} other {# rules}}",
+  "decision-graph.minimap_no_match": "No match for “{query}”.",
+  "decision-graph.minimap_reference": "{name}, listed in full elsewhere in this map",
+  "decision-graph.minimap_results": "{count, plural, one {# result} other {# results}}",
+  "decision-graph.minimap_search": "Search rules and decisions",
   "decision-graph.rule_count": "{count, plural, one {# rule} other {# rules}}",
   "decision-graph.see_above": "See {name} above",
   "decision-graph.show_problem": "{status}. Show it",

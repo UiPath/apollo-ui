@@ -23,6 +23,13 @@ const CALLS: Omit<Calls<DecisionGraphLabels>, 'markStatus'> = {
   seeAbove: [['Risk']],
   usedBy: [['Eligibility, Pricing']],
   showProblem: [['Error: Rules 1 and 3 overlap']],
+  minimapNoMatch: [['zzz']],
+  minimapResults: [[1], [3]],
+  minimapDecision: [
+    ['Risk', 1],
+    ['Risk', 3],
+  ],
+  minimapReference: [['Risk']],
 };
 
 const providerFor =

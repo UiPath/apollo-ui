@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { useSafeLingui } from '../i18n/useSafeLingui';
+import type { DecisionGraphMinimapLabels } from './DecisionGraphMinimap';
 import type { MarkBadgeLabels } from './MarkBadge';
 import { useDecisionTextLabels, withLabelOverrides } from './useDecisionTextStrings';
 
 /** The graph view's own strings, built in from the `decision-table` catalog. */
-export interface DecisionGraphLabels extends MarkBadgeLabels {
+export interface DecisionGraphLabels extends DecisionGraphMinimapLabels, MarkBadgeLabels {
   /** The view's name, e.g. "Decisions". */
   graph: string;
   empty: string;
@@ -14,6 +15,8 @@ export interface DecisionGraphLabels extends MarkBadgeLabels {
   usedBy: (names: string) => string;
   /** A heading mark's action, e.g. "Error: Overlapping rules. Show it". */
   showProblem: (status: string) => string;
+  minimapDecision: (name: string, count: number) => string;
+  minimapReference: (name: string) => string;
 }
 
 /** The graph view's strings in the active locale, with the host's in place of any it gives. */
@@ -43,6 +46,36 @@ export const useDecisionGraphLabels = (
           values: { status },
         }),
       markStatus,
+      minimap: _({ id: 'decision-graph.minimap', message: 'Browse rules' }),
+      minimapSearch: _({
+        id: 'decision-graph.minimap_search',
+        message: 'Search rules and decisions',
+      }),
+      minimapClearSearch: _({ id: 'decision-graph.minimap_clear', message: 'Clear search' }),
+      minimapNoMatch: (query) =>
+        _({
+          id: 'decision-graph.minimap_no_match',
+          message: 'No match for “{query}”.',
+          values: { query },
+        }),
+      minimapResults: (count) =>
+        _({
+          id: 'decision-graph.minimap_results',
+          message: '{count, plural, one {# result} other {# results}}',
+          values: { count },
+        }),
+      minimapDecision: (name, count) =>
+        _({
+          id: 'decision-graph.minimap_decision',
+          message: '{name}, {count, plural, one {# rule} other {# rules}}',
+          values: { name, count },
+        }),
+      minimapReference: (name) =>
+        _({
+          id: 'decision-graph.minimap_reference',
+          message: '{name}, listed in full elsewhere in this map',
+          values: { name },
+        }),
     }),
     [_, markStatus]
   );

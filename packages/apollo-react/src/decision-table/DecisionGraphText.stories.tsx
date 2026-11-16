@@ -5,6 +5,7 @@ import {
   EMPTY_GRAPH,
   type GraphBody,
   type GraphFixture,
+  largeGraph,
   MARKED,
   NOT_A_TABLE,
   SHARED_DEPENDENCY,
@@ -21,7 +22,12 @@ import {
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
-import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
+import type {
+  SentencePart,
+  SentenceRule,
+  SentenceSelection,
+  SentenceValueId,
+} from './sentenceTypes';
 
 interface GraphSelection {
   decisionId: string;
@@ -35,6 +41,11 @@ interface GraphHostProps {
 }
 
 const isTable = (body: GraphBody | undefined): body is EditableTable => typeof body === 'object';
+
+const partsText = (parts: readonly SentencePart[]) =>
+  parts.map((part) => (typeof part === 'string' ? part : part.text)).join('');
+
+const ruleLabel = (rule: SentenceRule) => `${partsText(rule.heading)} ${partsText(rule.lead)}`;
 
 const tablesOf = (bodies: GraphFixture['bodies']): Readonly<Record<string, StoryTable>> =>
   Object.fromEntries(
@@ -137,6 +148,12 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
             if (editing?.decisionId === decisionId) setEditing(null);
           }}
           selected={selected?.decisionId ?? null}
+          rules={(decisionId) =>
+            (rulesById.get(decisionId) ?? []).map((rule) => ({
+              rowId: rule.rowId,
+              label: ruleLabel(rule),
+            }))
+          }
           onReveal={(target) => {
             setRevealed(target);
             if (target.rowId !== undefined) {
@@ -228,6 +245,21 @@ export const Errors: StoryObj<GraphArgs> = {
       graph={MARKED}
       mode={mode}
       caption="An error and a warning on the headings: a click on the glyph opens the decision and flashes the rule it names, in place; Enter on it brings the rule into view."
+    />
+  ),
+};
+
+const LARGE_GRAPH = largeGraph(50, 10);
+
+export const LargeGraph: StoryObj<GraphArgs> = {
+  args: { mode: 'edit' },
+  argTypes: { mode: MODE_ARG },
+  render: ({ mode }) => (
+    <GraphHost
+      key={mode}
+      graph={LARGE_GRAPH}
+      mode={mode}
+      caption="50 decisions and 500 rules: open the minimap top left, search, and pick a decision or a rule."
     />
   ),
 };
