@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import type { DecisionTextEdit } from './decisionTextTypes';
+import type { ViewEdit } from './decisionTextTypes';
 import { activeElementOf, focusStays, hasLostFocus, onNextGesture } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { cellName, type RuleCardLabels } from './ruleCardModel';
@@ -37,7 +37,7 @@ import {
 import type { OpenValueEditor } from './ValueEditorOverlay';
 
 export interface ValueEditingParams {
-  edit: DecisionTextEdit | undefined;
+  edit: ViewEdit | undefined;
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
   selected: SentenceSelection | null | undefined;
@@ -119,7 +119,11 @@ export const useValueEditing = ({
   const target = edit?.editing ?? null;
   const openedRef = useRef(target ? valueKey(target) : undefined);
   const row = target ? rules.findIndex((rule) => rule.rowId === target.rowId) : -1;
-  const rule = rules[row];
+  const listed =
+    target !== null &&
+    (hasStop(rules[row], target.columnId) ||
+      bands.some((band) => band.columns.some((column) => column.id === target.columnId)));
+  const rule = listed ? rules[row] : undefined;
 
   const awaitHost = (pending: Omit<PendingSettle, 'focused'> | null) => {
     stopAwaitingRef.current?.();

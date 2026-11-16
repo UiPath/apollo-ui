@@ -31,6 +31,7 @@ import {
   type DecisionTextContainerProps,
   useContainerHandlers,
 } from './useContainerHandlers';
+import { useEditState } from './useEditState';
 import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
 import { useRuleWindow } from './useRuleWindow';
@@ -108,7 +109,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   onCellHover,
   selected,
   onSelect,
-  edit,
+  edit: hostEdit,
   policy,
   headerMark,
   onOpenDecision,
@@ -119,6 +120,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   children,
 }) => {
   const idPrefix = useId();
+  const { edit, refusal } = useEditState(hostEdit);
   const bands = useMemo(() => bandsOf(inputs, outputs, labels), [inputs, outputs, labels]);
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
@@ -226,6 +228,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           editor={valueEditing.editor}
           renderEditor={edit.renderEditor}
           labels={edit.labels}
+          refusal={refusal}
           onOperatorChange={shown.onOperatorChange}
           container={ruleWindow.container}
           dataTestId={dataTestId}

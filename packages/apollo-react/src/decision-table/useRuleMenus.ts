@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { DecisionTextEdit } from './decisionTextTypes';
+import type { ViewEdit } from './decisionTextTypes';
 import type { GridContextMenuProps, GridContextMenuState, GridMenuEntry } from './GridMenu';
 import type { OpenRuleMenu } from './RuleList';
 import { renderedParentOf, scrollRootsOf } from './renderedTree';
@@ -9,7 +9,7 @@ import { clickedAction, type RuleAction } from './sentenceTargets';
 import type { SentenceBand, SentenceRule } from './sentenceTypes';
 
 export interface RuleMenusParams {
-  edit: DecisionTextEdit | undefined;
+  edit: ViewEdit | undefined;
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
   /** The selected row, whose change while a menu is open moves focus to the new selection. */
@@ -35,7 +35,7 @@ export interface RuleMenus extends Pick<GridContextMenuProps, 'label' | 'entries
 }
 
 const menuLabel = (
-  edit: DecisionTextEdit | undefined,
+  edit: ViewEdit | undefined,
   state: RuleMenuState | null,
   position: number
 ): string => {

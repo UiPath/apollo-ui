@@ -36,7 +36,6 @@ import type {
   SentenceCellId,
   SentenceRule,
   SentenceSelection,
-  SentenceValueId,
 } from './sentenceTypes';
 import type {
   ExpressionEditorProps,
@@ -50,9 +49,6 @@ const selectionText = (selection: SentenceSelection | null) =>
 
 const cellText = (cell: SentenceCellId | null) =>
   cell ? `${cell.rowId} / ${cell.columnId}` : 'none';
-
-const editingText = (editing: SentenceValueId | null) =>
-  editing ? `${editing.rowId} / ${editing.columnId} / value ${editing.index + 1}` : 'none';
 
 interface StoryCaptionProps {
   children: React.ReactNode;
@@ -227,17 +223,15 @@ const validationMarks = (table: EditableTable): TableMarks => {
   return { rows, columns: new Map() };
 };
 
-/** The host's selection once its rule or cell is gone: the rule, or nothing. The edited cell stays. */
+/** The host's selection once its rule or cell is gone: the rule, or nothing. */
 const liveSelection = (
   rules: readonly SentenceRule[],
-  selected: SentenceSelection | null,
-  editing: SentenceValueId | null
+  selected: SentenceSelection | null
 ): SentenceSelection | null => {
   const rule = selected && rules.find((candidate) => candidate.rowId === selected.rowId);
   if (!selected || !rule) return null;
   const { columnId } = selected;
   if (columnId === undefined) return selected;
-  if (editing?.rowId === selected.rowId && editing.columnId === columnId) return selected;
   return valueTokenOf(rule, { rowId: rule.rowId, columnId, index: 0 })
     ? selected
     : { rowId: rule.rowId };
@@ -264,7 +258,7 @@ interface TableHostProps {
   frameClassName?: string;
 }
 
-/** A host that owns the table, the selection and the edit, words the table back after every write, and refuses an empty condition. */
+/** A host that owns the table and the selection, words the table back after every write, and refuses an empty condition. */
 const TableHost = ({
   initialTable,
   caption,
@@ -277,9 +271,7 @@ const TableHost = ({
 }: TableHostProps) => {
   const [table, setTable] = useState(initialTable);
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
-  const [editing, setEditing] = useState<SentenceValueId | null>(null);
   const [hovered, setHovered] = useState<SentenceCellId | null>(null);
-  const [refusal, setRefusal] = useState<string | null>(null);
   const [hitPolicy, setHitPolicy] = useState('UNIQUE');
   const [openedDecision, setOpenedDecision] = useState<string | null>(null);
   const [columnEdits, setColumnEdits] = useState<ColumnEdits>(NO_COLUMN_EDITS);
@@ -293,15 +285,11 @@ const TableHost = ({
 
   useEffect(() => {
     setSelected((current) => {
-      const live = liveSelection(rules, current, editing);
+      const live = liveSelection(rules, current);
       return sameSelection(live, current) ? current : live;
     });
-  }, [rules, editing]);
+  }, [rules]);
 
-  const open = (value: SentenceValueId | null) => {
-    setRefusal(null);
-    setEditing(value);
-  };
   const addRuleAt = (index: number) => {
     const [next, rowId] = tableWithRuleAt(table, index);
     setTable(next);
@@ -315,16 +303,11 @@ const TableHost = ({
     [...table.inputs, ...table.outputs].find((column) => column.id === columnId)?.name ?? columnId;
 
   const edit: DecisionTextEdit = {
-    editing,
     renderEditor,
-    onStartEdit: open,
     onCommit: (value, commit) => {
       const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
       if (!isOutput(table, value.columnId) && text.trim() === '') {
-        setRefusal(
-          `Not saved: the ${columnName(value.columnId)} condition needs a value. Type one, press Escape, or remove the condition.`
-        );
-        return;
+        return `Not saved: the ${columnName(value.columnId)} condition needs a value. Type one, press Escape, or remove the condition.`;
       }
       setTable(
         commit.kind === 'expression'
@@ -333,9 +316,8 @@ const TableHost = ({
             ? tableWithValue(table, value, text)
             : tableWithCondition(table, value, commit)
       );
-      open(null);
+      return undefined;
     },
-    onCancel: () => open(null),
     valueField: (cell) => storyValueField(table, columnEdits, cell),
     column: {
       field: (columnId) => storyColumnField(table, columnEdits, columnId),
@@ -399,15 +381,9 @@ const TableHost = ({
           editable ? { label: 'Add rule', onAdd: () => addRuleAt(table.rules.length) } : undefined
         }
       />
-      {refusal && (
-        <p role="alert" className="text-xs font-medium text-error-text">
-          {refusal}
-        </p>
-      )}
       <StoryCaption>
-        Selected: {selectionText(selected)} · Editing: {editingText(editing)} · Hovered:{' '}
-        {cellText(hovered)} · Opened decision: {openedDecision ?? 'none'} · More properties:{' '}
-        {moreProperties ?? 'none'}
+        Selected: {selectionText(selected)} · Hovered: {cellText(hovered)} · Opened decision:{' '}
+        {openedDecision ?? 'none'} · More properties: {moreProperties ?? 'none'}
       </StoryCaption>
       <StoryCaption>{caption}</StoryCaption>
     </div>

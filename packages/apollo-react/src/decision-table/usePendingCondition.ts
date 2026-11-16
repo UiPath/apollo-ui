@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { DecisionTextEdit } from './decisionTextTypes';
+import type { ViewEdit } from './decisionTextTypes';
 import { bandColumnNameOf, hasStop } from './sentenceParts';
 import type { SentenceBand, SentenceRule, SentenceValueId } from './sentenceTypes';
 import { operatorOf, operatorsOf } from './useShapeDraft';
@@ -7,7 +7,7 @@ import { valueKey } from './useValueEditing';
 import type { ValuePopoverProps } from './ValuePopover';
 
 export interface PendingConditionParams {
-  edit: DecisionTextEdit | undefined;
+  edit: ViewEdit | undefined;
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
 }

@@ -20,13 +20,13 @@ export interface DecisionTextEditLabels
 
 /** Editing on the cards, the grid's cell-editing contract addressed by value; omit it for a read-only view. */
 export interface DecisionTextEdit extends RuleMenuActions {
-  /** The value whose editor is open, or null, addressed by ids as `selected` is. */
-  editing: SentenceValueId | null;
-  onStartEdit: (value: SentenceValueId) => void;
-  /** Keep `editing` set to refuse the commit; the editor stays open with the draft. A `values` commit's operator is the picked one of the cell's `valueField` operators, and a range's or list's carries all the condition's values; an `expression` commit is the host editor's text for the whole condition. */
-  onCommit: (value: SentenceValueId, commit: ValueCommit, move: CellCommitMove) => void;
+  /** The value whose editor is open, or null, addressed by ids as `selected` is; without it the view keeps which one is open. */
+  editing?: SentenceValueId | null;
+  onStartEdit?: (value: SentenceValueId) => void;
+  /** Return a message to refuse the commit: the editor stays open with the draft and shows it until it commits again or closes. A `values` commit's operator is the picked one of the cell's `valueField` operators, and a range's or list's carries all the condition's values; an `expression` commit is the expression editor's text for the whole condition. */
+  onCommit: (value: SentenceValueId, commit: ValueCommit, move: CellCommitMove) => string | void;
   /** Also called when a hidden or detached view stops rendering an open editor; a view hidden with visibility or opacity keeps its modal editor open. */
-  onCancel: () => void;
+  onCancel?: () => void;
   /** What the open cell's popover offers: its type glyph, operators, allowed values, and a range's or list's values; called only while it is open. */
   valueField?: (cell: SentenceCellId) => ValuePopoverProps['field'];
   /** The host's expression editor, which the popover's Edit expression swaps in for its fields on the whole condition, where `valueField` gives the condition's `expression` or the value is the whole condition; without it the popover's own text field. */
@@ -38,3 +38,7 @@ export interface DecisionTextEdit extends RuleMenuActions {
   /** The editing strings; mounted rules re-render when it changes, so memoize it. */
   labels: DecisionTextEditLabels;
 }
+
+/** The host's edit as the view runs it, with which value is open settled. */
+export type ViewEdit = DecisionTextEdit &
+  Required<Pick<DecisionTextEdit, 'editing' | 'onStartEdit' | 'onCancel'>>;

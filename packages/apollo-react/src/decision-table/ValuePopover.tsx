@@ -10,7 +10,7 @@ import { PopoverSelect } from './PopoverSelect';
 import { POPOVER_CLASS, POPOVER_ERROR_CLASS } from './sentenceStyles';
 import { type DraftProblemLabels, useShapeDraft } from './useShapeDraft';
 import { ValueFields, type ValueFieldsLabels } from './ValueFields';
-import type { ExpressionEditorProps, ValueCommit, ValueField } from './valueTypes';
+import type { CommitRefusal, ExpressionEditorProps, ValueCommit, ValueField } from './valueTypes';
 
 /** The popover's strings. */
 export interface ValuePopoverLabels
@@ -45,6 +45,8 @@ export interface ValuePopoverProps
   /** The host's expression editor, which Edit expression swaps in for the fields on the whole condition; without it the popover's own text field. */
   renderEditor: ExpressionEditorFrameProps['renderEditor'];
   labels: ValuePopoverLabels;
+  /** The host's refusal of the last commit, announced as it shows. */
+  refusal: CommitRefusal | null;
   /** The text field's testid; derived ids: `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear` and the footer's. */
   dataTestId: string;
 }
@@ -103,11 +105,14 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       onClear,
       renderEditor,
       labels,
+      refusal,
       dataTestId,
     },
     ref
   ) => {
-    const problemId = `${useId()}-problem`;
+    const id = useId();
+    const problemId = `${id}-problem`;
+    const refusalId = `${id}-refusal`;
     const [root, setRoot] = useState<HTMLDivElement | null>(null);
     const [draft, setDraft] = useState(value);
     const [seed, setSeed] = useState<string | null>(null);
@@ -224,7 +229,9 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
               onValueKeyDown={onValueKeyDown}
               focusRef={holdFocus}
               keyShortcuts={operators.length > 0 ? OPERATOR_SHORTCUTS : undefined}
-              describedBy={problem ? problemId : undefined}
+              describedBy={
+                [problem && problemId, refusal && refusalId].filter(Boolean).join(' ') || undefined
+              }
               labels={labels}
               dataTestId={dataTestId}
             />
@@ -234,6 +241,11 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
               </span>
             )}
           </>
+        )}
+        {refusal && (
+          <span key={refusal.attempt} id={refusalId} role="alert" className={POPOVER_ERROR_CLASS}>
+            {refusal.message}
+          </span>
         )}
         <PopoverFooter
           links={footerLinks(expression ? undefined : editExpression, onClear, labels, dataTestId)}

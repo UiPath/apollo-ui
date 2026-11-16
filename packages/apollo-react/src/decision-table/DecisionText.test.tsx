@@ -4524,7 +4524,9 @@ describe('DecisionText', () => {
     });
 
     it('returns focus to + when a new condition is cancelled with nothing selected', () => {
-      renderEditing({ initialEditing: { rowId: 'r3', columnId: 'channel', index: 0 } });
+      renderEditing({
+        initialEditing: { rowId: 'r3', columnId: 'income', index: 0 },
+      });
       fireEvent.keyDown(editor(), { key: 'Escape' });
       expect(document.activeElement).toBe(button('r3', 'Add condition to rule 3'));
     });
