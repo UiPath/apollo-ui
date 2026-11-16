@@ -197,7 +197,6 @@ const storyValueField = (
   const multiple = offered?.shape !== undefined && offered.shape !== 'single';
   const test = condition ? FEEL_TESTS[condition.operator]?.(condition.values, condition.ends) : '';
   return {
-    icon: valueTypeIcon(columnValueType(cell.columnId, edits)),
     operators: switchable ? CONDITION_OPERATORS : undefined,
     operator: condition?.operator ?? 'is',
     allowedValues: allowedValuesOf(cell.columnId, edits),

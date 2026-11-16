@@ -59,9 +59,16 @@ export const columnNameOf = (rule: SentenceRule, columnId: string): string =>
   ruleTokens(rule).find((token) => token.kind !== 'value' && token.columnId === columnId)?.text ??
   '';
 
+/** A column as the bands list it. */
+export const bandColumnOf = (
+  bands: readonly SentenceBand[],
+  columnId: string
+): SentenceBand['columns'][number] | undefined =>
+  bands.flatMap((band) => band.columns).find((column) => column.id === columnId);
+
 /** A column's name as the bands list it, for a cell its row does not word. */
 export const bandColumnNameOf = (bands: readonly SentenceBand[], columnId: string): string =>
-  bands.flatMap((band) => band.columns).find((column) => column.id === columnId)?.name ?? '';
+  bandColumnOf(bands, columnId)?.name ?? '';
 
 /** The token of one value of a rule's cell. */
 export const valueTokenOf = (

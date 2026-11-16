@@ -32,7 +32,9 @@ export interface RangeEnds {
 }
 
 /** What a cell's popover offers, from the host's column. */
-export interface ValueField extends Pick<SentenceBandColumn, 'icon'> {
+export interface ValueField {
+  /** The popover's type glyph; without it, its column's. */
+  icon?: SentenceBandColumn['icon'];
   /** A condition's operators; without them the popover shows none. */
   operators?: readonly ValueOperatorOption[];
   /** The id of the operator the condition has, or a new condition starts with; without it, the first of `operators`. */
