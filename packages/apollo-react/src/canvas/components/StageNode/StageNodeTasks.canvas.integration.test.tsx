@@ -233,4 +233,11 @@ describe('StageNode task activation in a real canvas', () => {
 
     expect(changesOfType('position')).toEqual([]);
   });
+
+  it('leaves a read-only task out of the tab order when the host does not open tasks', () => {
+    renderStage(stageWithTasks({ stageDetails: { label: 'Stage 1', tasks, isReadOnly: true } }));
+
+    expect(screen.queryByRole('button', { name: 'Task 1' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('stage-task-label-task-1').tagName).toBe('SPAN');
+  });
 });

@@ -16,6 +16,7 @@ const DraggableTaskComponent = ({
   getContextMenuItems,
   onTaskClick,
   isDragDisabled,
+  isLabelOpenable = false,
   isTaskLoading,
   isReadOnly,
   onToggleBreakpoint,
@@ -34,7 +35,7 @@ const DraggableTaskComponent = ({
     menuRef.current?.handleContextMenu(e);
   }, []);
 
-  const onOpenKeyDown = useTaskLabelOpen(task.id, onTaskClick, !!isDragDisabled);
+  const onOpenKeyDown = useTaskLabelOpen(task.id, onTaskClick, isLabelOpenable);
 
   const taskElement = (
     <StageItemPill

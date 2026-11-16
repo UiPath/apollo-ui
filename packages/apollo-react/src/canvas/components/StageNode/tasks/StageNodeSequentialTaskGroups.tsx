@@ -56,6 +56,7 @@ export const StageNodeSequentialTaskGroups = ({
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
     onTaskReorder,
+    onTaskClick,
     hideParallelOptions,
     loadingTaskIds,
     onTaskBreakpointToggle,
@@ -63,6 +64,7 @@ export const StageNodeSequentialTaskGroups = ({
   } = props;
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const isDragDisabled = !onTaskReorder || isReadOnly;
+  const isLabelOpenable = isDragDisabled && !!onTaskClick;
   const labels = useStageNodeLabels();
 
   const sequentialTaskIds = useMemo(
@@ -216,6 +218,7 @@ export const StageNodeSequentialTaskGroups = ({
                     isParallel={isParallel}
                     onTaskClick={handleTaskClick}
                     isDragDisabled={isDragDisabled}
+                    isLabelOpenable={isLabelOpenable}
                     isTaskLoading={loadingTaskIds?.has(task.id)}
                     isReadOnly={isReadOnly}
                     onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
