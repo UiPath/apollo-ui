@@ -7,6 +7,7 @@ import {
 } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { scrollRootsOf } from './renderedTree';
 import {
   MARK_TOOLTIP_ANCHOR_CLASS,
   MARK_TOOLTIP_CLASS,
@@ -169,7 +170,8 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       focused = null;
       hide();
     };
-    section.addEventListener('scroll', onScroll, true);
+    const scrollRoots = scrollRootsOf(section);
+    for (const root of scrollRoots) root.addEventListener('scroll', onScroll, true);
     return () => {
       clearTimeout(hideTimer);
       observer.disconnect();
@@ -178,7 +180,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       section.removeEventListener('focusin', onFocusIn);
       section.removeEventListener('focusout', onFocusOut);
       section.removeEventListener('keydown', onKeyDown);
-      section.removeEventListener('scroll', onScroll, true);
+      for (const root of scrollRoots) root.removeEventListener('scroll', onScroll, true);
     };
   }, [container]);
   return (
