@@ -75,7 +75,8 @@ const TaskMenuComponent = (
       // row's content edge (6px padding + 1px border in from the card). Measured against a design
       // mode task so the breakpoint menu opens exactly where the edit menu does.
       hiddenTriggerClassName="top-1/2 right-1.5 h-4 w-0 -translate-y-1/2"
-      contentClassName="w-[300px]"
+      // Portalled out of the node's `nokey` list, so its own keeps menu keys off the stage.
+      contentClassName="w-[300px] nokey"
       disabled={disabled}
     />
   );
