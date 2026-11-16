@@ -1,8 +1,14 @@
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DIFF_COLUMNS, DIFF_HEADER, DIFF_RULES } from './__fixtures__/diffSentences.fixtures';
 import { DecisionText } from './DecisionText';
-import { type DiffRemovedRule, type DiffRow, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
+import {
+  type DecisionTextDiff,
+  type DiffRemovedRule,
+  type DiffRow,
+  diffColumnsOf,
+  diffRowsOf,
+} from './decisionTextDiff';
 import type { SentenceNameToken, SentenceRule } from './sentenceTypes';
 
 const nameOf = (columnId: string): SentenceNameToken => ({
@@ -161,5 +167,132 @@ describe('values of a removed column', () => {
       'data-change',
       'delete'
     );
+  });
+});
+
+const renderDiff = (diff: DecisionTextDiff, rules: readonly SentenceRule[] = DIFF_RULES) =>
+  render(
+    <DecisionText
+      rules={rules}
+      {...DIFF_COLUMNS}
+      header={DIFF_HEADER}
+      numbered
+      ariaLabel="Rules"
+      dataTestId="nl"
+      diff={diff}
+    />
+  );
+
+const keyErrorsOf = (render: () => void) => {
+  const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  render();
+  return errors.mock.calls.filter((call) => String(call[0]).includes('same key'));
+};
+
+describe('a removed and an added value of one unworded column', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('shows both outcomes in the heading without duplicate keys', () => {
+    const keyErrors = keyErrorsOf(() =>
+      renderDiff({
+        mode: 'full',
+        removedColumns: [
+          { column: { id: 'fee', name: 'fee', type: 'number' }, kind: 'output', after: 'risk' },
+        ],
+        values: [
+          { rowId: 'r5', columnId: 'fee', index: 0, change: 'delete', previous: '10' },
+          { rowId: 'r5', columnId: 'fee', index: 1, change: 'add' },
+        ],
+      })
+    );
+    const card = screen.getByTestId('nl-row-r5');
+    expect(
+      [...card.querySelectorAll('[data-column-id="fee"][data-change]')].map((node) =>
+        node.getAttribute('data-change')
+      )
+    ).toEqual(['delete', 'add']);
+    expect(keyErrors).toEqual([]);
+  });
+
+  it('shows both conditions without duplicate keys', () => {
+    const keyErrors = keyErrorsOf(() =>
+      renderDiff({
+        mode: 'full',
+        values: [
+          { rowId: 'r5', columnId: 'segment', index: 0, change: 'delete', previous: 'is "retail"' },
+          { rowId: 'r5', columnId: 'segment', index: 1, change: 'add' },
+        ],
+      })
+    );
+    const card = screen.getByTestId('nl-row-r5');
+    expect(
+      [...card.querySelectorAll('li[data-column-id="segment"][data-change]')].map((node) =>
+        node.getAttribute('data-change')
+      )
+    ).toEqual(['delete', 'add']);
+    expect(keyErrors).toEqual([]);
+  });
+});
+
+describe('kept rules sharing a row id', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const kept = ['a', 'a', 'b', 'a', 'c', 'd'].map((rowId, index) => ({
+    ...base,
+    rowId,
+    heading: [`${rowId}${index}`],
+  }));
+
+  it('gives every shown rule its own id, keeping order and the first id', () => {
+    const { rules, rows } = diffRowsOf(
+      kept,
+      { mode: 'full', rules: [{ rowId: 'a', change: 'update' }] },
+      nameOf,
+      NO_FOLDS
+    );
+    const ids = rules.map(({ rowId }) => rowId);
+    expect(rules.map(({ heading }) => heading.join(''))).toEqual([
+      'a0',
+      'a1',
+      'b2',
+      'a3',
+      'c4',
+      'd5',
+    ]);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect([ids[0], ids[2], ids[4], ids[5]]).toEqual(['a', 'b', 'c', 'd']);
+    expect(ids.map((id) => ruleRow(rows.get(id))?.change)).toEqual([
+      'update',
+      'update',
+      undefined,
+      'update',
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it('keeps folds, removed rules and duplicates apart in compact mode', () => {
+    const many = [...kept, ...kept, ...kept];
+    const { rules, rows } = diffRowsOf(
+      many,
+      {
+        mode: 'compact',
+        rules: [{ rowId: 'd', change: 'update' }],
+        removedRules: [removedRule('a', 'a'), removedRule('a', 'a')],
+      },
+      nameOf,
+      NO_FOLDS
+    );
+    const ids = rules.map(({ rowId }) => rowId);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(rows.keys()).size).toBe(ids.length);
+  });
+
+  it('renders without duplicate keys', () => {
+    const keyErrors = keyErrorsOf(() =>
+      renderDiff({ mode: 'full', rules: [{ rowId: 'b', change: 'update' }] }, kept)
+    );
+    expect(screen.getAllByText(/^a\d$/)).toHaveLength(3);
+    expect(keyErrors).toEqual([]);
   });
 });
