@@ -220,6 +220,30 @@ Under the hood: `GET {baseUrl}/portal_/api/organization/UserOrganizationInfo` �
 
 These navigations always open the AI Trust Layer pages in a new browser tab - the picker is embedded in a product surface, and navigating it away would unload the user's in-progress work. `onUseCustomModel` overrides the footer's default navigation (e.g. an in-app wizard), and `slots.optionActions` overrides the row actions. Products with their own authorization model can pass `canManageByo` (`true`/`false`); when set, no admin check request is made.
 
+### 6a. Community: add a model inline
+
+Set `isCommunity` and the "Use custom model" footer opens the **"Use your own model" dialog** instead of the AI Trust Layer page. The user picks a provider, reuses a saved Integration Service connection or creates one there from the provider's credentials, picks one of the models the connection lists, names it, and clicks **Test and add**. Everything runs through `requestContext`:
+
+- **Connection.** The form is read from IS (`elements_/v3/element/elements/{connector}`, with the provisioning session's form as fallback), so the fields, auth types and defaults are the connector's own. **Connect** opens a provisioning session (`POST connections_/api/v1/Connections`), submits the credentials (`POST elements_/v1/elements/normalized-instances/authenticate`, which answers with the vendor's own error), waits for the session, and renames the connection.
+- **Model.** `POST {gateway}/api/byom/available-models`. Models that are not chat models (embeddings, audio, image) are listed as not supported. A provider that lists nothing (Azure OpenAI today) gets a free-text field.
+- **Test and add.** `POST {gateway}/api/byo/product/llm-configurations/validate`, retried for up to 90 s while a connection created in the dialog is not yet visible to the gateway, then `POST {gateway}/api/byo/product/llm-configurations` in the connection's folder, under the operation group `{requestingProduct}-{requestingFeature}`.
+
+Afterwards the picker refetches (self-fetch mode) or calls `onCustomModelAdded` so a host that owns `models` can refetch, and selects the new model as soon as it appears. The footer keeps the org-admin gate of §6, and an explicit `onUseCustomModel` still wins.
+
+The dialog itself is `ByoModelDialog` from `@uipath/apollo-wind`, which takes the calls as an `api` prop; `createCommunityByoApi(requestContext, options)` builds them. Hosts that render the picker in a shadow root pass `communityDialogHost`, a component that gives the dialog its styles and portal container there (it is mounted only while the dialog is open).
+
+```tsx
+<ModelPicker
+  models={models}
+  requestContext={requestContext}
+  isCommunity={isCommunityAccount && flags.EnableCommunityByoModelDialog}
+  onCustomModelAdded={() => refetch()}
+  communityDialogHost={ModalHost}
+  value={value}
+  onChange={setValue}
+/>
+```
+
 ### 7. Folder scoping
 
 Set `enableFolders` and the picker fetches the current user's Orchestrator folders (via the same `requestContext`), renders the toolbar switcher, owns the selection, and refetches Discovery scoped to the picked folder (`X-UiPath-FolderKey`). Your product only decides whether folder scoping applies to its surface:
@@ -315,6 +339,9 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `requestContext`      | `PlatformRequestContext`                              | Auth/routing for the picker's built-in platform calls (org-admin check + folder fetch) and the default add/edit navigation. Pass a memoized object. |
 | `canManageByo`        | `boolean`                                             | Explicit override for BYO management. When unset and `requestContext` is provided, the picker checks whether the user is an organization admin. |
 | `onUseCustomModel`    | `() => void`                                          | Overrides the footer CTA's default navigation to the LLM-configurations add page. Picker closes itself first.        |
+| `isCommunity`         | `boolean`                                             | The footer opens the inline "Use your own model" dialog (§6a) instead of the AI Trust Layer page. Default `false`.   |
+| `onCustomModelAdded`  | `(model: ByoAddedModel) => void \| Promise<void>`    | Called after the dialog saved a model; refetch a host-owned `models` list here. The picker then selects the model.   |
+| `communityDialogHost` | `ComponentType<{ children: ReactNode }>`             | Wraps the dialog while it is open, e.g. a shadow-root modal host that supplies its styles and portal container.      |
 | `enableFolders`       | `boolean`                                             | Turn on folder scoping — the picker fetches the user's Orchestrator folders via `requestContext`. Default `false`.   |
 | `folders`             | `readonly { id; label }[]`                            | Test/storybook override for the folder list (skips the internal fetch).                                              |
 | `folder`              | `string \| null`                                      | Selected folder id (Orchestrator folder Key), or `null` for "All folders".                                           |
@@ -417,6 +444,8 @@ ap-model-picker/
 ├── useModelPickerState.ts       — state controller hook
 ├── useDiscoveryModels.ts        — optional Discovery API hook
 ├── usePlatformAccess.ts         — folder list + BYO entitlement hooks
+├── communityByoApi.ts          — the Community dialog's IS and gateway calls
+├── communityByoLabels.ts       — the Community dialog's message descriptors
 ├── ModelPicker.tsx              — the picker
 ├── ModelPicker.test.tsx         — unit tests
 ├── ModelPicker.stories.tsx      — Storybook stories

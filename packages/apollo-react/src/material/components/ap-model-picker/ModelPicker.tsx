@@ -10,9 +10,12 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
 import { Colors, FontFamily } from '@uipath/apollo-core';
+import { type ByoAddedModel, ByoModelDialog } from '@uipath/apollo-wind';
 import React from 'react';
 import { useSafeLingui } from '../../../i18n';
 import type { ModelBadgeKind } from './badges';
+import { createCommunityByoApi } from './communityByoApi';
+import { communityDialogLabels } from './communityByoLabels';
 import { DELETE_CONFIRM } from './i18n';
 import { FolderSwitcher, type FolderSwitcherFolder } from './primitives/FolderSwitcher';
 import { defaultRowActions } from './primitives/ModelOptionRow';
@@ -262,6 +265,29 @@ export interface ModelPickerProps {
    */
   onUseCustomModel?: () => void;
   /**
+   * Community experience: the "Use custom model" footer opens the
+   * "Use your own model" dialog in place of the AI Trust Layer page. The
+   * dialog creates the provider's Integration Service connection inline,
+   * lists its models, tests the chosen one and saves it as a BYO
+   * configuration, all through `requestContext`; the picker then
+   * refetches (or calls `onCustomModelAdded`) and selects the new model.
+   * An explicit `onUseCustomModel` still wins. Default: `false`.
+   */
+  isCommunity?: boolean;
+  /**
+   * Fired once the Community dialog saved a model. With a host-owned
+   * `models` list, refetch it here: the picker selects the new model as
+   * soon as it appears in `models`. In self-fetch mode the picker has
+   * already refetched.
+   */
+  onCustomModelAdded?: (model: ByoAddedModel) => void | Promise<void>;
+  /**
+   * Wraps the Community dialog, mounted only while it is open. Hosts that
+   * render the picker in a shadow root pass the component that gives a
+   * modal its styles and portal container there.
+   */
+  communityDialogHost?: React.ComponentType<{ children: React.ReactNode }>;
+  /**
    * Auth + routing context for the picker's built-in platform calls —
    * the folder list (`enableFolders`) and the org-admin check
    * (`canManageByo` unset) — and for the default add/edit navigation
@@ -396,6 +422,9 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       customTagVariants,
       canManageByo,
       onUseCustomModel,
+      isCommunity = false,
+      onCustomModelAdded,
+      communityDialogHost: CommunityDialogHost,
       requestContext,
       enableFolders = false,
       folders,
@@ -610,6 +639,44 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     );
     const effectiveCanManageByo = canManageByo ?? isOrgAdmin ?? false;
 
+    // Community: the footer opens the inline "Use your own model" dialog.
+    const catalogRef = React.useRef(catalog);
+    catalogRef.current = catalog;
+    const communityApi = React.useMemo(
+      () =>
+        isCommunity && requestContext
+          ? createCommunityByoApi(requestContext, {
+              takenModelNames: () =>
+                catalogRef.current
+                  .filter((m) => m.modelSubscriptionType?.startsWith('BYOM'))
+                  .map((m) => m.modelName),
+            })
+          : null,
+      [isCommunity, requestContext]
+    );
+    const communityLabels = React.useMemo(() => communityDialogLabels(i18n), [i18n]);
+    const [communityOpen, setCommunityOpen] = React.useState(false);
+    const [pendingSelection, setPendingSelection] = React.useState<ByoAddedModel | null>(null);
+    const handleCommunityAdded = React.useCallback(
+      async (model: ByoAddedModel) => {
+        if (selfFetchCtx) await refetchDiscovery();
+        await onCustomModelAdded?.(model);
+        setPendingSelection(model);
+      },
+      [selfFetchCtx, refetchDiscovery, onCustomModelAdded]
+    );
+    React.useEffect(() => {
+      if (!pendingSelection) return;
+      const added = catalog.find(
+        (m) =>
+          m.modelName === pendingSelection.name &&
+          m.byomDetails?.integrationServiceConnectionId === pendingSelection.connectionId
+      );
+      if (!added) return;
+      setPendingSelection(null);
+      onChange?.(added);
+    }, [pendingSelection, catalog, onChange]);
+
     // Folder list: fetched internally when the product opts in via
     // `enableFolders`, unless a test/storybook override supplies the
     // list directly through `folders`.
@@ -749,6 +816,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       if (!effectiveCanManageByo) return null;
       const activate =
         onUseCustomModel ??
+        (communityApi ? () => setCommunityOpen(true) : undefined) ??
         (navigateToLlmConfigurations
           ? () => navigateToLlmConfigurations({ intent: 'add' })
           : undefined);
@@ -768,6 +836,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       slots,
       effectiveCanManageByo,
       onUseCustomModel,
+      communityApi,
       navigateToLlmConfigurations,
       slotCtx,
       closePopup,
@@ -1054,10 +1123,26 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             </Button>
           </DialogActions>
         </Dialog>
+        {communityApi && communityOpen && (
+          <CommunityDialogFrame host={CommunityDialogHost}>
+            <ByoModelDialog
+              open
+              onOpenChange={setCommunityOpen}
+              api={communityApi}
+              onAdded={handleCommunityAdded}
+              labels={communityLabels}
+            />
+          </CommunityDialogFrame>
+        )}
       </Box>
     );
   }
 );
+
+const CommunityDialogFrame: React.FC<{
+  host?: React.ComponentType<{ children: React.ReactNode }>;
+  children: React.ReactNode;
+}> = ({ host: Host, children }) => (Host ? <Host>{children}</Host> : <>{children}</>);
 
 ModelPicker.displayName = 'ModelPicker';
 

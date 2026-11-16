@@ -19,7 +19,7 @@ import { normalizeDiscoveryModels } from './useDiscoveryModels';
  */
 export type PlatformToken = string | (() => string | Promise<string>);
 
-const resolveToken = async (token: PlatformToken): Promise<string> =>
+export const resolveToken = async (token: PlatformToken): Promise<string> =>
   typeof token === 'function' ? token() : token;
 
 /**
@@ -32,7 +32,7 @@ const resolveToken = async (token: PlatformToken): Promise<string> =>
  * Shared by every gateway call the picker makes so they cannot drift on
  * this (non-obvious) route resolution.
  */
-const buildGatewayUrl = (ctx: PlatformRequestContext, path: string): string => {
+export const buildGatewayUrl = (ctx: PlatformRequestContext, path: string): string => {
   const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
   if (ctx.organizationId && ctx.tenantId) {
     let origin = '';
