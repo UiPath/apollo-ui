@@ -3104,7 +3104,7 @@ describe('DecisionText', () => {
         inPopover()
           .getAllByRole('button')
           .map((button) => button.textContent)
-      ).toEqual(['Cancel', 'Apply']);
+      ).toEqual(['Edit expression', 'Cancel', 'Apply']);
     });
 
     it('opens the operator list from the value input on Alt+ArrowDown or Alt+ArrowUp, and returns focus to it on a pick', () => {
