@@ -111,6 +111,14 @@ describe('StageNode task activation in a real canvas', () => {
     expect(dragAnnouncement()).toBe('');
   });
 
+  it('tells screen reader users that Enter opens a task and Space reorders it', () => {
+    renderStage(stageWithTasks({ onTaskClick: vi.fn(), onTaskReorder: vi.fn() }));
+
+    expect(taskRow('task-1')).toHaveAccessibleDescription(
+      /^Press Enter to open the task\. To reorder it, press Space to pick it up/
+    );
+  });
+
   it('picks a task up with Space to reorder it, without opening it or selecting the stage', async () => {
     const user = userEvent.setup();
     const onTaskClick = vi.fn();
