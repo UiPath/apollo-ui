@@ -7,7 +7,10 @@
 export interface ByoModelDialogLabels {
   title: string;
   description: string;
+  editTitle: string;
+  editDescription: string;
   loadingContext: string;
+  loadingModel: string;
 
   providerStep: string;
   providerPlaceholder: string;
@@ -31,6 +34,13 @@ export interface ByoModelDialogLabels {
   connectionNameTaken: string;
   connect: string;
   connecting: string;
+  editConnection: string;
+  secretKeepHint: string;
+  loadingConnection: string;
+  saveConnection: string;
+  savingConnection: string;
+  cancelConnectionEdit: string;
+  connectionUpdated: string;
 
   modelStep: string;
   modelNeedsConnection: (provider: string) => string;
@@ -55,14 +65,19 @@ export interface ByoModelDialogLabels {
   close: string;
   cancel: string;
   testAndAdd: string;
+  testAndSave: string;
   testing: string;
   testAndAddHint: (provider: string) => string;
+  testAndSaveHint: (provider: string) => string;
 }
 
 export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   title: 'Use your own model',
   description: 'UiPath calls your provider with your own credentials.',
+  editTitle: 'Edit your model',
+  editDescription: 'Change the model, its name or the connection it uses.',
   loadingContext: 'Loading your connections',
+  loadingModel: 'Loading your model',
 
   providerStep: 'Provider',
   providerPlaceholder: 'Select a provider',
@@ -86,6 +101,13 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   connectionNameTaken: 'You already have a connection with this name.',
   connect: 'Connect',
   connecting: 'Connecting…',
+  editConnection: 'Edit connection',
+  secretKeepHint: 'Leave blank to keep the current value.',
+  loadingConnection: 'Loading the connection settings…',
+  saveConnection: 'Save connection',
+  savingConnection: 'Saving…',
+  cancelConnectionEdit: 'Cancel',
+  connectionUpdated: 'Connection updated.',
 
   modelStep: 'Model',
   modelNeedsConnection: (provider) => `Connect to list your ${provider} models`,
@@ -110,9 +132,12 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   close: 'Close',
   cancel: 'Cancel',
   testAndAdd: 'Test and add',
+  testAndSave: 'Test and save',
   testing: 'Testing…',
   testAndAddHint: (provider) =>
     `Sends one short test message to ${provider}, then adds the model to your model list.`,
+  testAndSaveHint: (provider) =>
+    `Sends one short test message to ${provider}, then saves your changes.`,
 };
 
 /** Fill the gaps in a host's partial override. */

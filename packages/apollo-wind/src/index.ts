@@ -207,23 +207,26 @@ export {
   ButtonGroupText,
 } from './components/ui/button-group';
 export type {
-  ByoAddedModel,
-  ByoAddRequest,
   ByoAuthType,
   ByoConnection,
   ByoConnectionForm,
+  ByoConnectionValues,
   ByoConnectRequest,
   ByoDialogContext,
+  ByoEditTarget,
   ByoFailure,
   ByoFolder,
   ByoFormField,
   ByoModelDialogApi,
   ByoModelDialogLabels,
   ByoModelDialogProps,
+  ByoModelToEdit,
   ByoProvider,
   ByoProviderModel,
   ByoProviderModels,
   ByoResult,
+  ByoSavedModel,
+  ByoSaveRequest,
 } from './components/ui/byo-model-dialog';
 export {
   ByoModelDialog,

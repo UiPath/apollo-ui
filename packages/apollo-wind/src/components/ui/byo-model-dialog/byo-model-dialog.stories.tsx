@@ -2,7 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { ByoModelDialog } from './byo-model-dialog';
-import type { ByoConnection, ByoModelDialogApi } from './types';
+import type {
+  ByoConnection,
+  ByoConnectionValues,
+  ByoEditTarget,
+  ByoModelDialogApi,
+  ByoResult,
+} from './types';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -34,6 +40,32 @@ function storyApi(): ByoModelDialogApi {
           takenModelNames: ['gpt-4.1'],
         },
       };
+    },
+    loadModel: async ({ configurationId, name }) => {
+      await wait(300);
+      return {
+        ok: true,
+        value: {
+          configurationId,
+          providerId: 'openai',
+          connectionId: 'conn-openai',
+          modelId: 'gpt-4.1',
+          name,
+        },
+      };
+    },
+    loadConnectionValues: async (providerId): Promise<ByoResult<ByoConnectionValues>> => {
+      await wait(300);
+      if (providerId === 'azure-openai') {
+        return {
+          ok: true,
+          value: {
+            authType: 'customApiKey',
+            values: { url: 'https://my-resource.openai.azure.com' },
+          },
+        };
+      }
+      return { ok: true, value: { authType: null, values: {} } };
     },
     loadForm: async (providerId) => {
       await wait(300);
@@ -146,7 +178,7 @@ function storyApi(): ByoModelDialogApi {
               },
       };
     },
-    connect: async ({ providerId, values, name, folderId }) => {
+    connect: async ({ providerId, values, name, folderId, existing }) => {
       await wait(900);
       if (Object.values(values).some((v) => v.includes('wrong'))) {
         return {
@@ -164,6 +196,11 @@ function storyApi(): ByoModelDialogApi {
             ),
           },
         };
+      }
+      if (existing) {
+        const updated = { ...existing, name };
+        connections.splice(connections.indexOf(existing), 1, updated);
+        return { ok: true, value: updated };
       }
       const connection = { id: `conn-${Date.now()}`, providerId, name, folderId };
       connections.push(connection);
@@ -198,7 +235,7 @@ function storyApi(): ByoModelDialogApi {
               },
       };
     },
-    testAndAdd: async ({ connection, modelId, name }) => {
+    testAndSave: async ({ connection, modelId, name }) => {
       await wait(1200);
       if (modelId === 'bad-model') {
         return {
@@ -232,32 +269,41 @@ const meta = {
     docs: {
       description: {
         component:
-          'The "Use your own model" dialog. The user picks a provider, reuses a saved connection or creates one from the provider\'s credentials, picks a model, names it, then tests and adds it. The dialog makes no platform calls of its own: every step goes through the `api` prop.',
+          'The "Use your own model" dialog. The user picks a provider, reuses a saved connection (editing it in place if needed) or creates one from the provider\'s credentials, picks a model, names it, then tests and adds it. With `editing`, the same steps start from a saved model and save the changes to it. The dialog makes no platform calls of its own: every step goes through the `api` prop.',
       },
     },
   },
-  args: { open: false, onOpenChange: () => {}, api: storyApi(), onAdded: () => {} },
+  args: { open: false, onOpenChange: () => {}, api: storyApi(), onSaved: () => {} },
 } satisfies Meta<typeof ByoModelDialog>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function StoryHost({ buttonLabel, editing }: { buttonLabel: string; editing?: ByoEditTarget }) {
+  const [open, setOpen] = React.useState(false);
+  const [saved, setSaved] = React.useState<string | null>(null);
+  const api = React.useMemo(storyApi, []);
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <Button onClick={() => setOpen(true)}>{buttonLabel}</Button>
+      {saved && <p className="text-sm text-foreground-muted">Saved {saved}</p>}
+      <ByoModelDialog
+        open={open}
+        onOpenChange={setOpen}
+        api={api}
+        editing={editing}
+        onSaved={(m) => setSaved(m.name)}
+      />
+    </div>
+  );
+}
+
 export const Default: Story = {
-  render: () => {
-    const [open, setOpen] = React.useState(false);
-    const [added, setAdded] = React.useState<string | null>(null);
-    const api = React.useMemo(storyApi, []);
-    return (
-      <div className="flex flex-col items-center gap-3">
-        <Button onClick={() => setOpen(true)}>Use custom model</Button>
-        {added && <p className="text-sm text-foreground-muted">Added {added}</p>}
-        <ByoModelDialog
-          open={open}
-          onOpenChange={setOpen}
-          api={api}
-          onAdded={(m) => setAdded(m.name)}
-        />
-      </div>
-    );
-  },
+  render: () => <StoryHost buttonLabel="Use custom model" />,
+};
+
+export const EditModel: Story = {
+  render: () => (
+    <StoryHost buttonLabel="Edit gpt-4.1" editing={{ configurationId: 'cfg-1', name: 'gpt-4.1' }} />
+  ),
 };

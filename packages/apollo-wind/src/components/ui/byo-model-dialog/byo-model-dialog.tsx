@@ -42,23 +42,27 @@ import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib';
 import { type ByoModelDialogLabels, resolveByoModelDialogLabels } from './labels';
 import type {
-  ByoAddedModel,
   ByoConnection,
   ByoConnectionForm,
   ByoDialogContext,
+  ByoEditTarget,
   ByoFailure,
   ByoFormField,
   ByoModelDialogApi,
+  ByoModelToEdit,
   ByoProviderModel,
   ByoProviderModels,
+  ByoSavedModel,
 } from './types';
 
 export interface ByoModelDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   api: ByoModelDialogApi;
-  /** Called once the model passed its test and was added. The dialog closes itself afterwards. */
-  onAdded: (model: ByoAddedModel) => Promise<void> | void;
+  /** Called once the model passed its test and was saved. The dialog closes itself afterwards. */
+  onSaved: (model: ByoSavedModel) => Promise<void> | void;
+  /** A saved model to edit. Without it the dialog adds a new model. */
+  editing?: ByoEditTarget;
   labels?: Partial<ByoModelDialogLabels>;
   /** Where the dialog portals to; defaults to the nearest `PortalContainerProvider`. */
   container?: PortalContainerOverride;
@@ -67,7 +71,9 @@ export interface ByoModelDialogProps {
 /**
  * "Use your own model": pick a provider, reuse a saved connection or create
  * one inline from the provider's credentials, pick a model, name it, then test
- * and add it. Every call goes through `api`.
+ * and add it. A saved connection can be edited in place. With `editing`, the
+ * same steps start from a saved model and save the changes to it.
+ * Every call goes through `api`.
  */
 export function ByoModelDialog({ open, onOpenChange, ...rest }: ByoModelDialogProps) {
   return (
@@ -93,6 +99,11 @@ type Attempt<T> =
   | { status: 'idle' | 'running' }
   | { status: 'ok'; value: T }
   | { status: 'error'; failure: ByoFailure };
+/** What Connect did: created a connection, or updated the saved one being edited. */
+interface ConnectOutcome {
+  connection: ByoConnection;
+  updated: boolean;
+}
 
 /** "OpenAI – personal", or "OpenAI – personal 2" if that one is taken. */
 function defaultConnectionName(providerName: string, connections: ByoConnection[]) {
@@ -114,8 +125,17 @@ interface DialogBodyProps extends Omit<ByoModelDialogProps, 'open' | 'onOpenChan
   onClose: () => void;
 }
 
-function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }: DialogBodyProps) {
+function DialogBody({
+  api,
+  onSaved,
+  editing,
+  labels: labelOverrides,
+  container,
+  onClose,
+}: DialogBodyProps) {
   const labels = resolveByoModelDialogLabels(labelOverrides);
+  // The body mounts once per opening, so the model being edited is fixed for its lifetime.
+  const [editTarget] = React.useState(editing);
 
   // A provider or connection switch, or the dialog closing, bumps this; each
   // call drops its result when it changed while the call was in flight.
@@ -129,34 +149,9 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
 
   const [context, setContext] = React.useState<Attempt<ByoDialogContext>>({ status: 'running' });
   const [connections, setConnections] = React.useState<ByoConnection[]>([]);
-  React.useEffect(() => {
-    const gen = generation.current;
-    api.loadContext().then(
-      (result) => {
-        if (gen !== generation.current) return;
-        if (!result.ok) {
-          setContext({ status: 'error', failure: result.failure });
-          return;
-        }
-        setContext({ status: 'ok', value: result.value });
-        setConnections(result.value.connections);
-        setFolderId(result.value.defaultFolderId ?? result.value.folders[0]?.id ?? '');
-      },
-      (err: unknown) => {
-        if (gen === generation.current) setContext({ status: 'error', failure: unexpected(err) });
-      }
-    );
-  }, [api]);
-  const ctx = context.status === 'ok' ? context.value : null;
-  const providers = ctx?.providers ?? [];
-  const folders = ctx?.folders ?? [];
-  const folderLabel = (id: string) => folders.find((f) => f.id === id)?.label ?? id;
+  const [modelToEdit, setModelToEdit] = React.useState<ByoModelToEdit | null>(null);
 
   const [providerId, setProviderId] = React.useState('');
-  const provider = providers.find((p) => p.id === providerId);
-  const providerName = provider?.name ?? '';
-  const providerConnections = connections.filter((c) => c.providerId === providerId);
-
   const [connectionChoice, setConnectionChoice] = React.useState(NEW);
   const [connName, setConnName] = React.useState('');
   const [folderId, setFolderId] = React.useState('');
@@ -164,7 +159,9 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
   const [authType, setAuthType] = React.useState<string | null>(null);
   const [values, setValues] = React.useState<Record<string, string>>({});
   const [moreOpen, setMoreOpen] = React.useState(false);
-  const [connect, setConnect] = React.useState<Attempt<ByoConnection>>({ status: 'idle' });
+  const [editingConnection, setEditingConnection] = React.useState(false);
+  const [loadingConnectionValues, setLoadingConnectionValues] = React.useState(false);
+  const [connect, setConnect] = React.useState<Attempt<ConnectOutcome>>({ status: 'idle' });
 
   const [modelsState, setModelsState] = React.useState<ModelsState>(NO_MODELS);
   const [modelId, setModelId] = React.useState('');
@@ -172,12 +169,23 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
   const [modelListOpen, setModelListOpen] = React.useState(false);
   const [name, setName] = React.useState('');
   const [nameTouched, setNameTouched] = React.useState(false);
-  const [test, setTest] = React.useState<Attempt<ByoAddedModel>>({ status: 'idle' });
+  const [test, setTest] = React.useState<Attempt<ByoSavedModel>>({ status: 'idle' });
 
+  const ctx = context.status === 'ok' ? context.value : null;
+  const providers = ctx?.providers ?? [];
+  const folders = ctx?.folders ?? [];
+  const folderLabel = (id: string) => folders.find((f) => f.id === id)?.label ?? id;
+
+  const provider = providers.find((p) => p.id === providerId);
+  const providerName = provider?.name ?? '';
+  const providerConnections = connections.filter((c) => c.providerId === providerId);
+
+  const form = formState.form;
   const isNew = connectionChoice === NEW;
   const connection = connections.find((c) => c.id === connectionChoice) ?? null;
-  const createdConnection = connect.status === 'ok' ? connect.value : null;
-  const connected = Boolean(connection);
+  const connectOutcome = connect.status === 'ok' ? connect.value : null;
+  // While its form is open, the connection is not usable yet.
+  const connected = Boolean(connection) && !editingConnection;
 
   const loadModels = async (pid: string, conn: ByoConnection | null, gen: number) => {
     if (!conn) {
@@ -188,19 +196,21 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
     try {
       const result = await api.listModels(pid, conn);
       if (gen !== generation.current) return;
-      setModelsState(
-        result.ok ? { status: 'ok', models: result.value } : { ...NO_MODELS, status: 'error' }
-      );
+      if (result.ok) {
+        setModelsState({ status: 'ok', models: result.value });
+      } else {
+        setModelsState({ ...NO_MODELS, status: 'error' });
+      }
     } catch {
       if (gen === generation.current) setModelsState({ ...NO_MODELS, status: 'error' });
     }
   };
 
-  const loadForm = async (pid: string, gen: number) => {
+  const loadForm = async (pid: string, folder: string, gen: number) => {
     setFormState({ ...NO_FORM, status: 'loading' });
     setValues({});
     try {
-      const result = await api.loadForm(pid, folderId || null);
+      const result = await api.loadForm(pid, folder || null);
       if (gen !== generation.current) return;
       if (!result.ok) {
         setFormState({ ...NO_FORM, status: 'error', failure: result.failure });
@@ -214,6 +224,61 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
         setFormState({ ...NO_FORM, status: 'error', failure: unexpected(err) });
     }
   };
+
+  /** Fills every step from the saved model being edited. */
+  const startFromSavedModel = (
+    model: ByoModelToEdit,
+    loaded: ByoDialogContext,
+    defaultFolder: string
+  ) => {
+    const gen = generation.current;
+    const savedConnection = loaded.connections.find((c) => c.id === model.connectionId) ?? null;
+    const savedProvider = loaded.providers.find((p) => p.id === model.providerId);
+    setModelToEdit(model);
+    setProviderId(model.providerId);
+    setConnectionChoice(savedConnection ? savedConnection.id : NEW);
+    setConnName(defaultConnectionName(savedProvider?.name ?? model.providerId, loaded.connections));
+    setModelId(model.modelId);
+    setName(model.name);
+    setNameTouched(true);
+    loadModels(model.providerId, savedConnection, gen);
+    loadForm(model.providerId, savedConnection?.folderId ?? defaultFolder, gen);
+  };
+
+  // Runs once per opening: `api` and `editTarget` are fixed while the dialog is open.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the helpers it calls are recreated on every render
+  React.useEffect(() => {
+    const gen = generation.current;
+    const load = async () => {
+      const contextResult = await api.loadContext();
+      if (gen !== generation.current) return;
+      if (!contextResult.ok) {
+        setContext({ status: 'error', failure: contextResult.failure });
+        return;
+      }
+      const loaded = contextResult.value;
+
+      let savedModel: ByoModelToEdit | null = null;
+      if (editTarget) {
+        const modelResult = await api.loadModel(editTarget);
+        if (gen !== generation.current) return;
+        if (!modelResult.ok) {
+          setContext({ status: 'error', failure: modelResult.failure });
+          return;
+        }
+        savedModel = modelResult.value;
+      }
+
+      const defaultFolder = loaded.defaultFolderId ?? loaded.folders[0]?.id ?? '';
+      setContext({ status: 'ok', value: loaded });
+      setConnections(loaded.connections);
+      setFolderId(defaultFolder);
+      if (savedModel) startFromSavedModel(savedModel, loaded, defaultFolder);
+    };
+    load().catch((err: unknown) => {
+      if (gen === generation.current) setContext({ status: 'error', failure: unexpected(err) });
+    });
+  }, [api, editTarget]);
 
   const resetDownstream = () => {
     setModelQuery('');
@@ -234,19 +299,58 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
     setConnectionChoice(existing[0]?.id ?? NEW);
     setConnName(defaultConnectionName(p?.name ?? id, connections));
     setMoreOpen(false);
+    setEditingConnection(false);
     setConnect({ status: 'idle' });
     resetDownstream();
     loadModels(id, existing[0] ?? null, gen);
-    loadForm(id, gen);
+    loadForm(id, folderId, gen);
   };
 
   const chooseConnection = (id: string) => {
     generation.current += 1;
     setConnectionChoice(id);
     if (id === NEW) setConnName(defaultConnectionName(providerName, connections));
+    setEditingConnection(false);
     setConnect({ status: 'idle' });
     resetDownstream();
     loadModels(providerId, connections.find((c) => c.id === id) ?? null, generation.current);
+  };
+
+  /** Opens the credentials form for the selected saved connection, filled with its current settings. */
+  const startConnectionEdit = async () => {
+    if (!connection) return;
+    generation.current += 1;
+    const gen = generation.current;
+    setEditingConnection(true);
+    setConnName(connection.name);
+    setMoreOpen(false);
+    setConnect({ status: 'idle' });
+    setTest({ status: 'idle' });
+    setLoadingConnectionValues(true);
+    try {
+      const result = await api.loadConnectionValues(providerId, connection);
+      if (gen !== generation.current) return;
+      if (!result.ok) {
+        setConnect({ status: 'error', failure: result.failure });
+        return;
+      }
+      setAuthType(result.value.authType ?? form.defaultAuthType);
+      setValues({ ...defaultsOf(form), ...result.value.values });
+    } catch (err) {
+      if (gen === generation.current) setConnect({ status: 'error', failure: unexpected(err) });
+    } finally {
+      if (gen === generation.current) setLoadingConnectionValues(false);
+    }
+  };
+
+  const cancelConnectionEdit = () => {
+    generation.current += 1;
+    setEditingConnection(false);
+    setLoadingConnectionValues(false);
+    setConnect({ status: 'idle' });
+    setAuthType(form.defaultAuthType);
+    setValues(defaultsOf(form));
+    loadModels(providerId, connection, generation.current);
   };
 
   const setValue = (key: string, v: string) => {
@@ -254,27 +358,37 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
     if (connect.status === 'error') setConnect({ status: 'idle' });
   };
 
-  const form = formState.form;
+  const showConnectionForm = Boolean(provider) && (isNew || editingConnection);
+  // An edited connection lives in its own folder; only a new one picks a folder.
+  const formFolderId = editingConnection && connection ? connection.folderId : folderId;
+  // A secret left blank keeps the connection's current value.
+  const isRequired = (f: ByoFormField) => f.required && !(editingConnection && f.secret);
   const fields = shownFields(form, authType);
   const mainFields = fields.filter((f) => !f.advanced);
   const advancedFields = fields.filter((f) => f.advanced);
   const requiredFilled =
     formState.status === 'ok' &&
-    fields.filter((f) => f.required).every((f) => (values[f.key] ?? '').trim());
+    fields.filter(isRequired).every((f) => (values[f.key] ?? '').trim());
+  const otherConnections = editingConnection
+    ? connections.filter((c) => c.id !== connection?.id)
+    : connections;
   const connNameClash =
-    isNew && connections.some((c) => c.name.toLowerCase() === connName.trim().toLowerCase());
-  const keyLocked = connect.status === 'running';
+    showConnectionForm &&
+    otherConnections.some((c) => c.name.toLowerCase() === connName.trim().toLowerCase());
+  const keyLocked = connect.status === 'running' || loadingConnectionValues;
   const canConnect =
-    isNew &&
+    showConnectionForm &&
     requiredFilled &&
     Boolean(connName.trim()) &&
-    Boolean(folderId) &&
+    Boolean(formFolderId) &&
     !connNameClash &&
     !keyLocked;
 
+  /** Creates the connection, or saves the changes to the one being edited. */
   const runConnect = async () => {
     if (!canConnect) return;
     const gen = generation.current;
+    const existing = editingConnection && connection ? connection : undefined;
     setConnect({ status: 'running' });
     let result: Awaited<ReturnType<ByoModelDialogApi['connect']>>;
     try {
@@ -284,7 +398,8 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
         authType,
         values,
         name: connName.trim(),
-        folderId,
+        folderId: formFolderId,
+        existing,
       });
     } catch (err) {
       result = { ok: false, failure: unexpected(err) };
@@ -294,12 +409,18 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
       setConnect({ status: 'error', failure: result.failure });
       return;
     }
-    // The new connection joins the saved ones, so the form collapses into the dropdown.
-    const created = result.value;
-    setConnections((prev) => [...prev, created]);
-    setConnectionChoice(created.id);
-    setConnect({ status: 'ok', value: created });
-    loadModels(providerId, created, gen);
+
+    // The connection joins (or replaces its entry in) the saved ones, so the form collapses into the dropdown.
+    const saved = result.value;
+    if (existing) {
+      setConnections((prev) => prev.map((c) => (c.id === saved.id ? saved : c)));
+    } else {
+      setConnections((prev) => [...prev, saved]);
+    }
+    setConnectionChoice(saved.id);
+    setEditingConnection(false);
+    setConnect({ status: 'ok', value: { connection: saved, updated: Boolean(existing) } });
+    loadModels(providerId, saved, gen);
   };
 
   const pickModel = (id: string) => {
@@ -309,22 +430,26 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
   };
 
   const takenNames = new Set((ctx?.takenModelNames ?? []).map((n) => n.toLowerCase()));
+  // The edited model's own name is not a clash.
+  if (editTarget) takenNames.delete(editTarget.name.toLowerCase());
   const nameClash = Boolean(name.trim()) && takenNames.has(name.trim().toLowerCase());
   const busy = keyLocked || test.status === 'running' || test.status === 'ok';
   const hasModel = Boolean(modelId.trim());
   const readyToSave = connected && hasModel && Boolean(name.trim()) && !nameClash;
 
+  /** Tests the model, then adds it or saves the changes to the one being edited. */
   const runTest = async () => {
     if (!connection || !readyToSave || busy) return;
     const gen = generation.current;
     setTest({ status: 'running' });
-    let result: Awaited<ReturnType<ByoModelDialogApi['testAndAdd']>>;
+    let result: Awaited<ReturnType<ByoModelDialogApi['testAndSave']>>;
     try {
-      result = await api.testAndAdd({
+      result = await api.testAndSave({
         providerId,
         connection,
         modelId: modelId.trim(),
         name: name.trim(),
+        editing: modelToEdit ?? undefined,
       });
     } catch (err) {
       result = { ok: false, failure: unexpected(err) };
@@ -336,7 +461,7 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
     }
     setTest({ status: 'ok', value: result.value });
     try {
-      await onAdded(result.value);
+      await onSaved(result.value);
     } finally {
       if (gen === generation.current) onClose();
     }
@@ -346,7 +471,7 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
   const q = modelQuery.trim().toLowerCase();
   const shownCompatible = models.compatible.filter((m) => m.id.toLowerCase().includes(q));
   const shownIncompatible = models.incompatible.filter((m) => m.id.toLowerCase().includes(q));
-  // A provider that lists no models (Azure OpenAI lists none) gets a plain field.
+  // A provider that lists no models gets a plain field.
   const freeTextModel =
     modelsState.status === 'ok' && models.compatible.length + models.incompatible.length === 0;
 
@@ -355,28 +480,37 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
     if (connect.status === 'ok') modelTriggerRef.current?.focus();
   }, [connect.status]);
 
-  const fieldInput = (f: ByoFormField, main: boolean) => (
-    <Field key={f.key} id={`byo-${f.key}`} label={f.label} hint={f.hint} required={f.required}>
-      <Input
+  const fieldInput = (f: ByoFormField, main: boolean) => {
+    const keepsCurrentValue = editingConnection && f.secret;
+    return (
+      <Field
+        key={f.key}
         id={`byo-${f.key}`}
-        type={f.secret ? 'password' : 'text'}
-        autoComplete="off"
-        spellCheck={false}
-        placeholder={f.placeholder}
-        value={values[f.key] ?? ''}
-        disabled={keyLocked}
-        onChange={(e) => setValue(f.key, e.target.value)}
-        onKeyDown={
-          main
-            ? (e) => {
-                if (e.key === 'Enter') runConnect();
-              }
-            : undefined
-        }
-        className={f.secret ? 'font-mono' : undefined}
-      />
-    </Field>
-  );
+        label={f.label}
+        hint={keepsCurrentValue ? labels.secretKeepHint : f.hint}
+        required={isRequired(f)}
+      >
+        <Input
+          id={`byo-${f.key}`}
+          type={f.secret ? 'password' : 'text'}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={f.placeholder}
+          value={values[f.key] ?? ''}
+          disabled={keyLocked}
+          onChange={(e) => setValue(f.key, e.target.value)}
+          onKeyDown={
+            main
+              ? (e) => {
+                  if (e.key === 'Enter') runConnect();
+                }
+              : undefined
+          }
+          className={f.secret ? 'font-mono' : undefined}
+        />
+      </Field>
+    );
+  };
 
   const modelTriggerText = (() => {
     if (!connected) return labels.modelNeedsConnection(providerName);
@@ -385,8 +519,21 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
     return labels.modelSelect(models.compatible.length);
   })();
 
-  const failure =
-    connect.status === 'error' ? connect.failure : test.status === 'error' ? test.failure : null;
+  const connectMessage = (() => {
+    if (!connectOutcome || editingConnection) return null;
+    if (connectionChoice !== connectOutcome.connection.id) return null;
+    if (connectOutcome.updated) return labels.connectionUpdated;
+    return labels.connectedIn(folderLabel(connectOutcome.connection.folderId));
+  })();
+
+  let failure: ByoFailure | null = null;
+  if (connect.status === 'error') failure = connect.failure;
+  else if (test.status === 'error') failure = test.failure;
+
+  const title = editTarget ? labels.editTitle : labels.title;
+  const description = editTarget ? labels.editDescription : labels.description;
+  const saveLabel = editTarget ? labels.testAndSave : labels.testAndAdd;
+  const saveHint = editTarget ? labels.testAndSaveHint : labels.testAndAddHint;
 
   return (
     <DialogContent
@@ -395,14 +542,14 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
       className="!flex h-[min(780px,90vh)] !max-w-[600px] flex-col gap-0 overflow-hidden p-0"
     >
       <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
-        <DialogTitle>{labels.title}</DialogTitle>
-        <DialogDescription>{labels.description}</DialogDescription>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden px-6 pb-4">
         {context.status === 'running' && (
           <div className="flex items-center gap-2 text-xs text-foreground-muted">
-            <Spinner size="sm" /> {labels.loadingContext}
+            <Spinner size="sm" /> {editTarget ? labels.loadingModel : labels.loadingContext}
           </div>
         )}
         {context.status === 'error' && <FailureAlert failure={context.failure} labels={labels} />}
@@ -452,14 +599,27 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
                     </SelectContent>
                   </Select>
                 )}
-                {createdConnection && connectionChoice === createdConnection.id && (
+                {connectMessage && (
                   <p className="flex items-center gap-1.5 text-xs text-success">
                     <CircleCheck size={14} className="shrink-0" />
-                    {labels.connectedIn(folderLabel(createdConnection.folderId))}
+                    {connectMessage}
                   </p>
                 )}
+                {connection && !editingConnection && (
+                  <div>
+                    <Button
+                      variant="link"
+                      size="2xs"
+                      className="h-auto p-0 text-xs"
+                      disabled={busy || formState.status !== 'ok'}
+                      onClick={startConnectionEdit}
+                    >
+                      {labels.editConnection}
+                    </Button>
+                  </div>
+                )}
 
-                {provider && isNew && (
+                {showConnectionForm && (
                   <>
                     <Group
                       icon={KeyRound}
@@ -473,6 +633,11 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
                       )}
                       {formState.status === 'error' && (
                         <FailureAlert failure={formState.failure} labels={labels} />
+                      )}
+                      {loadingConnectionValues && (
+                        <div className="flex items-center gap-2 text-xs text-foreground-muted">
+                          <Spinner size="sm" /> {labels.loadingConnection}
+                        </div>
                       )}
                       {form.authTypes.length > 1 && (
                         <Field id="byo-auth-type" label={labels.authType}>
@@ -531,9 +696,9 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
                         </Field>
                         <Field id="byo-folder" label={labels.storedIn}>
                           <Select
-                            value={folderId || undefined}
+                            value={formFolderId || undefined}
                             onValueChange={setFolderId}
-                            disabled={keyLocked}
+                            disabled={keyLocked || editingConnection}
                           >
                             <SelectTrigger id="byo-folder" className="w-full">
                               <SelectValue />
@@ -558,21 +723,29 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
                       </p>
                     </Group>
 
-                    <div>
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="secondary"
                         size="sm"
                         disabled={!canConnect}
                         onClick={runConnect}
                       >
-                        {keyLocked ? (
-                          <>
-                            <Spinner size="sm" /> {labels.connecting}
-                          </>
-                        ) : (
-                          labels.connect
-                        )}
+                        <ConnectButtonText
+                          running={connect.status === 'running'}
+                          editing={editingConnection}
+                          labels={labels}
+                        />
                       </Button>
+                      {editingConnection && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={connect.status === 'running'}
+                          onClick={cancelConnectionEdit}
+                        >
+                          {labels.cancelConnectionEdit}
+                        </Button>
+                      )}
                     </div>
                   </>
                 )}
@@ -704,20 +877,38 @@ function DialogBody({ api, onAdded, labels: labelOverrides, container, onClose }
         <Button variant="secondary" onClick={onClose}>
           {labels.cancel}
         </Button>
-        <span title={provider ? labels.testAndAddHint(providerName) : undefined}>
+        <span title={provider ? saveHint(providerName) : undefined}>
           <Button onClick={runTest} disabled={!readyToSave || busy}>
             {test.status === 'running' ? (
               <>
                 <Spinner size="sm" /> {labels.testing}
               </>
             ) : (
-              labels.testAndAdd
+              saveLabel
             )}
           </Button>
         </span>
       </DialogFooter>
     </DialogContent>
   );
+}
+
+interface ConnectButtonTextProps {
+  running: boolean;
+  editing: boolean;
+  labels: ByoModelDialogLabels;
+}
+
+/** "Connect" for a new connection, "Save connection" for an edited one. */
+function ConnectButtonText({ running, editing, labels }: ConnectButtonTextProps) {
+  if (running) {
+    return (
+      <>
+        <Spinner size="sm" /> {editing ? labels.savingConnection : labels.connecting}
+      </>
+    );
+  }
+  return <>{editing ? labels.saveConnection : labels.connect}</>;
 }
 
 const unexpected = (err: unknown): ByoFailure => ({
