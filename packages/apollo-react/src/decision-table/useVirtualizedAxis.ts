@@ -288,7 +288,7 @@ export const useVirtualizedAxis = (
       element.addEventListener('scroll', report, { passive: true });
       return () => element.removeEventListener('scroll', report);
     },
-    // The fallback rect until a real measurement arrives, then ResizeObserver only — never a
+    // The fallback rect until a real measurement arrives, then ResizeObserver and, for the page, window resize only — never a
     // synchronous read at subscribe time, which would let an unrelated layout mock masquerade as
     // the viewport. Under a test DOM with no real layout the observer never reports a usable
     // rect, so the fallback persists for the whole test — exactly as the bespoke hook behaved.
@@ -301,14 +301,22 @@ export const useVirtualizedAxis = (
       if (typeof ResizeObserver === 'undefined') {
         return;
       }
-      const observer = new ResizeObserver(() => {
+      const measure = () =>
         callback({
           width: element.clientWidth || fallbackViewportPx,
           height: element.clientHeight || fallbackViewportPx,
         });
-      });
+      const observer = new ResizeObserver(measure);
       observer.observe(element);
-      return () => observer.disconnect();
+      const page =
+        element === element.ownerDocument.scrollingElement
+          ? element.ownerDocument.defaultView
+          : null;
+      page?.addEventListener('resize', measure);
+      return () => {
+        observer.disconnect();
+        page?.removeEventListener('resize', measure);
+      };
     },
     // The render gate. The core notifies on every raw range change — every item boundary the
     // scroll crosses — and this callback turns that into at most one state change per coarse

@@ -134,7 +134,9 @@ export const useValueEditing = ({
   useEffect(() => () => stopAwaitingRef.current?.(), []);
   const settledRef = useRef<string | null>(null);
   const openRef = useRef({ key: openedRef.current, onCancel: edit?.onCancel });
-  openRef.current = { key: target ? valueKey(target) : undefined, onCancel: edit?.onCancel };
+  const openKey = target ? valueKey(target) : undefined;
+  if (openKey !== openRef.current.key) settledRef.current = null;
+  openRef.current = { key: openKey, onCancel: edit?.onCancel };
   useEffect(() => {
     const view = container();
     return () =>
@@ -223,7 +225,7 @@ export const useValueEditing = ({
 
   useLayoutEffect(() => {
     const gone = target && !rule ? valueKey(target) : null;
-    if (gone !== null && gone !== goneRef.current) edit?.onCancel();
+    if (gone !== null && gone !== goneRef.current && edit) cancelOpen(edit);
     goneRef.current = gone;
   });
 
