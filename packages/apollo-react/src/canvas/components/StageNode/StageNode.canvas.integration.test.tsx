@@ -113,6 +113,13 @@ describe('StageNode status pill tooltip in a real canvas', () => {
     });
 
     pill.focus();
+    await user.keyboard('{Escape}');
+    expect(changesOfType('select')).not.toContainEqual({
+      id: 'stage-1',
+      type: 'select',
+      selected: false,
+    });
+
     await user.keyboard('{ArrowRight}');
     expect(changesOfType('position').length).toBeGreaterThan(0);
 
