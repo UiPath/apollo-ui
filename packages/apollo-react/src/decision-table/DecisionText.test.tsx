@@ -23,7 +23,11 @@ import {
   tableWithValue,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
-import { installEscapeCloseRequest, pressOutside } from './__fixtures__/modalDialog';
+import {
+  installEscapeCloseRequest,
+  installModalInertness,
+  pressOutside,
+} from './__fixtures__/modalDialog';
 import {
   CHANNEL,
   COUNTRY,
@@ -3017,6 +3021,11 @@ describe('DecisionText', () => {
   });
 
   describe('value popover', () => {
+    let uninstallInertness: () => void = () => {};
+    beforeAll(() => {
+      uninstallInertness = installModalInertness();
+    });
+    afterAll(() => uninstallInertness());
     const AGE_OPERATORS = [
       { id: '<', label: 'is less than' },
       { id: '>', label: 'is greater than' },
@@ -4167,6 +4176,11 @@ describe('DecisionText', () => {
   });
 
   describe('column popover', () => {
+    let uninstallInertness: () => void = () => {};
+    beforeAll(() => {
+      uninstallInertness = installModalInertness();
+    });
+    afterAll(() => uninstallInertness());
     const TYPES: ColumnTypeOption[] = [
       {
         id: 'number',
@@ -4364,6 +4378,7 @@ describe('DecisionText', () => {
       expect(popover()).toBeInTheDocument();
       pressOutside(popover());
       expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).not.toBe(pill('age'));
       expect(onCommit).not.toHaveBeenCalled();
     });
 
@@ -4414,6 +4429,7 @@ describe('DecisionText', () => {
       expect(onMoreProperties.mock.calls).toEqual([['risk']]);
       expect(onCommit).not.toHaveBeenCalled();
       expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(document.activeElement).not.toBe(pill('risk'));
     });
 
     it("offers the column's own type when the host's types lack it, and no allowed values the host leaves out", () => {

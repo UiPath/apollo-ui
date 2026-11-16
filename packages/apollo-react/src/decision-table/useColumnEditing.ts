@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { BandColumnProps } from './BandColumn';
 import type { ColumnEdit, ColumnPopoverProps } from './ColumnPopover';
 import type { EditorOverlayProps } from './EditorOverlay';
@@ -39,14 +39,22 @@ export const useColumnEditing = ({
   container,
 }: ColumnEditingParams): ColumnEditing => {
   const [openId, setOpenId] = useState<string | null>(null);
+  const refocusRef = useRef<string | null>(null);
   const open =
     column && openId !== null
       ? bands.flatMap((band) => band.columns).find((candidate) => candidate.id === openId)
       : undefined;
   if (openId !== null && !open) setOpenId(null);
 
+  useLayoutEffect(() => {
+    const columnId = refocusRef.current;
+    if (openId !== null || columnId === null) return;
+    refocusRef.current = null;
+    pillOf(container(), columnId)?.focus();
+  }, [openId, container]);
+
   const close = (columnId: string, refocus: boolean) => {
-    if (refocus) pillOf(container(), columnId)?.focus();
+    refocusRef.current = refocus ? columnId : null;
     setOpenId(null);
   };
   const editorOf = (edit: ColumnEdit, shown: OpenColumnEditor['column']): OpenColumnEditor => {

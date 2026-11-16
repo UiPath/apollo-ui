@@ -38,6 +38,30 @@ export const installEscapeCloseRequest = (): (() => void) => {
   };
 };
 
+/** Stands in for the inertness a modal dialog gives the page, which happy-dom lacks: focus() on an element outside the open dialog does nothing. */
+export const installModalInertness = (): (() => void) => {
+  const prototype = HTMLElement.prototype;
+  const own = Object.getOwnPropertyDescriptor(prototype, 'focus');
+  const focus = prototype.focus;
+  Object.defineProperty(prototype, 'focus', {
+    configurable: true,
+    writable: true,
+    value(this: HTMLElement, options?: FocusOptions) {
+      const dialog = openDialogFor(this);
+      let at: Node = this;
+      for (let root = at.getRootNode(); root instanceof ShadowRoot && !dialog?.contains(at); ) {
+        at = root.host;
+        root = at.getRootNode();
+      }
+      if (!dialog || dialog.contains(at)) focus.call(this, options);
+    },
+  });
+  return () => {
+    if (own) Object.defineProperty(prototype, 'focus', own);
+    else Reflect.deleteProperty(prototype, 'focus');
+  };
+};
+
 /** Presses a dialog's backdrop: pointerdown, mousedown, then the button's click, all at a point outside its box. */
 export const pressOutside = (
   dialog: Element,
