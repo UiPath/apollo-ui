@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v7.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.21.1...@uipath/apollo-react@7.22.0) (2026-11-16)
+
+### Features
+
+* **apollo-react:** show a decision table's changes in the text view [ECS-2153] ([aa083fa](https://github.com/UiPath/apollo-ui/commit/aa083fa7b2ca54ebe188105ea6d025c01a834c96))
+
+### Bug Fixes
+
+* **apollo-react:** bound diff lines, mark valueless conditions, unique fold ids ([faeafeb](https://github.com/UiPath/apollo-ui/commit/faeafeb8f362385f28c7c249e7fe7ec2d1829052))
+* **apollo-react:** keep diff values off removed rules and show unshown added values ([2f640fa](https://github.com/UiPath/apollo-ui/commit/2f640fa0e6887dd0dbc02415f53c06d56c8674eb))
+* **apollo-react:** key unworded diff lines by change and keep duplicate rule ids apart ([ecc6197](https://github.com/UiPath/apollo-ui/commit/ecc6197e6fe581d87ba4134b7e9ba09d98a947a1))
+* **apollo-react:** place removed rules in one linear pass with their own ids ([5a7c136](https://github.com/UiPath/apollo-ui/commit/5a7c1369b7c4b8d74513b9be9adcf275917551f7))
+
 ## [@uipath/apollo-react-v7.21.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.21.0...@uipath/apollo-react@7.21.1) (2026-11-16)
 
 ### Bug Fixes
