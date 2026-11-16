@@ -7,7 +7,7 @@ import { isRendered } from './renderedTree';
 import { type EditorAnchor, type EditorPlacement, useEditorPlacement } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
 
-/** The overlay's inline style: its placement, and the row height a grid cell editor sizes itself from. */
+/** The overlay's inline style: its placement, with its other insets auto so its margins never depend on it, and the row height a grid cell editor sizes itself from. */
 type EditorOverlayStyle = React.CSSProperties & Record<'--grid-row-height', string>;
 
 const UNPLACED: EditorPlacement = { top: 0, left: 0 };
@@ -15,6 +15,8 @@ const UNPLACED: EditorPlacement = { top: 0, left: 0 };
 const overlayStyle = ({ top, left }: EditorPlacement): EditorOverlayStyle => ({
   top,
   left,
+  right: 'auto',
+  bottom: 'auto',
   '--grid-row-height': `${BODY_ROW_HEIGHT_PX}px`,
 });
 

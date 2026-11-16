@@ -38,6 +38,21 @@ export const valueAnchor =
     );
   };
 
+/** The overlay's size and top margin at the window's origin, so they never depend on where it was placed. */
+const unplacedSizeOf = (overlay: HTMLElement) => {
+  const { top, left } = overlay.style;
+  overlay.style.top = '0px';
+  overlay.style.left = '0px';
+  const size = {
+    width: overlay.offsetWidth,
+    height: overlay.offsetHeight,
+    margin: Number.parseFloat(getComputedStyle(overlay).marginTop) || 0,
+  };
+  overlay.style.top = top;
+  overlay.style.left = left;
+  return size;
+};
+
 /** Under the anchor, or above it when only that fits the window, else at the window's bottom, its margin counted; kept inside the container's width and the window. */
 const placementOf = (
   section: HTMLElement | null,
@@ -48,9 +63,8 @@ const placementOf = (
   const frame = section.getBoundingClientRect();
   const box = element.getBoundingClientRect();
   const { innerWidth, innerHeight } = window;
-  const margin = Number.parseFloat(getComputedStyle(overlay).marginTop) || 0;
-  const height = overlay.offsetHeight + margin;
-  const width = overlay.offsetWidth;
+  const { width, height: overlayHeight, margin } = unplacedSizeOf(overlay);
+  const height = overlayHeight + margin;
   const top =
     box.bottom + height <= innerHeight
       ? box.bottom
