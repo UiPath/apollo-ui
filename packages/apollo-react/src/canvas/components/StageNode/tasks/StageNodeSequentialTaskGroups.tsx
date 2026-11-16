@@ -1,8 +1,8 @@
-import { closestCenter, DndContext } from '@dnd-kit/core';
+import { closestCenter, DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { type CSSProperties, useCallback, useMemo } from 'react';
+import { type CSSProperties, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import {
   GroupModificationType,
   moveGroupDown,
@@ -77,12 +77,37 @@ export const StageNodeSequentialTaskGroups = ({
     isActiveTaskParallel,
     handleDragStart,
     handleDragMove,
-    handleDragEnd,
+    handleDragEnd: handleTaskDragEnd,
     handleDragCancel,
   } = useStageTaskDragHandler({
     taskGroups: sequentialTaskGroups,
     onTaskReorder: handleReorderSequentialTasks,
   });
+
+  const listRef = useRef<HTMLDivElement>(null);
+  const droppedTaskIdRef = useRef<string>();
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      droppedTaskIdRef.current = String(event.active.id);
+      handleTaskDragEnd(event);
+    },
+    [handleTaskDragEnd]
+  );
+
+  // A drop can move the task's row under another parent, which remounts it and drops its focus.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: must run on each committed reorder
+  useLayoutEffect(() => {
+    const taskId = droppedTaskIdRef.current;
+    if (!taskId || document.activeElement !== document.body) {
+      return;
+    }
+    droppedTaskIdRef.current = undefined;
+    const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-task-row-id]') ?? [];
+    Array.from(rows)
+      .find((row) => row.dataset.taskRowId === taskId)
+      ?.focus();
+  }, [sequentialTaskGroups]);
 
   const handleTaskRegroup = useCallback(
     (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => {
@@ -182,6 +207,7 @@ export const StageNodeSequentialTaskGroups = ({
   // pointer nor a key on a task acts on the stage.
   const taskList = (
     <StageItemsList
+      ref={listRef}
       data-testid={`sequential-tasks-list-${id}`}
       className="nodrag nopan nokey"
     >
