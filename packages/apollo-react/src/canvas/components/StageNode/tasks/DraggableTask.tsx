@@ -75,7 +75,7 @@ const DraggableTaskComponent = ({
   }
 
   return (
-    <SortableTaskRow taskId={task.id} isParallel={isParallel}>
+    <SortableTaskRow taskId={task.id} isParallel={isParallel} onActivate={onTaskClick}>
       {taskElement}
     </SortableTaskRow>
   );

@@ -1,16 +1,5 @@
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { closestCenter, DndContext } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { type CSSProperties, useCallback, useMemo } from 'react';
@@ -21,6 +10,7 @@ import {
 } from '../../../utils/GroupModificationUtils';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
+import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
 import {
   StageItemsList,
   StageItemsSection,
@@ -182,16 +172,7 @@ export const StageNodeSequentialTaskGroups = ({
     ]
   );
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  const sensors = useStageTaskSensors();
 
   // Swallow the canvas drag/pan only while these rows are drag handles.
   const taskList = (
