@@ -423,7 +423,7 @@ describe('createCommunityByoApi', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.failure.title).toBe('The test call failed: MISSING_TOOL_CALL');
-    expect(result.failure.message).toBe('no tools');
+    expect(result.failure.detail).toBe(JSON.stringify({ message: 'no tools' }, null, 2));
     expect(calls.filter((c) => c.url.endsWith('/llm-configurations'))).toHaveLength(0);
   });
 
@@ -610,10 +610,11 @@ describe('createCommunityByoApi', () => {
 
     expect(result.ok).toBe(true);
     const put = calls.find((c) => c.method === 'PUT');
+    // The other model keeps the configuration in its folder, and the old mappings go.
     expect(put?.body).toEqual({
       id: 'cfg-1',
       name: 'agents-design-eval-deploy-1',
-      folderId: 'me',
+      folderId: 'old-folder',
       enabled: true,
       llmConfigurations: [
         {
@@ -624,6 +625,7 @@ describe('createCommunityByoApi', () => {
           connectionId: 'conn-2',
           organizationId: 'org-guid',
           tenantId: 'tenant-guid',
+          customFieldMappings: null,
         },
         other,
       ],
