@@ -6,7 +6,7 @@ import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 import { TaskMockedChip } from './TaskMockedChip';
-import { useTaskCardActivation } from './useTaskCardActivation';
+import { useTaskLabelOpen } from './useTaskLabelOpen';
 
 const DraggableTaskComponent = ({
   task,
@@ -34,7 +34,7 @@ const DraggableTaskComponent = ({
     menuRef.current?.handleContextMenu(e);
   }, []);
 
-  const activation = useTaskCardActivation(task.id, onTaskClick, !!isDragDisabled);
+  const onOpenKeyDown = useTaskLabelOpen(task.id, onTaskClick, !!isDragDisabled);
 
   const taskElement = (
     <StageItemPill
@@ -47,7 +47,6 @@ const DraggableTaskComponent = ({
       isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
-      {...activation}
     >
       <TaskBreakpointDot
         taskId={task.id}
@@ -59,6 +58,7 @@ const DraggableTaskComponent = ({
       <TaskContent
         task={task}
         taskExecution={taskExecution}
+        onOpenKeyDown={onOpenKeyDown}
         trailingContent={
           getContextMenuItems ? (
             <TaskMenu

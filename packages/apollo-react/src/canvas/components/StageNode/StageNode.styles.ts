@@ -219,6 +219,12 @@ export const StageItemPill = styled.div<{
             outline: 4px solid var(--canvas-secondary-pressed);
           }
         `}
+
+  /* The task label is the focus target of a card that no sortable row wraps; ring the whole card. */
+  &:has(.stage-task-open:focus-visible) {
+    outline: 2px solid var(--canvas-primary);
+    outline-offset: 2px;
+  }
 `;
 
 export const StageItemIcon = styled.div`

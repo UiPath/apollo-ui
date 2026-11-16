@@ -10,7 +10,7 @@ import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 import { TaskMockedChip } from './TaskMockedChip';
-import { useTaskCardActivation } from './useTaskCardActivation';
+import { useTaskLabelOpen } from './useTaskLabelOpen';
 
 interface AdhocTaskItemProps {
   task: StageTaskItem;
@@ -26,7 +26,7 @@ interface AdhocTaskItemProps {
   isReadOnly?: boolean;
   /** Makes the breakpoint gutter interactive. Passed only in the Debug view. */
   onToggleBreakpoint?: (taskId: string) => void;
-  /** Wrapped in a sortable row, which is then the task's tab stop instead of the card. */
+  /** Wrapped in a sortable row, which is then the task's tab stop instead of the task label. */
   isSortable?: boolean;
 }
 
@@ -56,7 +56,7 @@ const AdhocTaskItemComponent = ({
     menuRef.current?.handleContextMenu(e);
   }, []);
 
-  const activation = useTaskCardActivation(task.id, onTaskClick, !isSortable);
+  const onOpenKeyDown = useTaskLabelOpen(task.id, onTaskClick, !isSortable);
 
   return (
     <StageItemPill
@@ -67,7 +67,6 @@ const AdhocTaskItemComponent = ({
       isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
-      {...activation}
     >
       <TaskBreakpointDot
         taskId={task.id}
@@ -76,7 +75,12 @@ const AdhocTaskItemComponent = ({
         onToggle={onToggleBreakpoint}
       />
       <TaskMockedChip taskId={task.id} mocked={!!task.isMocked} />
-      <TaskContent task={task} taskExecution={taskExecution} onTaskPlay={onTaskPlay} />
+      <TaskContent
+        task={task}
+        taskExecution={taskExecution}
+        onTaskPlay={onTaskPlay}
+        onOpenKeyDown={onOpenKeyDown}
+      />
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}
