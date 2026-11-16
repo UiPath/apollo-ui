@@ -4,6 +4,9 @@
 export type { ModelBadgeDefinition, ModelBadgeKind } from './badges';
 // Badge pool
 export { MODEL_BADGES } from './badges';
+export type { CommunityByoApiOptions, CommunityByoProvider } from './communityByoApi';
+// Community "Use your own model" dialog calls
+export { COMMUNITY_BYO_PROVIDERS, createCommunityByoApi } from './communityByoApi';
 
 // i18n contract
 export type { PickerTranslator } from './i18n';
