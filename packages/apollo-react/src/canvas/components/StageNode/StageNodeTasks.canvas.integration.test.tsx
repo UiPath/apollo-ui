@@ -3,7 +3,7 @@ import type { Node, NodeChange, NodeProps } from '@uipath/apollo-react/canvas/xy
 import { ReactFlowProvider, useNodesState } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '../../utils/testing';
+import { render, screen, waitFor } from '../../utils/testing';
 import { BaseCanvas } from '../BaseCanvas';
 import { StageNode } from './StageNode';
 import type { StageNodeBaseProps } from './StageNode.types';
@@ -57,6 +57,18 @@ function StageCanvas({ node }: { node: StageFlowNode }) {
   );
 }
 
+// The sortable wrapper around a task card: the task's tab stop while the section is reorderable.
+const taskRow = (taskId: string) =>
+  screen.getByTestId(`stage-task-card-${taskId}`).closest<HTMLElement>('[role="button"]');
+
+// dnd-kit's live region, which announces every keyboard pick-up, move and drop.
+const dragAnnouncement = () => document.querySelector('[id^="DndLiveRegion"]')?.textContent ?? '';
+
+const stageSelected = () =>
+  onNodesChangeSpy.mock.calls
+    .flatMap(([changes]) => changes)
+    .some((c) => c.type === 'select' && c.id === 'stage-1' && c.selected);
+
 const renderStage = (node: StageFlowNode) =>
   render(
     <ReactFlowProvider>
@@ -78,5 +90,58 @@ describe('StageNode task activation in a real canvas', () => {
 
     expect(onTaskClick).toHaveBeenCalledTimes(1);
     expect(onTaskClick).toHaveBeenCalledWith('task-1', expect.objectContaining({ type: 'click' }));
+  });
+
+  it('opens a reorderable task with Enter, keeping focus on it and leaving the stage unselected', async () => {
+    const user = userEvent.setup();
+    const onTaskClick = vi.fn();
+    renderStage(stageWithTasks({ onTaskClick, onTaskReorder: vi.fn() }));
+    const row = taskRow('task-1');
+    row?.focus();
+
+    await user.keyboard('{Enter}');
+
+    expect(onTaskClick).toHaveBeenCalledTimes(1);
+    expect(onTaskClick).toHaveBeenCalledWith(
+      'task-1',
+      expect.objectContaining({ type: 'keydown' })
+    );
+    expect(stageSelected()).toBe(false);
+    expect(row).toHaveFocus();
+    expect(dragAnnouncement()).toBe('');
+  });
+
+  it('picks a task up with Space to reorder it, without opening it or selecting the stage', async () => {
+    const user = userEvent.setup();
+    const onTaskClick = vi.fn();
+    renderStage(stageWithTasks({ onTaskClick, onTaskReorder: vi.fn() }));
+    taskRow('task-1')?.focus();
+
+    await user.keyboard(' ');
+    await waitFor(() => expect(dragAnnouncement()).toMatch(/item task-1/));
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(dragAnnouncement()).toMatch(/Dragging was cancelled/));
+    await waitFor(() => expect(taskRow('task-1')).toHaveFocus());
+    expect(onTaskClick).not.toHaveBeenCalled();
+    expect(stageSelected()).toBe(false);
+  });
+
+  it('leaves Space on the task menu button to the menu', async () => {
+    const user = userEvent.setup();
+    renderStage(
+      stageWithTasks({
+        onTaskClick: vi.fn(),
+        onTaskReorder: vi.fn(),
+        onTaskGroupModification: vi.fn(),
+      })
+    );
+    screen.getByTestId('stage-task-menu-task-1').focus();
+
+    await user.keyboard(' ');
+
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+    expect(dragAnnouncement()).toBe('');
+    expect(stageSelected()).toBe(false);
   });
 });

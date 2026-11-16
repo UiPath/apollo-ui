@@ -1,19 +1,9 @@
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { closestCenter, DndContext } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { type CSSProperties, memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
+import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
 import type { StageNodeProps, StageTaskActivationEvent, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
@@ -71,10 +61,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     allowRegrouping: false,
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
+  const sensors = useStageTaskSensors();
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -141,7 +128,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
         return isDragDisabled ? (
           row
         ) : (
-          <SortableTaskRow key={task.id} taskId={task.id}>
+          <SortableTaskRow key={task.id} taskId={task.id} onActivate={handleTaskClick}>
             {row}
           </SortableTaskRow>
         );

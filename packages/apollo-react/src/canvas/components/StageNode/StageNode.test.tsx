@@ -11,7 +11,8 @@ import type { StageNodeProps, StageTaskItem, StageTaskStatus } from './StageNode
 import { StageHeaderChipType } from './StageNode.types';
 
 // Mock DndContext and related components
-vi.mock('@dnd-kit/core', () => ({
+vi.mock('@dnd-kit/core', async () => ({
+  ...(await vi.importActual<typeof import('@dnd-kit/core')>('@dnd-kit/core')),
   DndContext: ({ children }: { children?: React.ReactNode }) => (
     <div data-testid="dnd-context">{children}</div>
   ),
