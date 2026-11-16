@@ -72,6 +72,18 @@ export const StageNodeSequentialTaskGroups = ({
     [sequentialTaskGroups]
   );
 
+  const listRef = useRef<HTMLDivElement>(null);
+  const focusedDragIdRef = useRef<string | undefined>(undefined);
+  const taskToRefocusRef = useRef<string | undefined>(undefined);
+
+  const commitDropReorder = useCallback(
+    (newTasks: StageTaskItem[][]) => {
+      taskToRefocusRef.current = focusedDragIdRef.current;
+      handleReorderSequentialTasks(newTasks);
+    },
+    [handleReorderSequentialTasks]
+  );
+
   const {
     activeTask,
     isActiveTaskParallel,
@@ -81,28 +93,32 @@ export const StageNodeSequentialTaskGroups = ({
     handleDragCancel,
   } = useStageTaskDragHandler({
     taskGroups: sequentialTaskGroups,
-    onTaskReorder: handleReorderSequentialTasks,
+    onTaskReorder: commitDropReorder,
   });
-
-  const listRef = useRef<HTMLDivElement>(null);
-  const droppedTaskIdRef = useRef<string>();
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      droppedTaskIdRef.current = String(event.active.id);
+      const taskId = String(event.active.id);
+      const hasFocus =
+        document.activeElement instanceof HTMLElement &&
+        document.activeElement.dataset.taskRowId === taskId;
+      focusedDragIdRef.current = hasFocus ? taskId : undefined;
       handleTaskDragEnd(event);
     },
     [handleTaskDragEnd]
   );
 
-  // A drop can move the task's row under another parent, which remounts it and drops its focus.
+  // A reorder can move the task's row under another parent, which remounts it and drops its focus.
   // biome-ignore lint/correctness/useExhaustiveDependencies: must run on each committed reorder
   useLayoutEffect(() => {
-    const taskId = droppedTaskIdRef.current;
-    if (!taskId || document.activeElement !== document.body) {
+    const taskId = taskToRefocusRef.current;
+    if (!taskId) {
       return;
     }
-    droppedTaskIdRef.current = undefined;
+    taskToRefocusRef.current = undefined;
+    if (document.activeElement !== document.body) {
+      return;
+    }
     const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-task-row-id]') ?? [];
     Array.from(rows)
       .find((row) => row.dataset.taskRowId === taskId)
