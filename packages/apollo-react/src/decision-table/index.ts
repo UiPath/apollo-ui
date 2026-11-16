@@ -9,6 +9,13 @@ export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
+export { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
+export type {
+  DecisionGraphDecisionNode,
+  DecisionGraphNode,
+  DecisionGraphReferenceNode,
+  DecisionGraphTarget,
+} from './decisionGraphTypes';
 export { DecisionText, type DecisionTextProps } from './DecisionText';
 export type {
   DecisionTextDiff,
@@ -89,6 +96,7 @@ export type {
   SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
+export type { DecisionGraphLabels } from './useDecisionGraphStrings';
 export type { DecisionTextScroll } from './useRuleWindow';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
