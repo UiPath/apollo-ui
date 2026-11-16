@@ -206,6 +206,30 @@ export {
   ButtonGroupSeparator,
   ButtonGroupText,
 } from './components/ui/button-group';
+export type {
+  ByoAddedModel,
+  ByoAddRequest,
+  ByoAuthType,
+  ByoConnection,
+  ByoConnectionForm,
+  ByoConnectRequest,
+  ByoDialogContext,
+  ByoFailure,
+  ByoFolder,
+  ByoFormField,
+  ByoModelDialogApi,
+  ByoModelDialogLabels,
+  ByoModelDialogProps,
+  ByoProvider,
+  ByoProviderModel,
+  ByoProviderModels,
+  ByoResult,
+} from './components/ui/byo-model-dialog';
+export {
+  ByoModelDialog,
+  DEFAULT_BYO_MODEL_DIALOG_LABELS,
+  resolveByoModelDialogLabels,
+} from './components/ui/byo-model-dialog';
 export { Calendar } from './components/ui/calendar';
 // -----------------------------------------------------------------------------
 // Data Display Components
