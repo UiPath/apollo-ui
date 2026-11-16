@@ -80,10 +80,7 @@ describe('DecisionText diff edges', () => {
     const kept = DIFF_RULES[0] as SentenceRule;
     const removed: SentenceRule = { ...kept, heading: [...kept.heading] };
     renderDiff({ mode: 'full', removedRules: [{ rule: removed, after: null }] });
-    expect(screen.getByTestId(`nl-row-removed:${kept.rowId}`)).toHaveAttribute(
-      'data-change',
-      'delete'
-    );
+    expect(screen.getByTestId('nl-row-removed:0')).toHaveAttribute('data-change', 'delete');
     expect(screen.getByTestId(`nl-row-${kept.rowId}`)).not.toHaveAttribute('data-change');
   });
 
@@ -209,7 +206,15 @@ describe('DecisionText diff review edges', () => {
       item: `x${index}`,
       after: index === 0 ? 'k' : `x${index - 1}`,
     }));
-    const placed = withRemoved(['k'], chain, (id) => id);
-    expect(placed.map(({ item }) => item)).toEqual(['k', ...chain.map(({ item }) => item)]);
+    const placed = withRemoved(
+      ['k'],
+      chain,
+      (id) => id,
+      ({ item }) => item
+    );
+    expect(placed.map((entry) => (entry.kind === 'kept' ? entry.item : entry.item.item))).toEqual([
+      'k',
+      ...chain.map(({ item }) => item),
+    ]);
   });
 });

@@ -19,6 +19,7 @@ import {
   type DiffValueChange,
   diffColumnsOf,
   diffRowsOf,
+  type Placed,
   withRemoved,
 } from './decisionTextDiff';
 import type { SentenceNameToken, SentenceRule } from './sentenceTypes';
@@ -56,6 +57,8 @@ const renderDiff = (
 
 describe('withRemoved', () => {
   const id = (item: string) => item;
+  const itemOf = (placed: Placed<string, { item: string }>) =>
+    placed.kind === 'kept' ? placed.item : placed.item.item;
 
   it('puts each removed item under the one it names, first when null, in the order given', () => {
     const placed = withRemoved(
@@ -66,10 +69,11 @@ describe('withRemoved', () => {
         { item: 'z', after: 'b' },
         { item: 'w', after: 'x' },
       ],
-      id
+      id,
+      ({ item }) => item
     );
-    expect(placed.map(({ item }) => item)).toEqual(['y', 'a', 'b', 'x', 'w', 'z', 'c']);
-    expect(placed.filter(({ removed }) => removed).map(({ item }) => item)).toEqual([
+    expect(placed.map(itemOf)).toEqual(['y', 'a', 'b', 'x', 'w', 'z', 'c']);
+    expect(placed.filter(({ kind }) => kind === 'removed').map(itemOf)).toEqual([
       'y',
       'x',
       'w',
@@ -86,9 +90,10 @@ describe('withRemoved', () => {
         { item: 's', after: 's' },
         { item: 'u', after: 'gone' },
       ],
-      id
+      id,
+      ({ item }) => item
     );
-    expect(placed.map(({ item }) => item)).toEqual(['p', 'q', 's', 'u', 'a']);
+    expect(placed.map(itemOf)).toEqual(['p', 'q', 's', 'u', 'a']);
   });
 });
 
@@ -112,7 +117,7 @@ describe('diffRowsOf', () => {
       NO_FOLDS
     );
     expect([...rows.values()].map((row) => ruleRow(row)?.number)).toEqual([1, null, 2, 3]);
-    expect(ruleRow(rows.get('gone'))?.change).toBe('delete');
+    expect(ruleRow(rows.get('removed:0'))?.change).toBe('delete');
   });
 
   it('marks a rule with only value changes as changed, and keeps its move', () => {
@@ -188,7 +193,7 @@ describe('diffRowsOf', () => {
     expect(ids(shown)).toEqual([
       `fold:${rules[0]?.rowId}`,
       ...rules.slice(4, 6).map(({ rowId }) => rowId),
-      'gone',
+      'removed:0',
       ...rules.slice(6, 8).map(({ rowId }) => rowId),
       ...rules.slice(8, 10).map(({ rowId }) => rowId),
     ]);
@@ -251,7 +256,7 @@ describe('diffRowsOf value changes', () => {
       nameOf,
       NO_FOLDS
     );
-    const removed = ruleRow(rows.get('removed:r5'));
+    const removed = ruleRow(rows.get('removed:0'));
     expect(removed?.change).toBe('delete');
     expect(removed?.tokens.size).toBe(0);
     expect(removed?.removedLines).toEqual([]);
@@ -314,7 +319,7 @@ describe('DecisionText diff', () => {
     expect(added).toHaveAccessibleName(expect.stringMatching(/^Added 9 /));
     expect(within(added).getByText('+')).toHaveAttribute('aria-hidden');
     expect(within(added).getByText('Added')).toHaveClass('sr-only');
-    const removed = screen.getByTestId('nl-row-x1');
+    const removed = screen.getByTestId('nl-row-removed:0');
     expect(removed).toHaveAttribute('data-change', 'delete');
     expect(removed).toHaveAccessibleName(expect.stringMatching(/^Removed risk is/));
     expect(within(removed).getByText('−')).toHaveAttribute('aria-hidden');
@@ -410,7 +415,7 @@ describe('DecisionText diff', () => {
       ['6 unchanged rules', 'Show rules 1–6'],
       ['4 unchanged rules', 'Show rules 21–24'],
     ]);
-    expect(screen.getByTestId('nl-row-x1')).toBeInTheDocument();
+    expect(screen.getByTestId('nl-row-removed:0')).toBeInTheDocument();
     expect(screen.getByTestId('nl-row-r14')).toHaveAccessibleName(expect.stringMatching(/^20 /));
   });
 
@@ -435,10 +440,7 @@ describe('DecisionText diff', () => {
       { rules: [] }
     );
     expect(screen.queryByTestId('nl-empty')).toBeNull();
-    expect(screen.getByTestId(`nl-row-${DIFF_RULES[0]?.rowId}`)).toHaveAttribute(
-      'data-change',
-      'delete'
-    );
+    expect(screen.getByTestId('nl-row-removed:0')).toHaveAttribute('data-change', 'delete');
   });
 
   it('takes no edit, selection or add-rule action with a diff', () => {
