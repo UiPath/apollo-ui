@@ -77,7 +77,7 @@ const scrollportTopOf = (scroller: HTMLElement): number =>
   isPageScroller(scroller) ? 0 : scroller.getBoundingClientRect().top;
 
 /** The top of `element` in `scroller`'s scrolled content. */
-const contentTopIn = (element: HTMLElement, scroller: HTMLElement): number =>
+export const contentTopIn = (element: HTMLElement, scroller: HTMLElement): number =>
   element.getBoundingClientRect().top -
   scrollportTopOf(scroller) -
   (isPageScroller(scroller) ? 0 : scroller.clientTop) +

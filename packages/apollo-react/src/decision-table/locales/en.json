@@ -1,4 +1,10 @@
 {
+  "decision-graph.empty": "No decisions yet",
+  "decision-graph.graph": "Decisions",
+  "decision-graph.rule_count": "{count, plural, one {# rule} other {# rules}}",
+  "decision-graph.see_above": "See {name} above",
+  "decision-graph.show_problem": "{status}. Show it",
+  "decision-graph.used_by": "Used by {names}",
   "decision-table.drag_column": "Drag to reorder whole column",
   "decision-table.drag_row": "Drag to reorder whole row",
   "decision-table.insert_column_left": "Insert column left",
