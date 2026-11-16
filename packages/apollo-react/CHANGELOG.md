@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v7.21.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.21.0...@uipath/apollo-react@7.21.1) (2026-11-16)
+
+### Bug Fixes
+
+* **apollo-react:** expose stage pill tooltips to keyboard and screen readers [MST-12262] [MST-12339] ([7ed73bd](https://github.com/UiPath/apollo-ui/commit/7ed73bdc202a9ae48cebb601ce15aa1a288db9fc))
+* **apollo-react:** give the stage pill focus outline the canvas primary colour ([04257d5](https://github.com/UiPath/apollo-ui/commit/04257d5fdcb94f6ca37fd25406d406bcd5f4610c))
+* **apollo-react:** keep Escape on a stage pill tooltip from deselecting the stage [MST-12262] ([e9eee24](https://github.com/UiPath/apollo-ui/commit/e9eee2487aa3c428bc69a33033aa5053c4c1fbb7))
+* **apollo-react:** keep rich stage pill tooltips out of the hidden description ([231e789](https://github.com/UiPath/apollo-ui/commit/231e7891c3952296c05f5d473d876d4afcbc0b9a))
+* **apollo-react:** limit the tooltip Escape containment to the stage pill [MST-12262] ([360f4ce](https://github.com/UiPath/apollo-ui/commit/360f4ce59eca874ac5edb2817997a7939a01b2e3))
+* **apollo-react:** treat a blank stage pill tooltip as no tooltip ([8564f71](https://github.com/UiPath/apollo-ui/commit/8564f71886b1b19cfafe1a3d93ffd6e27cac3904))
+
 ## [@uipath/apollo-react-v7.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.19.1...@uipath/apollo-react@7.20.0) (2026-11-16)
 
 ### Features
