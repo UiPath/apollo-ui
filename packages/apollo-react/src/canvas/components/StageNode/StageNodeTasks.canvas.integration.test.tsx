@@ -65,13 +65,12 @@ const taskRow = (taskId: string) =>
 // dnd-kit's live region, which announces every keyboard pick-up, move and drop.
 const dragAnnouncement = () => document.querySelector('[id^="DndLiveRegion"]')?.textContent ?? '';
 
-const stageSelected = () =>
-  onNodesChangeSpy.mock.calls
-    .flatMap(([changes]) => changes)
-    .some((c) => c.type === 'select' && c.id === 'stage-1' && c.selected);
-
 const changesOfType = (type: NodeChange['type']) =>
   onNodesChangeSpy.mock.calls.flatMap(([changes]) => changes).filter((c) => c.type === type);
+
+// XYFlow's node key handler selects through `select` changes. Opening a task also selects the
+// stage, as a click does, but through a `replace`, so this tells the two apart.
+const canvasHandledKey = () => changesOfType('select').length > 0;
 
 const renderStage = (node: StageFlowNode) =>
   render(
@@ -96,7 +95,7 @@ describe('StageNode task activation in a real canvas', () => {
     expect(onTaskClick).toHaveBeenCalledWith('task-1', expect.objectContaining({ type: 'click' }));
   });
 
-  it('opens a reorderable task with Enter, keeping focus on it and leaving the stage unselected', async () => {
+  it('opens a reorderable task with Enter and keeps focus on it, without the canvas handling the key', async () => {
     const user = userEvent.setup();
     const onTaskClick = vi.fn();
     renderStage(stageWithTasks({ onTaskClick, onTaskReorder: vi.fn() }));
@@ -110,7 +109,7 @@ describe('StageNode task activation in a real canvas', () => {
       'task-1',
       expect.objectContaining({ type: 'keydown' })
     );
-    expect(stageSelected()).toBe(false);
+    expect(canvasHandledKey()).toBe(false);
     expect(row).toHaveFocus();
     expect(dragAnnouncement()).toBe('');
     // The row is the tab stop, so the card inside it must not be a second one.
@@ -125,7 +124,7 @@ describe('StageNode task activation in a real canvas', () => {
     );
   });
 
-  it('picks a task up with Space to reorder it, without opening it or selecting the stage', async () => {
+  it('picks a task up with Space to reorder it, without opening it or the canvas handling the key', async () => {
     const user = userEvent.setup();
     const onTaskClick = vi.fn();
     renderStage(stageWithTasks({ onTaskClick, onTaskReorder: vi.fn() }));
@@ -141,7 +140,7 @@ describe('StageNode task activation in a real canvas', () => {
     await waitFor(() => expect(dragAnnouncement()).toMatch(/Dragging was cancelled/));
     await waitFor(() => expect(taskRow('task-1')).toHaveFocus());
     expect(onTaskClick).not.toHaveBeenCalled();
-    expect(stageSelected()).toBe(false);
+    expect(canvasHandledKey()).toBe(false);
   });
 
   it('drops a picked-up task with Enter instead of opening it', async () => {
@@ -174,7 +173,7 @@ describe('StageNode task activation in a real canvas', () => {
 
     expect(await screen.findByRole('menu')).toBeInTheDocument();
     expect(dragAnnouncement()).toBe('');
-    expect(stageSelected()).toBe(false);
+    expect(canvasHandledKey()).toBe(false);
   });
 
   it('opens a read-only task from its label button, which no other control contains', async () => {
@@ -202,7 +201,7 @@ describe('StageNode task activation in a real canvas', () => {
       'task-1',
       expect.objectContaining({ type: 'keydown', key: 'Enter' })
     );
-    expect(stageSelected()).toBe(false);
+    expect(canvasHandledKey()).toBe(false);
   });
 
   it('keeps arrow keys and Delete on a task from moving or removing the stage', async () => {
