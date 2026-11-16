@@ -17,7 +17,6 @@ const openDialogFor = (event: Event): HTMLDialogElement | undefined => {
 export const installEscapeCloseRequest = (): (() => void) => {
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== 'Escape' || event.defaultPrevented) return;
-    if (event.isComposing || event.keyCode === 229) return;
     const dialog = openDialogFor(event);
     if (!dialog) return;
     const cancel = new Event('cancel', { cancelable: true });
