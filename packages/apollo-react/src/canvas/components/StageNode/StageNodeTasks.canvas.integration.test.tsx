@@ -137,6 +137,20 @@ describe('StageNode task activation in a real canvas', () => {
     expect(stageSelected()).toBe(false);
   });
 
+  it('drops a picked-up task with Enter instead of opening it', async () => {
+    const user = userEvent.setup();
+    const onTaskClick = vi.fn();
+    renderStage(stageWithTasks({ onTaskClick, onTaskReorder: vi.fn() }));
+    taskRow('task-1')?.focus();
+
+    await user.keyboard(' ');
+    await waitFor(() => expect(dragAnnouncement()).toMatch(/item task-1/));
+
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(dragAnnouncement()).toMatch(/task-1 was dropped/));
+    expect(onTaskClick).not.toHaveBeenCalled();
+  });
+
   it('leaves Space on the task menu button to the menu', async () => {
     const user = userEvent.setup();
     renderStage(
