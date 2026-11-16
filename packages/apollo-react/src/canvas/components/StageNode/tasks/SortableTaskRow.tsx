@@ -39,11 +39,6 @@ const SortableTaskRowComponent = ({
   const startKeyboardDrag = listeners?.onKeyDown;
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
-      // Enter and Space act on the task or one of its controls, so the canvas node must not also
-      // take them as a request to select the stage.
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.stopPropagation();
-      }
       // Keys pressed on the task's own controls, such as its menu button, belong to them.
       if (e.target !== e.currentTarget) {
         return;

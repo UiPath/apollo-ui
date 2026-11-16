@@ -15,8 +15,6 @@ export function useTaskCardActivation(
       if (e.key !== 'Enter' && e.key !== ' ') {
         return;
       }
-      // The canvas node would otherwise take the key as a request to select the stage.
-      e.stopPropagation();
       // Keys pressed on the card's own controls, such as its breakpoint, belong to them.
       if (e.target !== e.currentTarget) {
         return;

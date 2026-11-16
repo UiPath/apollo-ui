@@ -50,6 +50,7 @@ function StageCanvas({ node }: { node: StageFlowNode }) {
         edges={[]}
         nodeTypes={nodeTypes}
         mode="design"
+        deleteKeyCode="Delete"
         onlyRenderVisibleElements={false}
         onNodesChange={handleNodesChange}
       />
@@ -68,6 +69,9 @@ const stageSelected = () =>
   onNodesChangeSpy.mock.calls
     .flatMap(([changes]) => changes)
     .some((c) => c.type === 'select' && c.id === 'stage-1' && c.selected);
+
+const changesOfType = (type: NodeChange['type']) =>
+  onNodesChangeSpy.mock.calls.flatMap(([changes]) => changes).filter((c) => c.type === type);
 
 const renderStage = (node: StageFlowNode) =>
   render(
@@ -193,5 +197,38 @@ describe('StageNode task activation in a real canvas', () => {
       expect.objectContaining({ type: 'keydown', key: 'Enter' })
     );
     expect(stageSelected()).toBe(false);
+  });
+
+  it('keeps arrow keys and Delete on a task from moving or removing the stage', async () => {
+    const user = userEvent.setup();
+    renderStage(stageWithTasks({ onTaskClick: vi.fn(), onTaskReorder: vi.fn() }));
+    taskRow('task-1')?.focus();
+    // Opening the task selects the stage, which is when the node's own keys would apply.
+    await user.keyboard('{Enter}');
+
+    await user.keyboard('{ArrowDown}{ArrowRight}{Delete}');
+
+    expect(changesOfType('position')).toEqual([]);
+    expect(changesOfType('remove')).toEqual([]);
+  });
+
+  it('keeps arrow keys in an open task menu from moving the stage', async () => {
+    const user = userEvent.setup();
+    renderStage(
+      stageWithTasks({
+        onTaskClick: vi.fn(),
+        onTaskReorder: vi.fn(),
+        onTaskGroupModification: vi.fn(),
+      })
+    );
+    taskRow('task-1')?.focus();
+    await user.keyboard('{Enter}');
+    screen.getByTestId('stage-task-menu-task-1').focus();
+    await user.keyboard(' ');
+    await screen.findByRole('menu');
+
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+
+    expect(changesOfType('position')).toEqual([]);
   });
 });

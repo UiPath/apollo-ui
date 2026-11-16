@@ -176,9 +176,13 @@ export const StageNodeSequentialTaskGroups = ({
   const sensors = useStageTaskSensors();
   const dragAccessibility = useStageTaskDragAccessibility();
 
-  // Swallow the canvas drag/pan only while these rows are drag handles.
+  // Swallow the canvas drag/pan only while these rows are drag handles, and XYFlow's node keys
+  // (select, move, delete) always, so keys on a task never act on the stage.
   const taskList = (
-    <StageItemsList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
+    <StageItemsList
+      data-testid={`sequential-tasks-list-${id}`}
+      className={isDragDisabled ? 'nokey' : 'nodrag nopan nokey'}
+    >
       {sequentialTaskGroups.map((taskGroup, groupIndex) => {
         const isParallel = taskGroup.length > 1;
         return (

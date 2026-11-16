@@ -94,11 +94,12 @@ const StageNodeAdhocTaskGroupsInner = ({
     [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
   );
 
-  // Swallow the canvas drag/pan only while these rows are drag handles.
+  // Swallow the canvas drag/pan only while these rows are drag handles, and XYFlow's node keys
+  // (select, move, delete) always, so keys on a task never act on the stage.
   const taskList = (
     <StageItemsList
       data-testid={`adhoc-tasks-list-${id}`}
-      className={isDragDisabled ? undefined : 'nodrag nopan'}
+      className={isDragDisabled ? 'nokey' : 'nodrag nopan nokey'}
     >
       {rows.map((task) => {
         const taskExecution = execution?.taskStatus?.[task.id];
