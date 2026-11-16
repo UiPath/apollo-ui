@@ -6,6 +6,7 @@ import type { CellCommitMove } from './gridTypes';
 import { cellName, type RuleCardLabels } from './ruleCardModel';
 import {
   bandColumnNameOf,
+  bandColumnOf,
   cellTextOf,
   columnNameOf,
   hasStop,
@@ -141,7 +142,11 @@ export const useValueEditing = ({
     if (!edit || !target || !rule) return null;
     const token = valueTokenOf(rule, target);
     const column = columnNameOf(rule, target.columnId) || bandColumnNameOf(bands, target.columnId);
-    const field = edit.valueField?.(target) ?? {};
+    const hostField = edit.valueField?.(target);
+    const field = {
+      ...hostField,
+      icon: hostField?.icon ?? bandColumnOf(bands, target.columnId)?.icon,
+    };
     const held = hasStop(rule, target.columnId);
     const cancel = () => {
       awaitHost({ from: target, move: 'cancel', rules, refocus: true });

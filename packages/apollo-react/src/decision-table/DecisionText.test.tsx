@@ -3142,6 +3142,20 @@ describe('DecisionText', () => {
       );
     });
 
+    it.each([
+      ['its column', undefined, 'lucide lucide-hash'],
+      ['the host', <svg key="host" data-testid="host-icon" />, null],
+    ])('titles the popover with the glyph %s gives', (_, icon, glyph) => {
+      renderEditing({
+        initialEditing: r1Age,
+        valueField: (cell) => ({ ...field(cell), icon }),
+        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
+      });
+      const svg = popover().querySelector('svg');
+      expect(svg?.getAttribute('class') ?? null).toBe(glyph);
+      expect(inPopover().queryByTestId('host-icon') !== null).toBe(icon !== undefined);
+    });
+
     it("titles the popover with the column's type glyph and name, over the cell's operator and value", () => {
       renderEditing({ initialEditing: r1Age, valueField: field });
       expect(inPopover().getByTestId('type-icon')).toBeInTheDocument();
