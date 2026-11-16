@@ -32,6 +32,15 @@ export interface ByoConnectionForm {
   fields: ByoFormField[];
 }
 
+/**
+ * A saved connection's current settings, to fill its edit form.
+ * Secret values are never included: a secret left blank keeps its current value.
+ */
+export interface ByoConnectionValues {
+  authType: string | null;
+  values: Record<string, string>;
+}
+
 export interface ByoFolder {
   id: string;
   label: string;
@@ -82,6 +91,22 @@ export interface ByoDialogContext {
   takenModelNames: string[];
 }
 
+/** Which saved model the dialog edits: the host knows it from its model list. */
+export interface ByoEditTarget {
+  configurationId: string;
+  /** The model's name in the user's model list. */
+  name: string;
+}
+
+/** A saved model as the edit form starts from. */
+export interface ByoModelToEdit {
+  configurationId: string;
+  providerId: string;
+  connectionId: string;
+  modelId: string;
+  name: string;
+}
+
 export interface ByoConnectRequest {
   providerId: string;
   form: ByoConnectionForm;
@@ -89,16 +114,20 @@ export interface ByoConnectRequest {
   values: Record<string, string>;
   name: string;
   folderId: string;
+  /** The saved connection being edited; omitted when creating a connection. */
+  existing?: ByoConnection;
 }
 
-export interface ByoAddRequest {
+export interface ByoSaveRequest {
   providerId: string;
   connection: ByoConnection;
   modelId: string;
   name: string;
+  /** The saved model being edited; omitted when adding a model. */
+  editing?: ByoModelToEdit;
 }
 
-export interface ByoAddedModel {
+export interface ByoSavedModel {
   name: string;
   modelId: string;
   connectionId: string;
@@ -113,12 +142,23 @@ export interface ByoAddedModel {
  */
 export interface ByoModelDialogApi {
   loadContext: () => Promise<ByoResult<ByoDialogContext>>;
+  /** Reads the saved model the dialog was opened to edit. */
+  loadModel: (target: ByoEditTarget) => Promise<ByoResult<ByoModelToEdit>>;
   loadForm: (providerId: string, folderId: string | null) => Promise<ByoResult<ByoConnectionForm>>;
+  /** Reads a saved connection's current settings for its edit form. */
+  loadConnectionValues: (
+    providerId: string,
+    connection: ByoConnection
+  ) => Promise<ByoResult<ByoConnectionValues>>;
+  /** Creates a connection, or updates `existing` when one is given. */
   connect: (request: ByoConnectRequest) => Promise<ByoResult<ByoConnection>>;
   listModels: (
     providerId: string,
     connection: ByoConnection
   ) => Promise<ByoResult<ByoProviderModels>>;
-  /** Tests the model through the connection and, if it passes, adds it to the user's model list. */
-  testAndAdd: (request: ByoAddRequest) => Promise<ByoResult<ByoAddedModel>>;
+  /**
+   * Tests the model through the connection and, if it passes, saves it:
+   * adds it to the user's model list, or updates `editing` when one is given.
+   */
+  testAndSave: (request: ByoSaveRequest) => Promise<ByoResult<ByoSavedModel>>;
 }

@@ -7,6 +7,7 @@ import type {
   ByoConnectionForm,
   ByoDialogContext,
   ByoModelDialogApi,
+  ByoModelToEdit,
 } from './types';
 
 const SAVED: ByoConnection = { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'me' };
@@ -23,6 +24,14 @@ const CONTEXT: ByoDialogContext = {
   ],
   defaultFolderId: 'me',
   takenModelNames: ['Taken'],
+};
+
+const SAVED_MODEL: ByoModelToEdit = {
+  configurationId: 'cfg1',
+  providerId: 'openai',
+  connectionId: 'c1',
+  modelId: 'gpt-4o',
+  name: 'Taken',
 };
 
 const AZURE_FORM: ByoConnectionForm = {
@@ -68,7 +77,12 @@ const AZURE_FORM: ByoConnectionForm = {
 function fakeApi(overrides: Partial<ByoModelDialogApi> = {}): ByoModelDialogApi {
   return {
     loadContext: vi.fn(async () => ({ ok: true as const, value: CONTEXT })),
+    loadModel: vi.fn(async () => ({ ok: true as const, value: SAVED_MODEL })),
     loadForm: vi.fn(async () => ({ ok: true as const, value: AZURE_FORM })),
+    loadConnectionValues: vi.fn(async () => ({
+      ok: true as const,
+      value: { authType: null, values: { url: 'https://old.example.com' } },
+    })),
     connect: vi.fn(async (r) => ({
       ok: true as const,
       value: { id: 'new', providerId: r.providerId, name: r.name, folderId: r.folderId },
@@ -82,7 +96,7 @@ function fakeApi(overrides: Partial<ByoModelDialogApi> = {}): ByoModelDialogApi 
         ],
       },
     })),
-    testAndAdd: vi.fn(async (r) => ({
+    testAndSave: vi.fn(async (r) => ({
       ok: true as const,
       value: {
         name: r.name,
@@ -105,9 +119,9 @@ describe('ByoModelDialog', () => {
   it('adds a model through a saved connection', async () => {
     const user = userEvent.setup();
     const api = fakeApi();
-    const onAdded = vi.fn();
+    const onSaved = vi.fn();
     const onOpenChange = vi.fn();
-    render(<ByoModelDialog open onOpenChange={onOpenChange} api={api} onAdded={onAdded} />);
+    render(<ByoModelDialog open onOpenChange={onOpenChange} api={api} onSaved={onSaved} />);
 
     await pick(user, 'Provider', 'OpenAI');
     expect(screen.getByRole('combobox', { name: 'Connection' })).toHaveTextContent(
@@ -118,14 +132,14 @@ describe('ByoModelDialog', () => {
     expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('gpt-4o');
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
 
-    await waitFor(() => expect(onAdded).toHaveBeenCalled());
-    expect(api.testAndAdd).toHaveBeenCalledWith({
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(api.testAndSave).toHaveBeenCalledWith({
       providerId: 'openai',
       connection: SAVED,
       modelId: 'gpt-4o',
       name: 'gpt-4o',
     });
-    expect(onAdded.mock.calls[0]?.[0]).toMatchObject({ name: 'gpt-4o', connectionId: 'c1' });
+    expect(onSaved.mock.calls[0]?.[0]).toMatchObject({ name: 'gpt-4o', connectionId: 'c1' });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -137,7 +151,7 @@ describe('ByoModelDialog', () => {
         value: { compatible: [], incompatible: [] },
       })),
     });
-    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onAdded={vi.fn()} />);
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
     await pick(user, 'Provider', 'Azure OpenAI');
     const connect = await screen.findByRole('button', { name: 'Connect' });
@@ -180,7 +194,7 @@ describe('ByoModelDialog', () => {
         },
       })),
     });
-    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onAdded={vi.fn()} />);
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
     await pick(user, 'Provider', 'Azure OpenAI');
     await user.type(await screen.findByLabelText(/Endpoint/), 'https://res.openai.azure.com');
@@ -198,7 +212,7 @@ describe('ByoModelDialog', () => {
 
   it('refuses a name already in the model list', async () => {
     const user = userEvent.setup();
-    render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onAdded={vi.fn()} />);
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
 
     await pick(user, 'Provider', 'OpenAI');
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
@@ -215,14 +229,14 @@ describe('ByoModelDialog', () => {
 
   it('shows a failed test without closing', async () => {
     const user = userEvent.setup();
-    const onAdded = vi.fn();
+    const onSaved = vi.fn();
     const api = fakeApi({
-      testAndAdd: vi.fn(async () => ({
+      testAndSave: vi.fn(async () => ({
         ok: false as const,
         failure: { title: 'The test call failed: MISSING_TOOL_CALL' },
       })),
     });
-    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onAdded={onAdded} />);
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={onSaved} />);
 
     await pick(user, 'Provider', 'OpenAI');
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
@@ -230,6 +244,81 @@ describe('ByoModelDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
 
     expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
-    expect(onAdded).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
+  it('edits a saved model, keeping its own name', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi();
+    const onSaved = vi.fn();
+    render(
+      <ByoModelDialog
+        open
+        onOpenChange={vi.fn()}
+        api={api}
+        onSaved={onSaved}
+        editing={{ configurationId: 'cfg1', name: 'Taken' }}
+      />
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Edit your model' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+    expect(api.loadModel).toHaveBeenCalledWith({ configurationId: 'cfg1', name: 'Taken' });
+    expect(screen.getByRole('combobox', { name: 'Connection' })).toHaveTextContent(
+      'Saved connection: My OpenAI · My Workspace'
+    );
+    expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('Taken');
+
+    await pick(user, 'Model', 'gpt-5.1');
+    // A name the user kept is not replaced by the new model id.
+    expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('Taken');
+    await user.click(screen.getByRole('button', { name: 'Test and save' }));
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(api.testAndSave).toHaveBeenCalledWith({
+      providerId: 'openai',
+      connection: SAVED,
+      modelId: 'gpt-5.1',
+      name: 'Taken',
+      editing: SAVED_MODEL,
+    });
+  });
+
+  it('edits a saved connection in place', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({
+      connect: vi.fn(async (r) => ({
+        ok: true as const,
+        value: { ...SAVED, name: r.name },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await pick(user, 'Provider', 'OpenAI');
+    await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
+
+    const endpoint = await screen.findByLabelText(/Endpoint/);
+    await waitFor(() => expect(endpoint).toHaveValue('https://old.example.com'));
+    expect(api.loadConnectionValues).toHaveBeenCalledWith('openai', SAVED);
+    // The secret may stay blank, and the connection cannot move folders.
+    expect(screen.getByText('Leave blank to keep the current value.')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Stored in' })).toBeDisabled();
+    expect(screen.getByRole('textbox', { name: 'Connection name' })).toHaveValue('My OpenAI');
+
+    await user.clear(endpoint);
+    await user.type(endpoint, 'https://new.example.com');
+    await user.click(screen.getByRole('button', { name: 'Save connection' }));
+
+    await screen.findByText('Connection updated.');
+    expect(api.connect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerId: 'openai',
+        values: { url: 'https://new.example.com', apiVersion: '2023-10-01' },
+        name: 'My OpenAI',
+        folderId: 'me',
+        existing: SAVED,
+      })
+    );
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
   });
 });
