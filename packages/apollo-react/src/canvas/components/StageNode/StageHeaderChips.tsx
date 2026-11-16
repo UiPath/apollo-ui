@@ -135,7 +135,7 @@ const StageStatusBadge = ({
   }
   return (
     <>
-      <CanvasTooltip placement="bottom" content={tooltip}>
+      <CanvasTooltip placement="bottom" content={tooltip} stopEscapePropagation>
         {badge}
       </CanvasTooltip>
       {hasTextDescription && (

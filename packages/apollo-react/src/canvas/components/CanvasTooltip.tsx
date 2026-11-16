@@ -73,6 +73,11 @@ interface CanvasTooltipProps extends PropsWithChildren {
    * never applies — every open waits its full delay.
    */
   disableSkipDelay?: boolean;
+  /**
+   * When true, Escape closes the tooltip without reaching other Escape handlers,
+   * e.g. a focusable trigger inside a node that would otherwise deselect it.
+   */
+  stopEscapePropagation?: boolean;
 }
 
 /**
@@ -93,6 +98,7 @@ export function CanvasTooltip({
   contentClassName,
   disableHoverableContent,
   disableSkipDelay,
+  stopEscapePropagation,
   children,
 }: Readonly<CanvasTooltipProps>) {
   const childElement = useMemo(
@@ -179,7 +185,7 @@ export function CanvasTooltip({
         <TooltipContent
           side={placement}
           sideOffset={sideOffset}
-          onEscapeKeyDown={(e) => e.stopPropagation()}
+          onEscapeKeyDown={stopEscapePropagation ? (e) => e.stopPropagation() : undefined}
           className={cn('z-1200 max-w-xs wrap-break-word', contentClassName)}
         >
           {content}
