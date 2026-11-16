@@ -192,14 +192,6 @@ export const tableWithoutCell = (table: EditableTable, cell: SentenceCellId): Ed
         }
   );
 
-/** The inputs a rule has no condition for. */
-export const unusedInputs = (table: EditableTable, rowId: string): EditableColumn[] => {
-  const rule = table.rules.find((candidate) => candidate.rowId === rowId);
-  return table.inputs.filter(
-    (input) => !rule?.conditions.some((condition) => condition.inputId === input.id)
-  );
-};
-
 /** The table with a new input column, and that column's id. */
 export const tableWithNewInput = (table: EditableTable): [EditableTable, string] => {
   const id = `input-${table.nextId}`;
@@ -250,18 +242,17 @@ export const tableWithDuplicate = (
 export const tableWithClearedRule = (table: EditableTable, rowId: string): EditableTable =>
   mapRule(table, rowId, (rule) => ({ ...rule, outcomes: {}, conditions: [] }));
 
-/** The table with a rule moved by `delta` places, kept inside the table. */
+/** The table with the rule at `from` moved to `to`, kept inside the table. */
 export const tableWithMovedRule = (
   table: EditableTable,
-  rowId: string,
-  delta: number
+  from: number,
+  to: number
 ): EditableTable => {
-  const index = ruleIndexOf(table, rowId);
-  const rule = table.rules[index];
-  const to = Math.max(0, Math.min(table.rules.length - 1, index + delta));
-  if (!rule || to === index) return table;
+  const rule = table.rules[from];
+  const at = Math.max(0, Math.min(table.rules.length - 1, to));
+  if (!rule || at === from) return table;
   const rules = table.rules.filter((candidate) => candidate !== rule);
-  rules.splice(to, 0, rule);
+  rules.splice(at, 0, rule);
   return { ...table, rules };
 };
 

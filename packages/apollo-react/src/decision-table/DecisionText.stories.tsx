@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -19,7 +18,6 @@ import {
   tableWithoutRule,
   tableWithRuleAt,
   tableWithValue,
-  unusedInputs,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
 import {
@@ -27,11 +25,9 @@ import {
   DECISION_TEXT_LABELS,
   HIT_POLICY_GROUPS,
 } from './__fixtures__/sentences.fixtures';
-import { valueTypeIcon } from './bandColumns';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
-import type { GridMenuEntry } from './GridMenu';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { pickedOption } from './PolicyOptionItem';
 import { valueTokenOf } from './sentenceParts';
@@ -318,57 +314,6 @@ const TableHost = ({
   const columnName = (columnId: string) =>
     [...table.inputs, ...table.outputs].find((column) => column.id === columnId)?.name ?? columnId;
 
-  const conditionEntries = (rowId: string): GridMenuEntry[] => {
-    const unused = unusedInputs(table, rowId).map(
-      (input): GridMenuEntry => ({
-        label: input.name,
-        icon: valueTypeIcon(columnValueType(input.id, columnEdits)),
-        focusesOwnSurface: true,
-        onClick: () => open({ rowId, columnId: input.id, index: 0 }),
-      })
-    );
-    const addInput = () => {
-      const [next, columnId] = tableWithNewInput(table);
-      setTable(next);
-      open({ rowId, columnId, index: 0 });
-    };
-    return [
-      ...unused,
-      ...(unused.length > 0 ? [{ divider: true } as const] : []),
-      { label: 'New input', icon: <Plus />, focusesOwnSurface: true, onClick: addInput },
-    ];
-  };
-
-  const ruleEntries = (rowId: string): GridMenuEntry[] => {
-    const index = table.rules.findIndex((rule) => rule.rowId === rowId);
-    const duplicate = () => {
-      const [next, copyId] = tableWithDuplicate(table, rowId);
-      setTable(next);
-      setSelected({ rowId: copyId });
-    };
-    return [
-      { label: 'Insert rule above', onClick: () => addRuleAt(index) },
-      { label: 'Insert rule below', onClick: () => addRuleAt(index + 1) },
-      { label: 'Duplicate rule', onClick: duplicate },
-      { divider: true },
-      {
-        label: 'Move up',
-        disabled: index === 0,
-        disabledReason: 'Already the first rule',
-        onClick: () => setTable(tableWithMovedRule(table, rowId, -1)),
-      },
-      {
-        label: 'Move down',
-        disabled: index === table.rules.length - 1,
-        disabledReason: 'Already the last rule',
-        onClick: () => setTable(tableWithMovedRule(table, rowId, 1)),
-      },
-      { divider: true },
-      { label: 'Clear rule', onClick: () => setTable(tableWithClearedRule(table, rowId)) },
-      { label: 'Delete rule', destructive: true, onClick: () => deleteRule(rowId) },
-    ];
-  };
-
   const edit: DecisionTextEdit = {
     editing,
     renderEditor,
@@ -402,8 +347,20 @@ const TableHost = ({
       onMoreProperties: setMoreProperties,
     },
     onClearCell: (cell) => setTable(tableWithoutCell(table, cell)),
-    conditionEntries,
-    ruleEntries,
+    inputIds: table.inputs.map((input) => input.id),
+    onAddInput: () => {
+      const [next, columnId] = tableWithNewInput(table);
+      setTable(next);
+      return columnId;
+    },
+    onInsertRule: addRuleAt,
+    onDuplicateRule: (rowId) => {
+      const [next, copyId] = tableWithDuplicate(table, rowId);
+      setTable(next);
+      setSelected({ rowId: copyId });
+    },
+    onClearRule: (rowId) => setTable(tableWithClearedRule(table, rowId)),
+    onMoveRule: (from, to) => setTable(tableWithMovedRule(table, from, to)),
     onDeleteRule: deleteRule,
     labels: DECISION_TEXT_EDIT_LABELS,
   };

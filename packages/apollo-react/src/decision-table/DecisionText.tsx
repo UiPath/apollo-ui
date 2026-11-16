@@ -134,6 +134,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const ruleMenus = useRuleMenus({
     edit,
     rules,
+    bands,
     selectedRowId: selected?.rowId,
     refocus: navigation.refocus,
   });
