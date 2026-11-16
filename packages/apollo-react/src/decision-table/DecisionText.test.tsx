@@ -5272,7 +5272,7 @@ describe('DecisionText', () => {
       ...rule,
       lead: rule.lead.map((part) =>
         typeof part !== 'string' && part.kind === 'input' && part.columnId === 'income'
-          ? { ...part, decisionId: 'income-decision' }
+          ? { ...part, producedBy: 'income-decision' }
           : part
       ),
     }));
@@ -5282,7 +5282,7 @@ describe('DecisionText', () => {
       ...rule,
       lead: [
         'when ',
-        { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
+        { kind: 'input', columnId: 'income', text: 'income', producedBy: 'income-decision' },
         ' is not empty',
       ],
     }));
@@ -5412,13 +5412,13 @@ describe('DecisionText', () => {
       const onOpenDecision = vi.fn();
       const lead = [
         'when ',
-        { kind: 'input', columnId: 'income', text: 'income', decisionId: 'income-decision' },
+        { kind: 'input', columnId: 'income', text: 'income', producedBy: 'income-decision' },
         ' is set and ',
         { kind: 'input', columnId: 'age', text: 'age' },
         ' is ',
         { kind: 'value', columnId: 'age', index: 0, text: '25' },
         ' and ',
-        { kind: 'input', columnId: 'channel', text: 'channel', decisionId: 'channel-decision' },
+        { kind: 'input', columnId: 'channel', text: 'channel', producedBy: 'channel-decision' },
         ' is set',
       ] satisfies SentencePart[];
       const rules = GRID_SENTENCE_RULES.map((rule) => ({ ...rule, lead }));
