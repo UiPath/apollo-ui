@@ -28,7 +28,7 @@ export interface DecisionTextEdit {
   onCancel: () => void;
   /** What the open cell's popover offers: its type glyph, operators, allowed values, and a range's or list's values; called only while it is open. */
   valueField?: (cell: SentenceCellId) => ValuePopoverProps['field'];
-  /** The host's expression editor, which the popover's Edit expression swaps in for its fields on the whole condition, where `valueField` gives the condition's `expression` or the value is the whole condition; without it the popover offers none. */
+  /** The host's expression editor, which the popover's Edit expression swaps in for its fields on the whole condition, where `valueField` gives the condition's `expression` or the value is the whole condition; without it the popover's own text field. */
   renderEditor?: ValuePopoverProps['renderEditor'];
   /** Editing of a band's input or output from its pill; without it the pills stay plain. */
   column?: ColumnEdit;

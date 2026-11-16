@@ -42,8 +42,8 @@ export interface ValuePopoverProps
   onOperatorChange: (id: string) => void;
   /** Empties an outcome; undefined for a condition or an empty outcome. */
   onClear: (() => void) | undefined;
-  /** The host's expression editor, which Edit expression swaps in for the fields on the whole condition. */
-  renderEditor: ExpressionEditorFrameProps['renderEditor'] | undefined;
+  /** The host's expression editor, which Edit expression swaps in for the fields on the whole condition; without it the popover's own text field. */
+  renderEditor: ExpressionEditorFrameProps['renderEditor'];
   labels: ValuePopoverLabels;
   /** The text field's testid; derived ids: `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear` and the footer's. */
   dataTestId: string;
@@ -174,7 +174,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       settle('down');
     };
     const editExpression =
-      renderEditor && (field.expression !== undefined || operators.length === 0)
+      field.expression !== undefined || operators.length === 0
         ? () => {
             const opened = field.expression ?? shapeDraft.text;
             seedRef.current = opened;
@@ -186,7 +186,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
     return (
       <div ref={setRoot} className={POPOVER_CLASS}>
         <PopoverHeader icon={field.icon} column={column} />
-        {expression && renderEditor ? (
+        {expression ? (
           <ExpressionEditorFrame
             renderEditor={renderEditor}
             target={target}
@@ -195,6 +195,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
             onChange={changeDraft}
             onApply={() => settle('down')}
             onCancel={onCancel}
+            dataTestId={`${dataTestId}-expression-editor`}
           />
         ) : (
           <>

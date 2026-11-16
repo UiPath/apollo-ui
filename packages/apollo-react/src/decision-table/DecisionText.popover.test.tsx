@@ -497,6 +497,22 @@ describe('DecisionText expression editor contract', () => {
     act(() => screen.getByTestId('dom-host').closest<HTMLElement>('[tabindex]')?.focus());
     expect(document.activeElement).toBe(domInput());
   });
+
+  it('opens its own text field on the expression without a host editor, and applies what is typed', () => {
+    const onCommit = vi.fn();
+    render(<Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} />);
+    const name = popover().getByRole('textbox').getAttribute('aria-label');
+    fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
+    const text = screen.getByTestId('nl-editor-expression-editor');
+    expect(document.activeElement).toBe(text);
+    expect(text).toHaveValue('< 600');
+    expect(text).toHaveAttribute('aria-label', name);
+    fireEvent.change(text, { target: { value: '> 1' } });
+    fireEvent.keyDown(text, { key: 'Enter' });
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'expression', text: '> 1' }, 'down'],
+    ]);
+  });
 });
 
 describe('DecisionText value popover whose view stops rendering', () => {
