@@ -161,6 +161,21 @@ describe('DecisionText scroll', () => {
     page.scrollTop = 0;
   });
 
+  it('resolves a percentage scroll-padding-top against the ancestor', () => {
+    const { rerender } = render(scroller(text({ scroll: 'ancestor' })));
+    const outer = screen.getByTestId('scroller');
+    outer.style.scrollPaddingTop = '10%';
+    vi.spyOn(outer, 'clientHeight', 'get').mockReturnValue(600);
+    const list = screen.getByTestId('nl-row-row-0').parentElement;
+    if (!list) throw new Error('no rule list');
+    vi.spyOn(list, 'getBoundingClientRect').mockImplementation(
+      () => new DOMRect(0, -outer.scrollTop, 100, 100)
+    );
+    outer.scrollTop = 100000;
+    rerender(scroller(text({ scroll: 'ancestor', selected: { rowId: 'row-10' } })));
+    expect(outer.scrollTop).toBe((sentenceRuleOffsets(RULES)[10] ?? 0) - 60);
+  });
+
   it('windows again when its list moves inside the ancestor', () => {
     render(scroller(text({ scroll: 'ancestor' })));
     const outer = screen.getByTestId('scroller');
