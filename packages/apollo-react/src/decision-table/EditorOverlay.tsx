@@ -125,9 +125,11 @@ export const EditorOverlay: React.FC<EditorOverlayProps> = ({
       }}
       onAuxClick={takePress}
       onContextMenu={takePress}
+      onKeyDownCapture={(event) => {
+        if (event.key === 'Escape' && isComposing(event)) event.preventDefault();
+      }}
       onKeyDown={(event) => {
         const { currentTarget, target, shiftKey } = event;
-        if (event.key === 'Escape' && isComposing(event)) event.preventDefault();
         if (event.defaultPrevented || !isPlainTab(event)) return;
         if (!shiftKey && target === lastActionIn(currentTarget)) {
           wrappingRef.current = true;
