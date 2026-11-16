@@ -44,6 +44,7 @@ const StageNodeAdhocTaskGroupsInner = ({
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
     onTaskReorder,
+    onTaskClick,
     onTaskPlay,
     loadingTaskIds,
     onTaskBreakpointToggle,
@@ -52,6 +53,7 @@ const StageNodeAdhocTaskGroupsInner = ({
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
+  const isLabelOpenable = isDragDisabled && !!onTaskClick;
   const rows = useMemo(() => adhocTaskGroups.flat(), [adhocTaskGroups]);
 
   const rowIds = useMemo(() => rows.map((task) => task.id), [rows]);
@@ -122,7 +124,7 @@ const StageNodeAdhocTaskGroupsInner = ({
             isTaskLoading={loadingTaskIds?.has(task.id)}
             isReadOnly={isReadOnly}
             onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
-            isSortable={!isDragDisabled}
+            isLabelOpenable={isLabelOpenable}
             getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
           />
         );

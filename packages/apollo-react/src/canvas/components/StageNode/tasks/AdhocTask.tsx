@@ -26,8 +26,9 @@ interface AdhocTaskItemProps {
   isReadOnly?: boolean;
   /** Makes the breakpoint gutter interactive. Passed only in the Debug view. */
   onToggleBreakpoint?: (taskId: string) => void;
-  /** Wrapped in a sortable row, which is then the task's tab stop instead of the task label. */
-  isSortable?: boolean;
+  /** The label is the keyboard control that opens the task. Set when no sortable row wraps the
+   * card and the host handles task clicks. */
+  isLabelOpenable?: boolean;
 }
 
 const AdhocTaskItemComponent = ({
@@ -40,7 +41,7 @@ const AdhocTaskItemComponent = ({
   isTaskLoading,
   isReadOnly,
   onToggleBreakpoint,
-  isSortable = false,
+  isLabelOpenable = false,
 }: AdhocTaskItemProps) => {
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
@@ -56,7 +57,7 @@ const AdhocTaskItemComponent = ({
     menuRef.current?.handleContextMenu(e);
   }, []);
 
-  const onOpenKeyDown = useTaskLabelOpen(task.id, onTaskClick, !isSortable);
+  const onOpenKeyDown = useTaskLabelOpen(task.id, onTaskClick, isLabelOpenable);
 
   return (
     <StageItemPill
