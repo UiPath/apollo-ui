@@ -94,19 +94,20 @@ export interface TokenDiff {
   after: readonly StruckValue[];
 }
 
-/** A condition line the rule's card does not word: a removed one's column name then its old text, or an added one's column name. */
+/** A cell the rule's card does not word: a removed one's column name then its old text, or an added one's column name. */
 export interface RemovedLine {
   columnId: string;
   change: Extract<DiffChange, 'add' | 'delete'>;
   parts: readonly SentencePart[];
 }
 
-/** A rule card's change, its after-state number (null when removed), its tokens' changes and its removed conditions. */
+/** A rule card's change, its after-state number (null when removed), its tokens' changes, and the outputs and inputs it does not word. */
 export interface RuleDiff {
   change: DiffChange | undefined;
   movedFrom: number | undefined;
   number: number | null;
   tokens: ReadonlyMap<SentenceToken, TokenDiff>;
+  removedOutcomes: readonly RemovedLine[];
   removedLines: readonly RemovedLine[];
 }
 
@@ -130,47 +131,77 @@ const NO_VALUES: ReadonlyMap<string, readonly DiffValueChange[]> = new Map();
 
 const NO_TOKENS: RuleDiff['tokens'] = new Map();
 
-/** `kept` with each removed item under the item its `after` names, in the order given; an unknown or circular `after` puts it first. */
-export const withRemoved = <T>(
-  kept: readonly T[],
-  removed: readonly { item: T; after: string | null }[],
-  idOf: (item: T) => string
-): { item: T; removed: boolean }[] => {
-  const ids = new Set([...kept, ...removed.map(({ item }) => item)].map(idOf));
-  const followers = new Map<string | null, T[]>();
-  for (const { item, after } of removed) {
-    const key = after !== null && ids.has(after) && after !== idOf(item) ? after : null;
-    followers.set(key, [...(followers.get(key) ?? []), item]);
-  }
-  const placed: { item: T; removed: boolean }[] = [];
-  const seen = new Set<T>();
-  const emitFollowers = (key: string | null) => {
-    const stack: T[] = [];
-    const push = (from: string | null) => {
-      for (const follower of [...(followers.get(from) ?? [])].reverse()) stack.push(follower);
-    };
-    push(key);
-    for (let item = stack.pop(); item !== undefined; item = stack.pop()) {
-      if (seen.has(item)) continue;
-      seen.add(item);
-      placed.push({ item, removed: true });
-      push(idOf(item));
+/** A kept item, or the removed one at `index` of the removed list. */
+export type Placed<K, R> = { kind: 'kept'; item: K } | { kind: 'removed'; item: R; index: number };
+
+const pushTo = <Key, Value>(map: Map<Key, Value[]>, key: Key, value: Value) => {
+  const list = map.get(key);
+  if (list) list.push(value);
+  else map.set(key, [value]);
+};
+
+/** `kept` with each removed item under the kept item its `after` names, else under the first removed item of that id, in the order given; a null, unknown or own `after` puts it first, and a circular run goes before those. */
+export const withRemoved = <K, R extends { after: string | null }>(
+  kept: readonly K[],
+  removed: readonly R[],
+  keptId: (item: K) => string,
+  removedId: (item: R) => string
+): Placed<K, R>[] => {
+  const keptIds = new Set(kept.map(keptId));
+  const firstRemoved = new Map<string, number>();
+  removed.forEach((item, index) => {
+    const id = removedId(item);
+    if (!firstRemoved.has(id)) firstRemoved.set(id, index);
+  });
+  const underKept = new Map<string, number[]>();
+  const underRemoved = new Map<number, number[]>();
+  const first: number[] = [];
+  removed.forEach(({ after }, index) => {
+    const parent = after === null ? undefined : firstRemoved.get(after);
+    if (after !== null && keptIds.has(after)) pushTo(underKept, after, index);
+    else if (parent !== undefined && parent !== index) pushTo(underRemoved, parent, index);
+    else first.push(index);
+  });
+  const visited = new Set<number>();
+  const walk = (roots: readonly number[], into: Placed<K, R>[]) => {
+    const stack = [...roots].reverse();
+    for (let index = stack.pop(); index !== undefined; index = stack.pop()) {
+      const item = removed[index];
+      if (!item || visited.has(index)) continue;
+      visited.add(index);
+      into.push({ kind: 'removed', item, index });
+      const children = underRemoved.get(index) ?? [];
+      for (let child = children.length - 1; child >= 0; child -= 1) {
+        const next = children[child];
+        if (next !== undefined) stack.push(next);
+      }
     }
   };
-  emitFollowers(null);
+  const placed: Placed<K, R>[] = [];
+  walk(first, placed);
   for (const item of kept) {
-    placed.push({ item, removed: false });
-    emitFollowers(idOf(item));
+    placed.push({ kind: 'kept', item });
+    const id = keptId(item);
+    walk(underKept.get(id) ?? [], placed);
+    underKept.delete(id);
   }
-  const unplaced = removed.filter(({ item }) => !seen.has(item));
-  return [...unplaced.map(({ item }) => ({ item, removed: true })), ...placed];
+  const circular: Placed<K, R>[] = [];
+  removed.forEach((_, index) => walk([index], circular));
+  return [...circular, ...placed];
+};
+
+/** `base`, lengthened until no id in `ids` starts with it. */
+const freePrefix = (base: string, ids: readonly string[]) => {
+  let prefix = base;
+  while (ids.some((id) => id.startsWith(prefix))) prefix = `${prefix}~`;
+  return prefix;
 };
 
 const valuesByRow = (values: readonly DiffValueChange[]) => {
   const byRow = new Map<string, Map<string, DiffValueChange[]>>();
   for (const value of values) {
     const row = byRow.get(value.rowId) ?? new Map<string, DiffValueChange[]>();
-    row.set(value.columnId, [...(row.get(value.columnId) ?? []), value]);
+    pushTo(row, value.columnId, value);
     byRow.set(value.rowId, row);
   }
   return byRow;
@@ -192,22 +223,25 @@ const nameTokenOf = (rule: SentenceRule, columnId: string): SentenceNameToken | 
 const struckOf = (value: DiffValueChange): StruckValue[] =>
   value.change === 'add' ? [] : [{ text: value.previous, change: value.change }];
 
-/** Each value token's change by token, and a struck line for each changed column the rule no longer shows. */
+/** Each value token's change by token, and for each changed column the rule no longer shows, a struck outcome for an output or a struck line for an input. */
 const tokenDiffsOf = (
   rule: SentenceRule,
   values: ReadonlyMap<string, readonly DiffValueChange[]>,
   nameOf: (columnId: string) => SentenceNameToken
-): Pick<RuleDiff, 'tokens' | 'removedLines'> => {
+): Pick<RuleDiff, 'tokens' | 'removedOutcomes' | 'removedLines'> => {
   const tokens = valueTokens(rule);
-  const diffs = new Map<SentenceToken, TokenDiff>();
+  const diffs = new Map<
+    SentenceToken,
+    { change: DiffChange | undefined; before: StruckValue[]; after: StruckValue[] }
+  >();
+  const removedOutcomes: RemovedLine[] = [];
   const removedLines: RemovedLine[] = [];
   const add = (token: SentenceToken, change: Partial<TokenDiff>) => {
     const current = diffs.get(token) ?? { change: undefined, before: [], after: [] };
-    diffs.set(token, {
-      change: change.change ?? current.change,
-      before: [...current.before, ...(change.before ?? [])],
-      after: [...current.after, ...(change.after ?? [])],
-    });
+    current.change = change.change ?? current.change;
+    current.before.push(...(change.before ?? []));
+    current.after.push(...(change.after ?? []));
+    diffs.set(token, current);
   };
   for (const [columnId, changes] of values) {
     const cellTokens = tokens.filter((token) => token.columnId === columnId);
@@ -224,6 +258,8 @@ const tokenDiffsOf = (
       continue;
     }
     if (!first || !last) {
+      const column = nameOf(columnId);
+      const unworded = column.kind === 'output' ? removedOutcomes : removedLines;
       const texts = changes.flatMap(struckOf);
       if (texts.length > 0) {
         const token: SentenceValueToken = {
@@ -232,10 +268,10 @@ const tokenDiffsOf = (
           index: 0,
           text: texts.map(({ text }) => text).join(', '),
         };
-        removedLines.push({ columnId, change: 'delete', parts: [nameOf(columnId), ' ', token] });
+        unworded.push({ columnId, change: 'delete', parts: [column, ' ', token] });
       }
       if (changes.some((value) => value.change === 'add')) {
-        removedLines.push({ columnId, change: 'add', parts: [nameOf(columnId)] });
+        unworded.push({ columnId, change: 'add', parts: [column] });
       }
       continue;
     }
@@ -252,7 +288,7 @@ const tokenDiffsOf = (
       else add(last, { change: struck.length > 0 ? undefined : own, after: struck });
     }
   }
-  return { tokens: diffs, removedLines };
+  return { tokens: diffs, removedOutcomes, removedLines };
 };
 
 /** Each rule's change and number, removed rules in place, and in compact mode each long unchanged run folded unless `expanded` holds its first rule. */
@@ -264,36 +300,39 @@ export const diffRowsOf = (
 ): DiffRows => {
   const ruleChanges = new Map((diff.rules ?? []).map((change) => [change.rowId, change]));
   const values = valuesByRow(diff.values ?? []);
-  const placed = withRemoved(
-    rules,
-    (diff.removedRules ?? []).map(({ rule, after }) => ({ item: rule, after })),
-    (rule) => rule.rowId
-  );
+  const keptIds = rules.map(({ rowId }) => rowId);
+  const removedPrefix = freePrefix(REMOVED_PREFIX, keptIds);
+  const foldPrefix = freePrefix(FOLD_PREFIX, keptIds);
   let number = 0;
-  const keptIds = new Set(rules.map(({ rowId }) => rowId));
-  const shownIds = new Set<string>();
-  const all = placed.map(({ item, removed }) => {
-    let rowId = item.rowId;
-    while (shownIds.has(rowId) || (removed && keptIds.has(rowId)))
-      rowId = `${REMOVED_PREFIX}${rowId}`;
-    shownIds.add(rowId);
-    const rule = rowId === item.rowId ? item : { ...item, rowId };
-    const ruleChange = removed ? undefined : ruleChanges.get(item.rowId);
-    const rowValues = values.get(rowId) ?? NO_VALUES;
-    const change: DiffChange | undefined = removed
-      ? 'delete'
-      : (ruleChange?.change ?? (rowValues.size > 0 ? 'update' : undefined));
-    if (!removed) number += 1;
-    const { tokens, removedLines } =
-      rowValues.size > 0
-        ? tokenDiffsOf(rule, rowValues, nameOf)
-        : { tokens: NO_TOKENS, removedLines: [] };
+  const all = withRemoved(
+    rules,
+    diff.removedRules ?? [],
+    (rule) => rule.rowId,
+    ({ rule }) => rule.rowId
+  ).map((placed) => {
+    if (placed.kind === 'removed') {
+      const rule = { ...placed.item.rule, rowId: `${removedPrefix}${placed.index}` };
+      const ruleDiff: RuleDiff = {
+        change: 'delete',
+        movedFrom: undefined,
+        number: null,
+        tokens: NO_TOKENS,
+        removedOutcomes: [],
+        removedLines: [],
+      };
+      return { rule, diff: ruleDiff };
+    }
+    const rule = placed.item;
+    const ruleChange = ruleChanges.get(rule.rowId);
+    const rowValues = values.get(rule.rowId) ?? NO_VALUES;
+    number += 1;
     const ruleDiff: RuleDiff = {
-      change,
+      change: ruleChange?.change ?? (rowValues.size > 0 ? 'update' : undefined),
       movedFrom: ruleChange?.movedFrom,
-      number: removed ? null : number,
-      tokens,
-      removedLines,
+      number,
+      ...(rowValues.size > 0
+        ? tokenDiffsOf(rule, rowValues, nameOf)
+        : { tokens: NO_TOKENS, removedOutcomes: [], removedLines: [] }),
     };
     return { rule, diff: ruleDiff };
   });
@@ -323,9 +362,7 @@ export const diffRowsOf = (
     const run = all.slice(index, end);
     const [first] = run;
     if (first && run.length >= DIFF_MIN_FOLDED && !expanded.has(first.rule.rowId)) {
-      let rowId = `${FOLD_PREFIX}${first.rule.rowId}`;
-      while (shownIds.has(rowId)) rowId = `${FOLD_PREFIX}${rowId}`;
-      shownIds.add(rowId);
+      const rowId = `${foldPrefix}${first.rule.rowId}`;
       rows.set(rowId, {
         kind: 'fold',
         fold: {
@@ -358,13 +395,13 @@ export const diffColumnsOf = (
   const bandOf = (columns: readonly SentenceBandColumn[], kind: DiffRemovedColumn['kind']) =>
     withRemoved(
       columns,
-      (diff.removedColumns ?? [])
-        .filter((removed) => removed.kind === kind)
-        .map(({ column, after }) => ({ item: column, after })),
-      (column) => column.id
-    ).map(({ item, removed }) => {
-      if (removed) changes.set(item.id, 'delete');
-      return item;
+      (diff.removedColumns ?? []).filter((removed) => removed.kind === kind),
+      (column) => column.id,
+      ({ column }) => column.id
+    ).map((placed) => {
+      if (placed.kind === 'kept') return placed.item;
+      changes.set(placed.item.column.id, 'delete');
+      return placed.item.column;
     });
   return { inputs: bandOf(inputs, 'input'), outputs: bandOf(outputs, 'output'), changes };
 };

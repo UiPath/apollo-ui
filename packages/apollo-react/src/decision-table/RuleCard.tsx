@@ -126,6 +126,7 @@ export const RuleCard = memo<RuleCardProps>(
             title={card.title}
             badge={card.badges.heading}
             removals={card.removals.heading}
+            unworded={diff?.removedOutcomes}
             className={editLabels && HEADING_ACTIONS_SPACE_CLASS}
             {...lineProps}
           />
