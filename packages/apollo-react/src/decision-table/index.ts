@@ -96,8 +96,9 @@ export {
 } from './useGridNavigation';
 export type { ValuePopoverProps } from './ValuePopover';
 export type {
+  ExpressionEditorHandle,
+  ExpressionEditorProps,
   RangeEnds,
-  SentenceEditorContext,
   ValueCommit,
   ValueField,
   ValueOperatorOption,

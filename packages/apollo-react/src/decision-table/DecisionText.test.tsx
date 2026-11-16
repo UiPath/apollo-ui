@@ -11,7 +11,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import type React from 'react';
-import { useLayoutEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import { type Mock, onTestFinished, vi } from 'vitest';
 import {
   EDITABLE_TABLE,
@@ -45,7 +45,6 @@ import {
   manySentenceRules,
   valueList,
 } from './__fixtures__/sentences.fixtures';
-import { CellTextEditor } from './CellTextEditor';
 import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
@@ -65,13 +64,32 @@ import type {
 } from './sentenceTypes';
 import { SENTENCE_RULE_OVERSCAN } from './useRuleWindow';
 import type {
-  SentenceEditorContext,
+  ExpressionEditorProps,
   ValueCommit,
   ValueField,
   ValueOperatorOption,
 } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
+
+/** A host's expression editor on the contract: an input that reports its text and hands over its focus. */
+const HostInput = ({ value, ariaLabel, onChange, onReady }: ExpressionEditorProps) => {
+  const attach = useCallback(
+    (input: HTMLInputElement | null) => onReady(input && { focus: () => input.focus() }),
+    [onReady]
+  );
+  return (
+    <input
+      ref={attach}
+      aria-label={ariaLabel}
+      data-testid="host-editor"
+      value={value}
+      onChange={(event) => onChange(event.currentTarget.value)}
+    />
+  );
+};
+const hostInput = (props: ExpressionEditorProps) => <HostInput {...props} />;
+
 let uninstallEscape: () => void = () => {};
 beforeAll(() => {
   uninstallEscape = installEscapeCloseRequest();
@@ -2894,9 +2912,9 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it("swaps in the host's editor from Edit expression, handing it the value it edits and the edit's commit", () => {
-      const contexts: SentenceEditorContext[] = [];
-      const renderEditor = (context: SentenceEditorContext) => {
+    it("swaps in the host's editor from Edit expression, handing it the value it edits, applying only from the popover", () => {
+      const contexts: ExpressionEditorProps[] = [];
+      const renderEditor = (context: ExpressionEditorProps) => {
         contexts.push(context);
         return <textarea aria-label={context.ariaLabel} defaultValue={context.value} />;
       };
@@ -2909,7 +2927,7 @@ describe('DecisionText', () => {
       expect(screen.getByRole('textbox', { name: 'age 60, rule 2' })).toHaveValue('60');
       const context = contexts.at(-1);
       expect(context?.target).toEqual(r2Age(1));
-      act(() => context?.onCommit('x', 'none'));
+      act(() => context?.onChange('x'));
       expect(onCommit).not.toHaveBeenCalled();
       fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
       expect(onCommit.mock.calls).toEqual([[r2Age(1), 'x', 'none']]);
@@ -2994,24 +3012,11 @@ describe('DecisionText', () => {
       fireEvent.click(hit);
     };
 
-    const blurCommittingEditor =
-      (reportsDraft: boolean) =>
-      ({ value, ariaLabel, onCommit, onCancel, onDraftChange }: SentenceEditorContext) => (
-        <CellTextEditor
-          value={value}
-          ariaLabel={ariaLabel}
-          dataTestId="host-editor"
-          onCommit={onCommit}
-          onCancel={onCancel}
-          onDraftChange={reportsDraft ? onDraftChange : undefined}
-        />
-      );
-
-    it('cancels from Cancel an expression typed into a host editor that commits on blur', () => {
+    it('cancels from Cancel an expression typed into a host editor', () => {
       const { onCommit, onCancel } = renderEditing({
         initialEditing: r1Age,
         valueField: field,
-        renderEditor: blurCommittingEditor(true),
+        renderEditor: hostInput,
       });
       fireEvent.click(action('Edit expression'));
       fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
@@ -3022,19 +3027,11 @@ describe('DecisionText', () => {
       expect(onCancel).toHaveBeenCalledTimes(1);
     });
 
-    it('hands a host editor the grid editor contract, applying the draft it reports through onDraftChange', () => {
-      const draftOnlyEditor = ({ value, ariaLabel, onDraftChange }: SentenceEditorContext) => (
-        <input
-          aria-label={ariaLabel}
-          data-testid="host-editor"
-          defaultValue={value}
-          onChange={(event) => onDraftChange?.(event.currentTarget.value)}
-        />
-      );
+    it('applies from Apply the text a host editor reports through onChange', () => {
       const { onCommit } = renderEditing({
         initialEditing: r1Age,
         valueField: field,
-        renderEditor: draftOnlyEditor,
+        renderEditor: hostInput,
       });
       fireEvent.click(action('Edit expression'));
       fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
@@ -3042,42 +3039,13 @@ describe('DecisionText', () => {
       expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
     });
 
-    it('applies once the text a host editor last held, though it reports no draft', () => {
-      const { onCommit } = renderEditing({
-        initialEditing: r1Age,
-        valueField: field,
-        refuse: true,
-        renderEditor: blurCommittingEditor(false),
-      });
-      fireEvent.click(action('Edit expression'));
-      fireEvent.change(screen.getByTestId('host-editor'), { target: { value: 'x' } });
-      const apply = action('Apply');
-      act(() => apply.focus());
-      fireEvent.click(apply);
-      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
-    });
-
-    it('applies from a mouse click on Apply the text a host editor holds, though it reports no draft', async () => {
-      const user = userEvent.setup();
-      const { onCommit } = renderEditing({
-        initialEditing: r1Age,
-        valueField: field,
-        renderEditor: blurCommittingEditor(false),
-      });
-      await user.click(action('Edit expression'));
-      await user.clear(screen.getByTestId('host-editor'));
-      await user.type(screen.getByTestId('host-editor'), 'x');
-      await user.click(action('Apply'));
-      expect(onCommit.mock.calls).toEqual([[r1Age, 'x', 'none']]);
-    });
-
-    it('applies from Apply the text a refused Enter submitted from a host editor that reports no draft', async () => {
+    it('applies from Apply the text a refused Enter submitted from a host editor', async () => {
       const user = userEvent.setup();
       const { onCommit } = renderEditing({
         initialEditing: r1Age,
         valueField: field,
         refuse: true,
-        renderEditor: blurCommittingEditor(false),
+        renderEditor: hostInput,
       });
       await user.click(action('Edit expression'));
       await user.clear(screen.getByTestId('host-editor'));
@@ -3090,17 +3058,10 @@ describe('DecisionText', () => {
     });
 
     it('applies an expression a host editor held as focus moved to the footer, on a press outside', () => {
-      const renderEditor = ({ value, ariaLabel, onCommit }: SentenceEditorContext) => (
-        <textarea
-          aria-label={ariaLabel}
-          defaultValue={value}
-          onBlur={(event) => onCommit(event.currentTarget.value, 'none')}
-        />
-      );
       const { onCommit } = renderEditing({
         initialEditing: r1Age,
         valueField: field,
-        renderEditor,
+        renderEditor: hostInput,
       });
       fireEvent.click(action('Edit expression'));
       const expression = screen.getByRole('textbox', { name: 'age 25, rule 1' });
@@ -3344,18 +3305,6 @@ describe('DecisionText', () => {
     });
 
     describe('settling', () => {
-      const hostInput = ({ value, ariaLabel, onCommit, onDraftChange }: SentenceEditorContext) => (
-        <input
-          aria-label={ariaLabel}
-          data-testid="host-editor"
-          defaultValue={value}
-          onChange={(event) => onDraftChange?.(event.currentTarget.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') onCommit(event.currentTarget.value, 'down');
-          }}
-        />
-      );
-
       it('commits the allowed value a press picks though the press leaves focus nowhere, as Safari does', () => {
         const { onCommit } = renderEditing({ initialEditing: r1Risk, valueField: field });
         safariPress(inPopover().getByRole('radio', { name: '"review"' }));
@@ -3395,36 +3344,6 @@ describe('DecisionText', () => {
         fireEvent.change(input, { target: { value: '< 30' } });
         act(() => screen.getByTestId('nl').focus());
         expect(onCommit).not.toHaveBeenCalled();
-        pressOutside(popover());
-        expect(onCommit.mock.calls).toEqual([[r1Age, '< 30', 'none']]);
-      });
-
-      it('commits once on a press outside the text a host editor that commits on blur handed over as focus left it', () => {
-        const { onCommit } = renderEditing({
-          initialEditing: r1Age,
-          valueField: field,
-          renderEditor: blurCommittingEditor(false),
-        });
-        fireEvent.click(action('Edit expression'));
-        const input = screen.getByTestId('host-editor');
-        act(() => input.focus());
-        fireEvent.change(input, { target: { value: '< 30' } });
-        act(() => screen.getByTestId('nl').focus());
-        expect(onCommit).not.toHaveBeenCalled();
-        pressOutside(popover());
-        expect(onCommit.mock.calls).toEqual([[r1Age, '< 30', 'none']]);
-      });
-
-      it('applies on a press outside the text a host editor that reports no draft holds while focus is still in it', () => {
-        const { onCommit } = renderEditing({
-          initialEditing: r1Age,
-          valueField: field,
-          renderEditor: blurCommittingEditor(false),
-        });
-        fireEvent.click(action('Edit expression'));
-        const input = screen.getByTestId('host-editor');
-        act(() => input.focus());
-        fireEvent.change(input, { target: { value: '< 30' } });
         pressOutside(popover());
         expect(onCommit.mock.calls).toEqual([[r1Age, '< 30', 'none']]);
       });
@@ -3480,7 +3399,7 @@ describe('DecisionText', () => {
         ]);
       });
 
-      it('commits nothing from a host editor that commits on blur once Escape cancelled the popover and focus left before the host closed it', async () => {
+      it('commits nothing from a host editor once Escape cancelled the popover and focus left before the host closed it', async () => {
         const outside = document.body.appendChild(document.createElement('button'));
         onTestFinished(() => outside.remove());
         const onCommit = vi.fn();
@@ -3495,14 +3414,7 @@ describe('DecisionText', () => {
               editing,
               onStartEdit: setEditing,
               valueField: field,
-              renderEditor: ({ value, ariaLabel, onCommit: commit }) => (
-                <input
-                  aria-label={ariaLabel}
-                  data-testid="host-editor"
-                  defaultValue={value}
-                  onBlur={(event) => commit(event.currentTarget.value, 'none')}
-                />
-              ),
+              renderEditor: hostInput,
               onCommit: (...args) => {
                 onCommit(...args);
                 setEditing(null);
@@ -3542,13 +3454,13 @@ describe('DecisionText', () => {
         expect(action('Apply')).toBeEnabled();
       });
 
-      it('applies from Apply an expression typed for a condition added from + into a host editor that reports no draft', async () => {
+      it('applies from Apply an expression typed for a condition added from + into a host editor', async () => {
         const user = userEvent.setup();
         const { onCommitValues } = renderEditing({
           initialEditing: r3Channel,
           valueField: () => ({}),
           bands: CHANNEL_BANDS,
-          renderEditor: blurCommittingEditor(false),
+          renderEditor: hostInput,
         });
         await user.click(action('Edit expression'));
         pressApply();
@@ -4129,12 +4041,12 @@ describe('DecisionText', () => {
         expect(onCommitValues).not.toHaveBeenCalled();
       });
 
-      it('applies from Apply an expression typed for an incomplete range into a host editor that reports no draft', async () => {
+      it('applies from Apply an expression typed for an incomplete range into a host editor', async () => {
         const user = userEvent.setup();
         const { onCommitValues } = renderShaped({
           initialEditing: at('m3', 'score'),
           valueField: (cell) => ({ ...shapedField(cell), expression: '< 600' }),
-          renderEditor: blurCommittingEditor(false),
+          renderEditor: hostInput,
         });
         await user.click(operatorSelect());
         await user.click(screen.getByRole('option', { name: 'is between' }));

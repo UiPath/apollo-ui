@@ -10,11 +10,10 @@ import {
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_RULES,
 } from './__fixtures__/sentences.fixtures';
-import { CellTextEditor } from './CellTextEditor';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
-import type { SentenceEditorContext, ValueField, ValueOperatorOption } from './valueTypes';
+import type { ExpressionEditorProps, ValueField, ValueOperatorOption } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 afterEach(cleanup);
@@ -99,7 +98,46 @@ if (!customElements.get('popover-test-shadow')) {
     }
   );
 }
-const hostEditor = (ctx: SentenceEditorContext) => (
+/** A host editor on the contract, in light DOM or its own shadow root: it reports its text, hands over its handle once mounted, or once `ready` runs when late, and records the keys that reach it, taking them while it owns keys. */
+const ContractEditor = ({
+  props,
+  shadow = false,
+  late = false,
+  ownsKeys,
+  keys = [],
+}: {
+  props: ExpressionEditorProps;
+  shadow?: boolean;
+  late?: boolean;
+  ownsKeys?: () => boolean;
+  keys?: string[];
+}) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const latest = useRef(props);
+  latest.current = props;
+  useEffect(() => {
+    const host = ref.current;
+    if (!host || host.firstChild || host.shadowRoot) return;
+    const parent = shadow ? host.attachShadow({ mode: 'open' }) : host;
+    const input = document.createElement('input');
+    input.setAttribute('data-testid', 'dom-editor');
+    input.setAttribute('aria-label', latest.current.ariaLabel);
+    input.value = latest.current.value;
+    parent.append(input);
+    input.addEventListener('input', () => latest.current.onChange(input.value));
+    input.addEventListener('keydown', (event) => {
+      keys.push(event.key);
+      if (ownsKeys?.()) event.preventDefault();
+    });
+    const handle = { focus: () => input.focus(), ownsKeys };
+    if (late) readyLater = () => act(() => latest.current.onReady(handle));
+    else latest.current.onReady(handle);
+  }, [shadow, late, ownsKeys, keys]);
+  return <div ref={ref} data-testid="dom-host" />;
+};
+let readyLater = () => {};
+
+const hostEditor = (props: ExpressionEditorProps) => (
   <div>
     {createElement('popover-test-shadow', { 'data-testid': 'shadow' })}
     <div contentEditable="plaintext-only" suppressContentEditableWarning data-testid="plain">
@@ -114,54 +152,20 @@ const hostEditor = (ctx: SentenceEditorContext) => (
       <option>FEEL</option>
       <option>JS</option>
     </select>
-    <CellTextEditor
-      value={ctx.value}
-      ariaLabel={ctx.ariaLabel}
-      dataTestId="host-editor"
-      onCommit={ctx.onCommit}
-      onCancel={ctx.onCancel}
-      onDraftChange={ctx.onDraftChange}
-    />
+    <ContractEditor props={props} />
   </div>
 );
-
-/** A host editor built on DOM listeners: Tab commits a move when it claims Tab, and blur commits in place. */
-const DomEditor = ({
-  ctx,
-  claimTab,
-  shadow,
-}: {
-  ctx: SentenceEditorContext;
-  claimTab: boolean;
-  shadow: boolean;
-}) => {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const ctxRef = useRef(ctx);
-  ctxRef.current = ctx;
-  useEffect(() => {
-    const host = ref.current;
-    if (!host || host.firstChild || host.shadowRoot) return;
-    const parent = shadow ? host.attachShadow({ mode: 'open' }) : host;
-    const input = document.createElement('input');
-    input.setAttribute('data-testid', 'dom-editor');
-    input.value = ctxRef.current.value;
-    parent.append(input);
-    input.addEventListener('keydown', (event) => {
-      if (event.key !== 'Tab' || !claimTab) return;
-      event.preventDefault();
-      ctxRef.current.onCommit(input.value, event.shiftKey ? 'left' : 'right');
-    });
-    input.addEventListener('blur', () => ctxRef.current.onCommit(input.value, 'none'));
-    input.focus();
-  }, [claimTab, shadow]);
-  return <div ref={ref} data-testid="dom-host" />;
-};
 
 const domInput = (): HTMLInputElement => {
   const host = screen.getByTestId('dom-host');
   const input = (host.shadowRoot ?? host).querySelector('input');
   if (!input) throw new Error('no host input');
   return input;
+};
+
+const typeInto = (input: HTMLInputElement, text: string) => {
+  input.value = text;
+  fireEvent.input(input);
 };
 
 describe('DecisionText value popover settling', () => {
@@ -177,7 +181,7 @@ describe('DecisionText value popover settling', () => {
     );
     pickOperator('is greater than');
     fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    const shown = (screen.getByTestId('host-editor') as HTMLInputElement).value;
+    const shown = domInput().value;
     fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
     expect(onCommit.mock.calls[0]?.[1]).toEqual({ kind: 'expression', text: shown });
   });
@@ -198,7 +202,7 @@ describe('DecisionText value popover settling', () => {
     });
     fireEvent.change(popover().getByRole('textbox', { name: 'To' }), { target: { value: '900' } });
     fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    const shown = (screen.getByTestId('host-editor') as HTMLInputElement).value;
+    const shown = domInput().value;
     fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
     expect(onCommit.mock.calls[0]?.[1]).toEqual({ kind: 'expression', text: shown });
   });
@@ -342,72 +346,156 @@ describe('DecisionText value popover settling', () => {
     expect(onCommit).not.toHaveBeenCalled();
     showModal.mockRestore();
   });
+});
 
-  it("moves focus on Tab and Shift+Tab from the host's editor that claims Tab, applying nothing", () => {
-    const onCommit = vi.fn();
+describe('DecisionText expression editor contract', () => {
+  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const open = (editor: DecisionTextEdit['renderEditor'], onCommit = vi.fn()) => {
     render(
       <Host
         initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
-        renderEditor={hostEditor}
+        valueField={field}
+        renderEditor={editor}
         onCommit={onCommit}
       />
     );
     fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    const input = screen.getByTestId('host-editor');
-    input.focus();
-    fireEvent.change(input, { target: { value: '> 1' } });
-    const actions = popover().getAllByRole('button');
-    fireEvent.keyDown(input, { key: 'Tab' });
-    expect(document.activeElement).toBe(actions[0]);
-    input.focus();
-    fireEvent.keyDown(input, { key: 'Tab', shiftKey: true });
-    expect(document.activeElement).toBe(actions.at(-1));
-    expect(actions.at(-1)).toBe(popover().getByRole('button', { name: 'Apply' }));
+    return onCommit;
+  };
+  const activeIn = (input: HTMLInputElement) =>
+    (input.getRootNode() as Document | ShadowRoot).activeElement === input;
+
+  it('focuses an editor in its own shadow root on open', () => {
+    open((props) => <ContractEditor props={props} shadow />);
+    expect(activeIn(domInput())).toBe(true);
+  });
+
+  it('focuses the editor on open and applies its text on Enter, keeping the key from it', () => {
+    const keys: string[] = [];
+    const onCommit = open((props) => <ContractEditor props={props} keys={keys} />);
+    expect(activeIn(domInput())).toBe(true);
+    expect(domInput().value).toBe('< 600');
+    typeInto(domInput(), '> 1');
+    expect(fireEvent.keyDown(domInput(), { key: 'Enter' })).toBe(false);
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'expression', text: '> 1' }, 'down'],
+    ]);
+    expect(keys).toEqual([]);
+  });
+
+  it('cancels on Escape from the editor, writing nothing', () => {
+    const keys: string[] = [];
+    const onCommit = open((props) => <ContractEditor props={props} keys={keys} />);
+    typeInto(domInput(), '> 1');
+    expect(fireEvent.keyDown(domInput(), { key: 'Escape' })).toBe(false);
+    expect(screen.queryByTestId('nl-value-editor')).toBeNull();
     expect(onCommit).not.toHaveBeenCalled();
-    fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
-    expect(onCommit.mock.calls[0]?.[1]).toEqual({ kind: 'expression', text: '> 1' });
+    expect(keys).toEqual([]);
+  });
+
+  it('leaves Tab and Shift+Tab from the editor to the browser, keeping them from the editor and applying nothing', () => {
+    const keys: string[] = [];
+    const onCommit = open((props) => <ContractEditor props={props} keys={keys} />);
+    expect([
+      fireEvent.keyDown(domInput(), { key: 'Tab' }),
+      fireEvent.keyDown(domInput(), { key: 'Tab', shiftKey: true }),
+    ]).toEqual([true, true]);
+    expect(keys).toEqual([]);
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('leaves Enter, Escape and Tab to an editor that owns them, but not Shift+Tab', () => {
+    const keys: string[] = [];
+    const onCommit = open((props) => (
+      <ContractEditor props={props} keys={keys} ownsKeys={() => true} />
+    ));
+    for (const key of ['Enter', 'Escape', 'Tab']) fireEvent.keyDown(domInput(), { key });
+    fireEvent.keyDown(domInput(), { key: 'Tab', shiftKey: true });
+    expect(keys).toEqual(['Enter', 'Escape', 'Tab']);
+    expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    expect(onCommit).not.toHaveBeenCalled();
   });
 
   it.each([
-    false,
-    true,
-  ])('applies nothing when focus moves inside the popover from a host editor that commits on a DOM blur (shadow root: %s)', (shadow) => {
-    const onCommit = vi.fn();
-    render(
-      <Host
-        initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
-        renderEditor={(ctx) => <DomEditor ctx={ctx} claimTab={false} shadow={shadow} />}
-        onCommit={onCommit}
-      />
-    );
-    fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    domInput().focus();
-    domInput().value = '> 1';
-    popover().getByRole('button', { name: 'Cancel' }).focus();
-    expect(onCommit).not.toHaveBeenCalled();
+    { isComposing: true },
+    { keyCode: 229 },
+  ])('applies nothing on an Enter while text composes (%o)', (composing) => {
+    const onCommit = open((props) => <ContractEditor props={props} />);
+    fireEvent.keyDown(domInput(), { key: 'Enter', ...composing });
+    fireEvent.keyDown(domInput(), { key: 'Escape', ...composing });
     expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it.each<[string, string, boolean]>([
-    ['Tab', 'Cancel', false],
-    ['Shift+Tab', 'Apply', true],
-  ])('moves %s from a shadow-root host editor that claims Tab to %s, wrapping', (_, name, shiftKey) => {
-    const onCommit = vi.fn();
-    render(
-      <Host
-        initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
-        renderEditor={(ctx) => <DomEditor ctx={ctx} claimTab shadow />}
-        onCommit={onCommit}
-      />
-    );
-    fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
-    domInput().focus();
-    fireEvent.keyDown(domInput(), { key: 'Tab', shiftKey });
-    expect(document.activeElement).toBe(popover().getByRole('button', { name }));
+  it('holds focus on the frame while the editor is not ready, stays cancellable, and moves focus in once it is', () => {
+    open((props) => <ContractEditor props={props} late />);
+    const frame = document.activeElement;
+    expect(frame).toBe(screen.getByTestId('dom-host').parentElement);
+    expect(frame).toHaveAttribute('tabindex', '0');
+    readyLater();
+    expect(activeIn(domInput())).toBe(true);
+    expect(frame).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('cancels from Escape on the frame of an editor that is not ready', () => {
+    const onCommit = open((props) => <ContractEditor props={props} late />);
+    const frame = document.activeElement;
+    if (!(frame instanceof HTMLElement)) throw new Error('no frame');
+    fireEvent.keyDown(frame, { key: 'Escape' });
+    expect(screen.queryByTestId('nl-value-editor')).toBeNull();
     expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('leaves focus where it moved while the editor was not ready', () => {
+    open((props) => <ContractEditor props={props} late />);
+    const cancel = popover().getByRole('button', { name: 'Cancel' });
+    cancel.focus();
+    readyLater();
+    expect(document.activeElement).toBe(cancel);
+  });
+
+  it('moves focus into an editor that replaced its focused input, and applies its text on Enter', () => {
+    let remount = () => {};
+    const Remounting = ({ props }: { props: ExpressionEditorProps }) => {
+      const ref = useRef<HTMLDivElement | null>(null);
+      const latest = useRef(props);
+      latest.current = props;
+      useEffect(() => {
+        const host = ref.current;
+        if (!host) return;
+        const make = () => {
+          const input = host.appendChild(document.createElement('input'));
+          input.setAttribute('data-testid', 'dom-editor');
+          input.value = latest.current.value;
+          input.addEventListener('input', () => latest.current.onChange(input.value));
+          latest.current.onReady({ focus: () => input.focus() });
+          return input;
+        };
+        let input = make();
+        remount = () =>
+          act(() => {
+            input.remove();
+            latest.current.onReady(null);
+            input = make();
+          });
+      }, []);
+      return <div ref={ref} data-testid="dom-host" />;
+    };
+    const onCommit = open((props) => <Remounting props={props} />);
+    typeInto(domInput(), '> 1');
+    remount();
+    expect(document.activeElement).toBe(domInput());
+    fireEvent.keyDown(domInput(), { key: 'Enter' });
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'expression', text: '> 1' }, 'down'],
+    ]);
+  });
+
+  it('hands focus to the editor from a press around it', () => {
+    open(hostEditor);
+    popover().getByRole('button', { name: 'Cancel' }).focus();
+    act(() => screen.getByTestId('dom-host').closest<HTMLElement>('[tabindex]')?.focus());
+    expect(document.activeElement).toBe(domInput());
   });
 });
 
