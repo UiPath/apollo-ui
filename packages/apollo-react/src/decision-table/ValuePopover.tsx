@@ -1,15 +1,16 @@
 import { Braces } from 'lucide-react';
 import type React from 'react';
 import { forwardRef, useId, useImperativeHandle, useRef, useState } from 'react';
+import { ExpressionEditorFrame, type ExpressionEditorFrameProps } from './ExpressionEditorFrame';
 import { activeElementOf, isComposing } from './gridEvents';
-import type { CellCommitMove } from './gridTypes';
+import type { CellCommitMove, GridCellEditorContext } from './gridTypes';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
 import { PopoverHeader } from './PopoverHeader';
 import { PopoverSelect } from './PopoverSelect';
 import { POPOVER_CLASS, POPOVER_ERROR_CLASS } from './sentenceStyles';
 import { type DraftProblemLabels, useShapeDraft } from './useShapeDraft';
 import { ValueFields, type ValueFieldsLabels } from './ValueFields';
-import type { SentenceEditorContext, ValueCommit, ValueField } from './valueTypes';
+import type { ExpressionEditorProps, ValueCommit, ValueField } from './valueTypes';
 
 /** The popover's strings. */
 export interface ValuePopoverLabels
@@ -29,7 +30,8 @@ export interface ValuePopoverHandle {
 }
 
 export interface ValuePopoverProps
-  extends Pick<SentenceEditorContext, 'target' | 'value' | 'ariaLabel' | 'onCancel'> {
+  extends Pick<ExpressionEditorProps, 'target' | 'value' | 'ariaLabel'>,
+    Pick<GridCellEditorContext, 'onCancel'> {
   column: string;
   field: ValueField;
   /** Whether the condition is one the rule does not have yet, which needs a value to apply. */
@@ -41,7 +43,7 @@ export interface ValuePopoverProps
   /** Empties an outcome; undefined for a condition or an empty outcome. */
   onClear: (() => void) | undefined;
   /** The host's expression editor, which Edit expression swaps in for the fields on the whole condition. */
-  renderEditor: ((context: SentenceEditorContext) => React.ReactNode) | undefined;
+  renderEditor: ExpressionEditorFrameProps['renderEditor'] | undefined;
   labels: ValuePopoverLabels;
   /** The text field's testid; derived ids: `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear` and the footer's. */
   dataTestId: string;
@@ -62,14 +64,6 @@ const sameCommit = (a: ValueCommit, b: ValueCommit): boolean => {
 const OPERATOR_SHORTCUTS = 'Alt+ArrowDown Alt+ArrowUp';
 
 const isListKey = (key: string): boolean => key === 'ArrowDown' || key === 'ArrowUp';
-
-/** Blurs the control focused inside `root`, through open shadow roots, so a host editor hands over its text as it commits on blur. */
-const blurFocusIn = (root: HTMLElement) => {
-  let focused = activeElementOf(root);
-  if (!focused || !root.contains(focused)) return;
-  while (focused.shadowRoot?.activeElement) focused = focused.shadowRoot.activeElement;
-  if (focused instanceof HTMLElement) focused.blur();
-};
 
 /** The footer's links: Edit expression while the popover's own fields show, and an outcome's Clear. */
 const footerLinks = (
@@ -115,7 +109,6 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
   ) => {
     const problemId = `${useId()}-problem`;
     const [root, setRoot] = useState<HTMLDivElement | null>(null);
-    const footerRef = useRef<HTMLDivElement | null>(null);
     const [draft, setDraft] = useState(value);
     const [seed, setSeed] = useState<string | null>(null);
     const [listOpen, setListOpen] = useState(false);
@@ -145,16 +138,12 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
     const commit = (next: ValueCommit, move: CellCommitMove, refocus = focusInside()) => {
       onCommit(next, move, refocus);
     };
-    const settle = (move: CellCommitMove, refocus?: boolean) => {
+    const settle = (move: CellCommitMove) => {
       const next = settling();
-      if (next) commit(next, move, refocus);
+      if (next) commit(next, move);
     };
     useImperativeHandle(ref, () => ({
-      apply: () => {
-        const refocus = focusInside();
-        if (expression && root) blurFocusIn(root);
-        settle('none', refocus);
-      },
+      apply: () => settle('none'),
     }));
     const pick = (next: string) => {
       shapeDraft.setText(next);
@@ -184,16 +173,6 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       event.preventDefault();
       settle('down');
     };
-    const commitExpression = (next: string, move: CellCommitMove) => {
-      changeDraft(next);
-      if (move !== 'left' && move !== 'right') {
-        if (move !== 'none') settle(move);
-        return;
-      }
-      const actions = [...(footerRef.current?.querySelectorAll('button:not(:disabled)') ?? [])];
-      const action = move === 'left' ? actions.at(-1) : actions[0];
-      if (action instanceof HTMLElement) action.focus();
-    };
     const editExpression =
       renderEditor && (field.expression !== undefined || operators.length === 0)
         ? () => {
@@ -208,16 +187,15 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       <div ref={setRoot} className={POPOVER_CLASS}>
         <PopoverHeader icon={field.icon} column={column} />
         {expression && renderEditor ? (
-          <div>
-            {renderEditor({
-              target,
-              value: draft,
-              ariaLabel,
-              onCommit: commitExpression,
-              onCancel,
-              onDraftChange: changeDraft,
-            })}
-          </div>
+          <ExpressionEditorFrame
+            renderEditor={renderEditor}
+            target={target}
+            value={draft}
+            ariaLabel={ariaLabel}
+            onChange={changeDraft}
+            onApply={() => settle('down')}
+            onCancel={onCancel}
+          />
         ) : (
           <>
             {operators.length > 0 && (
@@ -257,7 +235,6 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
           </>
         )}
         <PopoverFooter
-          ref={footerRef}
           links={footerLinks(expression ? undefined : editExpression, onClear, labels, dataTestId)}
           onCancel={onCancel}
           onApply={() => settle('none')}

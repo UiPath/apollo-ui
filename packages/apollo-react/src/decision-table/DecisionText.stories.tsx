@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Calendar, Hash, Plus, ToggleLeft, Type } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   EDITABLE_TABLE,
   type EditableTable,
@@ -27,7 +27,6 @@ import {
   DECISION_TEXT_LABELS,
   HIT_POLICY_GROUPS,
 } from './__fixtures__/sentences.fixtures';
-import { CellTextEditor } from './CellTextEditor';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
@@ -43,8 +42,8 @@ import type {
   SentenceValueId,
 } from './sentenceTypes';
 import type {
+  ExpressionEditorProps,
   RangeEnds,
-  SentenceEditorContext,
   ValueField,
   ValueOperatorOption,
 } from './valueTypes';
@@ -625,18 +624,32 @@ export const Empty: Story = {
   ),
 };
 
-/** The story's expression editor: a monospace input. */
-const renderExpressionEditor = (context: SentenceEditorContext) => (
-  <div className="overflow-hidden rounded-md border border-input font-mono">
-    <CellTextEditor
-      value={context.value}
-      ariaLabel={context.ariaLabel}
-      dataTestId="decision-text-host-editor"
-      onCommit={context.onCommit}
-      onCancel={context.onCancel}
-      onDraftChange={context.onDraftChange}
-    />
-  </div>
+/** The story's expression editor: a monospace input in its own shadow root, as a host's code editor would mount. */
+const ShadowExpressionEditor = ({ value, ariaLabel, onChange, onReady }: ExpressionEditorProps) => {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const opened = useRef({ value, ariaLabel, onChange, onReady });
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const { value, ariaLabel, onChange, onReady } = opened.current;
+    const input = document.createElement('input');
+    input.value = value;
+    input.setAttribute('aria-label', ariaLabel);
+    input.setAttribute('data-testid', 'decision-text-host-editor');
+    input.style.cssText = 'width: 100%; font-family: monospace; padding: 4px 8px';
+    input.addEventListener('input', () => onChange(input.value));
+    (host.shadowRoot ?? host.attachShadow({ mode: 'open' })).append(input);
+    onReady({ focus: () => input.focus() });
+    return () => {
+      onReady(null);
+      input.remove();
+    };
+  }, []);
+  return <div ref={hostRef} className="overflow-hidden rounded-md border border-input" />;
+};
+
+const renderExpressionEditor = (props: ExpressionEditorProps) => (
+  <ShadowExpressionEditor {...props} />
 );
 
 export const HostEditor: Story = {
@@ -644,7 +657,7 @@ export const HostEditor: Story = {
     <TableHost
       initialTable={EDITABLE_TABLE}
       renderEditor={renderExpressionEditor}
-      caption="renderEditor adds Edit expression, which opens the host's editor on the whole condition."
+      caption="renderEditor swaps the host's editor, here in a shadow root, in for the popover's own text field under Edit expression."
     />
   ),
 };

@@ -2,9 +2,19 @@ import type { GridCellEditorContext } from './gridTypes';
 import type { PopoverSelectOption } from './PopoverSelect';
 import type { SentenceBandColumn, SentenceValueId } from './sentenceTypes';
 
-/** What a host's expression editor receives: the grid's editor contract on the condition's expression, and the value it opened from. */
-export interface SentenceEditorContext extends GridCellEditorContext {
+/** What the popover asks of a mounted expression editor. */
+export interface ExpressionEditorHandle {
+  focus: () => void;
+  /** Whether Enter, Escape and Tab are the editor's own right now, as while its completion list is open, preventing the default of each it takes; Shift+Tab always moves focus. */
+  ownsKeys?: () => boolean;
+}
+
+/** What an expression editor receives: the text it edits, which the popover alone applies or cancels, and the value it opened from. */
+export interface ExpressionEditorProps extends Pick<GridCellEditorContext, 'value' | 'ariaLabel'> {
   target: SentenceValueId;
+  onChange: (text: string) => void;
+  /** Takes the editor's handle once it can take focus, and null once it no longer can. */
+  onReady: (handle: ExpressionEditorHandle | null) => void;
 }
 
 /** How many values an operator takes: one, a range's two ends, or a list. */
