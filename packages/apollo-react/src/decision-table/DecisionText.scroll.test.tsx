@@ -213,19 +213,53 @@ describe('DecisionText scroll', () => {
     document.documentElement.removeEventListener('scroll', forwarded);
   });
 
-  it('resolves a percentage scroll-padding-top against the ancestor', () => {
-    const { rerender } = render(scroller({}));
-    const outer = screen.getByTestId('scroller');
-    outer.style.scrollPaddingTop = '10%';
-    vi.spyOn(outer, 'clientHeight', 'get').mockReturnValue(600);
-    const list = screen.getByTestId('nl-row-row-0').parentElement;
-    if (!list) throw new Error('no rule list');
-    vi.spyOn(list, 'getBoundingClientRect').mockImplementation(
-      () => new DOMRect(0, -outer.scrollTop, 100, 100)
-    );
-    outer.scrollTop = 100000;
-    rerender(scroller({ selected: { rowId: 'row-10' } }));
-    expect(outer.scrollTop).toBe((sentenceRuleOffsets(RULES)[10] ?? 0) - 60);
+  describe('reveal', () => {
+    const native = vi.fn();
+    beforeEach(() => {
+      native.mockClear();
+      Object.defineProperty(Element.prototype, 'scrollIntoView', {
+        value: native,
+        configurable: true,
+        writable: true,
+      });
+    });
+    afterEach(() => {
+      Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+    });
+    const NEAREST = { block: 'nearest', inline: 'nearest' };
+
+    it.each([
+      ['a bordered container', { border: '4px solid' }],
+      ['a percentage scroll-padding-top', { scrollPaddingTop: '10%' }],
+      ['a calc() scroll-padding-top', { scrollPaddingTop: 'calc(10% + 24px)' }],
+    ])('leaves revealing a rule the host selects to the platform in %s', (_, style) => {
+      const { rerender } = render(scroller({}));
+      Object.assign(screen.getByTestId('scroller').style, style);
+      rerender(scroller({ selected: { rowId: 'row-10' } }));
+      const card = screen.getByTestId('nl-row-row-10');
+      expect(
+        native.mock.contexts.some((target) => target instanceof Node && card.contains(target))
+      ).toBe(true);
+      expect(native).toHaveBeenLastCalledWith(NEAREST);
+    });
+
+    it('reveals a rule the host selects far from the window once it mounts', () => {
+      const { rerender } = render(scroller({}));
+      rerender(scroller({ selected: { rowId: 'row-300' } }));
+      expect(native.mock.contexts).toContain(screen.getByTestId('nl-row-row-300'));
+    });
+
+    it('reveals only the stop, not its rule, in a rule taller than the container', () => {
+      const { rerender } = render(scroller({}));
+      vi.spyOn(screen.getByTestId('scroller'), 'clientHeight', 'get').mockReturnValue(10);
+      rerender(scroller({ selected: { rowId: 'row-1', columnId: 'country' } }));
+      const card = screen.getByTestId('nl-row-row-1');
+      expect(native.mock.contexts).not.toContain(card);
+      expect(native.mock.contexts.length).toBeGreaterThan(0);
+      expect(
+        native.mock.contexts.every((target) => target instanceof Node && card.contains(target))
+      ).toBe(true);
+    });
   });
 
   it('hides a mark tooltip when the ancestor scrolls', () => {

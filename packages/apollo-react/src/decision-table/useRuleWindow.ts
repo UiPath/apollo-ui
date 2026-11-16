@@ -98,14 +98,7 @@ const contentTopIn = (element: HTMLElement, scroller: HTMLElement): number =>
   (isPageScroller(scroller) ? 0 : scroller.clientTop) +
   scroller.scrollTop;
 
-/** `scroller`'s `scroll-padding-top` in pixels, a percentage of its scrollport's height. */
-const scrollPaddingTopOf = (scroller: HTMLElement): number => {
-  const padding = getComputedStyle(scroller).scrollPaddingTop;
-  const length = Number.parseFloat(padding) || 0;
-  return padding.trim().endsWith('%')
-    ? (length * (scroller.clientHeight || FALLBACK_ROW_VIEWPORT_PX)) / 100
-    : length;
-};
+const NEAREST: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest' };
 
 export interface RuleWindow {
   listRef: React.RefObject<HTMLUListElement | null>;
@@ -143,11 +136,11 @@ export const useRuleWindow = (
     if (!list) return 0;
     return ancestor ? contentTopIn(list, ancestor.scroller) : list.offsetTop;
   }, []);
-  const headerHeight = useCallback(() => {
-    const ancestor = ancestorRef.current;
-    if (!ancestor) return headerRef.current?.offsetHeight ?? 0;
-    return scrollPaddingTopOf(ancestor.scroller);
-  }, []);
+  const headerHeight = useCallback(
+    () => (ancestorRef.current ? 0 : (headerRef.current?.offsetHeight ?? 0)),
+    []
+  );
+  const pendingRevealRef = useRef<string | null>(null);
   const [listMoves, setListMoves] = useState(0);
   const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(NO_HEIGHTS);
   const offsetsPx = useMemo(() => sentenceRuleOffsets(rules, measured), [rules, measured]);
@@ -236,10 +229,31 @@ export const useRuleWindow = (
     if (listMoves > 0) ancestorRef.current?.scroller.dispatchEvent(new Event('scroll'));
   }, [listMoves]);
   const container = useCallback(() => sectionRef.current, []);
-  const scrollRowIntoView = useCallback(
-    (rowIndex: number) => scrollItemIntoView(scrollerOf(), rowIndex),
-    [scrollItemIntoView, scrollerOf]
+  const cardOf = useCallback(
+    (rowId: string) =>
+      listRef.current?.querySelector<HTMLElement>(
+        `:scope > li[data-row-id="${CSS.escape(rowId)}"]`
+      ) ?? null,
+    []
   );
+  const scrollRowIntoView = useCallback(
+    (rowIndex: number) => {
+      scrollItemIntoView(scrollerOf(), rowIndex);
+      const rowId = ancestorRef.current ? rules[rowIndex]?.rowId : undefined;
+      if (rowId === undefined) return;
+      const card = cardOf(rowId);
+      pendingRevealRef.current = card ? null : rowId;
+      card?.scrollIntoView?.(NEAREST);
+    },
+    [scrollItemIntoView, scrollerOf, rules, cardOf]
+  );
+  useLayoutEffect(() => {
+    const pending = pendingRevealRef.current;
+    const card = pending === null ? null : cardOf(pending);
+    if (!card) return;
+    pendingRevealRef.current = null;
+    card.scrollIntoView?.(NEAREST);
+  });
 
   const firstVisibleRow = () => {
     const top = (scrollerOf()?.scrollTop ?? 0) + headerHeight() - listStart();
@@ -247,14 +261,22 @@ export const useRuleWindow = (
     return end < 0 ? rules.length - 1 : Math.max(0, end - 1);
   };
   const scrollStopIntoView = (rowIndex: number, stop: HTMLElement) => {
-    const section = scrollerOf();
-    if (!section) return;
+    const ancestor = ancestorRef.current;
     const rowHeight = (offsetsPx[rowIndex + 1] ?? 0) - (offsetsPx[rowIndex] ?? 0);
+    if (ancestor) {
+      if (rowHeight <= (ancestor.scroller.clientHeight || FALLBACK_ROW_VIEWPORT_PX)) {
+        scrollRowIntoView(rowIndex);
+      }
+      stop.scrollIntoView?.(NEAREST);
+      return;
+    }
+    const section = sectionRef.current;
+    if (!section) return;
     if (rowHeight <= (section.clientHeight || FALLBACK_ROW_VIEWPORT_PX) - headerHeight()) {
       scrollRowIntoView(rowIndex);
     }
-    const top = scrollportTopOf(section) + headerHeight();
-    const bottom = scrollportTopOf(section) + section.clientHeight;
+    const top = section.getBoundingClientRect().top + headerHeight();
+    const bottom = section.getBoundingClientRect().top + section.clientHeight;
     const { top: stopTop, bottom: stopBottom } = stop.getBoundingClientRect();
     if (stopTop < top || stopBottom - stopTop > bottom - top) {
       section.scrollTop -= top - stopTop;
