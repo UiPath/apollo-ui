@@ -277,6 +277,10 @@ export const STRUCK_VALUE_CLASS = cn(
 export const REMOVED_LINE_CLASS =
   'rounded-md bg-[color-mix(in_srgb,var(--color-error-icon)_8%,transparent)] text-foreground-de-emp line-through **:text-foreground-de-emp!';
 
+/** An added condition's line, on the green wash. */
+export const ADDED_LINE_CLASS =
+  'rounded-md bg-[color-mix(in_srgb,var(--color-success-icon)_12%,transparent)]';
+
 /** A changed card's start border in the change's colour, and an added or removed card's wash; a removed card is struck. */
 export const ROW_CHANGE_CLASS = cn(
   'group-data-[change]/row:border-s-2',

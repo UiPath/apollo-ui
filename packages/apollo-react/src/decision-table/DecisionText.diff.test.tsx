@@ -16,6 +16,7 @@ import {
   DIFF_CONTEXT_RULES,
   DIFF_MIN_FOLDED,
   type DiffRow,
+  type DiffValueChange,
   diffColumnsOf,
   diffRowsOf,
   withRemoved,
@@ -120,7 +121,9 @@ describe('diffRowsOf', () => {
       {
         mode: 'full',
         rules: [{ rowId: rules[2]?.rowId ?? '', change: 'update', movedFrom: 1 }],
-        values: [{ rowId: rules[1]?.rowId ?? '', columnId: 'risk', change: 'update' }],
+        values: [
+          { rowId: rules[1]?.rowId ?? '', columnId: 'risk', change: 'update', previous: '"low"' },
+        ],
       },
       nameOf,
       NO_FOLDS
@@ -220,6 +223,7 @@ describe('diffRowsOf', () => {
     expect(diff?.removedLines).toEqual([
       {
         columnId: 'income',
+        change: 'delete',
         parts: [
           nameOf('income'),
           ' ',
@@ -229,6 +233,52 @@ describe('diffRowsOf', () => {
     ]);
     const added = ruleRow(rows.get('r11'));
     expect([...(added?.tokens.values() ?? [])]).toEqual([{ change: 'add', before: [], after: [] }]);
+  });
+});
+
+describe('diffRowsOf value changes', () => {
+  const r5 = DIFF_RULES.find(({ rowId }) => rowId === 'r5');
+
+  it("keeps the kept rule's value changes off a removed rule that shares its id", () => {
+    expect(r5).toBeDefined();
+    const { rows } = diffRowsOf(
+      DIFF_RULES,
+      {
+        mode: 'full',
+        values: [{ rowId: 'r5', columnId: 'age', index: 0, change: 'update', previous: '25' }],
+        removedRules: r5 ? [{ rule: r5, after: 'r5' }] : [],
+      },
+      nameOf,
+      NO_FOLDS
+    );
+    const removed = ruleRow(rows.get('removed:r5'));
+    expect(removed?.change).toBe('delete');
+    expect(removed?.tokens.size).toBe(0);
+    expect(removed?.removedLines).toEqual([]);
+    expect(ruleRow(rows.get('r5'))?.tokens.size).toBe(1);
+  });
+
+  it('shows an added value on a cell the card does not word as a line', () => {
+    const { rows } = diffRowsOf(
+      DIFF_RULES,
+      { mode: 'full', values: [{ rowId: 'r5', columnId: 'region', change: 'add' }] },
+      nameOf,
+      NO_FOLDS
+    );
+    const diff = ruleRow(rows.get('r5'));
+    expect(diff?.change).toBe('update');
+    expect(diff?.removedLines).toEqual([
+      { columnId: 'region', change: 'add', parts: [nameOf('region')] },
+    ]);
+  });
+
+  it('requires the old text of a deleted or updated value', () => {
+    // @ts-expect-error
+    const deleted: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'delete' };
+    // @ts-expect-error
+    const updated: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'update' };
+    const added: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'add' };
+    expect([deleted.change, updated.change, added.change]).toEqual(['delete', 'update', 'add']);
   });
 });
 

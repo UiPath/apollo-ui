@@ -5,6 +5,7 @@ import { LineText, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { RemoveConditionButton, type RemoveConditionButtonProps } from './RemoveConditionButton';
 import {
+  ADDED_LINE_CLASS,
   LINE_CLASS,
   MATCHED_LINE_CLASS,
   PENDING_LINE_CLASS,
@@ -20,8 +21,8 @@ export interface ConditionLineProps
   line: SentenceLine;
   /** A condition the open editor adds, its value a placeholder. */
   pending: boolean;
-  /** A condition a diff removed, struck. */
-  removed?: boolean;
+  /** A condition a diff removed, struck, or added. */
+  change?: 'add' | 'delete';
   badge: MarkBadgeProps | null;
   removal: RemoveConditionButtonProps | null;
 }
@@ -30,7 +31,7 @@ export interface ConditionLineProps
 export const ConditionLine: React.FC<ConditionLineProps> = ({
   line,
   pending,
-  removed = false,
+  change,
   badge,
   removal,
   ...lineProps
@@ -42,15 +43,16 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
         LINE_CLASS,
         MATCHED_LINE_CLASS,
         pending && PENDING_LINE_CLASS,
-        removed && REMOVED_LINE_CLASS
+        change === 'delete' && REMOVED_LINE_CLASS,
+        change === 'add' && ADDED_LINE_CLASS
       )}
       data-column-id={line.columnId}
       data-pending={pending || undefined}
-      data-change={removed ? 'delete' : undefined}
+      data-change={change}
       data-matched={matched}
     >
       <LineLead matched={matched} labels={lineProps.labels} />
-      {removed && <span className="sr-only">{lineProps.labels.changeStatus('delete')}</span>}
+      {change && <span className="sr-only">{lineProps.labels.changeStatus(change)}</span>}
       <LineText parts={line.parts} {...lineProps} />
       {removal && <RemoveConditionButton {...removal} />}
       {badge && <MarkBadge {...badge} />}
