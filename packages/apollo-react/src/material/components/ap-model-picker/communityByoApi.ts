@@ -1,14 +1,16 @@
 import type {
-  ByoAddedModel,
   ByoConnection,
   ByoConnectionForm,
+  ByoConnectionValues,
   ByoDialogContext,
   ByoFailure,
   ByoFolder,
   ByoFormField,
   ByoModelDialogApi,
+  ByoModelToEdit,
   ByoProviderModel,
   ByoResult,
+  ByoSavedModel,
 } from '@uipath/apollo-wind';
 
 import { buildGatewayUrl, type PlatformRequestContext, resolveToken } from './usePlatformAccess';
@@ -17,12 +19,16 @@ import { buildGatewayUrl, type PlatformRequestContext, resolveToken } from './us
  * The Community "Use your own model" dialog's calls, made with the picker's
  * `requestContext`.
  *
- * Connect creates the Integration Service connection without the hosted IS
- * page, by making the calls that page makes:
- *   1. `POST connections_/api/v1/Connections` opens a provisioning session.
- *   2. `GET elements_/…/applications/sessions/{id}` reads the session's form.
- *   3. `POST elements_/…/normalized-instances/authenticate` submits the
- *      credentials; IS checks them against the vendor and answers at once.
+ * Connect creates or edits the Integration Service connection without the
+ * hosted IS page, by making the calls that page makes:
+ *   1. A provisioning session: `POST connections_/api/v1/Connections` for a
+ *      new connection, `POST Connections/{id}/auth` to edit a saved one.
+ *   2. `GET elements_/…/applications/sessions/{id}` reads the session's form,
+ *      with the saved connection's current settings when editing.
+ *   3. `elements_/…/normalized-instances/authenticate` submits the
+ *      credentials (`POST` for a new connection, `PUT` with the connection's
+ *      `instanceID` for a saved one); IS checks them against the vendor and
+ *      answers at once.
  *   4. `GET connections_/api/v1/Sessions/{id}` until the connection exists.
  *   5. `PATCH Connections/{id}/rename` names it.
  * The form is read from the connector definition
@@ -30,8 +36,9 @@ import { buildGatewayUrl, type PlatformRequestContext, resolveToken } from './us
  * Steps 2, 3 and the definition are Udon routes IS has not published; see
  * Confluence "BYOM for DLG: creating connections inline" (LLM-4518).
  *
- * Test and add runs the gateway's `llm-configurations/validate`, then saves
- * the configuration with `POST llm-configurations`.
+ * Test and save runs the gateway's `llm-configurations/validate`, then saves
+ * the configuration: `POST llm-configurations` for a new model,
+ * `PUT llm-configurations/{id}` for an edited one.
  */
 
 export interface CommunityByoProvider {
@@ -122,7 +129,7 @@ export interface CommunityByoApiOptions {
   /** BYO operation group the configuration is saved under; defaults to `{product}-{feature}`. */
   operationGroupName?: string;
   providers?: readonly CommunityByoProvider[];
-  /** How long Test and add keeps retrying while a new connection is not yet visible to the gateway. */
+  /** How long Test and save keeps retrying while a new connection is not yet visible to the gateway. */
   newConnectionGraceMs?: number;
   /** Test seam. */
   sleep?: (ms: number) => Promise<void>;
@@ -153,7 +160,35 @@ interface IsSession {
   id: string;
   connector: string;
   folderKey: string;
+  /** The saved connection the session edits; `null` for a new connection. */
+  connectionId: string | null;
   expiresAt: number;
+}
+
+interface IsSessionForm {
+  elementMetadata?: { configuration?: IsConfigEntry[] };
+  /** The connection's current settings, secrets masked; set when the session edits a saved connection. */
+  configs?: Record<string, string>;
+  /** The saved connection's element instance; set when the session edits a saved connection. */
+  elementInstance?: { id?: number };
+}
+
+/** One model of a saved BYO configuration, as the gateway returns it. */
+interface LlmConfigurationEntry {
+  desiredModel?: string;
+  customerModel?: string;
+  connectorType?: string;
+  connectionId?: string;
+  customFieldMappings?: Record<string, string> | null;
+  [field: string]: unknown;
+}
+
+/** A saved BYO configuration, as the gateway returns it. */
+interface ProductLlmConfiguration {
+  id: string;
+  folderId: string;
+  llmConfigurations: LlmConfigurationEntry[];
+  [field: string]: unknown;
 }
 
 const SHOWN_SCREENS = new Set(['pre', 'pre-optional']);
@@ -166,6 +201,7 @@ const NOT_CHAT: [RegExp, string][] = [
   [/davinci|babbage/, 'Completions only'],
 ];
 const NEW_CONNECTION_NOT_FOUND = 'IntegrationServiceConfigurationNotFound';
+const MASKED_SECRET = '********';
 const SESSION_POLLS = 20;
 const SESSION_POLL_MS = 1500;
 const RETRY_MS = 5000;
@@ -211,6 +247,12 @@ const failure = (result: CallResult, title: string): ByoFailure => {
     detail: JSON.stringify(result.data, null, 2),
   };
 };
+
+/** The entry of a saved configuration for the model named `name` in the user's model list. */
+const entryNamed = (configuration: ProductLlmConfiguration, name: string) =>
+  configuration.llmConfigurations.find(
+    (entry) => entry.desiredModel?.toLowerCase() === name.toLowerCase()
+  );
 
 const ok = <T>(value: T): ByoResult<T> => ({ ok: true, value });
 const fail = <T>(f: ByoFailure): ByoResult<T> => ({ ok: false, failure: f });
@@ -267,23 +309,38 @@ export function createCommunityByoApi(
     return { ok: res.ok, status: res.status, statusText: res.statusText, data };
   }
 
-  async function session(provider: CommunityByoProvider, folderKey: string) {
+  /** A provisioning session for a new connection, or for editing the saved connection `connectionId`. */
+  async function session(
+    provider: CommunityByoProvider,
+    folderKey: string,
+    connectionId: string | null = null
+  ) {
     const reusable =
       openSession &&
       openSession.connector === provider.connector &&
       openSession.folderKey === folderKey &&
+      openSession.connectionId === connectionId &&
       Date.now() < openSession.expiresAt - 30_000;
     if (reusable && openSession) return ok(openSession);
-    const r = await call('POST', tenantUrl('connections_/api/v1/Connections/'), {
-      body: { connector: provider.connector },
-      folderKey,
-    });
+
+    let r: CallResult;
+    if (connectionId) {
+      r = await call('POST', tenantUrl(`connections_/api/v1/Connections/${connectionId}/auth`), {
+        folderKey,
+      });
+    } else {
+      r = await call('POST', tenantUrl('connections_/api/v1/Connections/'), {
+        body: { connector: provider.connector },
+        folderKey,
+      });
+    }
     if (!r.ok) return fail<IsSession>(failure(r, 'Could not start the connection'));
     const d = r.data as { sessionId: string; expiresAt?: number };
     openSession = {
       id: d.sessionId,
       connector: provider.connector,
       folderKey,
+      connectionId,
       expiresAt: d.expiresAt ?? Date.now() + 10 * 60_000,
     };
     return ok(openSession);
@@ -297,6 +354,9 @@ export function createCommunityByoApi(
         folderKey,
       }
     );
+
+  const configurationUrl = (configurationId: string) =>
+    buildGatewayUrl(ctx, `api/byo/product/llm-configurations/${configurationId}`);
 
   function toForm(provider: CommunityByoProvider, entries: IsConfigEntry[]): ByoConnectionForm {
     const overlay = provider.overlay ?? {};
@@ -375,6 +435,29 @@ export function createCommunityByoApi(
     });
   };
 
+  const loadModel: ByoModelDialogApi['loadModel'] = async ({ configurationId, name }) => {
+    const r = await call('GET', configurationUrl(configurationId));
+    if (!r.ok) return fail(failure(r, `Could not read ${name}`));
+    const saved = r.data as ProductLlmConfiguration;
+    const entry = entryNamed(saved, name);
+    const provider = providers.find(
+      (p) => p.connectorType.toLowerCase() === entry?.connectorType?.toLowerCase()
+    );
+    if (!entry || !provider || !entry.connectionId) {
+      return fail({
+        title: `${name} cannot be edited here`,
+        detail: JSON.stringify(saved, null, 2),
+      });
+    }
+    return ok<ByoModelToEdit>({
+      configurationId,
+      providerId: provider.id,
+      connectionId: entry.connectionId,
+      modelId: entry.customerModel ?? '',
+      name: entry.desiredModel ?? name,
+    });
+  };
+
   const loadForm = async (providerId: string, folderId: string | null) => {
     const provider = byId(providerId);
     if (!provider) return fail<ByoConnectionForm>({ title: `Unknown provider ${providerId}` });
@@ -402,6 +485,39 @@ export function createCommunityByoApi(
     return ok(form);
   };
 
+  const loadConnectionValues: ByoModelDialogApi['loadConnectionValues'] = async (
+    providerId,
+    connection
+  ) => {
+    const provider = byId(providerId);
+    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    const formResult = await loadForm(providerId, connection.folderId);
+    if (!formResult.ok) return formResult;
+    const form = formResult.value;
+
+    // The same session Connect then submits the changes through.
+    const s = await session(provider, connection.folderId, connection.id);
+    if (!s.ok) return s;
+    const sf = await sessionForm(s.value.id, connection.folderId);
+    if (!sf.ok) return fail(failure(sf, 'Could not read the connection settings'));
+    const current = (sf.data as IsSessionForm | null)?.configs ?? {};
+
+    // Secrets stay out of the form: a secret left blank keeps its current value.
+    const values: Record<string, string> = {};
+    for (const field of form.fields) {
+      if (field.secret) continue;
+      const value = current[field.key];
+      if (value === undefined || value === null || value === MASKED_SECRET) continue;
+      values[field.key] = String(value);
+    }
+    const savedAuthType = current['authentication.type'];
+    const knownAuthType = form.authTypes.some((t) => t.value === savedAuthType);
+    return ok<ByoConnectionValues>({
+      authType: knownAuthType ? (savedAuthType ?? null) : form.defaultAuthType,
+      values,
+    });
+  };
+
   const connect: ByoModelDialogApi['connect'] = async ({
     providerId,
     form,
@@ -409,6 +525,7 @@ export function createCommunityByoApi(
     values,
     name,
     folderId,
+    existing,
   }) => {
     const provider = byId(providerId);
     if (!provider) return fail({ title: `Unknown provider ${providerId}` });
@@ -419,16 +536,15 @@ export function createCommunityByoApi(
         .filter(([, v]) => v)
     );
 
-    const s = await session(provider, folderId);
+    const s = await session(provider, folderId, existing?.id ?? null);
     if (!s.ok) return s;
     const sid = s.value.id;
     const sf = await sessionForm(sid, folderId);
     if (!sf.ok) return fail(failure(sf, 'Could not read the connector form'));
-    const sfd = sf.data as {
-      elementMetadata?: { configuration?: IsConfigEntry[] };
-      configs?: Record<string, string>;
-    };
+    const sfd = sf.data as IsSessionForm | null;
     // Every default goes back, then the session's configs, then what the user entered.
+    // Editing, the configs are the connection's current settings with secrets masked,
+    // and IS keeps a secret that comes back masked.
     const configuration: Record<string, string> = {};
     for (const c of sfd?.elementMetadata?.configuration ?? []) {
       if (c.defaultValue !== undefined && c.defaultValue !== null && c.defaultValue !== '') {
@@ -443,19 +559,29 @@ export function createCommunityByoApi(
       provider.derive?.(entered)
     );
 
-    // IS needs a name here; the real one is set by the rename below.
-    const auth = await call(
-      'POST',
-      tenantUrl('elements_/v1/elements/normalized-instances/authenticate'),
-      {
-        folderKey: folderId,
-        body: {
-          element: { key: provider.connector },
-          sessionID: sid,
-          configuration,
-          name: new Date().toISOString(),
-        },
+    const body: Record<string, unknown> = {
+      element: { key: provider.connector },
+      sessionID: sid,
+      configuration,
+      // IS needs a name here; the real one is set by the rename below.
+      name: existing?.name ?? new Date().toISOString(),
+    };
+    // A session that edits a saved connection names its element instance, which IS
+    // updates with PUT. Without it, IS would create a new instance and leave the
+    // connection unchanged.
+    let method = 'POST';
+    if (existing) {
+      const instanceId = sfd?.elementInstance?.id;
+      if (!instanceId) {
+        return fail({ title: 'Integration Service did not return the connection to edit' });
       }
+      body.instanceID = instanceId;
+      method = 'PUT';
+    }
+    const auth = await call(
+      method,
+      tenantUrl('elements_/v1/elements/normalized-instances/authenticate'),
+      { folderKey: folderId, body }
     );
     if (!auth.ok) return fail(failure(auth, `${provider.name} refused the connection`));
 
@@ -480,12 +606,14 @@ export function createCommunityByoApi(
       await sleep(SESSION_POLL_MS);
     }
     openSession = null;
-    if (!id) return fail({ title: 'Integration Service did not return the new connection' });
-    await call('PATCH', tenantUrl(`connections_/api/v1/Connections/${id}/rename`), {
-      folderKey: folderId,
-      body: { newName: name },
-    });
-    createdAt.set(id, Date.now());
+    if (!id) return fail({ title: 'Integration Service did not return the connection' });
+    if (name !== existing?.name) {
+      await call('PATCH', tenantUrl(`connections_/api/v1/Connections/${id}/rename`), {
+        folderKey: folderId,
+        body: { newName: name },
+      });
+    }
+    if (!existing) createdAt.set(id, Date.now());
     return ok({ id, providerId, name, folderId });
   };
 
@@ -519,26 +647,51 @@ export function createCommunityByoApi(
     });
   };
 
-  const testAndAdd: ByoModelDialogApi['testAndAdd'] = async ({
+  /** Replaces the edited model's entry in its saved configuration and writes the configuration back. */
+  async function updateConfiguration(
+    editing: ByoModelToEdit,
+    entry: LlmConfigurationEntry,
+    folderId: string
+  ): Promise<CallResult> {
+    const current = await call('GET', configurationUrl(editing.configurationId));
+    if (!current.ok) return current;
+    const configuration = current.data as ProductLlmConfiguration;
+    const edited = entryNamed(configuration, editing.name);
+    const llmConfigurations = configuration.llmConfigurations.map((other) => {
+      if (other !== edited) return other;
+      return { id: other.id, ...entry };
+    });
+    return call('PUT', configurationUrl(editing.configurationId), {
+      body: { ...configuration, folderId, llmConfigurations },
+    });
+  }
+
+  const testAndSave: ByoModelDialogApi['testAndSave'] = async ({
     providerId,
     connection,
     modelId,
     name,
+    editing,
   }) => {
     const provider = byId(providerId);
     if (!provider) return fail({ title: `Unknown provider ${providerId}` });
     if (!ctx.organizationId || !ctx.tenantId) {
       return fail({ title: 'The picker needs organizationId and tenantId to add a model.' });
     }
-    const llmConfiguration = {
-      desiredModel: name,
-      customerModel: modelId,
-      connectorType: provider.connectorType,
-      connectionId: connection.id,
-      organizationId: ctx.organizationId,
-      tenantId: ctx.tenantId,
+    // The model's entry, as both a new and an edited configuration hold it.
+    const llmConfiguration = (customFieldMappings?: Record<string, string>) => {
+      const entry: LlmConfigurationEntry = {
+        desiredModel: name,
+        customerModel: modelId,
+        connectorType: provider.connectorType,
+        connectionId: connection.id,
+        organizationId: ctx.organizationId,
+        tenantId: ctx.tenantId,
+      };
+      if (customFieldMappings) entry.customFieldMappings = customFieldMappings;
+      return entry;
     };
-    const group = (customFieldMappings?: Record<string, string>) => ({
+    const newConfiguration = (customFieldMappings?: Record<string, string>) => ({
       enabled: true,
       name: `${operationGroupName}-${Date.now()}`,
       operationGroupName,
@@ -546,9 +699,7 @@ export function createCommunityByoApi(
       folderId: connection.folderId,
       organizationId: ctx.organizationId,
       tenantId: ctx.tenantId,
-      llmConfigurations: [
-        { ...llmConfiguration, ...(customFieldMappings ? { customFieldMappings } : {}) },
-      ],
+      llmConfigurations: [llmConfiguration(customFieldMappings)],
     });
 
     // A connection IS just created is invisible to the gateway for up to a minute.
@@ -561,7 +712,7 @@ export function createCommunityByoApi(
         'POST',
         buildGatewayUrl(ctx, 'api/byo/product/llm-configurations/validate'),
         {
-          body: group(),
+          body: newConfiguration(),
           headers: {
             'X-UiPath-LlmGateway-ByoConfigMode': 'add',
             'X-UiPath-LLMGateway-AllowFull4xxResponse': 'true',
@@ -600,11 +751,20 @@ export function createCommunityByoApi(
       });
     }
 
-    const saved = await call('POST', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations'), {
-      body: group(res.customFieldMappings),
-    });
+    let saved: CallResult;
+    if (editing) {
+      saved = await updateConfiguration(
+        editing,
+        llmConfiguration(res.customFieldMappings),
+        connection.folderId
+      );
+    } else {
+      saved = await call('POST', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations'), {
+        body: newConfiguration(res.customFieldMappings),
+      });
+    }
     if (!saved.ok) return fail(failure(saved, 'The model passed its test but could not be saved'));
-    return ok<ByoAddedModel>({
+    return ok<ByoSavedModel>({
       name,
       modelId,
       connectionId: connection.id,
@@ -613,5 +773,13 @@ export function createCommunityByoApi(
     });
   };
 
-  return { loadContext, loadForm, connect, listModels, testAndAdd };
+  return {
+    loadContext,
+    loadModel,
+    loadForm,
+    loadConnectionValues,
+    connect,
+    listModels,
+    testAndSave,
+  };
 }
