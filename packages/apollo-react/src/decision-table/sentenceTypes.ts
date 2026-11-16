@@ -5,8 +5,8 @@ export interface SentenceNameToken {
   kind: 'input' | 'output';
   columnId: string;
   text: string;
-  /** The decision whose output this input is; set only on an input. */
-  decisionId?: string;
+  /** The id of the decision whose output this input is; set only on an input. */
+  producedBy?: string;
 }
 
 /** A cell's value inside a sentence, and its `index` among the cell's values, 0 for an outcome. */

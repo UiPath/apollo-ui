@@ -11,7 +11,7 @@ import type { RangeEnds, ValueCommit } from '../valueTypes';
 
 /** A column of the story table, and the decision that produces it when another one does. */
 type EditableColumn = Pick<SentenceBand['columns'][number], 'id' | 'name'> &
-  Pick<SentenceNameToken, 'decisionId'>;
+  Pick<SentenceNameToken, 'producedBy'>;
 
 /** One condition of a rule: its input, its operator words, its values, what joins them, and a range's ends. */
 interface EditableCondition {
@@ -41,7 +41,7 @@ const nameToken = (kind: SentenceNameToken['kind'], column: EditableColumn): Sen
   kind,
   columnId: column.id,
   text: column.name,
-  decisionId: column.decisionId,
+  producedBy: column.producedBy,
 });
 
 const conditionParts = (input: EditableColumn, condition: EditableCondition): SentencePart[] => [
@@ -274,8 +274,8 @@ export const tableWithoutRule = (table: EditableTable, rowId: string): EditableT
 export const EDITABLE_TABLE: EditableTable = {
   inputs: [
     { id: 'age', name: 'age' },
-    { id: 'income', name: 'income', decisionId: 'net-income' },
-    { id: 'channel', name: 'channel', decisionId: 'sales-channel' },
+    { id: 'income', name: 'income', producedBy: 'net-income' },
+    { id: 'channel', name: 'channel', producedBy: 'sales-channel' },
   ],
   outputs: [{ id: 'risk', name: 'risk' }],
   rules: [

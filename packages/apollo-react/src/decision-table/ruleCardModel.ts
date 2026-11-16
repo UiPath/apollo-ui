@@ -237,9 +237,9 @@ export const ruleCardModel = ({
     stops,
     stopOf: (token) => stopByToken.get(token),
     linkOf: (token) =>
-      decisionLinks && token.kind === 'input' && token.decisionId !== undefined
+      decisionLinks && token.kind === 'input' && token.producedBy !== undefined
         ? {
-            decisionId: token.decisionId,
+            decisionId: token.producedBy,
             label: labels.openDecision?.(token.text),
             tabbable: !selectable,
           }
