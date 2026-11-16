@@ -77,6 +77,15 @@ const contentTopIn = (element: HTMLElement, scroller: HTMLElement): number =>
   (isPageScroller(scroller) ? 0 : scroller.clientTop) +
   scroller.scrollTop;
 
+/** `scroller`'s `scroll-padding-top` in pixels, a percentage of its scrollport's height. */
+const scrollPaddingTopOf = (scroller: HTMLElement): number => {
+  const padding = getComputedStyle(scroller).scrollPaddingTop;
+  const length = Number.parseFloat(padding) || 0;
+  return padding.trim().endsWith('%')
+    ? (length * (scroller.clientHeight || FALLBACK_ROW_VIEWPORT_PX)) / 100
+    : length;
+};
+
 export interface RuleWindow {
   listRef: React.RefObject<HTMLUListElement | null>;
   headerRef: React.RefObject<HTMLDivElement | null>;
@@ -115,7 +124,7 @@ export const useRuleWindow = (
   const headerHeight = useCallback(() => {
     const ancestor = ancestorRef.current;
     if (!ancestor) return headerRef.current?.offsetHeight ?? 0;
-    return Number.parseFloat(getComputedStyle(ancestor.scroller).scrollPaddingTop) || 0;
+    return scrollPaddingTopOf(ancestor.scroller);
   }, []);
   const [listMoves, setListMoves] = useState(0);
   const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(NO_HEIGHTS);
