@@ -41,11 +41,26 @@ export interface SentenceRule {
   lines: readonly SentenceLine[];
 }
 
+/** A kind of value a column holds, which picks its default type glyph. */
+export type SentenceValueType =
+  | 'text'
+  | 'number'
+  | 'boolean'
+  | 'date'
+  | 'time'
+  | 'dateTime'
+  | 'dayTimeDuration'
+  | 'yearMonthDuration'
+  | 'list'
+  | 'any';
+
 /** An input or output of a band, by its column's id and name. */
 export interface SentenceBandColumn {
   id: string;
   name: string;
-  /** The column's type glyph, before its name. */
+  /** The column's kind of value; without `icon`, its glyph. */
+  type?: SentenceValueType;
+  /** The column's type glyph, before its name, in place of its type's. */
   icon?: React.ReactNode;
 }
 

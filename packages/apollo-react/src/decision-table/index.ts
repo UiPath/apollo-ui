@@ -62,7 +62,6 @@ export type { PolicyOption } from './PolicyOptionItem';
 export type { PolicyGroup, PolicyPickerProps } from './PolicyPicker';
 export type { GlyphTone } from './sentenceMarks';
 export type {
-  SentenceBand,
   SentenceBandColumn,
   SentenceCellId,
   SentenceHeader,
@@ -74,6 +73,7 @@ export type {
   SentenceToken,
   SentenceValueId,
   SentenceValueToken,
+  SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
 export { usePressDrag } from './useDragReorder';

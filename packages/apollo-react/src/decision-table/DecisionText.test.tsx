@@ -16,7 +16,7 @@ import { type Mock, onTestFinished, vi } from 'vitest';
 import {
   EDITABLE_TABLE,
   type EditableTable,
-  tableBands,
+  tableColumns,
   tableWithNewInput,
   tableWithoutCell,
   tableWithoutRule,
@@ -32,17 +32,18 @@ import {
   country,
   DECISION_TEXT_EDIT_LABELS,
   DECISION_TEXT_LABELS,
-  GRID_SENTENCE_BANDS,
+  GRID_SENTENCE_COLUMNS,
   GRID_SENTENCE_HEADER,
   GRID_SENTENCE_RULES,
   HIT_POLICY_GROUPS,
   longValueListRule,
-  MULTI_SENTENCE_BANDS,
+  MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_HEADER,
   MULTI_SENTENCE_RULES,
-  manyColumnBands,
+  manyColumns,
   manyLinesRule,
   manySentenceRules,
+  NO_COLUMNS,
   valueList,
 } from './__fixtures__/sentences.fixtures';
 import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
@@ -54,7 +55,7 @@ import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type {
-  SentenceBand,
+  SentenceBandColumn,
   SentenceCellId,
   SentencePart,
   SentenceRule,
@@ -103,7 +104,7 @@ type ViewProps<Props extends DecisionTextProps = DecisionTextProps> = Props exte
 const view = (props: ViewProps = {}) => (
   <DecisionText
     rules={MULTI_SENTENCE_RULES}
-    bands={MULTI_SENTENCE_BANDS}
+    {...MULTI_SENTENCE_COLUMNS}
     header={MULTI_SENTENCE_HEADER}
     labels={DECISION_TEXT_LABELS}
     ariaLabel="Rules"
@@ -141,7 +142,7 @@ const Selectable = ({ initial = null, onSelect, ...props }: SelectableProps) => 
   const [selected, setSelected] = useState(initial);
   return view({
     rules: GRID_SENTENCE_RULES,
-    bands: GRID_SENTENCE_BANDS,
+    ...GRID_SENTENCE_COLUMNS,
     header: GRID_SENTENCE_HEADER,
     ...props,
     selected,
@@ -328,18 +329,70 @@ describe('DecisionText', () => {
 
     it("draws a band column's type glyph before its name, hidden from its accessible name", () => {
       renderView({
-        bands: [
+        inputs: [
           {
-            id: 'inputs',
-            label: 'Inputs',
-            columns: [{ id: 'score', name: 'Credit Score', icon: <svg data-testid="type-icon" /> }],
+            id: 'score',
+            name: 'Credit Score',
+            type: 'number',
+            icon: <svg data-testid="type-icon" />,
           },
         ],
+        outputs: [],
       });
       const column = within(screen.getByTestId('nl-bands')).getByRole('listitem');
       expect(column.firstElementChild).toHaveAttribute('aria-hidden', 'true');
       expect(column.firstElementChild).toContainElement(screen.getByTestId('type-icon'));
       expect(column).toHaveTextContent(/^Credit Score$/);
+    });
+
+    it("draws a column's glyph from its kind of value, and none for a kind the view lacks", () => {
+      const unknownType = 'toString' as unknown as SentenceBandColumn['type'];
+      renderView({
+        inputs: [
+          { id: 'score', name: 'Credit Score', type: 'number' },
+          { id: 'start', name: 'Start', type: 'dateTime' },
+          { id: 'flag', name: 'Flag', type: unknownType },
+          { id: 'note', name: 'Note' },
+        ],
+      });
+      const glyphOf = (columnId: string) =>
+        screen
+          .getByTestId('nl-bands')
+          .querySelector(`[data-column-id="${columnId}"]`)
+          ?.querySelector('svg')
+          ?.getAttribute('class');
+      expect(['score', 'start', 'flag', 'note'].map(glyphOf)).toEqual([
+        'lucide lucide-hash',
+        'lucide lucide-calendar-clock',
+        undefined,
+        undefined,
+      ]);
+    });
+
+    it.each([
+      ['no outputs', { outputs: [] }, ['Inputs']],
+      ['no inputs', { inputs: [] }, ['Outputs']],
+    ])('leaves out the band of a side with %s', (_, columns, captions) => {
+      renderView(columns);
+      expect(
+        [...screen.getByTestId('nl-bands').querySelectorAll('[data-band-id]')].map(
+          (band) => band.firstElementChild?.textContent
+        )
+      ).toEqual(captions);
+    });
+
+    it('shows no bands without inputs or outputs', () => {
+      renderView(NO_COLUMNS);
+      expect(screen.queryByTestId('nl-bands')).toBeNull();
+    });
+
+    it("captions the bands with the host's labels", () => {
+      renderView({ labels: { ...DECISION_TEXT_LABELS, inputs: 'Eingaben', outputs: 'Ausgaben' } });
+      expect(
+        [...screen.getByTestId('nl-bands').querySelectorAll('[data-band-id]')].map(
+          (band) => band.firstElementChild?.textContent
+        )
+      ).toEqual(['Eingaben', 'Ausgaben']);
     });
 
     it('puts a row heading first, then its lead, then one line per condition', () => {
@@ -439,7 +492,7 @@ describe('DecisionText', () => {
     ])('stays read-only without onSelect with %s selected', (_, selected) => {
       renderView({
         rules: GRID_SENTENCE_RULES,
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         header: GRID_SENTENCE_HEADER,
         selected,
       });
@@ -546,7 +599,7 @@ describe('DecisionText', () => {
     it('names a focused condition stop with its run verdict, in a lead and on a line, and an outcome without one', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: rowMarks({
           m3: { cells: { score: { matched: true }, channel: { matched: false } } },
@@ -751,7 +804,7 @@ describe('DecisionText', () => {
     it('shows the mark a focused element carries or is described by, without adding to its description', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
         initial: { rowId: 'm5' },
@@ -766,7 +819,7 @@ describe('DecisionText', () => {
     it("shows every message a focused rule's marks on several lines describe it with", () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: rowMarks({
           m1: {
@@ -786,7 +839,7 @@ describe('DecisionText', () => {
     it('shows every message of a focused rule whose first mark the pointer is on, until Escape', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: rowMarks({
           m1: {
@@ -820,7 +873,7 @@ describe('DecisionText', () => {
       render(
         <Selectable
           rules={MULTI_SENTENCE_RULES}
-          bands={MULTI_SENTENCE_BANDS}
+          {...MULTI_SENTENCE_COLUMNS}
           header={MULTI_SENTENCE_HEADER}
           marks={scoreMarks}
           initial={{ rowId: 'm5' }}
@@ -835,7 +888,7 @@ describe('DecisionText', () => {
     it("keeps a focused rule's message once the pointer leaves the view or rests off any mark, back from another mark, until Escape", async () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
         initial: { rowId: 'm5' },
@@ -863,7 +916,7 @@ describe('DecisionText', () => {
     it("keeps a focused rule's message dismissed after Escape once the pointer leaves another mark", () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
         initial: { rowId: 'm5' },
@@ -880,7 +933,7 @@ describe('DecisionText', () => {
     it('keeps the message of the mark under the pointer when focus moves to a rule with none', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
         initial: { rowId: 'm1' },
@@ -896,7 +949,7 @@ describe('DecisionText', () => {
     it("brings a focused rule's message back once the pointer rests off any mark after another", async () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
         initial: { rowId: 'm5' },
@@ -995,7 +1048,7 @@ describe('DecisionText', () => {
       const onAdd = vi.fn();
       const props = {
         rules: GRID_SENTENCE_RULES,
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         selected: { rowId: 'r1' },
         onSelect: vi.fn(),
         addRule: { label: 'Add rule', onAdd },
@@ -1302,7 +1355,7 @@ describe('DecisionText', () => {
     });
 
     it('keeps 50 band columns on one list, named once by its caption', () => {
-      renderView({ bands: manyColumnBands(50) });
+      renderView({ ...manyColumns(50) });
       const inputs = screen.getByRole('list', { name: 'Inputs' });
       expect(within(inputs).getAllByRole('listitem')).toHaveLength(50);
       expect(inputs.previousElementSibling).toHaveAttribute('aria-hidden', 'true');
@@ -1358,7 +1411,7 @@ describe('DecisionText', () => {
     });
 
     it('makes a band list a tab stop only while its columns overflow it', async () => {
-      renderView({ bands: manyColumnBands(50) });
+      renderView({ ...manyColumns(50) });
       expect(inputs()).not.toHaveAttribute('tabindex');
       expect(await tabStops()).toEqual(['Rules']);
       setWidths(inputs(), 3000, 400);
@@ -1378,13 +1431,8 @@ describe('DecisionText', () => {
       resize(first);
       expect(inputs()).toHaveAttribute('tabindex', '0');
       setWidths(inputs(), 400, 400);
-      const [inputBand, ...rest] = MULTI_SENTENCE_BANDS;
-      if (!inputBand) throw new Error('no band');
-      const grown = [
-        { ...inputBand, columns: [...inputBand.columns, { id: 'age', name: 'Age' }] },
-        ...rest,
-      ];
-      await act(async () => rerender(view({ bands: grown })));
+      const grown = [...MULTI_SENTENCE_COLUMNS.inputs, { id: 'age', name: 'Age' }];
+      await act(async () => rerender(view({ inputs: grown })));
       expect(inputs()).not.toHaveAttribute('tabindex');
       setWidths(inputs(), 700, 400);
       const added = within(inputs()).getAllByRole('listitem').at(-1);
@@ -1395,7 +1443,7 @@ describe('DecisionText', () => {
 
     it("drops a band list's tab stop while its columns are buttons, even as they overflow it", () => {
       renderView({
-        bands: manyColumnBands(50),
+        ...manyColumns(50),
         selected: null,
         onSelect: vi.fn(),
         edit: editWith({
@@ -1660,7 +1708,7 @@ describe('DecisionText', () => {
         hostSelect = setSelected;
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           header: GRID_SENTENCE_HEADER,
           selected,
           onSelect: setSelected,
@@ -1800,7 +1848,7 @@ describe('DecisionText', () => {
       ['a rule', { rowId: 'r2' }, 'r2'],
       ['a cell', { rowId: 'r2', columnId: 'age' }, 'r2:age'],
     ])('lands Tab into the view on the selected stop with %s selected, and Tab or Shift+Tab from it leaves the view', async (_, initial, stop) => {
-      const { onSelect } = renderSelectable({ initial, bands: [] });
+      const { onSelect } = renderSelectable({ initial, ...NO_COLUMNS });
       const { before, after } = aroundView();
       act(() => before.focus());
       await tabs(1);
@@ -1950,7 +1998,7 @@ describe('DecisionText', () => {
       if (overflowing) overflowingBandLists();
       const { onSelect } = renderSelectable({
         initial: { rowId: 'r2', columnId: 'age' },
-        ...(!overflowing && { bands: [] }),
+        ...(!overflowing && NO_COLUMNS),
       });
       const view = screen.getByTestId('nl');
       const header = screen.getByTestId('nl-header');
@@ -1975,7 +2023,7 @@ describe('DecisionText', () => {
     });
 
     it('lands Tab into the view on the view itself with nothing selected', async () => {
-      const { onSelect } = renderSelectable({ bands: [] });
+      const { onSelect } = renderSelectable({ ...NO_COLUMNS });
       const { before, after } = aroundView();
       act(() => before.focus());
       expect(await tabs(2)).toEqual([screen.getByTestId('nl'), after]);
@@ -1995,7 +2043,7 @@ describe('DecisionText', () => {
       onTestFinished(() => outside.remove());
       const container = (shadow ?? host).appendChild(document.createElement('div'));
       const onSelect = vi.fn();
-      const props = { rules: GRID_SENTENCE_RULES, bands: GRID_SENTENCE_BANDS, onSelect };
+      const props = { rules: GRID_SENTENCE_RULES, ...GRID_SENTENCE_COLUMNS, onSelect };
       const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }), { container });
       const r2 = within(container).getByTestId('nl-row-r2');
       act(() => r2.focus());
@@ -2016,7 +2064,7 @@ describe('DecisionText', () => {
         const [saving, setSaving] = useState(false);
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           header: GRID_SENTENCE_HEADER,
           containerProps: { 'data-saving': String(saving) },
           selected,
@@ -2044,7 +2092,7 @@ describe('DecisionText', () => {
         const [saving, setSaving] = useState(false);
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           header: GRID_SENTENCE_HEADER,
           containerProps: { 'data-saving': String(saving) },
           selected,
@@ -2068,7 +2116,7 @@ describe('DecisionText', () => {
     it("keeps no focus pending from a move a host refused a moment later, so the host's own later select of it leaves focus alone", async () => {
       const outside = document.body.appendChild(document.createElement('button'));
       onTestFinished(() => outside.remove());
-      const props = { rules: GRID_SENTENCE_RULES, bands: GRID_SENTENCE_BANDS, onSelect: vi.fn() };
+      const props = { rules: GRID_SENTENCE_RULES, ...GRID_SENTENCE_COLUMNS, onSelect: vi.fn() };
       const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }));
       act(() => card('r2').focus());
       press('ArrowRight');
@@ -2309,7 +2357,7 @@ describe('DecisionText', () => {
         });
         return view({
           rules,
-          bands: manyColumnBands(10),
+          ...manyColumns(10),
           selected,
           onSelect: setSelected,
           edit: editWith({
@@ -2457,7 +2505,7 @@ describe('DecisionText', () => {
         // @ts-expect-error
         <DecisionText
           rules={GRID_SENTENCE_RULES}
-          bands={GRID_SENTENCE_BANDS}
+          {...GRID_SENTENCE_COLUMNS}
           header={GRID_SENTENCE_HEADER}
           labels={DECISION_TEXT_LABELS}
           ariaLabel="Rules"
@@ -2692,7 +2740,7 @@ describe('DecisionText', () => {
             </button>
             {view({
               rules: GRID_SENTENCE_RULES,
-              bands: GRID_SENTENCE_BANDS,
+              ...GRID_SENTENCE_COLUMNS,
               selected: { rowId: 'r2', columnId: 'age' },
               onSelect: vi.fn(),
               edit: editWith({
@@ -2730,7 +2778,7 @@ describe('DecisionText', () => {
           </button>
           {view({
             rules: GRID_SENTENCE_RULES,
-            bands: GRID_SENTENCE_BANDS,
+            ...GRID_SENTENCE_COLUMNS,
             selected,
             onSelect: setSelected,
             edit: editWith({ editing, onStartEdit: setEditing, onCommit: close, onCancel: close }),
@@ -2761,7 +2809,7 @@ describe('DecisionText', () => {
         const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           selected: { rowId: 'r2', columnId: 'age' },
           onSelect: vi.fn(),
           edit: editWith({
@@ -2789,7 +2837,7 @@ describe('DecisionText', () => {
         const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
         return view({
           rules: GRID_SENTENCE_RULES,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           selected: { rowId: 'r2', columnId: 'age' },
           onSelect,
           edit: editWith({
@@ -2837,7 +2885,7 @@ describe('DecisionText', () => {
     it('cancels once the edit of a rule the host removes another way, as by undo or another client', () => {
       const onCancel = vi.fn();
       const props = {
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         selected: { rowId: 'r2', columnId: 'age' },
         onSelect: vi.fn(),
         edit: editWith({ editing: r2Age(0), onCancel }),
@@ -2856,7 +2904,7 @@ describe('DecisionText', () => {
         const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
         return view({
           rules,
-          bands: GRID_SENTENCE_BANDS,
+          ...GRID_SENTENCE_COLUMNS,
           selected: { rowId: 'r2', columnId: 'age' },
           onSelect: vi.fn(),
           edit: editWith({ editing, onCancel: () => setEditing(null) }),
@@ -2937,7 +2985,7 @@ describe('DecisionText', () => {
       const rules = manySentenceRules(400);
       renderEditing({
         rules,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         initialEditing: { rowId: 'row-300', columnId: 'decision', index: 0 },
       });
@@ -2984,10 +3032,10 @@ describe('DecisionText', () => {
     const r1Age: SentenceValueId = { rowId: 'r1', columnId: 'age', index: 0 };
     const r1Risk: SentenceValueId = { rowId: 'r1', columnId: 'risk', index: 0 };
     const r3Channel: SentenceValueId = { rowId: 'r3', columnId: 'channel', index: 0 };
-    const CHANNEL_BANDS: SentenceBand[] = [
-      ...GRID_SENTENCE_BANDS,
-      { id: 'more', label: 'More', columns: [{ id: 'channel', name: 'channel' }] },
-    ];
+    const CHANNEL_COLUMNS = {
+      ...GRID_SENTENCE_COLUMNS,
+      inputs: [...GRID_SENTENCE_COLUMNS.inputs, { id: 'channel', name: 'channel' }],
+    };
     const field = (cell: SentenceCellId): ValueField => {
       if (cell.columnId === 'risk') return { allowedValues: RISKS };
       if (cell.columnId === 'channel') return { operators: AGE_OPERATORS, operator: '>' };
@@ -3241,7 +3289,7 @@ describe('DecisionText', () => {
       const m2Reason: SentenceValueId = { rowId: 'm2', columnId: 'reason', index: 0 };
       const { onCommit } = renderEditing({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         initialEditing: m2Reason,
         valueField: () => ({ allowedValues: ['"prime"', '"low score"'] }),
@@ -3258,7 +3306,7 @@ describe('DecisionText', () => {
       const m3Channel: SentenceValueId = { rowId: 'm3', columnId: 'channel', index: 0 };
       const { onCommit } = renderEditing({
         rules: MULTI_SENTENCE_RULES,
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         initialEditing: m3Channel,
         valueField: () => ({
@@ -3407,7 +3455,7 @@ describe('DecisionText', () => {
           const [editing, setEditing] = useState<SentenceValueId | null>(r1Age);
           return view({
             rules: GRID_SENTENCE_RULES,
-            bands: GRID_SENTENCE_BANDS,
+            ...GRID_SENTENCE_COLUMNS,
             selected: { rowId: 'r1', columnId: 'age' },
             onSelect: vi.fn(),
             edit: editWith({
@@ -3438,7 +3486,7 @@ describe('DecisionText', () => {
         const { onCommit } = renderEditing({
           initialEditing: r3Channel,
           valueField: field,
-          bands: CHANNEL_BANDS,
+          ...CHANNEL_COLUMNS,
         });
         expect(action('Apply')).toBeDisabled();
         expect(editor()).toHaveAttribute('aria-invalid', 'true');
@@ -3459,7 +3507,7 @@ describe('DecisionText', () => {
         const { onCommitValues } = renderEditing({
           initialEditing: r3Channel,
           valueField: () => ({}),
-          bands: CHANNEL_BANDS,
+          ...CHANNEL_COLUMNS,
           renderEditor: hostInput,
         });
         await user.click(action('Edit expression'));
@@ -3477,7 +3525,7 @@ describe('DecisionText', () => {
         const { onCommitValues } = renderEditing({
           initialEditing: r3Channel,
           valueField: () => ({}),
-          bands: CHANNEL_BANDS,
+          ...CHANNEL_COLUMNS,
           renderEditor: hostInput,
         });
         fireEvent.click(action('Edit expression'));
@@ -3505,7 +3553,7 @@ describe('DecisionText', () => {
         renderEditing({
           initialEditing: r3Channel,
           valueField: () => pendingField,
-          bands: CHANNEL_BANDS,
+          ...CHANNEL_COLUMNS,
         });
         expect(operatorSelect()).toHaveTextContent(words);
         expect(card('r3').querySelector('li[data-pending]')).toHaveTextContent(
@@ -3600,7 +3648,7 @@ describe('DecisionText', () => {
       const { onCommit } = renderEditing({
         initialEditing: r3Channel,
         valueField: field,
-        bands: CHANNEL_BANDS,
+        ...CHANNEL_COLUMNS,
       });
       const line = card('r3').querySelector<HTMLElement>('li[data-pending]');
       expect(line).toHaveTextContent('channel is greater than Set a value');
@@ -3619,7 +3667,7 @@ describe('DecisionText', () => {
       const { onCommit } = renderEditing({
         initialEditing: r3Channel,
         valueField: field,
-        bands: CHANNEL_BANDS,
+        ...CHANNEL_COLUMNS,
         conditionEntries: (_, startEdit) => [
           { label: 'channel', focusesOwnSurface: true, onClick: () => startEdit(r3Channel) },
         ],
@@ -3639,7 +3687,7 @@ describe('DecisionText', () => {
       const { onCommit } = renderEditing({
         initialEditing: r3Channel,
         valueField: field,
-        bands: CHANNEL_BANDS,
+        ...CHANNEL_COLUMNS,
       });
       fireEvent.change(editor(), { target: { value: '"web"' } });
       expect(onCommit).not.toHaveBeenCalled();
@@ -3649,7 +3697,7 @@ describe('DecisionText', () => {
     });
 
     it('words a pending line without an operator when the host offers none', () => {
-      renderEditing({ initialEditing: r3Channel, bands: CHANNEL_BANDS });
+      renderEditing({ initialEditing: r3Channel, ...CHANNEL_COLUMNS });
       expect(card('r3').querySelector('li[data-pending]')).toHaveTextContent(
         /^channel Set a value$/
       );
@@ -3686,7 +3734,7 @@ describe('DecisionText', () => {
       const renderShaped = (props: Omit<EditingHostProps, 'spies'> = {}) =>
         renderEditing({
           rules: MULTI_SENTENCE_RULES,
-          bands: MULTI_SENTENCE_BANDS,
+          ...MULTI_SENTENCE_COLUMNS,
           header: MULTI_SENTENCE_HEADER,
           valueField: shapedField,
           ...props,
@@ -4158,6 +4206,25 @@ describe('DecisionText', () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
+    it("titles a column's popover with its kind of value's glyph, and offers each type with its own", () => {
+      renderEditing({
+        column: columnEdit({
+          types: [
+            { id: 'string', label: 'Text', type: 'text' },
+            { ...TYPES[0], id: 'number', label: 'Number', type: 'number' },
+          ],
+        }),
+        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
+      });
+      fireEvent.click(pill('age'));
+      const header = inPopover().getByText('Input · age').parentElement;
+      expect(header?.querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-hash');
+      expect(typeSelect().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-type');
+      fireEvent.click(typeSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      expect(typeSelect().querySelector('svg')).toBe(inPopover().getByTestId('number-icon'));
+    });
+
     it("names an output's binding as its output name, required only when the host says so", () => {
       renderColumns();
       fireEvent.click(pill('risk'));
@@ -4336,10 +4403,8 @@ describe('DecisionText', () => {
         <EditingHost
           spies={{ onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell }}
           column={column}
-          bands={GRID_SENTENCE_BANDS.map((band) => ({
-            ...band,
-            columns: band.columns.filter((c) => c.id !== 'age'),
-          }))}
+          {...GRID_SENTENCE_COLUMNS}
+          inputs={GRID_SENTENCE_COLUMNS.inputs.filter((c) => c.id !== 'age')}
         />
       );
       expect(screen.queryByTestId('nl-column-editor')).toBeNull();
@@ -4484,7 +4549,7 @@ describe('DecisionText', () => {
       const [editing, setEditing] = useState<SentenceValueId | null>(null);
       return view({
         rules: wordedRules(table),
-        bands: tableBands(table),
+        ...tableColumns(table),
         header: GRID_SENTENCE_HEADER,
         selected,
         onSelect: setSelected,
@@ -4963,7 +5028,7 @@ describe('DecisionText', () => {
     it('closes the rule menu when rules inserted above move its rule out of the mounted rules', () => {
       const rules = manySentenceRules(2000);
       const props = {
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         selected: null,
         onSelect: vi.fn(),
@@ -4987,7 +5052,7 @@ describe('DecisionText', () => {
     it('leaves the rules where they scrolled when the scroll that closes a menu unmounts its rule', () => {
       renderSelectable({
         rules: manySentenceRules(2000),
-        bands: MULTI_SENTENCE_BANDS,
+        ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         initial: { rowId: 'row-0' },
         edit: editWith({ ruleEntries: deleteEntry }),
@@ -5077,7 +5142,7 @@ describe('DecisionText', () => {
     it('leaves no refocus pending from a clear the host refused, so its later select of another rule takes no focus', () => {
       const props = {
         rules: GRID_SENTENCE_RULES,
-        bands: GRID_SENTENCE_BANDS,
+        ...GRID_SENTENCE_COLUMNS,
         onSelect: vi.fn(),
         edit: editWith({ onClearCell: vi.fn() }),
       };
@@ -5324,7 +5389,7 @@ describe('DecisionText', () => {
         // @ts-expect-error
         <DecisionText
           rules={linkedRules}
-          bands={GRID_SENTENCE_BANDS}
+          {...GRID_SENTENCE_COLUMNS}
           header={GRID_SENTENCE_HEADER}
           labels={DECISION_TEXT_LABELS}
           ariaLabel="Rules"
@@ -5345,7 +5410,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: noValueLinkedRules,
         onOpenDecision,
-        bands: [],
+        ...NO_COLUMNS,
         initial: { rowId: 'r1', columnId: 'income' },
       });
       const user = userEvent.setup();
