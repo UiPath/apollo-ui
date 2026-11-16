@@ -132,30 +132,10 @@ export const useValueEditing = ({
     stopAwaitingRef.current = pending && view ? onNextGesture(view, () => awaitHost(null)) : null;
   };
   useEffect(() => () => stopAwaitingRef.current?.(), []);
-  const settledRef = useRef<string | null>(null);
-  const openRef = useRef({ key: openedRef.current, onCancel: edit?.onCancel });
-  const openKey = target ? valueKey(target) : undefined;
-  if (openKey !== openRef.current.key) settledRef.current = null;
-  openRef.current = { key: openKey, onCancel: edit?.onCancel };
-  useEffect(() => {
-    const view = container();
-    return () =>
-      queueMicrotask(() => {
-        const { key, onCancel } = openRef.current;
-        if (view && !view.isConnected && key !== undefined && key !== settledRef.current) {
-          onCancel?.();
-        }
-      });
-  }, [container]);
-  const cancelOpen = (open: ViewEdit) => {
-    settledRef.current = open.editing ? valueKey(open.editing) : null;
-    open.onCancel();
-  };
 
   const start = (value: SentenceValueId) => {
     if (!edit) return;
     awaitHost(null);
-    settledRef.current = null;
     if (selected?.rowId !== value.rowId || selected?.columnId !== value.columnId) {
       navigation.select({ rowId: value.rowId, columnId: value.columnId }, () => null, false);
     }
@@ -174,7 +154,7 @@ export const useValueEditing = ({
     const held = hasStop(rule, target.columnId);
     const cancel = () => {
       awaitHost({ from: target, move: 'cancel', rules, refocus: true });
-      cancelOpen(edit);
+      edit.onCancel();
     };
     return {
       target,
@@ -187,8 +167,7 @@ export const useValueEditing = ({
       adds: !held,
       onCommit: (commit, move, refocus) => {
         awaitHost({ from: target, move, rules, refocus });
-        settledRef.current =
-          edit.onCommit(target, commit, move) === undefined ? valueKey(target) : null;
+        edit.onCommit(target, commit, move);
       },
       onCancel: cancel,
       onClear:
@@ -225,7 +204,7 @@ export const useValueEditing = ({
 
   useLayoutEffect(() => {
     const gone = target && !rule ? valueKey(target) : null;
-    if (gone !== null && gone !== goneRef.current && edit) cancelOpen(edit);
+    if (gone !== null && gone !== goneRef.current) edit?.onCancel();
     goneRef.current = gone;
   });
 
@@ -255,7 +234,7 @@ export const useValueEditing = ({
     if (target?.rowId !== cell.rowId || (cell.columnId && target.columnId !== cell.columnId))
       return;
     awaitHost(null);
-    if (edit) cancelOpen(edit);
+    edit?.onCancel();
   };
 
   const clear = (cell: SentenceCellId, refocusNow: boolean, scroll: boolean) => {

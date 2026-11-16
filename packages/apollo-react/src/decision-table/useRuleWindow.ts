@@ -32,34 +32,34 @@ const measuredHeights = (
   return next ?? current;
 };
 
-/** Where the rules scroll: in the view's own frame, or in the nearest scrolling ancestor, the view sized to its rules. */
-export type DecisionTextScroll = 'self' | 'ancestor';
+/** Where the rules scroll: in the view's own frame, or in `container`, the page's scrolling element when it is null or omitted, the view sized to its rules. */
+export type DecisionTextScroll = 'self' | { container?: HTMLElement | null };
 
-const SCROLLING_OVERFLOW = new Set(['auto', 'scroll', 'overlay']);
+interface ScrollAncestor {
+  scroller: HTMLElement;
+  path: HTMLElement[];
+}
 
 const isPageScroller = (scroller: HTMLElement): boolean =>
   scroller === scroller.ownerDocument.scrollingElement;
 
-const scrollsItself = (node: HTMLElement): boolean => {
-  const { body, documentElement } = node.ownerDocument;
-  return (
-    SCROLLING_OVERFLOW.has(getComputedStyle(node).overflowY) &&
-    (node !== body || getComputedStyle(documentElement).overflowY !== 'visible')
-  );
+/** The elements holding `element` where it renders, across slots and shadow roots, up to `scroller`. */
+const pathTo = (element: Element, scroller: HTMLElement): HTMLElement[] => {
+  const path: HTMLElement[] = [];
+  for (
+    let node = renderedParentOf(element);
+    node && node !== scroller;
+    node = renderedParentOf(node)
+  ) {
+    if (node instanceof HTMLElement) path.push(node);
+  }
+  return path;
 };
 
-/** The nearest ancestor that scrolls vertically, across slots and shadow roots, else the page's scrolling element, and the elements on the way to it. */
-export const scrollAncestorOf = (
-  element: Element
-): { scroller: HTMLElement; path: HTMLElement[] } | null => {
-  const path: HTMLElement[] = [];
-  for (let node = renderedParentOf(element); node; node = renderedParentOf(node)) {
-    if (!(node instanceof HTMLElement)) continue;
-    if (isPageScroller(node) || scrollsItself(node)) return { scroller: node, path };
-    path.push(node);
-  }
-  const page = element.ownerDocument.scrollingElement;
-  return page instanceof HTMLElement ? { scroller: page, path } : null;
+/** The container `named`, else the page's scrolling element, and the elements on the way to it from `element`. */
+const scrollAncestorOf = (element: Element, named: HTMLElement | null): ScrollAncestor | null => {
+  const scroller = named ?? element.ownerDocument.scrollingElement;
+  return scroller instanceof HTMLElement ? { scroller, path: pathTo(element, scroller) } : null;
 };
 
 /** Where `scroller`'s scroll events fire: the document for the page's scrolling element. */
@@ -131,10 +131,11 @@ export const useRuleWindow = (
   retainedRowId: string | undefined,
   scroll: DecisionTextScroll = 'self'
 ): RuleWindow => {
+  const named = scroll === 'self' ? undefined : (scroll.container ?? null);
   const listRef = useRef<HTMLUListElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
-  const ancestorRef = useRef<ReturnType<typeof scrollAncestorOf>>(null);
+  const ancestorRef = useRef<ScrollAncestor | null>(null);
   const scrollerOf = useCallback(() => ancestorRef.current?.scroller ?? sectionRef.current, []);
   const listStart = useCallback(() => {
     const list = listRef.current;
@@ -185,12 +186,13 @@ export const useRuleWindow = (
   const attachSection = useCallback(
     (element: HTMLElement | null) => {
       sectionRef.current = element;
-      ancestorRef.current = element && scroll === 'ancestor' ? scrollAncestorOf(element) : null;
+      ancestorRef.current =
+        element && named !== undefined ? scrollAncestorOf(element, named) : null;
       measureRef(ancestorRef.current?.scroller ?? element);
     },
-    [measureRef, scroll]
+    [measureRef, named]
   );
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the ancestor changes with the scroll mode
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the ancestor changes with the named container
   useLayoutEffect(() => {
     const ancestor = ancestorRef.current;
     const section = sectionRef.current;
@@ -229,7 +231,7 @@ export const useRuleWindow = (
       stopForwarding?.();
       observer.disconnect();
     };
-  }, [listStart, scroll]);
+  }, [listStart, named]);
   useLayoutEffect(() => {
     if (listMoves > 0) ancestorRef.current?.scroller.dispatchEvent(new Event('scroll'));
   }, [listMoves]);
