@@ -66,6 +66,27 @@ export const scrollAncestorOf = (
 const scrollEventsOf = (scroller: HTMLElement): EventTarget =>
   isPageScroller(scroller) ? scroller.ownerDocument : scroller;
 
+const pageForwarders = new WeakMap<Document, { views: number; forward: () => void }>();
+
+/** Re-fires the document's scrolls on its scrolling element, once per scroll for every view, until each view stops. */
+const forwardPageScrolls = (document: Document): (() => void) => {
+  const forwarder = pageForwarders.get(document) ?? {
+    views: 0,
+    forward: () => document.scrollingElement?.dispatchEvent(new Event('scroll')),
+  };
+  if (forwarder.views === 0) {
+    pageForwarders.set(document, forwarder);
+    document.addEventListener('scroll', forwarder.forward, { passive: true });
+  }
+  forwarder.views += 1;
+  return () => {
+    forwarder.views -= 1;
+    if (forwarder.views > 0) return;
+    document.removeEventListener('scroll', forwarder.forward);
+    pageForwarders.delete(document);
+  };
+};
+
 /** The viewport top of `scroller`'s scrollport. */
 const scrollportTopOf = (scroller: HTMLElement): number =>
   isPageScroller(scroller) ? 0 : scroller.getBoundingClientRect().top;
@@ -182,13 +203,15 @@ export const useRuleWindow = (
       last = next;
       setListMoves((count) => count + 1);
     };
-    const onScroll = () => {
-      if (events !== ancestor.scroller) ancestor.scroller.dispatchEvent(new Event('scroll'));
-      check();
-    };
-    events.addEventListener('scroll', onScroll, { passive: true });
+    const stopForwarding = isPageScroller(ancestor.scroller)
+      ? forwardPageScrolls(ancestor.scroller.ownerDocument)
+      : null;
+    events.addEventListener('scroll', check, { passive: true });
     if (typeof ResizeObserver === 'undefined') {
-      return () => events.removeEventListener('scroll', onScroll);
+      return () => {
+        events.removeEventListener('scroll', check);
+        stopForwarding?.();
+      };
     }
     const observer = new ResizeObserver(check);
     for (const element of [section, ...ancestor.path]) {
@@ -202,7 +225,8 @@ export const useRuleWindow = (
       }
     }
     return () => {
-      events.removeEventListener('scroll', onScroll);
+      events.removeEventListener('scroll', check);
+      stopForwarding?.();
       observer.disconnect();
     };
   }, [listStart, scroll]);

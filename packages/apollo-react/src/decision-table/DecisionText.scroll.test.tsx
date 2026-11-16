@@ -162,6 +162,77 @@ describe('DecisionText scroll', () => {
     page.scrollTop = 0;
   });
 
+  it('windows its rules against the window height when only the height changes', () => {
+    const observers: { callback: ResizeObserverCallback; observer: ResizeObserver }[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          observers.push({ callback, observer: this });
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const page = document.documentElement;
+    const height = vi.spyOn(page, 'clientHeight', 'get').mockReturnValue(400);
+    const added = vi.spyOn(window, 'addEventListener');
+    const removed = vi.spyOn(window, 'removeEventListener');
+    const resizeListeners = (spy: typeof added) =>
+      spy.mock.calls.filter(([type]) => type === 'resize').map(([, listener]) => listener);
+    const { unmount } = render(text({ scroll: 'ancestor' }));
+    act(() => {
+      for (const { callback, observer } of observers) callback([], observer);
+    });
+    const mounted = () => screen.getAllByTestId(/^nl-row-row-\d+$/).length;
+    const short = mounted();
+    height.mockReturnValue(4000);
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(mounted()).toBeGreaterThan(short);
+    expect(resizeListeners(added)).not.toHaveLength(0);
+    unmount();
+    expect(resizeListeners(removed)).toEqual(resizeListeners(added));
+    vi.unstubAllGlobals();
+  });
+
+  it('forwards each document scroll to the page once however many views window against it', () => {
+    render(
+      <StrictMode>
+        {text({ scroll: 'ancestor', dataTestId: 'first' })}
+        {text({ scroll: 'ancestor', dataTestId: 'second' })}
+      </StrictMode>
+    );
+    const forwarded = vi.fn();
+    document.documentElement.addEventListener('scroll', forwarded);
+    act(() => {
+      fireEvent.scroll(document);
+    });
+    document.documentElement.removeEventListener('scroll', forwarded);
+    expect(forwarded).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps forwarding while a view remains and stops once none do', () => {
+    const { rerender, unmount } = render(
+      <>
+        {text({ scroll: 'ancestor', dataTestId: 'first' })}
+        {text({ scroll: 'ancestor', dataTestId: 'second' })}
+      </>
+    );
+    const forwarded = vi.fn();
+    document.documentElement.addEventListener('scroll', forwarded);
+    rerender(<>{text({ scroll: 'ancestor', dataTestId: 'first' })}</>);
+    fireEvent.scroll(document);
+    expect(forwarded).toHaveBeenCalledTimes(1);
+    rerender(<>{text({ scroll: 'self', dataTestId: 'first' })}</>);
+    fireEvent.scroll(document);
+    expect(forwarded).toHaveBeenCalledTimes(1);
+    unmount();
+    document.documentElement.removeEventListener('scroll', forwarded);
+  });
+
   it('resolves a percentage scroll-padding-top against the ancestor', () => {
     const { rerender } = render(scroller(text({ scroll: 'ancestor' })));
     const outer = screen.getByTestId('scroller');
@@ -293,5 +364,91 @@ describe('DecisionText unmount', () => {
     render(<StrictMode>{text({ edit: edit(onCancel, true) })}</StrictMode>);
     await flush();
     expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  const OPEN = { rowId: 'row-1', columnId: 'country', index: 0 };
+
+  const Reopening = ({
+    onCancel,
+    hideOnCancel = false,
+  }: {
+    onCancel: () => void;
+    hideOnCancel?: boolean;
+  }) => {
+    const [shown, setShown] = useState(true);
+    const [rules, setRules] = useState(RULES);
+    const [editing, setEditing] = useState<DecisionTextEdit['editing']>(OPEN);
+    if (!shown) return null;
+    return (
+      <>
+        <button type="button" data-testid="reopen" onClick={() => setEditing(OPEN)} />
+        <button type="button" data-testid="hide" onClick={() => setShown(false)} />
+        <button
+          type="button"
+          data-testid="drop"
+          onClick={() => setRules(RULES.filter(({ rowId }) => rowId !== OPEN.rowId))}
+        />
+        {text({
+          rules,
+          edit: {
+            editing,
+            onStartEdit: setEditing,
+            onCancel: () => {
+              onCancel();
+              if (hideOnCancel) setShown(false);
+              else setEditing(null);
+            },
+            onCommit: () => setEditing(null),
+            onClearCell: () => setShown(false),
+            onDeleteRule: vi.fn(),
+          },
+        })}
+      </>
+    );
+  };
+
+  it('cancels a value the host reopens after a cancel', async () => {
+    const uninstall = installEscapeCloseRequest();
+    const onCancel = vi.fn();
+    render(<Reopening onCancel={onCancel} />);
+    fireEvent.keyDown(screen.getByTestId('nl-editor'), { key: 'Escape' });
+    await flush();
+    uninstall();
+    expect(screen.queryByTestId('nl-editor')).toBeNull();
+    fireEvent.click(screen.getByTestId('reopen'));
+    expect(screen.getByTestId('nl-editor')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('hide'));
+    await flush();
+    expect(onCancel).toHaveBeenCalledTimes(2);
+  });
+
+  it('cancels a value the host reopens after an accepted commit', async () => {
+    const onCancel = vi.fn();
+    render(<Reopening onCancel={onCancel} />);
+    fireEvent.change(screen.getByTestId('nl-editor'), { target: { value: 'NL' } });
+    fireEvent.keyDown(screen.getByTestId('nl-editor'), { key: 'Enter' });
+    await flush();
+    fireEvent.click(screen.getByTestId('reopen'));
+    fireEvent.click(screen.getByTestId('hide'));
+    await flush();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels once when the host unmounts it from clearing the edited cell', async () => {
+    const onCancel = vi.fn();
+    render(<Reopening onCancel={onCancel} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Remove country from rule 2/i }));
+    await flush();
+    expect(screen.queryByTestId('nl')).toBeNull();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels once when the edited rule goes and the host unmounts it from onCancel', async () => {
+    const onCancel = vi.fn();
+    render(<Reopening onCancel={onCancel} hideOnCancel />);
+    fireEvent.click(screen.getByTestId('drop'));
+    await flush();
+    expect(screen.queryByTestId('nl')).toBeNull();
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });
