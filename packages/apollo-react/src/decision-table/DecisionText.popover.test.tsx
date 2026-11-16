@@ -71,8 +71,6 @@ const Host = ({
           if (!refusesCancel) setEditing(null);
         },
         onClearCell: () => {},
-        conditionEntries: () => [],
-        ruleEntries: () => [],
         onDeleteRule: () => {},
         labels: DECISION_TEXT_EDIT_LABELS,
         valueField,

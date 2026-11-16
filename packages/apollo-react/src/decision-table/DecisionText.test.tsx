@@ -21,7 +21,6 @@ import {
   tableWithoutCell,
   tableWithoutRule,
   tableWithValue,
-  unusedInputs,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
 import { installEscapeCloseRequest, pressOutside } from './__fixtures__/modalDialog';
@@ -50,7 +49,6 @@ import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover'
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
-import type { GridMenuEntry } from './GridMenu';
 import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
@@ -201,12 +199,12 @@ const rect = (left: number, right: number): DOMRect => ({
 
 interface EditSpies {
   onSelect: Mock<NonNullable<DecisionTextProps['onSelect']>>;
-  onStartEdit: Mock<DecisionTextEdit['onStartEdit']>;
+  onStartEdit: Mock<NonNullable<DecisionTextEdit['onStartEdit']>>;
   onCommit: Mock<
     (value: SentenceValueId, text: string, move: CellCommitMove, operator?: string) => void
   >;
   onCommitValues: Mock<DecisionTextEdit['onCommit']>;
-  onCancel: Mock<DecisionTextEdit['onCancel']>;
+  onCancel: Mock<NonNullable<DecisionTextEdit['onCancel']>>;
   onClearCell: Mock<DecisionTextEdit['onClearCell']>;
 }
 
@@ -219,10 +217,7 @@ interface EditingHostProps
   renderEditor?: DecisionTextEdit['renderEditor'];
   valueField?: DecisionTextEdit['valueField'];
   column?: DecisionTextEdit['column'];
-  conditionEntries?: (
-    rowId: string,
-    startEdit: (value: SentenceValueId) => void
-  ) => GridMenuEntry[];
+  inputIds?: DecisionTextEdit['inputIds'];
 }
 
 const EditingHost = ({
@@ -232,7 +227,7 @@ const EditingHost = ({
   renderEditor,
   valueField,
   column,
-  conditionEntries,
+  inputIds,
   ...props
 }: EditingHostProps) => {
   const [editing, setEditing] = useState(initialEditing);
@@ -247,7 +242,7 @@ const EditingHost = ({
         renderEditor,
         valueField,
         column,
-        conditionEntries: (rowId) => conditionEntries?.(rowId, setEditing) ?? [],
+        inputIds,
         onStartEdit: (value) => {
           spies.onStartEdit(value);
           setEditing(value);
@@ -304,8 +299,6 @@ const editWith = (overrides: Partial<DecisionTextEdit> = {}): DecisionTextEdit =
   onCommit: vi.fn(),
   onCancel: vi.fn(),
   onClearCell: vi.fn(),
-  conditionEntries: () => [],
-  ruleEntries: () => [],
   onDeleteRule: vi.fn(),
   labels: DECISION_TEXT_EDIT_LABELS,
   ...overrides,
@@ -3682,9 +3675,7 @@ describe('DecisionText', () => {
         initialEditing: r3Channel,
         valueField: field,
         ...CHANNEL_COLUMNS,
-        conditionEntries: (_, startEdit) => [
-          { label: 'channel', focusesOwnSurface: true, onClick: () => startEdit(r3Channel) },
-        ],
+        inputIds: ['channel'],
       });
       const pendingLine = () => card('r3').querySelector('li[data-pending]');
       fireEvent.click(operatorSelect());
@@ -4494,21 +4485,11 @@ describe('DecisionText', () => {
       ]);
     });
 
-    it("opens the host's add-condition entries from +, and edits a condition the rule lacks on its pending line", () => {
-      const conditionEntries = vi.fn(
-        (rowId: string, startEdit: (value: SentenceValueId) => void): GridMenuEntry[] => [
-          {
-            label: 'income',
-            focusesOwnSurface: true,
-            onClick: () => startEdit({ rowId, columnId: 'income', index: 0 }),
-          },
-        ]
-      );
+    it('opens the inputs a rule has no condition on from +, and edits one on its pending line', () => {
       const { onSelect } = renderEditing({
-        conditionEntries,
+        inputIds: ['age', 'income'],
         initial: { rowId: 'r1', columnId: 'age' },
       });
-      expect(conditionEntries).not.toHaveBeenCalled();
       const add = button('r3', 'Add condition to rule 3');
       expect(add).toHaveAttribute('aria-haspopup', 'menu');
       const frame = screen.getByTestId('nl');
@@ -4524,7 +4505,11 @@ describe('DecisionText', () => {
       fireEvent.click(add);
       const menu = screen.getByRole('menu');
       expect(menu).toHaveAttribute('aria-label', 'Add condition to rule 3');
-      expect(new Set(conditionEntries.mock.calls.map(([rowId]) => rowId))).toEqual(new Set(['r3']));
+      expect(
+        within(menu)
+          .getAllByRole('menuitem')
+          .map((item) => item.textContent)
+      ).toEqual(['income']);
       fireEvent.click(within(menu).getByRole('menuitem', { name: 'income' }));
       expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3', columnId: 'income' }]]);
       const input = editor();
@@ -4583,13 +4568,7 @@ describe('DecisionText', () => {
             if (late) later(clear);
             else clear();
           },
-          ruleEntries: () => [{ label: 'Delete rule', onClick: vi.fn() }],
-          conditionEntries: (rowId) =>
-            unusedInputs(table, rowId).map((input) => ({
-              label: input.name,
-              focusesOwnSurface: true,
-              onClick: () => setEditing({ rowId, columnId: input.id, index: 0 }),
-            })),
+          inputIds: table.inputs.map((input) => input.id),
         }),
       });
     };
@@ -4778,19 +4757,22 @@ describe('DecisionText', () => {
   describe('rule menu', () => {
     const actions = (rowId: string) =>
       within(card(rowId)).getByRole('button', { name: `Rule ${rowId.slice(1)} actions` });
-    const deleteEntry = (): GridMenuEntry[] => [{ label: 'Delete rule', onClick: vi.fn() }];
     const renderMenus = (overrides: Partial<DecisionTextEdit> = {}) =>
       render(
         view({
           rules: GRID_SENTENCE_RULES,
+          ...GRID_SENTENCE_COLUMNS,
           selected: null,
           onSelect: vi.fn(),
-          edit: editWith({ ruleEntries: deleteEntry, ...overrides }),
+          edit: editWith(overrides),
         })
       );
+    const menuItems = () =>
+      within(screen.getByRole('menu'))
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent);
     type RuleChange = (rules: readonly SentenceRule[], rowId: string) => readonly SentenceRule[];
     interface RuleChangeHostProps {
-      label: string;
       change: RuleChange;
       next?: string;
       initial?: string;
@@ -4798,7 +4780,6 @@ describe('DecisionText', () => {
       late?: boolean;
     }
     const RuleChangeHost = ({
-      label,
       change,
       next,
       initial = 'r2',
@@ -4816,7 +4797,7 @@ describe('DecisionText', () => {
         selected,
         onSelect: setSelected,
         edit: editWith({
-          ruleEntries: (rowId) => [{ label, onClick: () => apply(rowId) }],
+          onInsertRule: (index) => apply(rules[index - 1]?.rowId ?? ''),
           onDeleteRule: (rowId) => {
             onDeleteRule?.(rowId);
             if (late) later(() => apply(rowId));
@@ -4829,34 +4810,16 @@ describe('DecisionText', () => {
     const insertBelow: RuleChange = (rules, rowId) =>
       rules.flatMap((rule) => (rule.rowId === rowId ? [rule, { ...rule, rowId: 'r2b' }] : [rule]));
 
-    it("opens the host's entries for its own rule from ⋯, and focuses ⋯ again on close", () => {
-      const onDelete = vi.fn();
-      const ruleEntries = vi.fn((_rowId: string): GridMenuEntry[] => [
-        {
-          label: 'Move up',
-          disabled: true,
-          disabledReason: 'Already the first rule',
-          onClick: vi.fn(),
-        },
-        { divider: true },
-        { label: 'Delete rule', destructive: true, onClick: onDelete },
-      ]);
-      renderMenus({ ruleEntries });
-      expect(ruleEntries).not.toHaveBeenCalled();
+    it("opens its own rule's menu from ⋯, runs the picked action for that rule, and focuses ⋯ again on close", () => {
+      const onDeleteRule = vi.fn();
+      renderMenus({ onDeleteRule });
       expect(actions('r2')).toHaveAttribute('aria-haspopup', 'menu');
       fireEvent.click(actions('r2'));
       const menu = screen.getByRole('menu');
       expect(menu).toHaveAttribute('aria-label', 'Rule 2 actions');
-      expect(new Set(ruleEntries.mock.calls.map(([rowId]) => rowId))).toEqual(new Set(['r2']));
-      expect(within(menu).getByRole('menuitem', { name: /^Move up/ })).toHaveAttribute(
-        'aria-disabled',
-        'true'
-      );
-      expect(screen.getByTestId('nl-menu-disabled-reason')).toHaveTextContent(
-        'Already the first rule'
-      );
-      fireEvent.click(within(menu).getByRole('menuitem', { name: 'Delete rule' }));
-      expect(onDelete).toHaveBeenCalledTimes(1);
+      expect(menuItems()).toEqual(['Delete rule 2']);
+      fireEvent.click(within(menu).getByRole('menuitem', { name: 'Delete rule 2' }));
+      expect(onDeleteRule.mock.calls).toEqual([['r2']]);
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(actions('r2'));
       fireEvent.click(actions('r2'));
@@ -4865,21 +4828,115 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(actions('r2'));
     });
 
-    it('opens no menu from + or ⋯ while the host has no entries for it', () => {
-      const conditionEntries = vi.fn((): GridMenuEntry[] => []);
-      renderMenus({ conditionEntries, ruleEntries: () => [] });
+    const RULE_ACTIONS = [
+      'onInsertRule',
+      'onDuplicateRule',
+      'onClearRule',
+      'onMoveRule',
+      'onDeleteRule',
+    ] as const;
+    const ruleActionSpies = () => ({
+      onInsertRule: vi.fn(),
+      onDuplicateRule: vi.fn(),
+      onClearRule: vi.fn(),
+      onMoveRule: vi.fn(),
+      onDeleteRule: vi.fn(),
+    });
+
+    it("words a rule's menu in groups, insert to clear, move, delete, each pick calling its action for that rule", () => {
+      const spies = ruleActionSpies();
+      renderMenus(spies);
+      const pick = (rowId: string, name: string) => {
+        fireEvent.click(actions(rowId));
+        fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name }));
+      };
+      fireEvent.click(actions('r2'));
+      expect(menuItems()).toEqual([
+        'Insert rule above',
+        'Insert rule below',
+        'Duplicate rule',
+        'Clear rule',
+        'Move up',
+        'Move down',
+        'Delete rule 2',
+      ]);
+      expect(screen.getByRole('menu').querySelectorAll('[role="separator"]')).toHaveLength(2);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      pick('r2', 'Insert rule above');
+      pick('r2', 'Insert rule below');
+      pick('r2', 'Duplicate rule');
+      pick('r2', 'Clear rule');
+      pick('r2', 'Move up');
+      pick('r2', 'Move down');
+      pick('r2', 'Delete rule 2');
+      expect(RULE_ACTIONS.map((name) => spies[name].mock.calls)).toEqual([
+        [[1], [2]],
+        [['r2']],
+        [['r2']],
+        [
+          [1, 0],
+          [1, 2],
+        ],
+        [['r2']],
+      ]);
+    });
+
+    it.each<[string, string, string]>([
+      ['first', 'r1', 'Move up'],
+      ['last', 'r3', 'Move down'],
+    ])('offers no move past the %s rule', (_, rowId, name) => {
+      const spies = ruleActionSpies();
+      renderMenus(spies);
+      fireEvent.click(actions(rowId));
+      const item = within(screen.getByRole('menu')).getByRole('menuitem', { name });
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(item);
+      expect(spies.onMoveRule).not.toHaveBeenCalled();
+    });
+
+    it.each<['onInsertRule' | 'onMoveRule', readonly string[], number]>([
+      [
+        'onInsertRule',
+        ['Duplicate rule', 'Clear rule', 'Move up', 'Move down', 'Delete rule 2'],
+        2,
+      ],
+      [
+        'onMoveRule',
+        ['Insert rule above', 'Insert rule below', 'Duplicate rule', 'Clear rule', 'Delete rule 2'],
+        1,
+      ],
+    ])('leaves out the entries of an action the host omits, %s, and a divider left without a group', (omitted, items, dividers) => {
+      renderMenus({ ...ruleActionSpies(), [omitted]: undefined });
+      fireEvent.click(actions('r2'));
+      expect(menuItems()).toEqual(items);
+      expect(screen.getByRole('menu').querySelectorAll('[role="separator"]')).toHaveLength(
+        dividers
+      );
+    });
+
+    it("words a rule's add-condition menu from the inputs it has no condition on, then Add input", () => {
+      const onAddInput = vi.fn();
+      renderMenus({ inputIds: ['income', 'age', 'gone', 'income'], onAddInput });
+      fireEvent.click(within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' }));
+      expect(menuItems()).toEqual(['income', 'New input']);
+      expect(screen.getByRole('menu').querySelectorAll('[role="separator"]')).toHaveLength(1);
+      fireEvent.click(
+        within(screen.getByRole('menu')).getByRole('menuitem', { name: 'New input' })
+      );
+      expect(onAddInput.mock.calls).toEqual([['r3']]);
+      expect(screen.queryByTestId('nl-value-editor')).toBeNull();
+    });
+
+    it('opens no menu from + while there is no input to add and no Add input', () => {
+      renderMenus({ inputIds: ['age'] });
       const add = within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' });
       fireEvent.click(add);
-      expect(conditionEntries).toHaveBeenCalledWith('r3');
       expect(screen.queryByRole('menu')).toBeNull();
       expect(add).not.toHaveAttribute('aria-expanded', 'true');
-      fireEvent.click(actions('r3'));
-      expect(screen.queryByRole('menu')).toBeNull();
-      expect(actions('r3')).not.toHaveAttribute('aria-expanded', 'true');
     });
 
     it('marks only the button whose menu is open as expanded', () => {
-      renderMenus({ conditionEntries: deleteEntry });
+      renderMenus({ onAddInput: vi.fn() });
       const add = (rowId: string) =>
         within(card(rowId)).getByRole('button', {
           name: `Add condition to rule ${rowId.slice(1)}`,
@@ -4901,10 +4958,10 @@ describe('DecisionText', () => {
     });
 
     it.each<[string, string, RuleChange, string, string]>([
-      ["removes the menu's own rule", 'Delete rule', removeRule, 'r3', 'r3'],
+      ["removes the menu's own rule", 'Delete rule 2', removeRule, 'r3', 'r3'],
       ['inserts it, and walks on from there', 'Insert rule below', insertBelow, 'r2b', 'r3'],
     ])('focuses the rule the host selects once a menu pick %s', (_, label, change, next, below) => {
-      render(<RuleChangeHost label={label} change={change} next={next} />);
+      render(<RuleChangeHost change={change} next={next} />);
       fireEvent.click(actions('r2'));
       fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: label }));
       expect(screen.queryAllByTestId('nl-row-r2')).toHaveLength(change === removeRule ? 0 : 1);
@@ -4942,7 +4999,7 @@ describe('DecisionText', () => {
           rules: GRID_SENTENCE_RULES,
           selected: null,
           onSelect: vi.fn(),
-          edit: editWith({ ruleEntries: deleteEntry }),
+          edit: editWith(),
         }),
         { container }
       );
@@ -4975,7 +5032,7 @@ describe('DecisionText', () => {
           rules: GRID_SENTENCE_RULES,
           selected: null,
           onSelect: vi.fn(),
-          edit: editWith({ ruleEntries: deleteEntry }),
+          edit: editWith(),
         }),
         { container }
       );
@@ -4992,19 +5049,18 @@ describe('DecisionText', () => {
     it.each<[string, readonly SentenceRule[], boolean]>([
       ['its rule is gone', GRID_SENTENCE_RULES.filter((rule) => rule.rowId !== 'r2'), true],
       ['editing is gone', GRID_SENTENCE_RULES, false],
-    ])('closes the rule menu once %s, asking no entries for it, and focuses the view', (_, rules, editable) => {
-      const ruleEntries = vi.fn(deleteEntry);
-      const edit = editWith({ ruleEntries });
+    ])('closes the rule menu once %s, running nothing, and focuses the view', (_, rules, editable) => {
+      const onDeleteRule = vi.fn();
+      const edit = editWith({ onDeleteRule });
       const onSelect = vi.fn();
       const { rerender } = render(
         view({ rules: GRID_SENTENCE_RULES, selected: null, onSelect, edit })
       );
       fireEvent.click(actions('r2'));
       expect(screen.getByRole('menu')).toBeInTheDocument();
-      ruleEntries.mockClear();
       rerender(view({ rules, selected: null, onSelect, edit: editable ? edit : undefined }));
       expect(screen.queryByRole('menu')).toBeNull();
-      expect(ruleEntries).not.toHaveBeenCalled();
+      expect(onDeleteRule).not.toHaveBeenCalled();
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
     });
 
@@ -5017,7 +5073,7 @@ describe('DecisionText', () => {
           const top = mountedRows().findIndex((row) => row.contains(this)) * 40;
           return { ...rect(10, 30), top, y: top, bottom: top + 24 };
         });
-      const edit = editWith({ ruleEntries: deleteEntry });
+      const edit = editWith();
       const onSelect = vi.fn();
       const { rerender } = render(
         view({ rules: GRID_SENTENCE_RULES, selected: null, onSelect, edit })
@@ -5046,7 +5102,7 @@ describe('DecisionText', () => {
         header: MULTI_SENTENCE_HEADER,
         selected: null,
         onSelect: vi.fn(),
-        edit: editWith({ ruleEntries: deleteEntry }),
+        edit: editWith(),
       };
       const { rerender } = render(view({ ...props, rules }));
       const trigger = card('row-2').querySelector<HTMLElement>('[data-rule-action="rule"]');
@@ -5069,7 +5125,7 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         initial: { rowId: 'row-0' },
-        edit: editWith({ ruleEntries: deleteEntry }),
+        edit: editWith(),
       });
       const trigger = card('row-2').querySelector<HTMLElement>('[data-rule-action="rule"]');
       if (!trigger) throw new Error('no ⋯ in row-2');
@@ -5116,14 +5172,7 @@ describe('DecisionText', () => {
 
     it('deletes its rule from the delete action, leaves Delete on the rule to the host, and focuses the rule the host selects', () => {
       const onDeleteRule = vi.fn();
-      render(
-        <RuleChangeHost
-          label="Delete rule"
-          change={removeRule}
-          next="r3"
-          onDeleteRule={onDeleteRule}
-        />
-      );
+      render(<RuleChangeHost change={removeRule} next="r3" onDeleteRule={onDeleteRule} />);
       act(() => card('r2').focus());
       expect(press('Delete')).toBe(true);
       expect(onDeleteRule).not.toHaveBeenCalled();
@@ -5178,9 +5227,7 @@ describe('DecisionText', () => {
       ['r1', 'selects the next rule a moment later', { next: 'r3', late: true }, 'r3'],
       ['r1', 'keeps its selection', {}, 'r1'],
     ])('with %s selected, focuses what the host %s once it removes the rule of the delete action pressed', async (initial, _, answer, focused) => {
-      render(
-        <RuleChangeHost label="Delete rule" change={removeRule} initial={initial} {...answer} />
-      );
+      render(<RuleChangeHost change={removeRule} initial={initial} {...answer} />);
       const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
       act(() => remove.focus());
       fireEvent.click(remove);
@@ -5238,7 +5285,7 @@ describe('DecisionText', () => {
       onTestFinished(() => host.remove());
       const shadow = host.attachShadow({ mode: 'open' });
       const container = shadow.appendChild(document.createElement('div'));
-      render(<RuleChangeHost label="Delete rule" change={removeRule} next="r3" />, { container });
+      render(<RuleChangeHost change={removeRule} next="r3" />, { container });
       const inView = within(container);
       const remove = within(inView.getByTestId('nl-row-r2')).getByRole('button', {
         name: 'Delete rule 2',

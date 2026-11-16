@@ -4,12 +4,14 @@ import type { DecisionTextEdit } from './decisionTextTypes';
 import type { GridContextMenuProps, GridContextMenuState, GridMenuEntry } from './GridMenu';
 import type { OpenRuleMenu } from './RuleList';
 import { renderedParentOf, scrollRootsOf } from './renderedTree';
+import { conditionEntriesOf, ruleEntriesOf } from './ruleMenuEntries';
 import { clickedAction, type RuleAction } from './sentenceTargets';
-import type { SentenceRule } from './sentenceTypes';
+import type { SentenceBand, SentenceRule } from './sentenceTypes';
 
 export interface RuleMenusParams {
   edit: DecisionTextEdit | undefined;
   rules: readonly SentenceRule[];
+  bands: readonly SentenceBand[];
   /** The selected row, whose change while a menu is open moves focus to the new selection. */
   selectedRowId: string | undefined;
   /** Focuses the selected stop, where focus goes when the menu's button is gone with its rule, scrolling it into view when `scroll`. */
@@ -67,6 +69,7 @@ const holds = (ancestor: Node, node: Node): boolean => {
 export const useRuleMenus = ({
   edit,
   rules,
+  bands,
   selectedRowId,
   refocus,
 }: RuleMenusParams): RuleMenus => {
@@ -120,17 +123,20 @@ export const useRuleMenus = ({
     };
   }, [state]);
 
-  const entries = (): GridMenuEntry[] => {
-    if (!edit || !open) return [];
-    return open.menu === 'rule' ? edit.ruleEntries(open.rowId) : edit.conditionEntries(open.rowId);
+  const entriesOf = (menu: OpenRuleMenu['menu'], rowId: string): GridMenuEntry[] => {
+    if (!edit) return [];
+    if (menu === 'rule') return ruleEntriesOf(edit, edit.labels, rules, rowId);
+    const rule = rules.find((candidate) => candidate.rowId === rowId);
+    return conditionEntriesOf(edit, edit.labels, rule, bands, edit.onStartEdit);
   };
+
+  const entries = (): GridMenuEntry[] => (open ? entriesOf(open.menu, open.rowId) : []);
 
   const onClose = () => close(true);
 
   const openFor = (action: RuleAction | null): boolean => {
     if (!edit || (action?.action !== 'conditions' && action?.action !== 'rule')) return false;
-    const entriesOf = action.action === 'rule' ? edit.ruleEntries : edit.conditionEntries;
-    if (entriesOf(action.rowId).length === 0) return false;
+    if (entriesOf(action.action, action.rowId).length === 0) return false;
     setState({
       menu: action.action,
       rowId: action.rowId,
