@@ -20,9 +20,20 @@ import {
   tableWithValue,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
+import {
+  DIFF_COLUMNS,
+  DIFF_HEADER,
+  DIFF_RULES,
+  EVERY_STATE_DIFF,
+  EVERYTHING_CHANGED_DIFF,
+  HIT_POLICY_DIFF,
+  largeDiffTable,
+  REMOVED_COLUMN_DIFF,
+} from './__fixtures__/diffSentences.fixtures';
 import { HIT_POLICY_GROUPS } from './__fixtures__/sentences.fixtures';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
+import type { DecisionTextDiff } from './decisionTextDiff';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { pickedOption } from './PolicyOptionItem';
@@ -646,6 +657,135 @@ export const LargeTable: Story = {
       initialTable={LARGE_TABLE}
       validate
       caption={`${LARGE_TABLE.rules.length.toLocaleString('en-US')} rules over ${LARGE_TABLE.inputs.length} inputs, windowed, on the same editing stack.`}
+    />
+  ),
+};
+
+interface DiffHostProps {
+  rules?: readonly SentenceRule[];
+  changes: Omit<DecisionTextDiff, 'mode'>;
+  initialMode: DecisionTextDiff['mode'];
+  marks?: TableMarks;
+  caption: string;
+}
+
+const DIFF_MODES: readonly DecisionTextDiff['mode'][] = ['compact', 'full'];
+
+const DiffHost = ({ rules = DIFF_RULES, changes, initialMode, marks, caption }: DiffHostProps) => {
+  const [mode, setMode] = useState(initialMode);
+  const diff = useMemo(() => ({ mode, ...changes }), [mode, changes]);
+  return (
+    <div className="flex h-[640px] flex-col gap-2">
+      <fieldset className="flex gap-3 text-xs" data-testid="diff-mode">
+        <legend className="sr-only">Diff mode</legend>
+        {DIFF_MODES.map((option) => (
+          <label key={option} className="flex items-center gap-1">
+            <input
+              type="radio"
+              name="diff-mode"
+              checked={mode === option}
+              onChange={() => setMode(option)}
+            />
+            {option === 'compact' ? 'Compact' : 'Full'}
+          </label>
+        ))}
+      </fieldset>
+      <DecisionText
+        rules={rules}
+        {...DIFF_COLUMNS}
+        header={DIFF_HEADER}
+        numbered
+        marks={marks}
+        ariaLabel="Rules"
+        dataTestId="diff"
+        diff={diff}
+      />
+      <StoryCaption>{caption}</StoryCaption>
+    </div>
+  );
+};
+
+/** A validation warning on a changed value, so both marks show. */
+const DIFF_MARKS: TableMarks = {
+  rows: new Map([
+    ['r5', { cells: { age: { tone: 'warning', glyph: true, title: 'Overlaps rule 4' } } }],
+  ]),
+  columns: new Map(),
+};
+
+export const DiffEveryState: Story = {
+  render: () => (
+    <DiffHost
+      changes={EVERY_STATE_DIFF}
+      initialMode="full"
+      marks={DIFF_MARKS}
+      caption="Every change at once: rules added, changed, removed and moved; values added, changed and removed; columns added, changed and removed; the hit policy."
+    />
+  ),
+};
+
+export const DiffEveryStateCompact: Story = {
+  render: () => (
+    <DiffHost
+      changes={EVERY_STATE_DIFF}
+      initialMode="compact"
+      marks={DIFF_MARKS}
+      caption="Compact: two unchanged rules kept each side of a change, longer runs folded; open a fold to show its rules."
+    />
+  ),
+};
+
+const NO_CHANGES: Omit<DecisionTextDiff, 'mode'> = {};
+
+export const DiffNoChanges: Story = {
+  render: () => (
+    <DiffHost
+      changes={NO_CHANGES}
+      initialMode="compact"
+      caption="Nothing changed: compact folds the whole table, full shows it unpainted."
+    />
+  ),
+};
+
+export const DiffEverythingChanged: Story = {
+  render: () => (
+    <DiffHost
+      changes={EVERYTHING_CHANGED_DIFF}
+      initialMode="full"
+      caption="Every rule added or changed, and the old first rule removed: compact folds nothing."
+    />
+  ),
+};
+
+export const DiffRemovedColumn: Story = {
+  render: () => (
+    <DiffHost
+      changes={REMOVED_COLUMN_DIFF}
+      initialMode="full"
+      caption="An input removed: its pill stays struck where it stood, and rule 4's condition on it is struck in its card."
+    />
+  ),
+};
+
+export const DiffHitPolicy: Story = {
+  render: () => (
+    <DiffHost
+      changes={HIT_POLICY_DIFF}
+      initialMode="full"
+      caption="Only the hit policy changed: the header shows it before and after."
+    />
+  ),
+};
+
+const LARGE_DIFF = largeDiffTable(300);
+
+export const DiffLargeCompact: Story = {
+  render: () => (
+    <DiffHost
+      rules={LARGE_DIFF.rules}
+      changes={LARGE_DIFF.diff}
+      initialMode="compact"
+      caption="300 rules, 5 changed, compact: each shown rule keeps its number in the whole table."
     />
   ),
 };

@@ -1,4 +1,6 @@
+import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
+import type { DiffChange, DiffLabels } from './decisionTextDiff';
 import { MarkBadge, type MarkBadgeProps, markIds } from './MarkBadge';
 import type { Mark } from './marks';
 import { isLineMark, type LineMarks, type MarkFields } from './sentenceMarks';
@@ -6,6 +8,7 @@ import {
   BAND_COLUMN_BUTTON_CLASS,
   BAND_COLUMN_CLASS,
   BAND_COLUMN_ITEM_CLASS,
+  CHANGED_CHIP_CLASS,
   POPOVER_ICON_CLASS,
 } from './sentenceStyles';
 import type { SentenceBandColumn } from './sentenceTypes';
@@ -23,7 +26,9 @@ export interface BandColumnProps {
   column: SentenceBandColumn;
   mark: Mark | undefined;
   badgeId: string;
-  labels: MarkBadgeProps['labels'];
+  /** The column's change in a diff. */
+  change: DiffChange | undefined;
+  labels: MarkBadgeProps['labels'] & Pick<DiffLabels, 'changeStatus'>;
   /** Opens or closes the column's popover; without it the pill stays plain. */
   onToggle: ((columnId: string) => void) | undefined;
   /** The popover's id while it is open on this column. */
@@ -35,6 +40,7 @@ export const BandColumn: React.FC<BandColumnProps> = ({
   column,
   mark,
   badgeId,
+  change,
   labels,
   onToggle,
   editorId,
@@ -44,6 +50,7 @@ export const BandColumn: React.FC<BandColumnProps> = ({
   const chip = {
     'aria-describedby': columnMarks ? markIds(badgeId, columnMarks).join(' ') : undefined,
     'data-tone': tone,
+    'data-change': change,
     'data-mark-title': title,
   };
   const content = (
@@ -53,13 +60,18 @@ export const BandColumn: React.FC<BandColumnProps> = ({
           {column.icon}
         </span>
       )}
+      {change && <span className="sr-only">{labels.changeStatus(change)} </span>}
       {column.name}
       {columnMarks && <MarkBadge id={badgeId} marks={columnMarks} labels={labels} />}
     </>
   );
   if (!onToggle) {
     return (
-      <li className={BAND_COLUMN_CLASS} data-column-id={column.id} {...chip}>
+      <li
+        className={cn(BAND_COLUMN_CLASS, CHANGED_CHIP_CLASS)}
+        data-column-id={column.id}
+        {...chip}
+      >
         {content}
       </li>
     );
@@ -68,7 +80,7 @@ export const BandColumn: React.FC<BandColumnProps> = ({
     <li className={BAND_COLUMN_ITEM_CLASS} data-column-id={column.id}>
       <button
         type="button"
-        className={BAND_COLUMN_BUTTON_CLASS}
+        className={cn(BAND_COLUMN_BUTTON_CLASS, CHANGED_CHIP_CLASS)}
         aria-expanded={editorId !== undefined}
         aria-controls={editorId}
         onClick={() => onToggle(column.id)}

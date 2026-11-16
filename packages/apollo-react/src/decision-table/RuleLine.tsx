@@ -8,7 +8,15 @@ import { LINE_CLASS } from './sentenceStyles';
 export interface RuleLineProps
   extends Pick<
     LineTextProps,
-    'heading' | 'verdicts' | 'parts' | 'cells' | 'selectedColumnId' | 'stopOf' | 'linkOf' | 'labels'
+    | 'heading'
+    | 'verdicts'
+    | 'parts'
+    | 'cells'
+    | 'selectedColumnId'
+    | 'stopOf'
+    | 'linkOf'
+    | 'diffOf'
+    | 'labels'
   > {
   title?: string;
   badge: MarkBadgeProps | null;

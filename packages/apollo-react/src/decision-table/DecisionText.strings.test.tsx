@@ -44,6 +44,10 @@ const VIEW_CALLS: Calls<DecisionTextLabels> = {
     ['income', '', 1],
   ],
   openDecision: [['income']],
+  changeStatus: [['add'], ['update'], ['delete']],
+  movedFrom: [[2]],
+  unchangedRules: [[1], [12]],
+  showRules: [[4, 15]],
 };
 
 const EDIT_CALLS: Calls<DecisionTextEditLabels> = {

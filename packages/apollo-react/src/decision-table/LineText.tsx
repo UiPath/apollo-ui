@@ -1,6 +1,8 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { Fragment } from 'react';
+import { EMPTY_VALUE_DASH } from './constants';
+import type { DiffLabels, StruckValue, TokenDiff } from './decisionTextDiff';
 import type { LineLeadLabels } from './LineLead';
 import type { RowMark } from './marks';
 import { boundedParts, partsText, SENTENCE_LINE_VALUE_LIMIT } from './sentenceParts';
@@ -11,6 +13,7 @@ import {
   MORE_VALUES_CLASS,
   MUTED_TEXT_CLASS,
   SELECTED_CHIP_CLASS,
+  STRUCK_VALUE_CLASS,
 } from './sentenceStyles';
 import type { SentencePart, SentenceToken } from './sentenceTypes';
 import { type CellStop, type DecisionLink, TokenChip } from './TokenChip';
@@ -31,7 +34,9 @@ const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePa
 const testsInput = (parts: readonly SentencePart[]): boolean =>
   parts.some((part) => typeof part !== 'string' && part.kind === 'input');
 
-export interface LineTextLabels extends LineLeadLabels {
+export interface LineTextLabels
+  extends LineLeadLabels,
+    Pick<DiffLabels, 'changeStatus' | 'previousValue' | 'currentValue'> {
   /** The count a clamped run of values shows in place of the rest, e.g. "+9,980 more". */
   moreValues: (count: number) => string;
 }
@@ -45,8 +50,34 @@ export interface LineTextProps {
   selectedColumnId: string | null | undefined;
   stopOf: (token: SentenceToken) => CellStop | undefined;
   linkOf: (token: SentenceToken) => DecisionLink | undefined;
+  /** A value token's change in a diff. */
+  diffOf: (token: SentenceToken) => TokenDiff | undefined;
   labels: LineTextLabels;
 }
+
+interface StruckTextProps {
+  struck: StruckValue;
+  className: string;
+  labels: LineTextLabels;
+}
+
+/** A value's old text, struck, read out as what it was or as removed. */
+const StruckText: React.FC<StruckTextProps> = ({ struck, className, labels }) => (
+  <del className={cn(STRUCK_VALUE_CLASS, className)} data-change={struck.change}>
+    <span className="sr-only">
+      {struck.change === 'update' ? labels.previousValue : labels.changeStatus('delete')}{' '}
+    </span>
+    {struck.text || EMPTY_VALUE_DASH}
+  </del>
+);
+
+/** What a changed value's own text is read out as: what it is now after its old text, else its change. */
+const changeText = (diff: TokenDiff | undefined, labels: LineTextLabels): string | undefined => {
+  if (!diff?.change) return undefined;
+  return diff.before.some((struck) => struck.change === 'update')
+    ? labels.currentValue
+    : labels.changeStatus(diff.change);
+};
 
 /** One line, each column's run of values cut to its first ones and followed by a count of the rest. */
 export const LineText: React.FC<LineTextProps> = ({
@@ -57,9 +88,13 @@ export const LineText: React.FC<LineTextProps> = ({
   selectedColumnId,
   stopOf,
   linkOf,
+  diffOf,
   labels,
 }) => {
-  const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+  const changed = parts.some((part) => typeof part !== 'string' && diffOf(part) !== undefined);
+  const { shown, clamped } = changed
+    ? { shown: parts, clamped: [] }
+    : boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
   const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, 'flex-1');
   const wordClass = testsInput(parts) ? MUTED_TEXT_CLASS : undefined;
   const verdictOf = (token: SentenceToken) => {
@@ -69,6 +104,34 @@ export const LineText: React.FC<LineTextProps> = ({
       <span className="sr-only">{labels.conditionVerdict(matched)}</span>
     );
   };
+  const token = (part: SentenceToken, key: number) => {
+    const diff = diffOf(part);
+    const status = changeText(diff, labels);
+    return (
+      <Fragment key={key}>
+        {verdictOf(part)}
+        {diff?.before.map((struck, index) => (
+          <StruckText key={index} struck={struck} className="me-1" labels={labels} />
+        ))}
+        {status && <span className="sr-only">{status} </span>}
+        <TokenChip
+          token={part}
+          mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
+          output={heading}
+          selected={
+            (part.kind === 'value' || stopOf(part) !== undefined) &&
+            part.columnId === selectedColumnId
+          }
+          stop={stopOf(part)}
+          link={linkOf(part)}
+          change={diff?.change}
+        />
+        {diff?.after.map((struck, index) => (
+          <StruckText key={index} struck={struck} className="ms-1" labels={labels} />
+        ))}
+      </Fragment>
+    );
+  };
   const text = (from: number, to = shown.length) =>
     shown.slice(from, to).map((part, offset) =>
       typeof part === 'string' ? (
@@ -76,20 +139,7 @@ export const LineText: React.FC<LineTextProps> = ({
           {part}
         </span>
       ) : (
-        <Fragment key={from + offset}>
-          {verdictOf(part)}
-          <TokenChip
-            token={part}
-            mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
-            output={heading}
-            selected={
-              (part.kind === 'value' || stopOf(part) !== undefined) &&
-              part.columnId === selectedColumnId
-            }
-            stop={stopOf(part)}
-            link={linkOf(part)}
-          />
-        </Fragment>
+        token(part, from + offset)
       )
     );
   if (clamped.length === 0) {

@@ -82,7 +82,10 @@ export const ROW_SURFACE_CLASS = cn(
 export const ROW_NUMBER_CLASS =
   'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm';
 
-export const LINE_CLASS = 'flex min-h-[var(--sentence-line)] items-start gap-2';
+export const LINE_CLASS = cn(
+  'flex min-h-[var(--sentence-line)] items-start gap-2',
+  'group-data-[change=delete]/row:**:text-foreground-de-emp! group-data-[change=delete]/row:**:line-through'
+);
 
 export const LINES_CLASS = 'mt-[var(--sentence-lines-gap)]';
 
@@ -251,3 +254,50 @@ export const POLICY_OPTION_CODE_CLASS =
   'shrink-0 px-1.5 py-0 font-mono leading-4 text-foreground-de-emp';
 
 export const POLICY_HINT_CLASS = 'text-xs text-foreground-de-emp';
+
+/** A changed value's or column's wash, the Business Rules table diff's: green added, amber changed, red and struck removed; a validation tone underlines it. */
+export const CHANGED_CHIP_CLASS = cn(
+  'data-[change=add]:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]! data-[change=add]:text-foreground!',
+  'data-[change=update]:bg-[color-mix(in_srgb,var(--color-warning-icon)_18%,var(--color-background))]! data-[change=update]:text-foreground!',
+  'data-[change=delete]:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]! data-[change=delete]:text-foreground-de-emp! data-[change=delete]:line-through',
+  'data-[change]:data-[tone=error]:shadow-[inset_0_-2px_0_var(--color-error-icon)] data-[change]:data-[tone=warning]:shadow-[inset_0_-2px_0_var(--color-warning-icon)] data-[change]:data-[tone=success]:shadow-[inset_0_-2px_0_var(--color-success-icon)]',
+  'forced-colors:data-[change]:outline-1'
+);
+
+/** A condition value's room around its wash. */
+export const CHANGED_VALUE_CLASS = 'data-[change]:px-0.5';
+
+/** A value's old text, struck before or after what the cell holds now; a removed one keeps its red wash. */
+export const STRUCK_VALUE_CLASS = cn(
+  'rounded px-0.5 font-normal text-foreground-de-emp line-through decoration-foreground-de-emp',
+  'data-[change=delete]:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]'
+);
+
+/** A removed condition's line: struck, on the red wash. */
+export const REMOVED_LINE_CLASS =
+  'rounded-md bg-[color-mix(in_srgb,var(--color-error-icon)_8%,transparent)] text-foreground-de-emp line-through **:text-foreground-de-emp!';
+
+/** A changed card's start border in the change's colour, and an added or removed card's wash; a removed card is struck. */
+export const ROW_CHANGE_CLASS = cn(
+  'group-data-[change]/row:border-s-2',
+  'group-data-[change=add]/row:border-s-success! group-data-[change=update]/row:border-s-warning-icon! group-data-[change=delete]/row:border-s-error!',
+  'group-data-[change=add]/row:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'group-data-[change=delete]/row:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]'
+);
+
+/** A changed card's number and sign, in the change's colour. */
+export const ROW_NUMBER_CHANGE_CLASS = cn(
+  'gap-0.5 group-data-[change]/row:font-semibold',
+  'group-data-[change=add]/row:text-success group-data-[change=update]/row:text-warning-text group-data-[change=delete]/row:text-error'
+);
+
+export const CHANGE_SIGN_CLASS = 'font-mono';
+
+export const MOVED_ICON_CLASS = 'size-3';
+
+export const HIT_POLICY_CHANGE_CLASS = cn(HEADER_LABEL_CLASS, 'inline-flex items-baseline gap-1');
+
+export const FOLD_ROW_CLASS = 'pb-[var(--sentence-row-gap)]';
+
+export const FOLD_BUTTON_CLASS =
+  'w-full justify-start rounded-lg border border-dashed border-border-de-emp text-foreground-de-emp';

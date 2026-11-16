@@ -1,9 +1,12 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
+import type { TokenDiff } from './decisionTextDiff';
 import type { Mark } from './marks';
 import type { MarkFields } from './sentenceMarks';
 import { tokenText } from './sentenceParts';
 import {
+  CHANGED_CHIP_CLASS,
+  CHANGED_VALUE_CLASS,
   DECISION_LINK_CLASS,
   EMPTY_OUTPUT_VALUE_CLASS,
   MARKED_CHIP_CLASS,
@@ -57,6 +60,8 @@ export interface TokenChipProps {
   selected: boolean;
   stop: CellStop | undefined;
   link: DecisionLink | undefined;
+  /** The value's change in a diff. */
+  change?: TokenDiff['change'];
 }
 
 /** One token of a line, painted by its cell's mark. */
@@ -67,6 +72,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
   selected,
   stop,
   link,
+  change,
 }) => {
   const isValue = token.kind === 'value';
   const { tone, title, matched } = chipMark(mark);
@@ -95,6 +101,8 @@ export const TokenChip: React.FC<TokenChipProps> = ({
       className={cn(
         tokenClass(token, output),
         isValue && MARKED_CHIP_CLASS,
+        isValue && CHANGED_CHIP_CLASS,
+        isValue && !output && CHANGED_VALUE_CLASS,
         (isValue || stop) && SELECTED_CHIP_CLASS
       )}
       role={stop && (stop.editable ? 'button' : 'group')}
@@ -107,6 +115,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
       data-column-id={token.columnId}
       data-value-index={token.kind === 'value' ? token.index : undefined}
       data-tone={tone}
+      data-change={change}
       data-mark-title={title}
       data-mark-matched={matched}
     >

@@ -1,17 +1,40 @@
+import { cn } from '@uipath/apollo-wind';
+import { ArrowUpDown } from 'lucide-react';
+import type React from 'react';
 import { memo } from 'react';
 import { ConditionLine } from './ConditionLine';
+import type { DiffChange, RuleDiff } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
 import { RuleLine } from './RuleLine';
 import { type RuleCardModelParams, type RuleRemovalLabels, ruleCardModel } from './ruleCardModel';
 import { StopLabels } from './StopLabels';
 import {
+  CHANGE_SIGN_CLASS,
   HEADING_ACTIONS_SPACE_CLASS,
   LINES_CLASS,
+  MOVED_ICON_CLASS,
+  ROW_CHANGE_CLASS,
+  ROW_NUMBER_CHANGE_CLASS,
   ROW_NUMBER_CLASS,
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
 } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
+
+/** A diff's sign for each change, as the Business Rules table diff marks them. */
+const CHANGE_SIGNS = { add: '+', update: '~', delete: '−' } satisfies Record<DiffChange, string>;
+
+/** A changed rule's sign, or arrows when it moved. */
+const ChangeSign: React.FC<Pick<RuleDiff, 'change' | 'movedFrom'>> = ({ change, movedFrom }) => {
+  if (movedFrom !== undefined) {
+    return <ArrowUpDown aria-hidden className={MOVED_ICON_CLASS} strokeWidth={2.5} />;
+  }
+  return change ? (
+    <span aria-hidden className={CHANGE_SIGN_CLASS}>
+      {CHANGE_SIGNS[change]}
+    </span>
+  ) : null;
+};
 
 /** A card's editing strings: its actions', and its remove and clear buttons'. */
 export interface RuleCardEditLabels extends RuleActionsLabels, RuleRemovalLabels {}
@@ -43,11 +66,13 @@ export const RuleCard = memo<RuleCardProps>(
     editLabels,
     openMenu,
     pendingColumnId,
+    diff,
     idPrefix,
     dataTestId,
     labels,
   }) => {
     const card = ruleCardModel({
+      diff,
       rule,
       position,
       numbered,
@@ -63,8 +88,10 @@ export const RuleCard = memo<RuleCardProps>(
       selectedColumnId,
       stopOf: card.stopOf,
       linkOf: card.linkOf,
+      diffOf: card.diffOf,
       labels,
     };
+    const removedLines = diff?.removedLines ?? [];
     const ruleSelected = selectedColumnId === null;
 
     return (
@@ -78,11 +105,21 @@ export const RuleCard = memo<RuleCardProps>(
         className={RULE_CARD_CLASS}
         data-row-id={rule.rowId}
         data-tone={card.tone}
+        data-change={diff?.change}
         data-dim={card.dim}
         data-testid={`${dataTestId}-row-${rule.rowId}`}
       >
-        <div className={ROW_SURFACE_CLASS} data-selected={ruleSelected || undefined}>
-          {numbered && <span className={ROW_NUMBER_CLASS}>{position}</span>}
+        <div
+          className={cn(ROW_SURFACE_CLASS, diff && ROW_CHANGE_CLASS)}
+          data-selected={ruleSelected || undefined}
+        >
+          {(card.number !== null || card.changeStatus) && (
+            <span className={cn(ROW_NUMBER_CLASS, diff && ROW_NUMBER_CHANGE_CLASS)}>
+              {diff && <ChangeSign change={diff.change} movedFrom={diff.movedFrom} />}
+              {card.number}
+              {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
+            </span>
+          )}
           <RuleLine
             heading
             parts={rule.heading}
@@ -99,7 +136,7 @@ export const RuleCard = memo<RuleCardProps>(
             removals={card.removals.lead}
             {...lineProps}
           />
-          {rule.lines.length > 0 && (
+          {rule.lines.length + removedLines.length > 0 && (
             <ul className={LINES_CLASS}>
               {rule.lines.map((line, index) => (
                 <ConditionLine
@@ -110,6 +147,17 @@ export const RuleCard = memo<RuleCardProps>(
                   removal={
                     line.columnId === pendingColumnId ? null : (card.removals.lines[index] ?? null)
                   }
+                  {...lineProps}
+                />
+              ))}
+              {removedLines.map((line) => (
+                <ConditionLine
+                  key={`removed-${line.columnId}`}
+                  line={line}
+                  pending={false}
+                  removed
+                  badge={null}
+                  removal={null}
                   {...lineProps}
                 />
               ))}

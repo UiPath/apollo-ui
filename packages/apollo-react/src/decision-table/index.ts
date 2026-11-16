@@ -10,6 +10,15 @@ export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DecisionText, type DecisionTextProps } from './DecisionText';
+export type {
+  DecisionTextDiff,
+  DiffChange,
+  DiffColumnChange,
+  DiffRemovedColumn,
+  DiffRemovedRule,
+  DiffRuleChange,
+  DiffValueChange,
+} from './decisionTextDiff';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type {
   DecisionTextEdit,

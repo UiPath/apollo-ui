@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useSafeLingui } from '../i18n/useSafeLingui';
+import type { DiffChange } from './decisionTextDiff';
 import type { DecisionTextEditLabels, DecisionTextLabels } from './decisionTextTypes';
 import type { GlyphTone } from './sentenceMarks';
 
@@ -27,6 +28,11 @@ export const useDecisionTextLabels = (
     } satisfies Record<GlyphTone, string>;
     const matched = _({ id: 'decision-text.condition_matched', message: 'Matched' });
     const notMatched = _({ id: 'decision-text.condition_not_matched', message: 'Not matched' });
+    const changes = {
+      add: _({ id: 'decision-text.change_add', message: 'Added' }),
+      update: _({ id: 'decision-text.change_update', message: 'Changed' }),
+      delete: _({ id: 'decision-text.change_delete', message: 'Removed' }),
+    } satisfies Record<DiffChange, string>;
     return {
       emptyRules: _({ id: 'decision-text.empty_rules', message: 'No rules yet' }),
       inputs: _({ id: 'decision-text.band_inputs', message: 'Inputs' }),
@@ -58,6 +64,27 @@ export const useDecisionTextLabels = (
           id: 'decision-text.open_decision',
           message: "Open {input}'s decision",
           values: { input },
+        }),
+      changeStatus: (change) => changes[change],
+      movedFrom: (number) =>
+        _({
+          id: 'decision-text.moved_from',
+          message: 'Moved from rule {number}',
+          values: { number },
+        }),
+      previousValue: _({ id: 'decision-text.previous_value', message: 'was' }),
+      currentValue: _({ id: 'decision-text.current_value', message: 'now' }),
+      unchangedRules: (count) =>
+        _({
+          id: 'decision-text.unchanged_rules',
+          message: '{count, plural, one {# unchanged rule} other {# unchanged rules}}',
+          values: { count },
+        }),
+      showRules: (from, to) =>
+        _({
+          id: 'decision-text.show_rules',
+          message: 'Show rules {from}–{to}',
+          values: { from, to },
         }),
     };
   }, [_]);

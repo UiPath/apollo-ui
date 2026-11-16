@@ -1,5 +1,6 @@
 import type { BandLabels } from './bandColumns';
 import type { ColumnEdit, ColumnPopoverLabels } from './ColumnPopover';
+import type { DiffLabels } from './decisionTextDiff';
 import type { CellCommitMove } from './gridTypes';
 import type { RuleCardEditLabels } from './RuleCard';
 import type { RuleCardLabels } from './ruleCardModel';
@@ -9,7 +10,7 @@ import type { ValuePopoverLabels, ValuePopoverProps } from './ValuePopover';
 import type { ValueCommit } from './valueTypes';
 
 /** The view's own strings, built in from the `decision-table` catalog. */
-export interface DecisionTextLabels extends RuleCardLabels, BandLabels {
+export interface DecisionTextLabels extends RuleCardLabels, BandLabels, DiffLabels {
   emptyRules: string;
 }
 

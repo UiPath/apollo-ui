@@ -1,4 +1,6 @@
 import { forwardRef } from 'react';
+import type { DiffRow } from './decisionTextDiff';
+import { DiffFoldRow, type DiffFoldRowProps } from './DiffFoldRow';
 import type { TableMarks } from './marks';
 import { RuleCard, type RuleCardProps } from './RuleCard';
 import type { SentenceListStyle } from './sentenceRuleHeights';
@@ -29,10 +31,13 @@ export interface RuleListProps {
   openMenu: OpenRuleMenu | null;
   /** The condition the open editor adds to its rule, or null. */
   pending: SentenceValueId | null;
+  /** Each shown row's change or fold by row id, in a diff. */
+  diffRows: ReadonlyMap<string, DiffRow> | undefined;
+  onExpandFold: DiffFoldRowProps['onExpand'];
   style: SentenceListStyle;
   idPrefix: string;
   dataTestId: string;
-  labels: RuleCardProps['labels'];
+  labels: RuleCardProps['labels'] & DiffFoldRowProps['labels'];
 }
 
 /** The windowed rules: a rule card for each mounted rule, a spacer for each run left out. */
@@ -50,6 +55,8 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       editLabels,
       openMenu,
       pending,
+      diffRows,
+      onExpandFold,
       style,
       idPrefix,
       dataTestId,
@@ -72,9 +79,23 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
             );
           }
           nextRuleIndex = segment.to;
-          return rules
-            .slice(segment.from, segment.to)
-            .map((rule, offset) => (
+          return rules.slice(segment.from, segment.to).map((rule, offset) => {
+            const row = diffRows?.get(rule.rowId);
+            if (row?.kind === 'fold') {
+              return (
+                <DiffFoldRow
+                  key={rule.rowId}
+                  rowId={rule.rowId}
+                  fold={row.fold}
+                  position={segment.from + offset + 1}
+                  setSize={rules.length}
+                  onExpand={onExpandFold}
+                  dataTestId={dataTestId}
+                  labels={labels}
+                />
+              );
+            }
+            return (
               <RuleCard
                 key={rule.rowId}
                 rule={rule}
@@ -90,11 +111,13 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                 editLabels={editLabels}
                 openMenu={openMenu?.rowId === rule.rowId ? openMenu.menu : undefined}
                 pendingColumnId={pending?.rowId === rule.rowId ? pending.columnId : undefined}
+                diff={row?.diff}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
                 labels={labels}
               />
-            ));
+            );
+          });
         })}
       </ul>
     );

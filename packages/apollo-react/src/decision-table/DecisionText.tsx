@@ -1,11 +1,12 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { useId, useMemo } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
 import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
+import { type DecisionTextDiff, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
 import type { DecisionTextEdit, DecisionTextLabels } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
@@ -17,8 +18,10 @@ import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
 import type {
+  SentenceBand,
   SentenceBandColumn,
   SentenceHeader,
+  SentenceNameToken,
   SentenceRule,
   SentenceSelection,
 } from './sentenceTypes';
@@ -78,6 +81,17 @@ interface ReadOnlyDecisionText {
   selected?: SentenceSelection | null;
   onSelect?: undefined;
   edit?: undefined;
+  diff?: undefined;
+}
+
+/** A read-only view of what changed, painted on the after-state `rules`. */
+interface DiffDecisionText {
+  /** What changed; a new diff closes every fold, so memoize it. */
+  diff: DecisionTextDiff;
+  selected?: undefined;
+  onSelect?: undefined;
+  edit?: undefined;
+  addRule?: undefined;
 }
 
 /** A view whose selection the host controls, which selecting and editing require. */
@@ -87,10 +101,27 @@ interface EditableDecisionText {
   onSelect: NonNullable<SentenceNavigationSource['onSelect']>;
   /** Editing on the cards; omit it for a read-only view. */
   edit?: DecisionTextEdit;
+  diff?: undefined;
 }
 
 export type DecisionTextProps = DecisionTextBaseProps &
-  (ReadOnlyDecisionText | EditableDecisionText);
+  (ReadOnlyDecisionText | EditableDecisionText | DiffDecisionText);
+
+const NO_FOLDS: ReadonlySet<string> = new Set();
+
+/** Each band column's name token by id, for a removed condition's line. */
+const nameTokensOf = (bands: readonly SentenceBand[]) => {
+  const names = new Map<string, SentenceNameToken>(
+    bands.flatMap(({ id, columns }) =>
+      columns.map((column): [string, SentenceNameToken] => [
+        column.id,
+        { kind: id === 'outputs' ? 'output' : 'input', columnId: column.id, text: column.name },
+      ])
+    )
+  );
+  return (columnId: string): SentenceNameToken =>
+    names.get(columnId) ?? { kind: 'input', columnId, text: columnId };
+};
 
 /** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks. */
 export const DecisionText: React.FC<DecisionTextProps> = ({
@@ -105,6 +136,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   selected,
   onSelect,
   edit: hostEdit,
+  diff,
   policy,
   headerMark,
   onOpenDecision,
@@ -117,12 +149,26 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const idPrefix = useId();
   const labels = useDecisionTextLabels(hostLabels);
   const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels(hostEdit?.labels));
-  const bands = useMemo(() => bandsOf(inputs, outputs, labels), [inputs, outputs, labels]);
+  const columns = useMemo(
+    () => diff && diffColumnsOf(inputs, outputs, diff),
+    [inputs, outputs, diff]
+  );
+  const bands = useMemo(
+    () => bandsOf(columns?.inputs ?? inputs, columns?.outputs ?? outputs, labels),
+    [columns, inputs, outputs, labels]
+  );
+  const [folds, setFolds] = useState({ diff, expanded: NO_FOLDS });
+  const expanded = folds.diff === diff ? folds.expanded : NO_FOLDS;
+  const diffRows = useMemo(
+    () => diff && diffRowsOf(rules, diff, nameTokensOf(bands), expanded),
+    [rules, diff, bands, expanded]
+  );
   const { rows: rowMarks, columns: bandMarks } = tableMarks(marks);
   const hoverTo = useCellHover(onCellHover);
   const shown = usePendingCondition({ edit, rules, bands });
+  const listed = diffRows?.rules ?? shown.rules;
   const ruleWindow = useRuleWindow(
-    shown.rules,
+    listed,
     selected?.rowId,
     edit?.editing?.rowId ?? selected?.rowId
   );
@@ -163,6 +209,14 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   });
   const columnEditorId = `${idPrefix}-column-editor`;
   const listStyle = sentenceListStyle(numbered, rules.length);
+  const onExpandFold = useCallback(
+    (firstRowId: string) =>
+      setFolds((current) => ({
+        diff,
+        expanded: new Set(current.diff === diff ? current.expanded : NO_FOLDS).add(firstRowId),
+      })),
+    [diff]
+  );
 
   return (
     <section
@@ -177,6 +231,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         header={header}
         policy={policy}
         mark={headerMark}
+        hitPolicy={diff?.hitPolicy}
         labels={labels}
         dataTestId={dataTestId}
       />
@@ -184,6 +239,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         <SentenceBands
           bands={bands}
           marks={bandMarks}
+          changes={columns?.changes}
           style={listStyle}
           idPrefix={idPrefix}
           dataTestId={dataTestId}
@@ -193,13 +249,15 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           editorId={columnEditorId}
         />
       )}
-      {rules.length === 0 ? (
+      {listed.length === 0 ? (
         <EmptyRules title={labels.emptyRules} addRule={addRuleAction} dataTestId={dataTestId} />
       ) : (
         <RuleList
           ref={ruleWindow.listRef}
-          rules={shown.rules}
+          rules={listed}
           pending={shown.pending}
+          diffRows={diffRows?.rows}
+          onExpandFold={onExpandFold}
           segments={ruleWindow.segments}
           numbered={numbered}
           marks={rowMarks}
