@@ -10,6 +10,7 @@ export * from './breadcrumb';
 export * from './bubble';
 export * from './button';
 export * from './button-group';
+export * from './byo-model-dialog';
 export * from './calendar';
 export * from './card';
 export * from './chart';
