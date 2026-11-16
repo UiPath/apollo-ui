@@ -953,7 +953,7 @@ describe('DecisionText', () => {
       expect(tooltip()).toHaveTextContent('Overlaps row 2');
     });
 
-    it('shows every message of a focused rule whose first mark the pointer is on, until Escape', () => {
+    it('shows every message of a focused rule whose first mark the pointer is on, until Escape', async () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
@@ -976,9 +976,39 @@ describe('DecisionText', () => {
       act(() => card('m1').focus());
       expect(tooltip()).toHaveTextContent('Not a number');
       expect(tooltip()).toHaveTextContent('Overlaps row 2');
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(tooltip()).toHaveTextContent('Not a number');
+      expect(tooltip()).toHaveTextContent('Overlaps row 2');
       fireEvent.keyDown(card('m1'), { key: 'Escape' });
       fireEvent.pointerOver(first);
       expect(tooltip()).toBeNull();
+    });
+
+    it('keeps every message of a focused rule whose first mark the pointer is on when the host changes its marks', async () => {
+      const shared = {
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        header: MULTI_SENTENCE_HEADER,
+        initial: { rowId: 'm1' },
+      };
+      const marksWith = (country: string) =>
+        rowMarks({
+          m1: {
+            cells: {
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+              country: { tone: 'warning', title: country, glyph: true },
+            },
+          },
+        });
+      const { rerender } = render(<Selectable {...shared} marks={marksWith('Overlaps row 2')} />);
+      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
+      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
+      if (!first) throw new Error('m1 first badge');
+      fireEvent.pointerOver(first);
+      act(() => card('m1').focus());
+      rerender(<Selectable {...shared} marks={marksWith('Overlaps row 3')} />);
+      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 3'));
+      expect(tooltip()).toHaveTextContent('Not a number');
     });
 
     it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
