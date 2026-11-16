@@ -30,6 +30,9 @@ export function CanvasTooltipProviderMarker({ children }: PropsWithChildren) {
   );
 }
 
+export const isEmptyTooltipContent = (content: ReactNode) =>
+  content == null || content === false || (typeof content === 'string' && content.trim() === '');
+
 type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 interface CanvasTooltipProps extends PropsWithChildren {
@@ -150,8 +153,7 @@ export function CanvasTooltip({
     [smartTooltip, truncationDetection.check]
   );
 
-  const isEmptyContent =
-    content == null || content === false || (typeof content === 'string' && content.trim() === '');
+  const isEmptyContent = isEmptyTooltipContent(content);
 
   // Priority ordering matches ApTooltip: isOpen > hide > smartTooltip
   const isTooltipHidden = useMemo(() => {
@@ -177,6 +179,7 @@ export function CanvasTooltip({
         <TooltipContent
           side={placement}
           sideOffset={sideOffset}
+          onEscapeKeyDown={(e) => e.stopPropagation()}
           className={cn('z-1200 max-w-xs wrap-break-word', contentClassName)}
         >
           {content}
