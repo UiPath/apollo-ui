@@ -3,27 +3,39 @@ import { fireEvent } from '@testing-library/react';
 const openDialogIn = (root: Document | ShadowRoot): HTMLDialogElement | undefined =>
   [...root.querySelectorAll<HTMLDialogElement>('dialog[open]')].at(-1);
 
-const openDialogFor = (event: Event): HTMLDialogElement | undefined => {
-  for (const node of event.composedPath()) {
-    if (node instanceof ShadowRoot) {
-      const dialog = openDialogIn(node);
-      if (dialog) return dialog;
-    }
+const openDialogFor = (target: EventTarget): HTMLDialogElement | undefined => {
+  for (let root = target instanceof Node ? target.getRootNode() : document; ; ) {
+    if (!(root instanceof ShadowRoot)) return openDialogIn(document);
+    const dialog = openDialogIn(root);
+    if (dialog) return dialog;
+    root = root.host.getRootNode();
   }
-  return openDialogIn(document);
 };
 
-/** Stands in for the browser's close request, which happy-dom lacks: an unprevented Escape fires `cancel` at the open dialog and closes it unless that is prevented. */
+/** Stands in for the browser's close request, which happy-dom lacks: once an Escape's dispatch ends unprevented, however far it propagated, `cancel` fires at the open dialog, which closes unless that is prevented. */
 export const installEscapeCloseRequest = (): (() => void) => {
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape' || event.defaultPrevented) return;
-    const dialog = openDialogFor(event);
-    if (!dialog) return;
+  let target: EventTarget = Node.prototype;
+  while (!Object.hasOwn(target, 'dispatchEvent')) target = Object.getPrototypeOf(target);
+  const dispatch = target.dispatchEvent;
+  let depth = 0;
+  target.dispatchEvent = function (this: EventTarget, event: Event) {
+    depth += 1;
+    let result: boolean;
+    try {
+      result = dispatch.call(this, event);
+    } finally {
+      depth -= 1;
+    }
+    if (depth > 0 || event.type !== 'keydown' || !(event instanceof KeyboardEvent)) return result;
+    if (event.key !== 'Escape' || event.defaultPrevented) return result;
+    const dialog = openDialogFor(this);
     const cancel = new Event('cancel', { cancelable: true });
-    if (dialog.dispatchEvent(cancel) && dialog.isConnected) dialog.close();
+    if (dialog?.dispatchEvent(cancel) && dialog.isConnected) dialog.close();
+    return result;
   };
-  window.addEventListener('keydown', onKeyDown);
-  return () => window.removeEventListener('keydown', onKeyDown);
+  return () => {
+    target.dispatchEvent = dispatch;
+  };
 };
 
 /** Presses a dialog's backdrop: pointerdown, mousedown, then the button's click, all at a point outside its box. */

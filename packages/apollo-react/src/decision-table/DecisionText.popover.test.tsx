@@ -40,13 +40,17 @@ const Host = ({
   valueField,
   renderEditor,
   onCommit,
+  onCancel = () => {},
   refusesCancel = false,
+  cancelsLater = false,
 }: {
   initial: SentenceValueId;
   valueField: DecisionTextEdit['valueField'];
   renderEditor?: DecisionTextEdit['renderEditor'];
   onCommit: DecisionTextEdit['onCommit'];
+  onCancel?: DecisionTextEdit['onCancel'];
   refusesCancel?: boolean;
+  cancelsLater?: boolean;
 }) => {
   const [editing, setEditing] = useState<SentenceValueId | null>(initial);
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
@@ -68,7 +72,9 @@ const Host = ({
           setEditing(null);
         },
         onCancel: () => {
-          if (!refusesCancel) setEditing(null);
+          onCancel();
+          if (cancelsLater) setTimeout(() => setEditing(null));
+          else if (!refusesCancel) setEditing(null);
         },
         onClearCell: () => {},
         onDeleteRule: () => {},
@@ -102,12 +108,14 @@ const ContractEditor = ({
   shadow = false,
   late = false,
   ownsKeys,
+  prevents,
   keys = [],
 }: {
   props: ExpressionEditorProps;
   shadow?: boolean;
   late?: boolean;
   ownsKeys?: () => boolean;
+  prevents?: boolean;
   keys?: string[];
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -125,12 +133,12 @@ const ContractEditor = ({
     input.addEventListener('input', () => latest.current.onChange(input.value));
     input.addEventListener('keydown', (event) => {
       keys.push(event.key);
-      if (ownsKeys?.()) event.preventDefault();
+      if (prevents ?? ownsKeys?.()) event.preventDefault();
     });
     const handle = { focus: () => input.focus(), ownsKeys };
     if (late) readyLater = () => act(() => latest.current.onReady(handle));
     else latest.current.onReady(handle);
-  }, [shadow, late, ownsKeys, keys]);
+  }, [shadow, late, ownsKeys, prevents, keys]);
   return <div ref={ref} data-testid="dom-host" />;
 };
 let readyLater = () => {};
@@ -743,5 +751,110 @@ describe('DecisionText popover Escape during composition', () => {
     fireEvent.keyDown(text, { key: 'Escape' });
     expect(screen.queryByTestId('nl-value-editor')).not.toBeInTheDocument();
     expect(onCommit).not.toHaveBeenCalled();
+  });
+});
+
+describe('DecisionText popover Escape for a host that cancels later or refuses', () => {
+  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const closeEvents = () => act(() => new Promise((resolve) => setTimeout(resolve)));
+  const editors: [string, DecisionTextEdit['renderEditor'], boolean, () => HTMLElement, number][] =
+    [
+      ['the value field', undefined, false, () => popover().getByRole('textbox'), 1],
+      [
+        'the default expression editor',
+        undefined,
+        true,
+        () => screen.getByTestId('nl-editor-expression-editor'),
+        1,
+      ],
+      [
+        'a host editor that leaves Escape to the popover',
+        (props) => <ContractEditor props={props} prevents />,
+        true,
+        domInput,
+        1,
+      ],
+      [
+        'a host editor that owns Escape and prevents it',
+        (props) => <ContractEditor props={props} ownsKeys={() => true} />,
+        true,
+        domInput,
+        0,
+      ],
+      [
+        'a host editor that owns Escape without preventing it',
+        (props) => <ContractEditor props={props} ownsKeys={() => true} prevents={false} />,
+        true,
+        domInput,
+        1,
+      ],
+    ];
+  it.each(
+    (['cancels later', 'refuses'] as const).flatMap((host) =>
+      editors.map((editor) => [host, ...editor] as const)
+    )
+  )('calls the cancel of a host that %s once per Escape from %s', async (host, _, renderEditor, expression, target, count) => {
+    const onCancel = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={field}
+        renderEditor={renderEditor}
+        onCommit={vi.fn()}
+        onCancel={onCancel}
+        cancelsLater={host === 'cancels later'}
+        refusesCancel={host === 'refuses'}
+      />
+    );
+    if (expression) fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
+    fireEvent.keyDown(target(), { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledTimes(count);
+    if (host === 'refuses') {
+      fireEvent.keyDown(target(), { key: 'Escape' });
+      expect(onCancel).toHaveBeenCalledTimes(2 * count);
+    }
+    await closeEvents();
+    expect(onCancel).toHaveBeenCalledTimes(host === 'refuses' ? 2 * count : count);
+  });
+});
+
+describe('DecisionText expression editor during composition', () => {
+  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const keys: string[] = [];
+  const editors: [string, DecisionTextEdit['renderEditor'], () => HTMLElement, string[]][] = [
+    ['the default editor', undefined, () => screen.getByTestId('nl-editor-expression-editor'), []],
+    [
+      'a host editor',
+      (props) => <ContractEditor props={props} keys={keys} />,
+      domInput,
+      ['Enter', 'Escape'],
+    ],
+  ];
+  it.each(
+    [{ isComposing: true }, { keyCode: 229 }].flatMap((composing) =>
+      editors.map((editor) => [composing, ...editor] as const)
+    )
+  )('leaves an Enter and an Escape while text composes (%o) to the IME of %s, cancelling and applying nothing', (composing, _, renderEditor, target, reached) => {
+    keys.length = 0;
+    const onCommit = vi.fn();
+    const onCancel = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={field}
+        renderEditor={renderEditor}
+        onCommit={onCommit}
+        onCancel={onCancel}
+      />
+    );
+    fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
+    expect(fireEvent.keyDown(target(), { key: 'Enter', ...composing })).toBe(true);
+    fireEvent.keyDown(target(), { key: 'Escape', ...composing });
+    expect(screen.getByTestId('nl-value-editor')).toBeInTheDocument();
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(keys).toEqual(reached);
+    fireEvent.keyDown(target(), { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });
