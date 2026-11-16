@@ -89,6 +89,7 @@ export type {
   SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
+export type { DecisionTextScroll } from './useRuleWindow';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {

@@ -1,10 +1,18 @@
 import { cn } from '@uipath/apollo-wind';
 import type { MarkTone } from './marks';
 
-export const DECISION_TEXT_FRAME_CLASS = cn(
-  'relative min-h-0 flex-1 overflow-auto bg-background-secondary future:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
+const DECISION_TEXT_SURFACE_CLASS = cn(
+  'relative bg-background-secondary future:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
   '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)]'
 );
+
+export const DECISION_TEXT_FRAME_CLASS = cn(
+  'min-h-0 flex-1 overflow-auto',
+  DECISION_TEXT_SURFACE_CLASS
+);
+
+/** The view sized to its rules, inside an ancestor that scrolls. */
+export const DECISION_TEXT_INLINE_FRAME_CLASS = DECISION_TEXT_SURFACE_CLASS;
 
 export const DECISION_TEXT_HEADER_CLASS =
   'sticky top-0 z-2 flex flex-wrap items-baseline gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';

@@ -33,7 +33,7 @@ export interface DecisionTextEdit extends RuleMenuActions {
   onStartEdit?: (value: SentenceValueId) => void;
   /** Return a message to refuse the commit: the editor stays open with the draft and shows it until it commits again or closes. A `values` commit's operator is the picked one of the cell's `valueField` operators, and a range's or list's carries all the condition's values; an `expression` commit is the expression editor's text for the whole condition. */
   onCommit: (value: SentenceValueId, commit: ValueCommit, move: CellCommitMove) => string | void;
-  /** Also called when a hidden or detached view stops rendering an open editor; a view hidden with visibility or opacity keeps its modal editor open. */
+  /** Also called when a hidden or detached view stops rendering an open editor, or the view unmounts with one open; a view hidden with visibility or opacity keeps its modal editor open. */
   onCancel?: () => void;
   /** What the open cell's popover offers: its type glyph, operators, allowed values, and a range's or list's values; called only while it is open. */
   valueField?: (cell: SentenceCellId) => ValuePopoverProps['field'];

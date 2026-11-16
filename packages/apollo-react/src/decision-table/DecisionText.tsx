@@ -16,7 +16,7 @@ import { RuleList } from './RuleList';
 import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
-import { DECISION_TEXT_FRAME_CLASS } from './sentenceStyles';
+import { DECISION_TEXT_FRAME_CLASS, DECISION_TEXT_INLINE_FRAME_CLASS } from './sentenceStyles';
 import type {
   SentenceBand,
   SentenceBandColumn,
@@ -37,7 +37,7 @@ import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionT
 import { useEditState } from './useEditState';
 import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
-import { useRuleWindow } from './useRuleWindow';
+import { type DecisionTextScroll, useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
 import { useValueEditing } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
@@ -65,6 +65,8 @@ interface DecisionTextBaseProps {
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
   /** Strings in place of the built-in ones, any subset; mounted rules re-render when it changes, so memoize it. */
   labels?: Partial<DecisionTextLabels>;
+  /** `ancestor` sizes the view to its rules and windows them against the nearest ancestor that scrolls, whose `scroll-padding-top` covers what sticks over it; `self` by default. */
+  scroll?: DecisionTextScroll;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Spread onto the scroll container: its handlers run after the view's and its className is added to the view's; a `data-testid` here overrides `dataTestId`. */
@@ -142,6 +144,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   headerMark,
   onOpenDecision,
   labels: hostLabels,
+  scroll = 'self',
   ariaLabel,
   containerProps,
   dataTestId,
@@ -171,7 +174,8 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const ruleWindow = useRuleWindow(
     listed,
     selected?.rowId,
-    edit?.editing?.rowId ?? selected?.rowId
+    edit?.editing?.rowId ?? selected?.rowId,
+    scroll
   );
   const selectable = onSelect !== undefined;
   const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
@@ -225,7 +229,10 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
       data-testid={dataTestId}
       {...sectionProps}
       aria-label={ariaLabel}
-      className={cn(DECISION_TEXT_FRAME_CLASS, sectionProps.className)}
+      className={cn(
+        scroll === 'self' ? DECISION_TEXT_FRAME_CLASS : DECISION_TEXT_INLINE_FRAME_CLASS,
+        sectionProps.className
+      )}
     >
       <DecisionTextHeader
         ref={ruleWindow.headerRef}
@@ -234,6 +241,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         mark={headerMark}
         hitPolicy={diff?.hitPolicy}
         labels={labels}
+        sticky={scroll === 'self'}
         dataTestId={dataTestId}
       />
       {bands.length > 0 && (

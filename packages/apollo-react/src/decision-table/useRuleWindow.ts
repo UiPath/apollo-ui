@@ -31,6 +31,36 @@ const measuredHeights = (
   return next ?? current;
 };
 
+/** Where the rules scroll: in the view's own frame, or in the nearest scrolling ancestor, the view sized to its rules. */
+export type DecisionTextScroll = 'self' | 'ancestor';
+
+const SCROLLING_OVERFLOW = new Set(['auto', 'scroll', 'overlay']);
+
+const flatParentOf = (node: Node): Node | null => {
+  const parent = (node instanceof Element && node.assignedSlot) || node.parentNode;
+  return parent instanceof ShadowRoot ? parent.host : parent;
+};
+
+/** The nearest ancestor that scrolls vertically, across slots and shadow roots, and the elements on the way to it. */
+export const scrollAncestorOf = (
+  element: Element
+): { scroller: HTMLElement; path: HTMLElement[] } | null => {
+  const path: HTMLElement[] = [];
+  for (let node = flatParentOf(element); node; node = flatParentOf(node)) {
+    if (!(node instanceof HTMLElement)) continue;
+    if (SCROLLING_OVERFLOW.has(getComputedStyle(node).overflowY)) return { scroller: node, path };
+    path.push(node);
+  }
+  return null;
+};
+
+/** The top of `element` in `scroller`'s scrolled content. */
+const contentTopIn = (element: HTMLElement, scroller: HTMLElement): number =>
+  element.getBoundingClientRect().top -
+  scroller.getBoundingClientRect().top -
+  scroller.clientTop +
+  scroller.scrollTop;
+
 export interface RuleWindow {
   listRef: React.RefObject<HTMLUListElement | null>;
   headerRef: React.RefObject<HTMLDivElement | null>;
@@ -52,13 +82,26 @@ export interface RuleWindow {
 export const useRuleWindow = (
   rules: readonly SentenceRule[],
   selectedRowId: string | undefined,
-  retainedRowId: string | undefined
+  retainedRowId: string | undefined,
+  scroll: DecisionTextScroll = 'self'
 ): RuleWindow => {
   const listRef = useRef<HTMLUListElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
-  const listStart = useCallback(() => listRef.current?.offsetTop ?? 0, []);
-  const headerHeight = useCallback(() => headerRef.current?.offsetHeight ?? 0, []);
+  const ancestorRef = useRef<ReturnType<typeof scrollAncestorOf>>(null);
+  const scrollerOf = useCallback(() => ancestorRef.current?.scroller ?? sectionRef.current, []);
+  const listStart = useCallback(() => {
+    const list = listRef.current;
+    const ancestor = ancestorRef.current;
+    if (!list) return 0;
+    return ancestor ? contentTopIn(list, ancestor.scroller) : list.offsetTop;
+  }, []);
+  const headerHeight = useCallback(() => {
+    const ancestor = ancestorRef.current;
+    if (!ancestor) return headerRef.current?.offsetHeight ?? 0;
+    return Number.parseFloat(getComputedStyle(ancestor.scroller).scrollPaddingTop) || 0;
+  }, []);
+  const [listMoves, setListMoves] = useState(0);
   const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(NO_HEIGHTS);
   const offsetsPx = useMemo(() => sentenceRuleOffsets(rules, measured), [rules, measured]);
   const selectedRow = useMemo(() => rowIndexOf(rules, selectedRowId), [rules, selectedRowId]);
@@ -96,23 +139,59 @@ export const useRuleWindow = (
   const attachSection = useCallback(
     (element: HTMLElement | null) => {
       sectionRef.current = element;
-      measureRef(element);
+      ancestorRef.current = element && scroll === 'ancestor' ? scrollAncestorOf(element) : null;
+      measureRef(ancestorRef.current?.scroller ?? element);
     },
-    [measureRef]
+    [measureRef, scroll]
   );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the ancestor changes with the scroll mode
+  useLayoutEffect(() => {
+    const ancestor = ancestorRef.current;
+    const section = sectionRef.current;
+    if (!ancestor || !section) return;
+    let last = listStart();
+    const check = () => {
+      const next = listStart();
+      if (next === last) return;
+      last = next;
+      setListMoves((count) => count + 1);
+    };
+    ancestor.scroller.addEventListener('scroll', check, { passive: true });
+    if (typeof ResizeObserver === 'undefined') {
+      return () => ancestor.scroller.removeEventListener('scroll', check);
+    }
+    const observer = new ResizeObserver(check);
+    for (const element of [section, ...ancestor.path]) {
+      observer.observe(element, { box: 'border-box' });
+      for (
+        let before = element.previousElementSibling;
+        before;
+        before = before.previousElementSibling
+      ) {
+        observer.observe(before, { box: 'border-box' });
+      }
+    }
+    return () => {
+      ancestor.scroller.removeEventListener('scroll', check);
+      observer.disconnect();
+    };
+  }, [listStart, scroll]);
+  useLayoutEffect(() => {
+    if (listMoves > 0) ancestorRef.current?.scroller.dispatchEvent(new Event('scroll'));
+  }, [listMoves]);
   const container = useCallback(() => sectionRef.current, []);
   const scrollRowIntoView = useCallback(
-    (rowIndex: number) => scrollItemIntoView(sectionRef.current, rowIndex),
-    [scrollItemIntoView]
+    (rowIndex: number) => scrollItemIntoView(scrollerOf(), rowIndex),
+    [scrollItemIntoView, scrollerOf]
   );
 
   const firstVisibleRow = () => {
-    const top = (sectionRef.current?.scrollTop ?? 0) + headerHeight() - listStart();
+    const top = (scrollerOf()?.scrollTop ?? 0) + headerHeight() - listStart();
     const end = offsetsPx.findIndex((offset) => offset > top);
     return end < 0 ? rules.length - 1 : Math.max(0, end - 1);
   };
   const scrollStopIntoView = (rowIndex: number, stop: HTMLElement) => {
-    const section = sectionRef.current;
+    const section = scrollerOf();
     if (!section) return;
     const rowHeight = (offsetsPx[rowIndex + 1] ?? 0) - (offsetsPx[rowIndex] ?? 0);
     if (rowHeight <= (section.clientHeight || FALLBACK_ROW_VIEWPORT_PX) - headerHeight()) {
