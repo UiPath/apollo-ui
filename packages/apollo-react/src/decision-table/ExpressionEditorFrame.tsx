@@ -39,10 +39,10 @@ export const ExpressionEditorFrame: React.FC<ExpressionEditorFrameProps> = ({
     (handleRef.current ?? frameRef.current)?.focus();
   }, []);
   const onKeyDownCapture = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!FRAME_KEYS.has(event.key)) return;
+    if (!FRAME_KEYS.has(event.key) || isComposing(event)) return;
     if (!isShiftTab(event) && handleRef.current?.ownsKeys?.()) return;
     event.stopPropagation();
-    if (isComposing(event) || event.key === 'Tab') return;
+    if (event.key === 'Tab') return;
     event.preventDefault();
     if (event.key === 'Escape') onCancel();
     else onApply();
