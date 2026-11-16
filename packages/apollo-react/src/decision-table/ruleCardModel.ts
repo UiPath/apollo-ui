@@ -81,9 +81,10 @@ const verdictOf = (
 const shownValuesOf = (
   parts: readonly SentencePart[],
   columnId: string,
-  labels: RuleCardLabels
+  labels: RuleCardLabels,
+  changed: (token: SentenceToken) => boolean
 ): string => {
-  const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+  const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT, changed);
   const isCell = (part: SentencePart): boolean =>
     typeof part !== 'string' && part.kind === 'value' && part.columnId === columnId;
   const indexes = shown.flatMap((part, index) => (isCell(part) ? [index] : []));
@@ -97,8 +98,12 @@ const shownValuesOf = (
 };
 
 /** A line's text as it shows, each clamped run read as its count. */
-const shownLineText = (parts: readonly SentencePart[], labels: RuleCardLabels): string => {
-  const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+const shownLineText = (
+  parts: readonly SentencePart[],
+  labels: RuleCardLabels,
+  changed: (token: SentenceToken) => boolean
+): string => {
+  const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT, changed);
   const cuts = clamped.map(({ after }) => shown.length - after.length);
   return [
     ...clamped.map(
@@ -185,6 +190,7 @@ export const ruleCardModel = ({
 }: RuleCardModelParams): RuleCardModel => {
   const id = `${idPrefix}-${position}`;
   const number = diff ? diff.number : position;
+  const changed = (token: SentenceToken) => diff?.tokens.has(token) === true;
   const changeStatus = [
     diff?.change && labels.changeStatus(diff.change),
     diff?.movedFrom !== undefined && labels.movedFrom(diff.movedFrom),
@@ -199,7 +205,7 @@ export const ruleCardModel = ({
         label: [
           labels.cell(
             columnNameOf(rule, columnId),
-            shownValuesOf(parts, columnId, labels),
+            shownValuesOf(parts, columnId, labels, changed),
             position
           ),
           verdictOf(rule, columnId, cells, labels),
@@ -237,8 +243,8 @@ export const ruleCardModel = ({
     ariaLabel: [
       changeStatus,
       numbered && number !== null ? String(number) : '',
-      shownLineText(rule.heading, labels),
-      shownLineText(rule.lead, labels),
+      shownLineText(rule.heading, labels, changed),
+      shownLineText(rule.lead, labels, changed),
     ]
       .filter(Boolean)
       .join(' '),
@@ -248,7 +254,7 @@ export const ruleCardModel = ({
         .join(' ') || undefined,
     stops,
     stopOf: (token) => stopByToken.get(token),
-    diffOf: (token) => (token.kind === 'value' ? diff?.tokens.get(token) : undefined),
+    diffOf: (token) => diff?.tokens.get(token),
     linkOf: (token) =>
       decisionLinks && token.kind === 'input' && token.producedBy !== undefined
         ? {

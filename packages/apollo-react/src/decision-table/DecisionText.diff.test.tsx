@@ -205,7 +205,7 @@ describe('diffRowsOf', () => {
     const diff = ruleRow(rows.get('r5'));
     const tokenDiff = (columnId: string, index: number) =>
       [...(diff?.tokens ?? [])].find(
-        ([token]) => token.columnId === columnId && token.index === index
+        ([token]) => token.kind === 'value' && token.columnId === columnId && token.index === index
       )?.[1];
     expect(r5).toBeDefined();
     expect(tokenDiff('age', 0)).toEqual({

@@ -11,6 +11,11 @@ import type {
 /** Most value tokens one line renders before the rest collapse into a count. */
 export const SENTENCE_LINE_VALUE_LIMIT = 20;
 
+/** Values a clamped line keeps shown on each side of a changed value. */
+export const CHANGED_VALUE_CONTEXT = 2;
+
+const NO_KEPT: ReadonlySet<number> = new Set();
+
 export const isValue = (part: SentencePart): part is SentenceToken =>
   typeof part !== 'string' && part.kind === 'value';
 
@@ -103,14 +108,40 @@ interface OpenRun {
   end: number;
 }
 
-/** Every run of one column's values clamped to its first `limit`: the parts shown, and each clamped run. */
-export const boundedParts = (parts: readonly SentencePart[], limit: number): BoundedParts => {
+/** The positions of each changed value and its nearest values. */
+const keptAround = (
+  parts: readonly SentencePart[],
+  changed: (token: SentenceToken) => boolean
+): ReadonlySet<number> => {
+  const values = parts.flatMap((part, at) => (isValue(part) ? [{ part, at }] : []));
+  return new Set(
+    values.flatMap(({ part }, ordinal) =>
+      changed(part)
+        ? values
+            .slice(
+              Math.max(0, ordinal - CHANGED_VALUE_CONTEXT),
+              ordinal + CHANGED_VALUE_CONTEXT + 1
+            )
+            .map(({ at }) => at)
+        : []
+    )
+  );
+};
+
+/** Every run of one column's values clamped to its first `limit`, keeping each `changed` value and its nearest ones: the parts shown, and each clamped run. */
+export const boundedParts = (
+  parts: readonly SentencePart[],
+  limit: number,
+  changed?: (token: SentenceToken) => boolean
+): BoundedParts => {
+  const kept = changed ? keptAround(parts, changed) : NO_KEPT;
   const shown: SentencePart[] = [];
   const runs: OpenRun[] = [];
+  let open: OpenRun | undefined;
   let pending: SentencePart[] = [];
   let column: string | undefined;
   let count = 0;
-  for (const part of parts) {
+  for (const [at, part] of parts.entries()) {
     if (typeof part === 'string') {
       pending.push(part);
       continue;
@@ -118,9 +149,14 @@ export const boundedParts = (parts: readonly SentencePart[], limit: number): Bou
     const value = part.kind === 'value';
     count = value && part.columnId === column ? count + 1 : 1;
     column = value ? part.columnId : undefined;
-    if (!value || count <= limit) shown.push(...pending, part);
-    else if (count === limit + 1) runs.push({ hidden: [part], end: shown.length });
-    else runs.at(-1)?.hidden.push(...pending, part);
+    if (!value || count <= limit || kept.has(at)) {
+      shown.push(...pending, part);
+      open = undefined;
+    } else if (open) open.hidden.push(...pending, part);
+    else {
+      open = { hidden: [part], end: shown.length };
+      runs.push(open);
+    }
     pending = [];
   }
   shown.push(...pending);
