@@ -9,11 +9,7 @@ import {
   useCallback,
   useMemo,
 } from 'react';
-import {
-  StageTaskDragPlaceholder,
-  StageTaskDragPlaceholderWrapper,
-  StageTaskWrapper,
-} from '../StageNode.styles';
+import { StageTaskDragPlaceholder, StageTaskWrapper } from '../StageNode.styles';
 import type { StageTaskActivationEvent } from '../StageNode.types';
 
 /** Wraps a task row in a sortable, leaving how it renders alone. Mounted only where the section
@@ -39,8 +35,9 @@ const SortableTaskRowComponent = ({
   const startKeyboardDrag = listeners?.onKeyDown;
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
-      // Keys pressed on the task's own controls, such as its menu button, belong to them.
-      if (e.target !== e.currentTarget) {
+      // While the task is picked up its keys belong to the drag. Keys pressed on the task's own
+      // controls, such as its menu button, belong to them.
+      if (isDragging || e.target !== e.currentTarget) {
         return;
       }
       if (e.key === 'Enter') {
@@ -49,7 +46,7 @@ const SortableTaskRowComponent = ({
         startKeyboardDrag?.(e);
       }
     },
-    [onActivate, startKeyboardDrag, taskId]
+    [isDragging, onActivate, startKeyboardDrag, taskId]
   );
 
   // Constant while idle, so canvas zoom doesn't re-render every row.
@@ -61,19 +58,14 @@ const SortableTaskRowComponent = ({
       transform: CSS.Transform.toString(
         transform ? { ...transform, x: transform.x / zoom, y: transform.y / zoom } : null
       ),
+      // The drop slot keeps the full task width, as it always has, even in a parallel group.
+      ...(isDragging && { width: 'var(--stage-task-width, 246px)' }),
     }),
-    [transform, zoom, transition]
+    [transform, zoom, transition, isDragging]
   );
 
-  // The overlay carries the card; this slot shows where it lands.
-  if (isDragging) {
-    return (
-      <StageTaskDragPlaceholderWrapper ref={setNodeRef} style={style}>
-        <StageTaskDragPlaceholder isTargetParallel={isParallel} />
-      </StageTaskDragPlaceholderWrapper>
-    );
-  }
-
+  // The row stays mounted while the task is picked up, so keyboard focus stays on it for the whole
+  // drag. The overlay carries the card; the row shows where it lands.
   return (
     <StageTaskWrapper
       ref={setNodeRef}
@@ -83,7 +75,7 @@ const SortableTaskRowComponent = ({
       {...listeners}
       onKeyDown={handleKeyDown}
     >
-      {children}
+      {isDragging ? <StageTaskDragPlaceholder isTargetParallel={isParallel} /> : children}
     </StageTaskWrapper>
   );
 };

@@ -263,11 +263,6 @@ export const StageTaskRetryDuration = styled.div<{ status?: 'warning' | 'info' |
     `}
 `;
 
-export const StageTaskDragPlaceholderWrapper = styled.div`
-  width: var(--stage-task-width, 246px);
-  height: 36px;
-`;
-
 export const StageHeaderChipsRow = styled.div`
   display: flex;
   flex-wrap: wrap;

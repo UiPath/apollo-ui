@@ -129,10 +129,13 @@ describe('StageNode task activation in a real canvas', () => {
     const user = userEvent.setup();
     const onTaskClick = vi.fn();
     renderStage(stageWithTasks({ onTaskClick, onTaskReorder: vi.fn() }));
-    taskRow('task-1')?.focus();
+    const row = taskRow('task-1');
+    row?.focus();
 
     await user.keyboard(' ');
     await waitFor(() => expect(dragAnnouncement()).toMatch(/item task-1/));
+    // The same row stays mounted and focused while the task is picked up.
+    expect(row).toHaveFocus();
 
     await user.keyboard('{Escape}');
     await waitFor(() => expect(dragAnnouncement()).toMatch(/Dragging was cancelled/));
@@ -153,6 +156,7 @@ describe('StageNode task activation in a real canvas', () => {
     await user.keyboard('{Enter}');
     await waitFor(() => expect(dragAnnouncement()).toMatch(/task-1 was dropped/));
     expect(onTaskClick).not.toHaveBeenCalled();
+    expect(taskRow('task-1')).toHaveFocus();
   });
 
   it('leaves Space on the task menu button to the menu', async () => {
