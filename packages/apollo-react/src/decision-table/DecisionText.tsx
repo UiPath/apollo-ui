@@ -65,7 +65,7 @@ interface DecisionTextBaseProps {
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
   /** Strings in place of the built-in ones, any subset; mounted rules re-render when it changes, so memoize it. */
   labels?: Partial<DecisionTextLabels>;
-  /** `ancestor` sizes the view to its rules and windows them against the nearest ancestor that scrolls, whose `scroll-padding-top` covers what sticks over it; `self` by default. */
+  /** `{ container }` sizes the view to its rules and windows them against `container`, the page's scrolling element when it is null or omitted, whose `scroll-padding-top` covers what sticks over it; `self` by default. */
   scroll?: DecisionTextScroll;
   /** Accessible name of the scroll region. */
   ariaLabel: string;

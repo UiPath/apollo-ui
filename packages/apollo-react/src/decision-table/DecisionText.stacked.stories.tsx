@@ -7,15 +7,16 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
 import type { SentenceSelection } from './sentenceTypes';
-import type { DecisionTextScroll } from './useRuleWindow';
 
 const RULES = manySentenceRules(300);
 const IDS = ['first', 'second', 'third'] as const;
 
-const StackedHost = ({ scroll }: { scroll: DecisionTextScroll }) => {
+const StackedHost = ({ inScroller }: { inScroller: boolean }) => {
   const [selected, setSelected] = useState<Record<string, SentenceSelection | null>>({});
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   return (
     <div
+      ref={setContainer}
       className="h-[600px] scroll-pt-4 overflow-auto border border-border-de-emp"
       data-testid="stacked-scroller"
     >
@@ -28,7 +29,7 @@ const StackedHost = ({ scroll }: { scroll: DecisionTextScroll }) => {
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
             numbered
-            scroll={scroll}
+            scroll={inScroller ? { container } : 'self'}
             selected={selected[id] ?? null}
             onSelect={(next) => setSelected((current) => ({ ...current, [id]: next }))}
           />
@@ -44,6 +45,6 @@ const meta: Meta = {
 };
 export default meta;
 
-export const OwnFrames: StoryObj = { render: () => <StackedHost scroll="self" /> };
+export const OwnFrames: StoryObj = { render: () => <StackedHost inScroller={false} /> };
 
-export const OnePageScrolls: StoryObj = { render: () => <StackedHost scroll="ancestor" /> };
+export const OnePageScrolls: StoryObj = { render: () => <StackedHost inScroller /> };
