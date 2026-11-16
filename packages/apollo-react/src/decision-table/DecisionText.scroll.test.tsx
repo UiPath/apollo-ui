@@ -38,7 +38,10 @@ const scroller = (children: React.ReactNode) => (
   </div>
 );
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe('scrollAncestorOf', () => {
   it('finds the nearest ancestor that scrolls, skipping those that do not', () => {
@@ -48,9 +51,19 @@ describe('scrollAncestorOf', () => {
     expect(found?.path).toHaveLength(1);
   });
 
-  it('is null when nothing above scrolls', () => {
+  it('is the page when nothing above scrolls', () => {
     render(<section data-testid="inner" />);
-    expect(scrollAncestorOf(screen.getByTestId('inner'))).toBeNull();
+    expect(scrollAncestorOf(screen.getByTestId('inner'))?.scroller).toBe(document.documentElement);
+  });
+
+  it('is the page past a body whose overflow scrolls the viewport', () => {
+    document.documentElement.style.overflowY = 'visible';
+    document.body.style.overflowY = 'auto';
+    render(<section data-testid="inner" />);
+    const found = scrollAncestorOf(screen.getByTestId('inner'));
+    document.body.style.overflowY = '';
+    document.documentElement.style.overflowY = '';
+    expect(found?.scroller).toBe(document.documentElement);
   });
 
   it('steps out of a shadow root through its host', () => {
@@ -119,6 +132,33 @@ describe('DecisionText scroll', () => {
     });
     expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
     expect(screen.getByTestId('nl-row-row-300')).toBeInTheDocument();
+  });
+
+  it('scrolls the document to a rule the host selects when nothing else scrolls', () => {
+    const { rerender } = render(text({ scroll: 'ancestor' }));
+    const page = document.documentElement;
+    rerender(text({ scroll: 'ancestor', selected: { rowId: 'row-300' } }));
+    const offsets = sentenceRuleOffsets(RULES);
+    expect(page.scrollTop).toBe((offsets[301] ?? 0) - FALLBACK_ROW_VIEWPORT_PX);
+    expect(screen.getByTestId('nl').scrollTop).toBe(0);
+    page.scrollTop = 0;
+  });
+
+  it('windows its rules against the document as it scrolls', () => {
+    render(text({ scroll: 'ancestor' }));
+    const page = document.documentElement;
+    const list = screen.getByTestId('nl-row-row-0').parentElement;
+    if (!list) throw new Error('no rule list');
+    vi.spyOn(list, 'getBoundingClientRect').mockImplementation(
+      () => new DOMRect(0, -page.scrollTop, 100, 100)
+    );
+    act(() => {
+      page.scrollTop = sentenceRuleOffsets(RULES)[300] ?? 0;
+      fireEvent.scroll(document);
+    });
+    expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
+    expect(screen.getByTestId('nl-row-row-300')).toBeInTheDocument();
+    page.scrollTop = 0;
   });
 
   it('windows again when its list moves inside the ancestor', () => {

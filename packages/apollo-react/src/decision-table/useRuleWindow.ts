@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
+import { renderedParentOf } from './renderedTree';
 import { SENTENCE_MIN_RULE_HEIGHT_PX, sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentenceRule } from './sentenceTypes';
 import { type AxisSegment, useVirtualizedAxis } from './useVirtualizedAxis';
@@ -36,29 +37,44 @@ export type DecisionTextScroll = 'self' | 'ancestor';
 
 const SCROLLING_OVERFLOW = new Set(['auto', 'scroll', 'overlay']);
 
-const flatParentOf = (node: Node): Node | null => {
-  const parent = (node instanceof Element && node.assignedSlot) || node.parentNode;
-  return parent instanceof ShadowRoot ? parent.host : parent;
+const isPageScroller = (scroller: HTMLElement): boolean =>
+  scroller === scroller.ownerDocument.scrollingElement;
+
+const scrollsItself = (node: HTMLElement): boolean => {
+  const { body, documentElement } = node.ownerDocument;
+  return (
+    SCROLLING_OVERFLOW.has(getComputedStyle(node).overflowY) &&
+    (node !== body || getComputedStyle(documentElement).overflowY !== 'visible')
+  );
 };
 
-/** The nearest ancestor that scrolls vertically, across slots and shadow roots, and the elements on the way to it. */
+/** The nearest ancestor that scrolls vertically, across slots and shadow roots, else the page's scrolling element, and the elements on the way to it. */
 export const scrollAncestorOf = (
   element: Element
 ): { scroller: HTMLElement; path: HTMLElement[] } | null => {
   const path: HTMLElement[] = [];
-  for (let node = flatParentOf(element); node; node = flatParentOf(node)) {
+  for (let node = renderedParentOf(element); node; node = renderedParentOf(node)) {
     if (!(node instanceof HTMLElement)) continue;
-    if (SCROLLING_OVERFLOW.has(getComputedStyle(node).overflowY)) return { scroller: node, path };
+    if (isPageScroller(node) || scrollsItself(node)) return { scroller: node, path };
     path.push(node);
   }
-  return null;
+  const page = element.ownerDocument.scrollingElement;
+  return page instanceof HTMLElement ? { scroller: page, path } : null;
 };
+
+/** Where `scroller`'s scroll events fire: the document for the page's scrolling element. */
+const scrollEventsOf = (scroller: HTMLElement): EventTarget =>
+  isPageScroller(scroller) ? scroller.ownerDocument : scroller;
+
+/** The viewport top of `scroller`'s scrollport. */
+const scrollportTopOf = (scroller: HTMLElement): number =>
+  isPageScroller(scroller) ? 0 : scroller.getBoundingClientRect().top;
 
 /** The top of `element` in `scroller`'s scrolled content. */
 const contentTopIn = (element: HTMLElement, scroller: HTMLElement): number =>
   element.getBoundingClientRect().top -
-  scroller.getBoundingClientRect().top -
-  scroller.clientTop +
+  scrollportTopOf(scroller) -
+  (isPageScroller(scroller) ? 0 : scroller.clientTop) +
   scroller.scrollTop;
 
 export interface RuleWindow {
@@ -149,6 +165,7 @@ export const useRuleWindow = (
     const ancestor = ancestorRef.current;
     const section = sectionRef.current;
     if (!ancestor || !section) return;
+    const events = scrollEventsOf(ancestor.scroller);
     let last = listStart();
     const check = () => {
       const next = listStart();
@@ -156,9 +173,13 @@ export const useRuleWindow = (
       last = next;
       setListMoves((count) => count + 1);
     };
-    ancestor.scroller.addEventListener('scroll', check, { passive: true });
+    const onScroll = () => {
+      if (events !== ancestor.scroller) ancestor.scroller.dispatchEvent(new Event('scroll'));
+      check();
+    };
+    events.addEventListener('scroll', onScroll, { passive: true });
     if (typeof ResizeObserver === 'undefined') {
-      return () => ancestor.scroller.removeEventListener('scroll', check);
+      return () => events.removeEventListener('scroll', onScroll);
     }
     const observer = new ResizeObserver(check);
     for (const element of [section, ...ancestor.path]) {
@@ -172,7 +193,7 @@ export const useRuleWindow = (
       }
     }
     return () => {
-      ancestor.scroller.removeEventListener('scroll', check);
+      events.removeEventListener('scroll', onScroll);
       observer.disconnect();
     };
   }, [listStart, scroll]);
@@ -197,8 +218,8 @@ export const useRuleWindow = (
     if (rowHeight <= (section.clientHeight || FALLBACK_ROW_VIEWPORT_PX) - headerHeight()) {
       scrollRowIntoView(rowIndex);
     }
-    const top = section.getBoundingClientRect().top + headerHeight();
-    const bottom = section.getBoundingClientRect().top + section.clientHeight;
+    const top = scrollportTopOf(section) + headerHeight();
+    const bottom = scrollportTopOf(section) + section.clientHeight;
     const { top: stopTop, bottom: stopBottom } = stop.getBoundingClientRect();
     if (stopTop < top || stopBottom - stopTop > bottom - top) {
       section.scrollTop -= top - stopTop;
