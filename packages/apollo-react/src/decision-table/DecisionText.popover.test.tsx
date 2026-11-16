@@ -114,6 +114,7 @@ const ContractEditor = ({
   late = false,
   ownsKeys,
   prevents,
+  stops = false,
   keys = [],
 }: {
   props: ExpressionEditorProps;
@@ -121,6 +122,7 @@ const ContractEditor = ({
   late?: boolean;
   ownsKeys?: () => boolean;
   prevents?: boolean;
+  stops?: boolean;
   keys?: string[];
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -139,11 +141,12 @@ const ContractEditor = ({
     input.addEventListener('keydown', (event) => {
       keys.push(event.key);
       if (prevents ?? ownsKeys?.()) event.preventDefault();
+      if (stops) event.stopPropagation();
     });
     const handle = { focus: () => input.focus(), ownsKeys };
     if (late) readyLater = () => act(() => latest.current.onReady(handle));
     else latest.current.onReady(handle);
-  }, [shadow, late, ownsKeys, prevents, keys]);
+  }, [shadow, late, ownsKeys, prevents, stops, keys]);
   return <div ref={ref} data-testid="dom-host" />;
 };
 let readyLater = () => {};
@@ -831,6 +834,12 @@ describe('DecisionText expression editor during composition', () => {
     [
       'a host editor',
       (props) => <ContractEditor props={props} keys={keys} />,
+      domInput,
+      ['Enter', 'Escape'],
+    ],
+    [
+      'a host editor that stops the keys it gets',
+      (props) => <ContractEditor props={props} ownsKeys={() => false} stops keys={keys} />,
       domInput,
       ['Enter', 'Escape'],
     ],
