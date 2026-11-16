@@ -443,6 +443,9 @@ describe('DecisionText value popover whose view stops rendering', () => {
     ) {
       focusedBefore.set(this, document.activeElement);
       showModal.call(this);
+      [...this.querySelectorAll<HTMLElement>('*')]
+        .find((element) => element.tabIndex >= 0 && !element.matches(':disabled'))
+        ?.focus();
     });
     vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (
       this: HTMLDialogElement
@@ -498,7 +501,7 @@ describe('DecisionText value popover whose view stops rendering', () => {
     );
   });
 
-  it('closes the popover of a host that refuses the cancel while its frame is hidden, and opens it again once shown', async () => {
+  it('closes the popover of a host that refuses the cancel while its frame is hidden, and opens it again on its first control once shown', async () => {
     const onCommit = vi.fn();
     const { container } = render(
       <Host initial={at('m3', 'score')} valueField={field} onCommit={onCommit} refusesCancel />
@@ -510,6 +513,7 @@ describe('DecisionText value popover whose view stops rendering', () => {
     container.style.removeProperty('display');
     resizeAll();
     expect(dialog()?.open).toBe(true);
+    expect(document.activeElement).toBe(popover().getByRole('combobox', { name: 'Operator' }));
     expect(onCommit).not.toHaveBeenCalled();
   });
 
@@ -540,7 +544,7 @@ describe('DecisionText value popover whose view stops rendering', () => {
     }
   });
 
-  it('closes the popover while an Activity hides its view, and opens it again once shown', async () => {
+  it('closes the popover while an Activity hides its view, and opens it again on its first control once shown', async () => {
     const onCommit = vi.fn();
     const view = (mode: 'visible' | 'hidden') => (
       <Activity mode={mode}>
@@ -554,6 +558,7 @@ describe('DecisionText value popover whose view stops rendering', () => {
     expect(dialog()?.open).toBe(false);
     rerender(view('visible'));
     expect(dialog()?.open).toBe(true);
+    expect(document.activeElement).toBe(popover().getByRole('combobox', { name: 'Operator' }));
     expect(onCommit).not.toHaveBeenCalled();
   });
 });
@@ -575,6 +580,45 @@ describe('DecisionText popover Shift+Tab at its start', () => {
     await user.tab({ shift: true });
     expect(document.activeElement).toBe(popover().getByRole('button', { name }));
     expect(onCommit).not.toHaveBeenCalled();
+  });
+});
+
+describe('DecisionText popover Tab at its end', () => {
+  const field = { operators: OPS, operator: '<', expression: '< 600' };
+
+  it.each<[string, ValueField, SentenceValueId]>([
+    ['Apply', field, at('m3', 'score')],
+    ['Cancel', { ...field, expression: '' }, at('m3', 'country')],
+  ])('sends Tab from the last action, %s, to the first control', async (name, valueField, value) => {
+    const user = userEvent.setup({ delay: null });
+    const onCommit = vi.fn();
+    render(<Host initial={value} valueField={() => valueField} onCommit={onCommit} />);
+    const action = popover().getByRole('button', { name });
+    action.focus();
+    expect(fireEvent.keyDown(action, { key: 'Tab' })).toBe(true);
+    await user.tab();
+    expect(document.activeElement).toBe(popover().getByRole('combobox', { name: 'Operator' }));
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'altKey',
+    'ctrlKey',
+    'metaKey',
+  ])('leaves Tab with %s on the last action to the browser', (modifier) => {
+    render(<Host initial={at('m3', 'score')} valueField={() => field} onCommit={vi.fn()} />);
+    const apply = popover().getByRole('button', { name: 'Apply' });
+    apply.focus();
+    fireEvent.keyDown(apply, { key: 'Tab', [modifier]: true });
+    expect(document.activeElement).toBe(apply);
+  });
+
+  it('sends focus that reaches past the last control to the last action', () => {
+    render(<Host initial={at('m3', 'score')} valueField={() => field} onCommit={vi.fn()} />);
+    const end = screen.getByTestId('nl-value-editor').lastElementChild;
+    if (!(end instanceof HTMLElement)) throw new Error('no end of the popover');
+    end.focus();
+    expect(document.activeElement).toBe(popover().getByRole('button', { name: 'Apply' }));
   });
 });
 
