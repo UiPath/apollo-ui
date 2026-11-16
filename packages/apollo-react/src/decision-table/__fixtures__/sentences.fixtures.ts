@@ -1,5 +1,4 @@
 import type { DecisionTextProps } from '../DecisionText';
-import type { DecisionTextEditLabels, DecisionTextLabels } from '../decisionTextTypes';
 import type { PolicyGroup } from '../PolicyPicker';
 import type {
   SentenceBandColumn,
@@ -211,64 +210,6 @@ export const MULTI_SENTENCE_COLUMNS: SentenceColumns = {
 export const MULTI_SENTENCE_HEADER: SentenceHeader = {
   label: 'Collect',
   hint: 'Returns the matches as a list.',
-};
-
-export const DECISION_TEXT_LABELS = {
-  emptyRules: 'No rules yet',
-  inputs: 'Inputs',
-  outputs: 'Outputs',
-  markStatus: (tone, message) => {
-    const status = tone === 'error' ? 'Error' : 'Warning';
-    return message ? `${status}: ${message}` : status;
-  },
-  moreValues: (count) => `+${count.toLocaleString('en-US')} more`,
-  conditionVerdict: (matched) => (matched ? 'Matched' : 'Not matched'),
-  cell: (column, values, position) => `${column} ${values}, rule ${position}`,
-  emptyValue: 'empty',
-  openDecision: (input) => `Open the ${input} decision`,
-} satisfies DecisionTextLabels;
-
-export const DECISION_TEXT_EDIT_LABELS: DecisionTextEditLabels = {
-  addCondition: (position) => `Add condition to rule ${position}`,
-  removeCondition: (column, position) => `Remove ${column} from rule ${position}`,
-  clearOutcome: (column, position) => `Clear ${column} in rule ${position}`,
-  ruleActions: (position) => `Rule ${position} actions`,
-  deleteRule: (position) => `Delete rule ${position}`,
-  insertRuleAbove: 'Insert rule above',
-  insertRuleBelow: 'Insert rule below',
-  duplicateRule: 'Duplicate rule',
-  clearRule: 'Clear rule',
-  moveRuleUp: 'Move up',
-  moveRuleDown: 'Move down',
-  addInput: 'New input',
-  newCondition: (column, position) => `New ${column} condition, rule ${position}`,
-  setValue: 'Set a value',
-  operator: 'Operator',
-  notAllowed: 'Not one of the allowed values',
-  editExpression: 'Edit expression',
-  clear: 'Clear',
-  rangeLow: 'From',
-  rangeHigh: 'To',
-  included: 'Included',
-  addValue: 'Add value',
-  missingValue: 'Enter a value',
-  missingEnd: 'Enter both ends',
-  endsOutOfOrder: 'From must not be past To',
-  noValueChecked: 'Check a value',
-  cancel: 'Cancel',
-  apply: 'Apply',
-  inputColumn: (name) => `Input · ${name}`,
-  outputColumn: (name) => `Output · ${name}`,
-  columnLabel: 'Label',
-  missingLabel: 'Enter a label',
-  inputExpression: 'Input expression',
-  outputName: 'Output name',
-  missingInputExpression: 'This input has no expression',
-  missingOutputName: 'This output has no name',
-  dataType: 'Data type',
-  allowedValues: 'Allowed values',
-  allowedValuesHint: 'Separate values with commas.',
-  moreProperties: 'More properties',
 };
 
 const firstRule = (): SentenceRule => {

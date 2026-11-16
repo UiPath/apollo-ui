@@ -10,11 +10,7 @@ import {
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
 import { installEscapeCloseRequest, pressOutside } from './__fixtures__/modalDialog';
-import {
-  DECISION_TEXT_EDIT_LABELS,
-  DECISION_TEXT_LABELS,
-  GRID_SENTENCE_HEADER,
-} from './__fixtures__/sentences.fixtures';
+import { GRID_SENTENCE_HEADER } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
@@ -89,14 +85,12 @@ const Host = ({
         setTable(next);
         return columnId;
       }),
-    labels: DECISION_TEXT_EDIT_LABELS,
   };
   return (
     <DecisionText
       rules={wordedRules(table)}
       {...tableColumns(table)}
       header={GRID_SENTENCE_HEADER}
-      labels={DECISION_TEXT_LABELS}
       ariaLabel="Rules"
       dataTestId="nl"
       selected={selected}

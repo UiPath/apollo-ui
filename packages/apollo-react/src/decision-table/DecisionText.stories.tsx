@@ -20,11 +20,7 @@ import {
   tableWithValue,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
-import {
-  DECISION_TEXT_EDIT_LABELS,
-  DECISION_TEXT_LABELS,
-  HIT_POLICY_GROUPS,
-} from './__fixtures__/sentences.fixtures';
+import { HIT_POLICY_GROUPS } from './__fixtures__/sentences.fixtures';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
@@ -255,6 +251,8 @@ interface TableHostProps {
   marks?: TableMarks;
   headerMark?: DecisionTextProps['headerMark'];
   renderEditor?: DecisionTextEdit['renderEditor'];
+  labels?: DecisionTextProps['labels'];
+  editLabels?: DecisionTextEdit['labels'];
   frameClassName?: string;
 }
 
@@ -267,6 +265,8 @@ const TableHost = ({
   marks: fixedMarks,
   headerMark,
   renderEditor,
+  labels,
+  editLabels,
   frameClassName = 'h-[600px]',
 }: TableHostProps) => {
   const [table, setTable] = useState(initialTable);
@@ -344,7 +344,7 @@ const TableHost = ({
     onClearRule: (rowId) => setTable(tableWithClearedRule(table, rowId)),
     onMoveRule: (from, to) => setTable(tableWithMovedRule(table, from, to)),
     onDeleteRule: deleteRule,
-    labels: DECISION_TEXT_EDIT_LABELS,
+    labels: editLabels,
   };
   const editable = mode === 'edit';
   const picked = pickedOption(
@@ -365,7 +365,7 @@ const TableHost = ({
         rules={rules}
         {...columns}
         header={header}
-        labels={DECISION_TEXT_LABELS}
+        labels={labels}
         ariaLabel="Rules"
         dataTestId="decision-text"
         numbered
@@ -510,6 +510,24 @@ const ERRORS_MARKS: TableMarks = {
   columns: new Map([
     ['income', { tone: 'warning', glyph: true, title: 'income has no allowed values' }],
   ]),
+};
+
+const GERMAN_LABELS = { emptyRules: 'Noch keine Regeln', inputs: 'Eingaben', outputs: 'Ausgaben' };
+const GERMAN_EDIT_LABELS = {
+  cancel: 'Abbrechen',
+  apply: 'Übernehmen',
+  ruleActions: (position: number) => `Aktionen für Regel ${position}`,
+};
+
+export const PartialLabels: Story = {
+  render: () => (
+    <TableHost
+      initialTable={EDITABLE_TABLE}
+      labels={GERMAN_LABELS}
+      editLabels={GERMAN_EDIT_LABELS}
+      caption="A host's own words for some strings: the band captions, Cancel and Apply, and each rule's ⋯; the rest are the view's."
+    />
+  ),
 };
 
 export const Errors: Story = {
