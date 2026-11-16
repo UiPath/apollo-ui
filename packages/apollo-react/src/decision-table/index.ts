@@ -14,6 +14,7 @@ export type {
   DecisionGraphDecisionNode,
   DecisionGraphNode,
   DecisionGraphReferenceNode,
+  DecisionGraphRule,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
 export { DecisionText, type DecisionTextProps } from './DecisionText';

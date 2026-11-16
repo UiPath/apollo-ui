@@ -34,3 +34,9 @@ export interface DecisionGraphTarget {
   decisionId: string;
   rowId?: string;
 }
+
+/** A rule as the minimap lists it. */
+export interface DecisionGraphRule {
+  rowId: string;
+  label: string;
+}

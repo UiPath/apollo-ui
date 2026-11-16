@@ -103,3 +103,20 @@ export const MARKED: GraphFixture = {
   ],
   bodies: { eligibility: tableOf(30), risk: { ...tableOf(30) } },
 };
+
+/** `decisions` decisions of `rulesEach` rules, nested in threes, every fifth one reusing the first. */
+export const largeGraph = (decisions: number, rulesEach: number): GraphFixture => {
+  const table = tableOf(rulesEach);
+  const bodies: Record<string, GraphBody> = {};
+  const node = (index: number): DecisionGraphDecisionNode => {
+    const id = `d${index + 1}`;
+    bodies[id] = table;
+    const children: DecisionGraphNode[] = [];
+    for (let child = index * 3 + 1; child <= index * 3 + 3 && child < decisions; child++) {
+      children.push(node(child));
+    }
+    if (index > 0 && index % 5 === 0) children.push(reference(`${id}-uses-d1`, 'Decision 1', 'd1'));
+    return decision(id, `Decision ${index + 1}`, children, { ruleCount: rulesEach });
+  };
+  return { nodes: [node(0)], bodies };
+};
