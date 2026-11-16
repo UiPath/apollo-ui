@@ -368,7 +368,7 @@ describe('createCommunityByoApi', () => {
     });
     if (!created.ok) throw new Error('connect failed');
 
-    const result = await client.testAndAdd({
+    const result = await client.testAndSave({
       providerId: 'openai',
       connection: created.value,
       modelId: 'gpt-4o',
@@ -413,7 +413,7 @@ describe('createCommunityByoApi', () => {
       }))
     );
 
-    const result = await api().testAndAdd({
+    const result = await api().testAndSave({
       providerId: 'openai',
       connection: { id: 'old', providerId: 'openai', name: 'n', folderId: 'f' },
       modelId: 'gpt-4o',
@@ -477,5 +477,159 @@ describe('createCommunityByoApi', () => {
       { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'me' },
     ]);
     expect(result.value.takenModelNames).toEqual(['gpt-4o']);
+  });
+
+  it('edits a saved connection through its own session, keeping a secret left blank', async () => {
+    let sessions = 0;
+    routes.push(
+      on('GET', `${TENANT}/elements_/v3/element/elements/uipath-openai-openaiv1compliant`, () => ({
+        body: {
+          configuration: [
+            { key: 'url', name: 'Url', required: true, configScreenType: 'pre' },
+            {
+              key: 'apikey',
+              name: 'Key',
+              type: 'PASSWORD',
+              required: true,
+              configScreenType: 'pre',
+            },
+          ],
+        },
+      })),
+      on('POST', `${TENANT}/connections_/api/v1/Connections/conn-1/auth`, () => {
+        sessions += 1;
+        return { body: { sessionId: 'sid-edit', expiresAt: Date.now() + 600_000 } };
+      }),
+      on(
+        'GET',
+        `${TENANT}/elements_/v1/elements/normalized-instances/applications/sessions/sid-edit`,
+        () => ({
+          body: {
+            configs: { url: 'https://old.example.com', apikey: '********' },
+            elementInstance: { id: 406810 },
+          },
+        })
+      ),
+      on('PUT', `${TENANT}/elements_/v1/elements/normalized-instances/authenticate`, () => ({
+        body: { elementInstance: { connectionId: 'conn-1' } },
+      })),
+      on('GET', `${TENANT}/connections_/api/v1/Sessions/sid-edit`, () => ({
+        body: { status: 'success', connectionId: 'conn-1' },
+      })),
+      on('PATCH', `${TENANT}/connections_/api/v1/Connections/conn-1/rename`, () => ({ body: {} }))
+    );
+    const saved = { id: 'conn-1', providerId: 'openai-compatible', name: 'Mine', folderId: 'f' };
+    const client = api();
+
+    const current = await client.loadConnectionValues('openai-compatible', saved);
+    expect(current).toEqual({
+      ok: true,
+      value: { authType: null, values: { url: 'https://old.example.com' } },
+    });
+
+    const form = await client.loadForm('openai-compatible', 'f');
+    if (!form.ok) throw new Error('loadForm failed');
+    const result = await client.connect({
+      providerId: 'openai-compatible',
+      form: form.value,
+      authType: null,
+      values: { url: 'https://new.example.com', apikey: '' },
+      name: 'Renamed',
+      folderId: 'f',
+      existing: saved,
+    });
+
+    expect(result).toEqual({ ok: true, value: { ...saved, name: 'Renamed' } });
+    expect(sessions).toBe(1);
+    const auth = calls.find((c) => c.url.endsWith('/authenticate'));
+    expect(auth?.method).toBe('PUT');
+    expect(auth?.body).toMatchObject({
+      sessionID: 'sid-edit',
+      instanceID: 406810,
+      configuration: { url: 'https://new.example.com', apikey: '********' },
+    });
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ newName: 'Renamed' });
+  });
+
+  it('edits a saved model: tests the change, then replaces only its entry', async () => {
+    const configurationUrl = `${GATEWAY}/api/byo/product/llm-configurations/cfg-1`;
+    const other = {
+      id: 'e2',
+      desiredModel: 'other',
+      customerModel: 'gpt-4.1',
+      connectorType: 'OpenAi',
+      connectionId: 'conn-1',
+    };
+    routes.push(
+      on('GET', configurationUrl, () => ({
+        body: {
+          id: 'cfg-1',
+          name: 'agents-design-eval-deploy-1',
+          folderId: 'old-folder',
+          enabled: true,
+          llmConfigurations: [
+            {
+              id: 'e1',
+              desiredModel: 'my-gpt',
+              customerModel: 'gpt-4o',
+              connectorType: 'OpenAi',
+              connectionId: 'conn-1',
+              customFieldMappings: { stale: 'x' },
+            },
+            other,
+          ],
+        },
+      })),
+      on('POST', `${GATEWAY}/api/byo/product/llm-configurations/validate`, () => ({
+        body: { renamed: { isAvailable: true, isCompatible: true } },
+      })),
+      on('PUT', configurationUrl, () => ({ body: {} }))
+    );
+    const client = api();
+
+    const editing = await client.loadModel({ configurationId: 'cfg-1', name: 'my-gpt' });
+    expect(editing).toEqual({
+      ok: true,
+      value: {
+        configurationId: 'cfg-1',
+        providerId: 'openai',
+        connectionId: 'conn-1',
+        modelId: 'gpt-4o',
+        name: 'my-gpt',
+      },
+    });
+    if (!editing.ok) return;
+
+    const result = await client.testAndSave({
+      providerId: 'openai',
+      connection: { id: 'conn-2', providerId: 'openai', name: 'n', folderId: 'me' },
+      modelId: 'gpt-5.1',
+      name: 'renamed',
+      editing: editing.value,
+    });
+
+    expect(result.ok).toBe(true);
+    const put = calls.find((c) => c.method === 'PUT');
+    expect(put?.body).toEqual({
+      id: 'cfg-1',
+      name: 'agents-design-eval-deploy-1',
+      folderId: 'me',
+      enabled: true,
+      llmConfigurations: [
+        {
+          id: 'e1',
+          desiredModel: 'renamed',
+          customerModel: 'gpt-5.1',
+          connectorType: 'OpenAi',
+          connectionId: 'conn-2',
+          organizationId: 'org-guid',
+          tenantId: 'tenant-guid',
+        },
+        other,
+      ],
+    });
+    expect(
+      calls.filter((c) => c.method === 'POST' && c.url.endsWith('/llm-configurations'))
+    ).toHaveLength(0);
   });
 });

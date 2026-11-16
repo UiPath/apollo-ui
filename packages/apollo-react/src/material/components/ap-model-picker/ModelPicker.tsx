@@ -10,7 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
 import { Colors, FontFamily } from '@uipath/apollo-core';
-import { type ByoAddedModel, ByoModelDialog } from '@uipath/apollo-wind';
+import { type ByoEditTarget, ByoModelDialog, type ByoSavedModel } from '@uipath/apollo-wind';
 import React from 'react';
 import { useSafeLingui } from '../../../i18n';
 import type { ModelBadgeKind } from './badges';
@@ -266,21 +266,22 @@ export interface ModelPickerProps {
   onUseCustomModel?: () => void;
   /**
    * Community experience: the "Use custom model" footer opens the
-   * "Use your own model" dialog in place of the AI Trust Layer page. The
-   * dialog creates the provider's Integration Service connection inline,
+   * "Use your own model" dialog in place of the AI Trust Layer page, and a
+   * BYO row's edit action opens the same dialog on that model. The dialog
+   * creates or edits the provider's Integration Service connection inline,
    * lists its models, tests the chosen one and saves it as a BYO
    * configuration, all through `requestContext`; the picker then
-   * refetches (or calls `onCustomModelAdded`) and selects the new model.
-   * An explicit `onUseCustomModel` still wins. Default: `false`.
+   * refetches (or calls `onCustomModelSaved`) and selects the saved model.
+   * An explicit `onUseCustomModel` still wins for the footer. Default: `false`.
    */
   isCommunity?: boolean;
   /**
-   * Fired once the Community dialog saved a model. With a host-owned
-   * `models` list, refetch it here: the picker selects the new model as
-   * soon as it appears in `models`. In self-fetch mode the picker has
-   * already refetched.
+   * Fired once the Community dialog added or edited a model. With a
+   * host-owned `models` list, refetch it here: the picker selects the saved
+   * model as soon as it appears in `models`. In self-fetch mode the picker
+   * has already refetched.
    */
-  onCustomModelAdded?: (model: ByoAddedModel) => void | Promise<void>;
+  onCustomModelSaved?: (model: ByoSavedModel) => void | Promise<void>;
   /**
    * Wraps the Community dialog, mounted only while it is open. Hosts that
    * render the picker in a shadow root pass the component that gives a
@@ -423,7 +424,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       canManageByo,
       onUseCustomModel,
       isCommunity = false,
-      onCustomModelAdded,
+      onCustomModelSaved,
       communityDialogHost: CommunityDialogHost,
       requestContext,
       enableFolders = false,
@@ -655,15 +656,21 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [isCommunity, requestContext]
     );
     const communityLabels = React.useMemo(() => communityDialogLabels(i18n), [i18n]);
-    const [communityOpen, setCommunityOpen] = React.useState(false);
-    const [pendingSelection, setPendingSelection] = React.useState<ByoAddedModel | null>(null);
-    const handleCommunityAdded = React.useCallback(
-      async (model: ByoAddedModel) => {
+    // `null` while closed; `editing` is set when the dialog edits a saved model.
+    const [communityDialog, setCommunityDialog] = React.useState<{
+      editing?: ByoEditTarget;
+    } | null>(null);
+    const closeCommunityDialog = React.useCallback((open: boolean) => {
+      if (!open) setCommunityDialog(null);
+    }, []);
+    const [pendingSelection, setPendingSelection] = React.useState<ByoSavedModel | null>(null);
+    const handleCommunitySaved = React.useCallback(
+      async (model: ByoSavedModel) => {
         if (selfFetchCtx) await refetchDiscovery();
-        await onCustomModelAdded?.(model);
+        await onCustomModelSaved?.(model);
         setPendingSelection(model);
       },
-      [selfFetchCtx, refetchDiscovery, onCustomModelAdded]
+      [selfFetchCtx, refetchDiscovery, onCustomModelSaved]
     );
     React.useEffect(() => {
       if (!pendingSelection) return;
@@ -766,38 +773,53 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     );
 
     // Row actions: respect the slot override, otherwise gate the
-    // default edit action by the resolved BYO-management permission and
-    // wire it to the LLM-configurations page — the edit form directly
-    // when the row carries its configuration id, the configurations
-    // list otherwise.
+    // default edit action by the resolved BYO-management permission.
+    // Community edits the row's model in the "Use your own model" dialog;
+    // otherwise edit goes to the LLM-configurations page — the edit form
+    // directly when the row carries its configuration id, the
+    // configurations list otherwise.
     const renderRowActions = React.useMemo(() => {
       if (slots?.optionActions) return slots.optionActions;
       if (!effectiveCanManageByo) return () => null;
-      // Edit needs the navigation target; delete only needs the host handler.
+
+      // Edit needs the dialog or the navigation target; delete only needs the host handler.
       // Render whichever actions are available (both gated on BYO-management).
-      const onEdit = navigateToLlmConfigurations
-        ? (model: DiscoveryModel) =>
-            navigateToLlmConfigurations({
-              intent: 'edit',
-              configurationId: model.byomDetails?.byoConfigurationId,
-            })
-        : undefined;
+      let onEdit: ((model: DiscoveryModel) => void) | undefined;
+      if (communityApi) {
+        onEdit = (model) => {
+          const configurationId = model.byomDetails?.byoConfigurationId;
+          if (!configurationId) return;
+          setCommunityDialog({ editing: { configurationId, name: model.modelName } });
+          closePopup();
+        };
+      } else if (navigateToLlmConfigurations) {
+        onEdit = (model) =>
+          navigateToLlmConfigurations({
+            intent: 'edit',
+            configurationId: model.byomDetails?.byoConfigurationId,
+          });
+      }
       if (!onEdit && !handleDeleteModel) return () => null;
+
       return (m: DiscoveryModel) => {
+        const hasConfigurationId = !!m.byomDetails?.byoConfigurationId;
+        // The Community dialog edits a configuration, so it needs the row's id.
+        const editable = !communityApi || hasConfigurationId;
         // When the picker owns the DELETE it needs a configuration id to
         // target, so rows lacking one get edit only. A host-supplied
         // handler may know another way, so it always gets the action.
-        const deletable =
-          handleDeleteModel && (onDeleteModel || !!m.byomDetails?.byoConfigurationId);
+        const deletable = handleDeleteModel && (onDeleteModel || hasConfigurationId);
         return defaultRowActions(m, {
           i18n,
-          onEdit,
+          onEdit: editable ? onEdit : undefined,
           onDelete: deletable ? handleDeleteModel : undefined,
         });
       };
     }, [
       slots?.optionActions,
       effectiveCanManageByo,
+      communityApi,
+      closePopup,
       navigateToLlmConfigurations,
       handleDeleteModel,
       onDeleteModel,
@@ -816,7 +838,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       if (!effectiveCanManageByo) return null;
       const activate =
         onUseCustomModel ??
-        (communityApi ? () => setCommunityOpen(true) : undefined) ??
+        (communityApi ? () => setCommunityDialog({}) : undefined) ??
         (navigateToLlmConfigurations
           ? () => navigateToLlmConfigurations({ intent: 'add' })
           : undefined);
@@ -1123,13 +1145,14 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             </Button>
           </DialogActions>
         </Dialog>
-        {communityApi && communityOpen && (
+        {communityApi && communityDialog && (
           <CommunityDialogFrame host={CommunityDialogHost}>
             <ByoModelDialog
               open
-              onOpenChange={setCommunityOpen}
+              onOpenChange={closeCommunityDialog}
               api={communityApi}
-              onAdded={handleCommunityAdded}
+              editing={communityDialog.editing}
+              onSaved={handleCommunitySaved}
               labels={communityLabels}
             />
           </CommunityDialogFrame>

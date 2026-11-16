@@ -10,10 +10,16 @@ const M = {
     id: 'modelPicker.community.description',
     message: 'UiPath calls your provider with your own credentials.',
   }),
+  editTitle: msg({ id: 'modelPicker.community.editTitle', message: 'Edit your model' }),
+  editDescription: msg({
+    id: 'modelPicker.community.editDescription',
+    message: 'Change the model, its name or the connection it uses.',
+  }),
   loadingContext: msg({
     id: 'modelPicker.community.loadingContext',
     message: 'Loading your connections',
   }),
+  loadingModel: msg({ id: 'modelPicker.community.loadingModel', message: 'Loading your model' }),
   providerStep: msg({ id: 'modelPicker.community.providerStep', message: 'Provider' }),
   providerPlaceholder: msg({
     id: 'modelPicker.community.providerPlaceholder',
@@ -68,6 +74,25 @@ const M = {
   }),
   connect: msg({ id: 'modelPicker.community.connect', message: 'Connect' }),
   connecting: msg({ id: 'modelPicker.community.connecting', message: 'Connecting…' }),
+  editConnection: msg({ id: 'modelPicker.community.editConnection', message: 'Edit connection' }),
+  secretKeepHint: msg({
+    id: 'modelPicker.community.secretKeepHint',
+    message: 'Leave blank to keep the current value.',
+  }),
+  loadingConnection: msg({
+    id: 'modelPicker.community.loadingConnection',
+    message: 'Loading the connection settings…',
+  }),
+  saveConnection: msg({ id: 'modelPicker.community.saveConnection', message: 'Save connection' }),
+  savingConnection: msg({ id: 'modelPicker.community.savingConnection', message: 'Saving…' }),
+  cancelConnectionEdit: msg({
+    id: 'modelPicker.community.cancelConnectionEdit',
+    message: 'Cancel',
+  }),
+  connectionUpdated: msg({
+    id: 'modelPicker.community.connectionUpdated',
+    message: 'Connection updated.',
+  }),
   modelStep: msg({ id: 'modelPicker.community.modelStep', message: 'Model' }),
   modelNeedsConnection: msg({
     id: 'modelPicker.community.modelNeedsConnection',
@@ -121,10 +146,15 @@ const M = {
   close: msg({ id: 'modelPicker.community.close', message: 'Close' }),
   cancel: msg({ id: 'modelPicker.community.cancel', message: 'Cancel' }),
   testAndAdd: msg({ id: 'modelPicker.community.testAndAdd', message: 'Test and add' }),
+  testAndSave: msg({ id: 'modelPicker.community.testAndSave', message: 'Test and save' }),
   testing: msg({ id: 'modelPicker.community.testing', message: 'Testing…' }),
   testAndAddHint: msg({
     id: 'modelPicker.community.testAndAddHint',
     message: 'Sends one short test message to {provider}, then adds the model to your model list.',
+  }),
+  testAndSaveHint: msg({
+    id: 'modelPicker.community.testAndSaveHint',
+    message: 'Sends one short test message to {provider}, then saves your changes.',
   }),
 } satisfies Record<keyof ByoModelDialogLabels, MessageDescriptor>;
 
@@ -134,7 +164,10 @@ export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLa
   return {
     title: t(M.title),
     description: t(M.description),
+    editTitle: t(M.editTitle),
+    editDescription: t(M.editDescription),
     loadingContext: t(M.loadingContext),
+    loadingModel: t(M.loadingModel),
     providerStep: t(M.providerStep),
     providerPlaceholder: t(M.providerPlaceholder),
     connectionStep: t(M.connectionStep),
@@ -156,6 +189,13 @@ export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLa
     connectionNameTaken: t(M.connectionNameTaken),
     connect: t(M.connect),
     connecting: t(M.connecting),
+    editConnection: t(M.editConnection),
+    secretKeepHint: t(M.secretKeepHint),
+    loadingConnection: t(M.loadingConnection),
+    saveConnection: t(M.saveConnection),
+    savingConnection: t(M.savingConnection),
+    cancelConnectionEdit: t(M.cancelConnectionEdit),
+    connectionUpdated: t(M.connectionUpdated),
     modelStep: t(M.modelStep),
     modelNeedsConnection: (provider) => t(M.modelNeedsConnection, { provider }),
     modelsLoading: (provider) => t(M.modelsLoading, { provider }),
@@ -176,7 +216,9 @@ export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLa
     close: t(M.close),
     cancel: t(M.cancel),
     testAndAdd: t(M.testAndAdd),
+    testAndSave: t(M.testAndSave),
     testing: t(M.testing),
     testAndAddHint: (provider) => t(M.testAndAddHint, { provider }),
+    testAndSaveHint: (provider) => t(M.testAndSaveHint, { provider }),
   };
 }

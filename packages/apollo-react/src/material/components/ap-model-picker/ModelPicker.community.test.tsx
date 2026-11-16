@@ -36,6 +36,20 @@ const RESPONSES: Record<string, unknown> = {
     'my-gpt': { isAvailable: true, isCompatible: true },
   },
   [`POST ${GATEWAY}/api/byo/product/llm-configurations`]: { id: 'cfg-1' },
+  [`GET ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`]: {
+    id: 'cfg-1',
+    folderId: 'me',
+    llmConfigurations: [
+      {
+        id: 'e1',
+        desiredModel: 'my-gpt',
+        customerModel: 'gpt-4o',
+        connectorType: 'OpenAi',
+        connectionId: 'conn-1',
+      },
+    ],
+  },
+  [`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`]: {},
 };
 
 const fetchMock = vi.fn(async (url: string, init: RequestInit = {}) => {
@@ -66,7 +80,7 @@ const ADDED: DiscoveryModel = {
   modelName: 'my-gpt',
   vendor: 'OpenAi',
   modelSubscriptionType: 'BYOMAdded',
-  byomDetails: { integrationServiceConnectionId: 'conn-1' },
+  byomDetails: { integrationServiceConnectionId: 'conn-1', byoConfigurationId: 'cfg-1' },
 };
 
 describe('<ModelPicker isCommunity>', () => {
@@ -75,7 +89,7 @@ describe('<ModelPicker isCommunity>', () => {
     const onChange = vi.fn();
     const onUseCustomModel = vi.fn();
     let rerenderWith: (models: DiscoveryModel[]) => void = () => {};
-    const onCustomModelAdded = vi.fn(async () => rerenderWith([HOSTED, ADDED]));
+    const onCustomModelSaved = vi.fn(async () => rerenderWith([HOSTED, ADDED]));
     const picker = (models: DiscoveryModel[]) => (
       <ModelPicker
         models={models}
@@ -84,7 +98,7 @@ describe('<ModelPicker isCommunity>', () => {
         canManageByo
         isCommunity
         requestContext={CTX}
-        onCustomModelAdded={onCustomModelAdded}
+        onCustomModelSaved={onCustomModelSaved}
       />
     );
     const { rerender } = render(picker([HOSTED]));
@@ -106,12 +120,44 @@ describe('<ModelPicker isCommunity>', () => {
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
 
     await waitFor(() => expect(onChange).toHaveBeenCalledWith(ADDED));
-    expect(onCustomModelAdded).toHaveBeenCalledWith(
+    expect(onCustomModelSaved).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'my-gpt', modelId: 'gpt-4o', connectionId: 'conn-1' })
     );
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Use your own model' })).toBeNull()
     );
+  });
+
+  it("edits a BYO row's model in the same dialog", async () => {
+    const user = userEvent.setup();
+    const onCustomModelSaved = vi.fn();
+    render(
+      <ModelPicker
+        models={[HOSTED, ADDED]}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        isCommunity
+        requestContext={CTX}
+        onCustomModelSaved={onCustomModelSaved}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(await screen.findByRole('button', { name: 'Edit configuration' }));
+    expect(await screen.findByRole('dialog', { name: 'Edit your model' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('my-gpt')
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
+    );
+    await user.click(screen.getByRole('button', { name: 'Test and save' }));
+
+    await waitFor(() => expect(onCustomModelSaved).toHaveBeenCalled());
+    const keys = fetchMock.mock.calls.map(([url, init]) => `${init?.method ?? 'GET'} ${url}`);
+    expect(keys).toContain(`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`);
+    expect(keys).not.toContain(`POST ${GATEWAY}/api/byo/product/llm-configurations`);
   });
 
   it('keeps the AI Trust Layer navigation when isCommunity is off', async () => {
