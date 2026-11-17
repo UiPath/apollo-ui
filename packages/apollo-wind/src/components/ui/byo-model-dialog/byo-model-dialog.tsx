@@ -333,10 +333,12 @@ function DialogBody({
 
   // A form not filled with the connection's settings would clear the ones it does not show
   // when saved, so the edit stops; the failure stays shown and Edit connection reads again.
+  // Starting the edit dropped any model list still loading, so the list loads again.
   const failConnectionEdit = (failure: ByoFailure) => {
     setEditingConnection(false);
     resetFormValues();
     setConnect({ status: 'error', failure });
+    loadModels(providerId, connection, generation.current);
   };
 
   /** Opens the credentials form for the selected saved connection, filled with its current settings. */
