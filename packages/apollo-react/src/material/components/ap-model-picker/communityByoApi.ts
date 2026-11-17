@@ -616,6 +616,8 @@ export function createCommunityByoApi(
 
     let id = (auth.data as { elementInstance?: { connectionId?: string } })?.elementInstance
       ?.connectionId;
+    // The connection exists once its session reports success, which may take a few polls.
+    let provisioned = false;
     for (let i = 0; i < SESSION_POLLS; i += 1) {
       const st = await call('GET', tenantUrl(`connections_/api/v1/Sessions/${sid}`), {
         folderKey: folderId,
@@ -627,6 +629,7 @@ export function createCommunityByoApi(
       } | null;
       if (d?.status === 'success') {
         id = d.connectionId || id;
+        provisioned = true;
         break;
       }
       if (d?.status && d.status !== 'pending') {
@@ -636,6 +639,9 @@ export function createCommunityByoApi(
       await sleep(SESSION_POLL_MS);
     }
     openSession = null;
+    if (!provisioned) {
+      return fail({ title: 'Integration Service did not finish setting up the connection' });
+    }
     if (!id) return fail({ title: 'Integration Service did not return the connection' });
     let savedName = nameInIs;
     if (name !== nameInIs) {

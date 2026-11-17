@@ -326,6 +326,30 @@ describe('createCommunityByoApi', () => {
     expect(sessions).toBe(1);
   });
 
+  it.each([
+    ['stays pending', () => ({ body: { status: 'pending' } })],
+    ['cannot be read', () => ({ status: 503, body: 'Service Unavailable' })],
+  ])('fails the connection when its session %s', async (_, session) => {
+    routes.push(on('GET', `${TENANT}/connections_/api/v1/Sessions/sid`, session));
+    routeNewConnection();
+    const client = api();
+
+    const created = await client.connect({
+      providerId: 'openai',
+      form: { authTypes: [], defaultAuthType: null, fields: [] },
+      authType: null,
+      values: {},
+      name: 'OpenAI – personal',
+      folderId: 'folder-key',
+    });
+
+    expect(created).toEqual({
+      ok: false,
+      failure: { title: 'Integration Service did not finish setting up the connection' },
+    });
+    expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
+  });
+
   it('tags the models that are not chat models', async () => {
     routes.push(
       on('POST', `${GATEWAY}/api/byom/available-models`, () => ({
