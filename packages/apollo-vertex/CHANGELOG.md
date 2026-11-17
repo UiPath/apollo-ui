@@ -1,3 +1,13 @@
+## [@uipath/apollo-vertex-v2.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.8.1...@uipath/apollo-vertex@2.9.0) (2026-11-17)
+
+### Features
+
+* **apollo-vertex:** let the shell gate on an app-provided session [PB2C-3243] ([4906b2b](https://github.com/UiPath/apollo-ui/commit/4906b2be8e3a335df3ac967c24e86172dd5bd21f))
+
+### Bug Fixes
+
+* **apollo-vertex:** highlight one sidebar item for nested nav paths [PB2C-3243] ([0369a60](https://github.com/UiPath/apollo-ui/commit/0369a60c0b64d2ce265fc2b1806f7d478c964161))
+
 ## [@uipath/apollo-vertex-v2.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.8.0...@uipath/apollo-vertex@2.8.1) (2026-11-13)
 
 ### Bug Fixes
