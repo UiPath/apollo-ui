@@ -88,7 +88,7 @@ function DataTablePagination<TData extends RowData>({
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            size="icon-sm"
+            size="icon"
             className="hidden lg:flex"
             onClick={() => table.setPageIndex(0)}
             disabled={!canPreviousPage}
@@ -100,7 +100,7 @@ function DataTablePagination<TData extends RowData>({
           </Button>
           <Button
             variant="outline"
-            size="icon-sm"
+            size="icon"
             onClick={() => table.previousPage()}
             disabled={!canPreviousPage}
           >
@@ -113,7 +113,7 @@ function DataTablePagination<TData extends RowData>({
           </Button>
           <Button
             variant="outline"
-            size="icon-sm"
+            size="icon"
             onClick={() => table.nextPage()}
             disabled={!canNextPage}
           >
@@ -124,7 +124,7 @@ function DataTablePagination<TData extends RowData>({
           </Button>
           <Button
             variant="outline"
-            size="icon-sm"
+            size="icon"
             className="hidden lg:flex"
             onClick={() => table.setPageIndex(pageCount - 1)}
             disabled={!canNextPage}
