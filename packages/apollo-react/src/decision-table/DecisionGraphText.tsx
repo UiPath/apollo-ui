@@ -41,11 +41,11 @@ export interface DecisionGraphTextProps {
   onReveal?: (target: DecisionGraphTarget) => void;
   /** Opens a decision on its own, from a double-click on its heading or Alt+Enter on its toggle; a reference opens the decision it repeats. */
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
-  /** A table's rules as the minimap lists them, read only while it is open; without it the minimap lists decisions alone. */
+  /** A table's rules as its body words them, which the minimap lists and searches by outputs and conditions; read only while it is open, and without it the minimap lists decisions alone. */
   rules?: DecisionGraphMinimapSlotProps['rules'];
   /** Strings in place of the built-in ones, any subset. */
   labels?: Partial<DecisionGraphLabels>;
-  /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-{rowId}`, `-no-match`). */
+  /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-decision-{id}`, `-row-rule-{id}-{rowId}`, `-row-reference-{id}`, `-no-match`). */
   dataTestId: string;
 }
 

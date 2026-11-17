@@ -22,12 +22,7 @@ import {
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
-import type {
-  SentencePart,
-  SentenceRule,
-  SentenceSelection,
-  SentenceValueId,
-} from './sentenceTypes';
+import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 
 interface GraphSelection {
   decisionId: string;
@@ -41,11 +36,6 @@ interface GraphHostProps {
 }
 
 const isTable = (body: GraphBody | undefined): body is EditableTable => typeof body === 'object';
-
-const partsText = (parts: readonly SentencePart[]) =>
-  parts.map((part) => (typeof part === 'string' ? part : part.text)).join('');
-
-const ruleLabel = (rule: SentenceRule) => `${partsText(rule.heading)} ${partsText(rule.lead)}`;
 
 const tablesOf = (bodies: GraphFixture['bodies']): Readonly<Record<string, StoryTable>> =>
   Object.fromEntries(
@@ -148,12 +138,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
             if (editing?.decisionId === decisionId) setEditing(null);
           }}
           selected={selected?.decisionId ?? null}
-          rules={(decisionId) =>
-            (rulesById.get(decisionId) ?? []).map((rule) => ({
-              rowId: rule.rowId,
-              label: ruleLabel(rule),
-            }))
-          }
+          rules={(decisionId) => rulesById.get(decisionId) ?? []}
           onReveal={(target) => {
             setRevealed(target);
             if (target.rowId !== undefined) {

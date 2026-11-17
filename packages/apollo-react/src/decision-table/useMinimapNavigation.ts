@@ -8,10 +8,10 @@ export interface MinimapNavigation {
   activeIndex: number;
   /** Bumped each time the active row should be scrolled into view. */
   revealTick: number;
-  /** Makes `id` active and scrolls it into view. */
-  land: (id: string | null) => void;
-  /** Makes `id` active where it stands. */
-  hover: (id: string) => void;
+  /** Makes the row with `key` active and scrolls it into view. */
+  land: (key: number | null) => void;
+  /** Makes the row with `key` active where it stands. */
+  hover: (key: number) => void;
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
@@ -20,21 +20,21 @@ export const useMinimapNavigation = (
   rows: readonly MinimapRow[],
   onEnter: (item: MinimapItem) => void
 ): MinimapNavigation => {
-  const [active, setActive] = useState<string | null>(null);
+  const [active, setActive] = useState<number | null>(null);
   const [revealTick, setRevealTick] = useState(0);
-  const indexById = useMemo(() => new Map(rows.map((row, index) => [row.item.id, index])), [rows]);
-  const activeIndex = active === null ? -1 : (indexById.get(active) ?? -1);
+  const indexByKey = useMemo(() => new Map(rows.map((row, index) => [row.key, index])), [rows]);
+  const activeIndex = active === null ? -1 : (indexByKey.get(active) ?? -1);
 
-  const land = (id: string | null) => {
+  const land = (key: number | null) => {
     setRevealTick((tick) => tick + 1);
-    setActive(id);
+    setActive(key);
   };
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (isComposing(event)) return;
     const moveTo = (index: number) => {
       event.preventDefault();
       const row = rows[Math.max(0, Math.min(index, rows.length - 1))];
-      if (row) land(row.item.id);
+      if (row) land(row.key);
     };
     const jump = event.ctrlKey || event.metaKey;
     if (event.key === 'ArrowDown') moveTo(activeIndex + 1);

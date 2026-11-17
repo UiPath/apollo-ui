@@ -9,16 +9,16 @@ export interface MinimapCount {
 export type MinimapItem =
   | {
       kind: 'decision';
-      id: string;
+      decisionId: string;
       label: string;
       /** Null when the decision's rules are not counted. */
       count: MinimapCount | null;
       children: readonly MinimapItem[];
     }
-  | { kind: 'rule'; id: string; label: string }
+  | { kind: 'rule'; decisionId: string; rowId: string; label: string }
   | {
       kind: 'reference';
-      id: string;
+      referenceId: string;
       label: string;
       ariaLabel: string;
       /** Where picking it goes. */
@@ -28,27 +28,35 @@ export type MinimapItem =
 /** A row as the list draws it, in reading order. */
 export interface MinimapRow {
   item: MinimapItem;
+  /** Its place in the whole outline, unique among the rows and kept while the query changes. */
+  key: number;
   /** How many decisions it hangs under. */
   depth: number;
   /** The row matched the query itself, rather than being kept for a match beneath it. */
   match: boolean;
 }
 
+/** Whether `item` is the decision the reader is on. */
+export const isCurrent = (item: MinimapItem, currentDecisionId: string | null): boolean =>
+  item.kind === 'decision' && item.decisionId === currentDecisionId;
+
 const includes = (text: string, needle: string): boolean => text.toLowerCase().includes(needle);
 
 /** The rows in reading order narrowed to `query`: a match keeps the decisions above it, and a decision that matches keeps its rules. */
 export const minimapRows = (items: readonly MinimapItem[], query: string): MinimapRow[] => {
   const needle = query.trim().toLowerCase();
+  let next = 0;
   const visit = (item: MinimapItem, depth: number, parentMatched: boolean): MinimapRow[] => {
+    const key = next++;
     const match = needle !== '' && includes(item.label, needle);
     if (item.kind !== 'decision') {
       return needle === '' || match || (parentMatched && item.kind === 'rule')
-        ? [{ item, depth, match }]
+        ? [{ item, key, depth, match }]
         : [];
     }
     const below = item.children.flatMap((child) => visit(child, depth + 1, match));
     if (needle !== '' && !match && below.length === 0) return [];
-    return [{ item, depth, match }, ...below];
+    return [{ item, key, depth, match }, ...below];
   };
   return items.flatMap((item) => visit(item, 0, false));
 };

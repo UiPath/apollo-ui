@@ -3,15 +3,24 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
 import { vi } from 'vitest';
-import { largeGraph, SHARED_DEPENDENCY, tableOf } from './__fixtures__/decisionGraph.fixtures';
-import { tableColumns, wordedRules } from './__fixtures__/editableSentences.fixtures';
+import {
+  largeGraph,
+  SHARED_DEPENDENCY,
+  SINGLE_DECISION,
+  tableOf,
+} from './__fixtures__/decisionGraph.fixtures';
+import {
+  EDITABLE_TABLE,
+  tableColumns,
+  wordedRules,
+} from './__fixtures__/editableSentences.fixtures';
 import { DecisionGraphMinimap } from './DecisionGraphMinimap';
 import { DecisionGraphText } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
 import type { DecisionGraphNode } from './decisionGraphTypes';
 import { WINDOW_MINIMAP_FROM } from './MinimapList';
 import { type MinimapItem, minimapRows } from './minimapRows';
-import type { SentenceSelection } from './sentenceTypes';
+import type { SentenceRule, SentenceSelection } from './sentenceTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
@@ -25,24 +34,29 @@ const LABELS = {
 
 const ITEMS: MinimapItem[] = [
   {
-    id: 'd-eligibility',
+    decisionId: 'd-eligibility',
     kind: 'decision',
     label: 'Eligibility',
     count: { meta: '2', ariaLabel: 'Eligibility, 2 rules' },
     children: [
-      { id: 'r-1', kind: 'rule', label: 'risk is high when age < 25' },
-      { id: 'r-2', kind: 'rule', label: 'risk is low otherwise' },
       {
-        id: 'd-risk',
+        decisionId: 'd-eligibility',
+        rowId: 'r-1',
+        kind: 'rule',
+        label: 'risk is high when age < 25',
+      },
+      { decisionId: 'd-eligibility', rowId: 'r-2', kind: 'rule', label: 'risk is low otherwise' },
+      {
+        decisionId: 'd-risk',
         kind: 'decision',
         label: 'Risk',
         count: null,
-        children: [{ id: 'r-3', kind: 'rule', label: 'score above 700' }],
+        children: [{ decisionId: 'd-risk', rowId: 'r-3', kind: 'rule', label: 'score above 700' }],
       },
     ],
   },
   {
-    id: 'ref-risk',
+    referenceId: 'ref-risk',
     kind: 'reference',
     label: 'Risk',
     ariaLabel: 'Risk, listed above',
@@ -54,7 +68,7 @@ const minimap = (props: Partial<React.ComponentProps<typeof DecisionGraphMinimap
   <DecisionGraphMinimap
     items={() => ITEMS}
     triggerLabel="3 rules"
-    currentId={null}
+    currentDecisionId={null}
     onPick={vi.fn()}
     labels={LABELS}
     dataTestId="map"
@@ -81,34 +95,26 @@ afterEach(cleanup);
 
 describe('minimapRows', () => {
   it('lists every row in reading order with its depth', () => {
-    expect(minimapRows(ITEMS, '').map(({ item, depth }) => `${item.id}@${depth}`)).toEqual([
-      'd-eligibility@0',
-      'r-1@1',
-      'r-2@1',
-      'd-risk@1',
-      'r-3@2',
-      'ref-risk@0',
+    expect(minimapRows(ITEMS, '').map(({ item, key, depth }) => [item.label, key, depth])).toEqual([
+      ['Eligibility', 0, 0],
+      ['risk is high when age < 25', 1, 1],
+      ['risk is low otherwise', 2, 1],
+      ['Risk', 3, 1],
+      ['score above 700', 4, 2],
+      ['Risk', 5, 0],
     ]);
   });
 
   it('keeps the decisions above a matching rule, and every rule of a matching decision', () => {
-    expect(minimapRows(ITEMS, 'score').map(({ item }) => item.id)).toEqual([
-      'd-eligibility',
-      'd-risk',
-      'r-3',
-    ]);
-    expect(minimapRows(ITEMS, 'eligib').map(({ item }) => item.id)).toEqual([
-      'd-eligibility',
-      'r-1',
-      'r-2',
-    ]);
-    expect(minimapRows(ITEMS, 'RISK').map(({ item, match }) => `${item.id}:${match}`)).toEqual([
-      'd-eligibility:false',
-      'r-1:true',
-      'r-2:true',
-      'd-risk:true',
-      'r-3:false',
-      'ref-risk:true',
+    expect(minimapRows(ITEMS, 'score').map(({ key }) => key)).toEqual([0, 3, 4]);
+    expect(minimapRows(ITEMS, 'eligib').map(({ key }) => key)).toEqual([0, 1, 2]);
+    expect(minimapRows(ITEMS, 'RISK').map(({ key, match }) => [key, match])).toEqual([
+      [0, false],
+      [1, true],
+      [2, true],
+      [3, true],
+      [4, false],
+      [5, true],
     ]);
   });
 
@@ -119,7 +125,7 @@ describe('minimapRows', () => {
 
 describe('DecisionGraphMinimap', () => {
   it('is a trigger until opened, then a searchable listbox on the current row', async () => {
-    render(minimap({ currentId: 'd-risk' }));
+    render(minimap({ currentDecisionId: 'd-risk' }));
     expect(screen.queryByRole('listbox')).toBeNull();
     await userEvent.click(screen.getByTestId('map-trigger'));
     expect(document.activeElement).toBe(search());
@@ -146,7 +152,8 @@ describe('DecisionGraphMinimap', () => {
     expect(activeOption()).toHaveTextContent('Eligibility');
     await user.keyboard('{ArrowDown}{Enter}');
     expect(onPick).toHaveBeenCalledWith({
-      id: 'r-1',
+      decisionId: 'd-eligibility',
+      rowId: 'r-1',
       kind: 'rule',
       label: 'risk is high when age < 25',
     });
@@ -181,13 +188,14 @@ describe('DecisionGraphMinimap', () => {
     const onPick = vi.fn();
     render(minimap({ onPick }));
     await userEvent.click(screen.getByTestId('map-trigger'));
-    await userEvent.click(screen.getByTestId('map-row-ref-risk'));
+    await userEvent.click(screen.getByTestId('map-row-reference-ref-risk'));
     expect(onPick).toHaveBeenCalledWith(ITEMS[1]);
   });
 
   it('windows a long outline, each option saying where it sits', async () => {
     const many: MinimapItem[] = Array.from({ length: WINDOW_MINIMAP_FROM + 50 }, (_, index) => ({
-      id: `rule-${index}`,
+      decisionId: 'd',
+      rowId: `r${index}`,
       kind: 'rule',
       label: `Rule ${index}`,
     }));
@@ -203,7 +211,8 @@ describe('DecisionGraphMinimap', () => {
 
   it('leaves a long outline where the reader scrolls it, however fast, until the keys move', async () => {
     const many: MinimapItem[] = Array.from({ length: WINDOW_MINIMAP_FROM + 300 }, (_, index) => ({
-      id: `rule-${index}`,
+      decisionId: 'd',
+      rowId: `r${index}`,
       kind: 'rule',
       label: `Rule ${index}`,
     }));
@@ -232,14 +241,15 @@ describe('DecisionGraphMinimap', () => {
   it('places each row by its own kind when the rows change under the same count', async () => {
     const rules = (prefix: string, count: number): MinimapItem[] =>
       Array.from({ length: count }, (_, index) => ({
-        id: `${prefix}-${index}`,
+        decisionId: prefix,
+        rowId: String(index),
         kind: 'rule',
         label: `${prefix} ${index}`,
       }));
     const flat = rules('flat', WINDOW_MINIMAP_FROM + 10);
     const nested: MinimapItem[] = [
       {
-        id: 'd-top',
+        decisionId: 'd-top',
         kind: 'decision',
         label: 'Top',
         count: null,
@@ -250,9 +260,9 @@ describe('DecisionGraphMinimap', () => {
     const user = userEvent.setup();
     const { rerender } = render(minimap({ items: () => flat }));
     await user.click(screen.getByTestId('map-trigger'));
-    expect(screen.getByTestId('map-row-flat-1')).toHaveStyle({ top: '22px' });
+    expect(screen.getByTestId('map-row-rule-flat-1')).toHaveStyle({ top: '22px' });
     rerender(minimap({ items: () => nested }));
-    expect(screen.getByTestId('map-row-nested-0')).toHaveStyle({ top: '24px' });
+    expect(screen.getByTestId('map-row-rule-nested-0')).toHaveStyle({ top: '24px' });
     height.mockRestore();
   });
 
@@ -280,18 +290,29 @@ describe('DecisionGraphMinimap', () => {
   });
 });
 
+interface RuleAt {
+  decisionId: string;
+  rowId: string;
+}
+
 describe('DecisionGraphText minimap', () => {
   const TABLE = tableOf(30);
   const RULES = wordedRules(TABLE);
-  const Host = ({ nodes }: { nodes: readonly DecisionGraphNode[] }) => {
+  const Host = ({
+    nodes,
+    rules = RULES,
+  }: {
+    nodes: readonly DecisionGraphNode[];
+    rules?: readonly SentenceRule[];
+  }) => {
     const [selected, setSelected] = useState<{ id: string; rule: SentenceSelection } | null>(null);
     return (
       <DecisionGraphText
         nodes={nodes}
-        rules={() => RULES.map((rule) => ({ rowId: rule.rowId, label: `Rule ${rule.rowId}` }))}
+        rules={() => rules}
         renderBody={(id, scroll) => (
           <DecisionText
-            rules={RULES}
+            rules={rules}
             {...tableColumns(TABLE)}
             header={{ label: 'Unique', hint: '' }}
             ariaLabel={`Rules of ${id}`}
@@ -325,7 +346,7 @@ describe('DecisionGraphText minimap', () => {
     const user = userEvent.setup();
     render(<Host nodes={SHARED_DEPENDENCY.nodes} />);
     await user.click(screen.getByTestId('graph-minimap-trigger'));
-    await user.click(screen.getByTestId('graph-minimap-row-decision:net-income'));
+    await user.click(screen.getByTestId('graph-minimap-row-decision-net-income'));
     expect(screen.getByTestId('graph-toggle-net-income')).toHaveAttribute('aria-expanded', 'true');
     expect(document.activeElement).toBe(screen.getByTestId('graph-toggle-net-income'));
     expect(scrollToSpy).toHaveBeenCalled();
@@ -335,8 +356,7 @@ describe('DecisionGraphText minimap', () => {
     const user = userEvent.setup();
     render(<Host nodes={SHARED_DEPENDENCY.nodes} />);
     await user.click(screen.getByTestId('graph-minimap-trigger'));
-    await user.keyboard('Rule r25');
-    await user.keyboard('{Enter}');
+    await user.click(screen.getByTestId('graph-minimap-row-rule-eligibility-r25'));
     const rule = screen.getByTestId('text-eligibility-row-r25');
     expect(document.activeElement).toBe(rule);
     expect(rule).toHaveAttribute('tabindex', '0');
@@ -348,8 +368,59 @@ describe('DecisionGraphText minimap', () => {
     const user = userEvent.setup();
     render(<Host nodes={SHARED_DEPENDENCY.nodes} />);
     await user.click(screen.getByTestId('graph-minimap-trigger'));
-    await user.click(screen.getByTestId('graph-minimap-row-reference:pricing-risk'));
+    await user.click(screen.getByTestId('graph-minimap-row-reference-pricing-risk'));
     expect(document.activeElement).toBe(screen.getByTestId('graph-toggle-risk'));
+  });
+
+  const SHARED_RULE_IDS: [string, RuleAt, RuleAt][] = [
+    [
+      'the same rule id',
+      { decisionId: 'first', rowId: 'r1' },
+      { decisionId: 'second', rowId: 'r1' },
+    ],
+    ['ids that join alike', { decisionId: 'a', rowId: 'b:r1' }, { decisionId: 'a:b', rowId: 'r1' }],
+  ];
+  it.each(
+    SHARED_RULE_IDS
+  )('takes a rule to its own decision when decisions share %s', async (_, first, second) => {
+    const onReveal = vi.fn();
+    const user = userEvent.setup();
+    const ruleOf = ({ decisionId, rowId }: RuleAt): SentenceRule => ({
+      rowId,
+      heading: [`${decisionId} rule`],
+      lead: [],
+      lines: [],
+    });
+    render(
+      <DecisionGraphText
+        nodes={[first, second].map(({ decisionId }) => ({
+          kind: 'decision',
+          id: decisionId,
+          label: decisionId,
+          ruleCount: 1,
+          children: [],
+        }))}
+        rules={(decisionId) => [ruleOf(decisionId === first.decisionId ? first : second)]}
+        renderBody={() => null}
+        onReveal={onReveal}
+        dataTestId="graph"
+      />
+    );
+    for (const { decisionId, rowId } of [second, first]) {
+      await user.click(screen.getByTestId('graph-minimap-trigger'));
+      await user.keyboard(`${decisionId} rule{Enter}`);
+      expect(onReveal).toHaveBeenLastCalledWith({ decisionId, rowId });
+    }
+  });
+
+  it('finds a rule by any of its conditions', async () => {
+    const user = userEvent.setup();
+    render(<Host nodes={SINGLE_DECISION.nodes} rules={wordedRules(EDITABLE_TABLE)} />);
+    await user.click(screen.getByTestId('graph-minimap-trigger'));
+    await user.keyboard('web');
+    expect(activeOption()).toBe(screen.getByTestId('graph-minimap-row-rule-risk-r2'));
+    await user.keyboard('{Enter}');
+    expect(document.activeElement).toBe(screen.getByTestId('text-risk-row-r2'));
   });
 
   it('lists a large graph windowed', async () => {
