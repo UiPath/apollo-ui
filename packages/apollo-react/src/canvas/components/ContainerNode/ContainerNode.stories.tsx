@@ -7,7 +7,7 @@ import {
   Panel,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import { useAddNodeOnConnectEnd } from '../../hooks';
 import type { NodeManifest } from '../../schema/node-definition';
@@ -18,6 +18,10 @@ import {
   withCanvasProviders,
 } from '../../storybook-utils';
 import { defaultWorkflowManifest } from '../../storybook-utils/manifests';
+import {
+  RUNTIME_CONTAINER_NODE_TYPE,
+  runtimeContainerManifests,
+} from '../../storybook-utils/sequential/runtimeContainerManifests';
 import { DefaultCanvasTranslations } from '../../types';
 import { removePreviewFromReactFlow } from '../../utils/createPreviewNode';
 import { CanvasIcon } from '../../utils/icon-registry';
@@ -25,6 +29,10 @@ import { AddNodeManager } from '../AddNodePanel';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { LoopNode } from '../LoopNode/LoopNode';
+import {
+  SequencedContainersProvider,
+  type SequencedContainersValue,
+} from '../SequentialCanvas/SequencedContainersContext';
 import { ContainerBadge } from './ContainerBadge';
 import { ContainerNode } from './ContainerNode';
 import type { ContainerNodeData } from './ContainerNode.types';
@@ -170,6 +178,7 @@ const storyManifest = {
   nodes: [
     ...defaultWorkflowManifest.nodes,
     ...storyContainerManifests,
+    ...runtimeContainerManifests,
     ...slotManifests,
     editableManifest,
     {
@@ -353,6 +362,56 @@ export const Group: Story = {
   render: () => <GroupStory />,
 };
 
+function RuntimeContainerStory() {
+  const initialNodes = useMemo<Node[]>(
+    () => [
+      createContainer(
+        'runtime',
+        RUNTIME_CONTAINER_NODE_TYPE,
+        { x: 96, y: 128 },
+        { width: 720, height: 320 },
+        { display: { label: 'api' } }
+      ),
+      createChild('runtime-fetch', 'HTTP Request', { x: 160, y: 128 }, 'runtime'),
+      createChild('runtime-script', 'Javascript', { x: 432, y: 128 }, 'runtime'),
+      createContainer(
+        'runtime-empty',
+        RUNTIME_CONTAINER_NODE_TYPE,
+        { x: 96, y: 528 },
+        { width: 720, height: 288 },
+        { display: { label: 'Empty runtime' } }
+      ),
+    ],
+    []
+  );
+  const initialEdges = useMemo<Edge[]>(
+    () => [
+      {
+        id: 'runtime-fetch-script',
+        source: 'runtime-fetch',
+        sourceHandle: 'output',
+        target: 'runtime-script',
+        targetHandle: 'input',
+      },
+    ],
+    []
+  );
+
+  return (
+    <ContainerCanvasStory
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      title="Runtime container"
+      description="A self-contained subflow expanded inline: outer handles only, no inner rail, no badge. The + button in the empty one adds an unconnected first step."
+    />
+  );
+}
+
+export const RuntimeContainer: Story = {
+  name: 'Runtime container',
+  render: () => <RuntimeContainerStory />,
+};
+
 // Slot demos render ContainerNode directly so its props can be passed.
 function SubtitleAndEndNode(props: NodeProps<Node<ContainerNodeData>>) {
   return (
@@ -508,4 +567,57 @@ function InlineEditingStory() {
 export const InlineEditing: Story = {
   name: 'Inline editing',
   render: () => <InlineEditingStory />,
+};
+
+function BodyViewSwitchStory() {
+  const [sequencedIds, setSequencedIds] = useState<ReadonlySet<string>>(() => new Set(['loop']));
+  const sequenced = useMemo<SequencedContainersValue>(
+    () => ({
+      isSequenced: (id) => sequencedIds.has(id),
+      canSequence: (id) => id !== 'locked',
+      setSequenced: (id, next) =>
+        setSequencedIds((current) => {
+          const result = new Set(current);
+          if (next) result.add(id);
+          else result.delete(id);
+          return result;
+        }),
+    }),
+    [sequencedIds]
+  );
+  const initialNodes = useMemo<Node[]>(
+    () => [
+      createContainer('loop', LOOP_TYPE, { x: 32, y: 128 }, { width: 560, height: 288 }),
+      createContainer(
+        'scope',
+        SCOPE_TYPE,
+        { x: 656, y: 128 },
+        { width: 560, height: 288 },
+        { display: { label: 'Scope, flow body' } }
+      ),
+      createContainer(
+        'locked',
+        GROUP_TYPE,
+        { x: 32, y: 464 },
+        { width: 560, height: 288 },
+        { display: { label: 'Cannot be sequenced' } }
+      ),
+    ],
+    []
+  );
+
+  return (
+    <SequencedContainersProvider value={sequenced}>
+      <ContainerCanvasStory
+        initialNodes={initialNodes}
+        title="Body view switch"
+        description="Each container header carries a flow or sequence switch when the canvas can sequence its body. A sequenced container cannot be resized and shows no add-first-step button, because the canvas lays its body out. The bottom container reports it cannot be sequenced, so it has no switch. Laying out the body as bars is done by the canvas, not shown here."
+      />
+    </SequencedContainersProvider>
+  );
+}
+
+export const BodyViewSwitch: Story = {
+  name: 'Body view switch',
+  render: () => <BodyViewSwitchStory />,
 };

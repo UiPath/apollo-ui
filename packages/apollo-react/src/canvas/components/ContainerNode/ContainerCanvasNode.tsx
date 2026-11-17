@@ -2,12 +2,16 @@ import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo } from 'react';
 import { useOptionalNodeTypeRegistry } from '../../core';
+import { isSelfContainedContainerManifest } from '../../utils/container';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { LoopNode } from '../LoopNode/LoopNode';
 import { ContainerNode } from './ContainerNode';
 import { resolveContainerPreviewConnectionHandles } from './ContainerNode.helpers';
 import type { ContainerNodeData } from './ContainerNode.types';
-import { showCenteredContainerPreview } from './ContainerNodePreview';
+import {
+  showCenteredContainerPreview,
+  showUnconnectedContainerPreview,
+} from './ContainerNodePreview';
 
 /**
  * Canvas wrapper for any `shape: 'container'` manifest. It wires the
@@ -33,17 +37,29 @@ function ContainerCanvasNodeComponent(props: NodeProps<Node<ContainerNodeData>>)
     [nodeManifest, props.data, props.id]
   );
 
+  // A self-contained (runtime) container has no inner handle to wire a first step to, so
+  // its first step is added as an unconnected child instead.
+  const isSelfContained = useMemo(
+    () => isSelfContainedContainerManifest(nodeManifest),
+    [nodeManifest]
+  );
+
   const handleAddFirstChild = useCallback(() => {
-    if (!containerPreviewHandles) return;
+    if (containerPreviewHandles) {
+      showCenteredContainerPreview({
+        containerId: props.id,
+        reactFlowInstance: reactFlow,
+        previewHandles: containerPreviewHandles,
+      });
+      return;
+    }
+    if (isSelfContained) {
+      showUnconnectedContainerPreview({ containerId: props.id, reactFlowInstance: reactFlow });
+    }
+  }, [containerPreviewHandles, isSelfContained, props.id, reactFlow]);
 
-    showCenteredContainerPreview({
-      containerId: props.id,
-      reactFlowInstance: reactFlow,
-      previewHandles: containerPreviewHandles,
-    });
-  }, [containerPreviewHandles, props.id, reactFlow]);
-
-  const onAddFirstChild = containerPreviewHandles ? handleAddFirstChild : undefined;
+  const onAddFirstChild =
+    containerPreviewHandles || isSelfContained ? handleAddFirstChild : undefined;
   const containerDisplay = nodeManifest?.display?.container;
   const usesLoopPreset = !containerDisplay || containerDisplay.kind === 'loop';
 

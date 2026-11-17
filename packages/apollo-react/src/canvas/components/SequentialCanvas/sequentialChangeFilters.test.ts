@@ -1,0 +1,387 @@
+import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/apollo-react/canvas/xyflow/react';
+import { describe, expect, it } from 'vitest';
+import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
+import type { GraphChangeSet } from '../../utils/sequential/sequential.types';
+import { SEQ_INSERTED_FLAG } from './edges/sequentialInsert';
+import {
+  applyFlowInsertPlacement,
+  forwardSequencedContainerNodeChanges,
+  forwardSequentialEdgeChanges,
+  forwardSequentialNodeChanges,
+  graphChangeSetToEdgeChanges,
+  graphChangeSetToNodeChanges,
+} from './sequentialChangeFilters';
+import { SEQ_CONNECTOR_EDGE_TYPE, SEQ_START_ROW_ID } from './sequentialGraph.constants';
+
+const SYNTHETIC = new Set([SEQ_START_ROW_ID]);
+
+function canonical(id: string, position = { x: 100, y: 100 }): Node {
+  return { id, type: 'uipath.script', position, width: 288, data: { display: { label: id } } };
+}
+
+describe('forwardSequentialNodeChanges', () => {
+  const canonicalById = new Map([['a', canonical('a')]]);
+
+  it('drops position and dimension changes (the derivation owns geometry)', () => {
+    const changes: NodeChange<Node>[] = [
+      { type: 'position', id: 'a', position: { x: 9, y: 9 } },
+      { type: 'dimensions', id: 'a', dimensions: { width: 896, height: 72 } },
+    ];
+    expect(forwardSequentialNodeChanges(changes, SYNTHETIC, canonicalById)).toEqual([]);
+  });
+
+  it('drops changes referencing synthetic rows and the preview node', () => {
+    const changes: NodeChange<Node>[] = [
+      { type: 'select', id: SEQ_START_ROW_ID, selected: true },
+      { type: 'select', id: PREVIEW_NODE_ID, selected: true },
+      { type: 'remove', id: PREVIEW_NODE_ID },
+    ];
+    expect(forwardSequentialNodeChanges(changes, SYNTHETIC, canonicalById)).toEqual([]);
+  });
+
+  it('drops changes referencing synthetic empty-lane placeholder nodes', () => {
+    const synthetic = new Set([
+      ...SYNTHETIC,
+      '__sequential-lane__if::true',
+      '__sequential-lane__loop::start',
+    ]);
+    const changes: NodeChange<Node>[] = [
+      { type: 'select', id: '__sequential-lane__if::true', selected: true },
+      { type: 'remove', id: '__sequential-lane__loop::start' },
+    ];
+    expect(forwardSequentialNodeChanges(changes, synthetic, canonicalById)).toEqual([]);
+  });
+
+  it('does not drop a canonical node merely because its id resembles a synthetic id', () => {
+    const id = '__sequential-lane__consumer-owned';
+    const changes: NodeChange<Node>[] = [{ type: 'select', id, selected: true }];
+
+    expect(forwardSequentialNodeChanges(changes, SYNTHETIC, canonicalById)).toEqual(changes);
+  });
+
+  it('passes select and remove of real nodes through', () => {
+    const changes: NodeChange<Node>[] = [
+      { type: 'select', id: 'a', selected: true },
+      { type: 'remove', id: 'a' },
+    ];
+    expect(forwardSequentialNodeChanges(changes, SYNTHETIC, canonicalById)).toEqual(changes);
+  });
+
+  it('rewrites a rename replace to merge data onto canonical, preserving geometry', () => {
+    const cloneItem: Node = {
+      id: 'a',
+      type: 'uipath.script',
+      position: { x: 0, y: 5000 }, // clone/view position
+      width: 896, // bar width
+      selected: true,
+      data: { display: { label: 'renamed' } },
+    };
+    const changes: NodeChange<Node>[] = [{ type: 'replace', id: 'a', item: cloneItem }];
+
+    const [out] = forwardSequentialNodeChanges(changes, SYNTHETIC, canonicalById);
+    expect(out?.type).toBe('replace');
+    const item = (out as { item: Node }).item;
+    // Canonical geometry preserved, only data + selection merged.
+    expect(item.position).toEqual({ x: 100, y: 100 });
+    expect(item.width).toBe(288);
+    expect(item.selected).toBe(true);
+    expect((item.data as { display: { label: string } }).display.label).toBe('renamed');
+  });
+
+  describe('a replace carries data, never a selection clear', () => {
+    // A replace may pass selection along but must never clear it by omission, or renaming a
+    // step would deselect it.
+    const selectedCanonical = new Map([['a', { ...canonical('a'), selected: true }]]);
+
+    function replaceWith(item: Partial<Node>): Node {
+      const [out] = forwardSequentialNodeChanges(
+        [{ type: 'replace', id: 'a', item: { ...canonical('a'), ...item } as Node }],
+        SYNTHETIC,
+        selectedCanonical
+      );
+      return (out as { item: Node }).item;
+    }
+
+    it('keeps the canonical selection when the incoming item omits `selected`', () => {
+      expect(replaceWith({ data: { display: { label: 'renamed' } } }).selected).toBe(true);
+    });
+
+    it('still honours an explicit deselect', () => {
+      // `?? canonical` must not swallow a deliberate `false`.
+      expect(replaceWith({ selected: false }).selected).toBe(false);
+    });
+  });
+
+  it('forwards an inserted node add, drops non-inserted adds', () => {
+    const insertedItem: Node = {
+      id: 'new',
+      type: 'uipath.slack',
+      position: { x: 0, y: 0 },
+      data: { [SEQ_INSERTED_FLAG]: true },
+    };
+    const changes: NodeChange<Node>[] = [
+      { type: 'add', item: insertedItem },
+      { type: 'add', item: canonical('other') },
+    ];
+    const out = forwardSequentialNodeChanges(changes, SYNTHETIC, canonicalById);
+    expect(out).toHaveLength(1);
+    expect((out[0] as { item: Node }).item.id).toBe('new');
+  });
+});
+
+describe('forwardSequentialEdgeChanges', () => {
+  const canonicalEdges: Edge[] = [
+    { id: 'e-st', source: 's', target: 't' },
+    { id: 'e-other', source: 'x', target: 'y' },
+  ];
+  it('drops connector and preview edge adds', () => {
+    const changes: EdgeChange<Edge>[] = [
+      {
+        type: 'add',
+        item: { id: 'conn:1', source: 's', target: 't', type: SEQ_CONNECTOR_EDGE_TYPE },
+      },
+      { type: 'add', item: { id: PREVIEW_EDGE_ID, source: 's', target: PREVIEW_NODE_ID } },
+    ];
+    expect(forwardSequentialEdgeChanges(changes, canonicalEdges)).toEqual([]);
+  });
+
+  it('forwards healed default edges and removes the shadowed canonical edge on insert', () => {
+    const changes: EdgeChange<Edge>[] = [
+      { type: 'add', item: { id: 'edge_s--new-', source: 's', target: 'new', type: 'default' } },
+      { type: 'add', item: { id: 'edge_new--t-', source: 'new', target: 't', type: 'default' } },
+    ];
+    const out = forwardSequentialEdgeChanges(changes, canonicalEdges);
+
+    // Both healed edges forwarded.
+    expect(out.filter((change) => change.type === 'add')).toHaveLength(2);
+    // The canonical s->t edge is now shadowed and removed.
+    expect(out).toContainEqual({ type: 'remove', id: 'e-st' });
+    // The unrelated canonical edge is untouched.
+    expect(out).not.toContainEqual({ type: 'remove', id: 'e-other' });
+  });
+
+  it('uses the exact split marker and preserves parallel canonical edges', () => {
+    const parallelEdges: Edge[] = [
+      { id: 'e-split', source: 's', sourceHandle: 'out', target: 't', targetHandle: 'in' },
+      { id: 'e-parallel', source: 's', sourceHandle: 'out', target: 't', targetHandle: 'in' },
+    ];
+    const changes: EdgeChange<Edge>[] = [
+      {
+        type: 'add',
+        item: {
+          id: 'e-s-new',
+          source: 's',
+          sourceHandle: 'out',
+          target: 'new',
+          data: { __sequentialSplitEdgeId: 'e-split', keep: true },
+        },
+      },
+      {
+        type: 'add',
+        item: {
+          id: 'e-new-t',
+          source: 'new',
+          target: 't',
+          targetHandle: 'in',
+          data: { __sequentialSplitEdgeId: 'e-split' },
+        },
+      },
+    ];
+
+    const out = forwardSequentialEdgeChanges(changes, parallelEdges);
+    expect(out).toContainEqual({ type: 'remove', id: 'e-split' });
+    expect(out).not.toContainEqual({ type: 'remove', id: 'e-parallel' });
+    const added = out.filter((change) => change.type === 'add');
+    expect(added[0]?.item.data).toEqual({ keep: true });
+    expect(added[1]?.item.data).toEqual({});
+  });
+
+  it('forwards removes/selects of real canonical edges, drops others', () => {
+    const changes: EdgeChange<Edge>[] = [
+      { type: 'remove', id: 'e-st' },
+      { type: 'remove', id: 'conn:1' },
+      { type: 'select', id: 'e-other', selected: true },
+      { type: 'select', id: 'conn:2', selected: true },
+    ];
+    const out = forwardSequentialEdgeChanges(changes, canonicalEdges);
+    expect(out).toEqual([
+      { type: 'remove', id: 'e-st' },
+      { type: 'select', id: 'e-other', selected: true },
+    ]);
+  });
+});
+
+describe('graphChangeSetToNodeChanges (move operations)', () => {
+  it('produces a plain remove for an id that is only in removeNodeIds', () => {
+    const changeSet: GraphChangeSet = {
+      addNodes: [],
+      addEdges: [],
+      removeNodeIds: ['a'],
+      removeEdgeIds: [],
+    };
+    expect(graphChangeSetToNodeChanges(changeSet)).toEqual([{ type: 'remove', id: 'a' }]);
+  });
+
+  it('produces a plain add for a genuinely new node (not also in removeNodeIds)', () => {
+    const node = canonical('new');
+    const changeSet: GraphChangeSet = {
+      addNodes: [node],
+      addEdges: [],
+      removeNodeIds: [],
+      removeEdgeIds: [],
+    };
+    expect(graphChangeSetToNodeChanges(changeSet)).toEqual([{ type: 'add', item: node }]);
+  });
+
+  it('rewrites a paired remove+add (same id, e.g. a cross-container parentId rewrite) into a single replace, preserving parentId', () => {
+    const movedNode: Node = { ...canonical('a'), parentId: 'new-container' };
+    const changeSet: GraphChangeSet = {
+      addNodes: [movedNode],
+      addEdges: [],
+      removeNodeIds: ['a'],
+      removeEdgeIds: [],
+    };
+    const changes = graphChangeSetToNodeChanges(changeSet);
+    // `replace`, not add+remove: an add is appended, which would push a moved container behind
+    // its own children, and React Flow then drops the parent link with only a warning.
+    expect(changes).toEqual([{ type: 'replace', id: 'a', item: movedNode }]);
+    // The parentId rewrite -- the whole point of the move -- survives.
+    expect((changes[0] as { item: Node }).item.parentId).toBe('new-container');
+  });
+
+  it('produces no node changes for a same-container move (only edges change)', () => {
+    const changeSet: GraphChangeSet = {
+      addNodes: [],
+      addEdges: [{ id: 'e1', source: 'a', target: 'b' }],
+      removeNodeIds: [],
+      removeEdgeIds: ['e0'],
+    };
+    expect(graphChangeSetToNodeChanges(changeSet)).toEqual([]);
+  });
+});
+
+describe('graphChangeSetToEdgeChanges (move operations)', () => {
+  it('translates removeEdgeIds and addEdges into remove/add EdgeChanges', () => {
+    const edge: Edge = { id: 'e1', source: 'a', target: 'b' };
+    const changeSet: GraphChangeSet = {
+      addNodes: [],
+      addEdges: [edge],
+      removeNodeIds: [],
+      removeEdgeIds: ['e0'],
+    };
+    expect(graphChangeSetToEdgeChanges(changeSet)).toEqual([
+      { type: 'remove', id: 'e0' },
+      { type: 'add', item: edge },
+    ]);
+  });
+
+  it('returns an empty array for a no-op GraphChangeSet', () => {
+    const changeSet: GraphChangeSet = {
+      addNodes: [],
+      addEdges: [],
+      removeNodeIds: [],
+      removeEdgeIds: [],
+    };
+    expect(graphChangeSetToEdgeChanges(changeSet)).toEqual([]);
+  });
+});
+
+describe('forwardSequencedContainerNodeChanges', () => {
+  const canonicalById = new Map<string, Node>([
+    ['frame', { id: 'frame', position: { x: 0, y: 0 }, data: { display: { label: 'Frame' } } }],
+    [
+      'bar',
+      {
+        id: 'bar',
+        parentId: 'frame',
+        position: { x: 1, y: 2 },
+        data: { display: { label: 'Bar' } },
+      },
+    ],
+    ['card', { id: 'card', position: { x: 5, y: 5 }, data: {} }],
+  ]);
+  const scope = {
+    syntheticIds: new Set(['__sequential-placeholder__:frame']),
+    barIds: new Set(['bar']),
+    containerIds: new Set(['frame']),
+    canonicalById,
+  };
+
+  it('passes the frame position and bar selection, drops bar and frame geometry and placeholders', () => {
+    const out = forwardSequencedContainerNodeChanges<Node>(
+      [
+        { type: 'position', id: 'frame', position: { x: 9, y: 9 } },
+        { type: 'position', id: 'bar', position: { x: 9, y: 9 } },
+        { type: 'dimensions', id: 'frame', dimensions: { width: 1, height: 1 } },
+        { type: 'dimensions', id: 'bar', dimensions: { width: 1, height: 1 } },
+        { type: 'select', id: 'bar', selected: true },
+        { type: 'select', id: '__sequential-placeholder__:frame', selected: true },
+        { type: 'remove', id: PREVIEW_NODE_ID },
+      ],
+      scope
+    );
+    expect(out).toEqual([
+      { type: 'position', id: 'frame', position: { x: 9, y: 9 } },
+      { type: 'select', id: 'bar', selected: true },
+    ]);
+  });
+
+  it('merges only data and selected onto a bar or frame replace, and passes other nodes verbatim', () => {
+    const barReplace: NodeChange<Node> = {
+      type: 'replace',
+      id: 'bar',
+      item: {
+        id: 'bar',
+        position: { x: 100, y: 100 },
+        width: 520,
+        height: 56,
+        draggable: false,
+        data: { display: { label: 'Renamed' } },
+      },
+    };
+    const cardReplace: NodeChange<Node> = {
+      type: 'replace',
+      id: 'card',
+      item: { id: 'card', position: { x: 5, y: 5 }, height: 140, data: {} },
+    };
+    const out = forwardSequencedContainerNodeChanges<Node>([barReplace, cardReplace], scope);
+    expect(out[0]).toEqual({
+      type: 'replace',
+      id: 'bar',
+      item: {
+        ...canonicalById.get('bar'),
+        data: { display: { label: 'Renamed' } },
+        selected: undefined,
+      },
+    });
+    expect(out[1]).toBe(cardReplace);
+  });
+});
+
+describe('applyFlowInsertPlacement', () => {
+  it('swaps the placed position into the add and appends the grown containers as replaces', () => {
+    const added: Node = {
+      id: 'new',
+      type: 'uipath.script',
+      parentId: 'loop',
+      position: { x: 64, y: 360 },
+      selected: true,
+      data: { label: 'New', [SEQ_INSERTED_FLAG]: true },
+    };
+    const placed: Node = { ...added, position: { x: 416, y: 80 }, data: { label: 'New' } };
+    const grownLoop: Node = { id: 'loop', position: { x: 0, y: 0 }, width: 560, data: {} };
+    const changes: NodeChange[] = [
+      { type: 'select', id: 'other', selected: false },
+      { type: 'add', item: added },
+    ];
+
+    const out = applyFlowInsertPlacement(changes, { node: placed, updates: [grownLoop] });
+
+    expect(out[0]).toBe(changes[0]);
+    const add = out[1] as Extract<NodeChange, { type: 'add' }>;
+    expect(add.item.position).toEqual({ x: 416, y: 80 });
+    expect(add.item.data).toEqual({ label: 'New' });
+    expect(add.item.selected).toBe(true);
+    expect(out[2]).toEqual({ type: 'replace', id: 'loop', item: grownLoop });
+  });
+});

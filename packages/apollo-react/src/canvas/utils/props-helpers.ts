@@ -24,6 +24,16 @@ const SPAN_STATUS = {
 export const NODE_ID_DELIMITER = '=>';
 export const EDGE_ID_DELIMITER = '::';
 
+/** Canonical id for an edge created by the canvas; absent handles print as empty segments. */
+export function buildEdgeId(
+  source: string,
+  sourceHandle: string | null | undefined,
+  target: string,
+  targetHandle: string | null | undefined
+): string {
+  return `edge_${source}-${sourceHandle ?? ''}-${target}-${targetHandle ?? ''}`;
+}
+
 // Streaming/partial spans can carry malformed JSON; an unguarded throw here would
 // abort node-status computation for the whole render and drop highlighting intermittently.
 const parseSpanAttributes = (span: IRawSpan): Record<string, unknown> | null => {

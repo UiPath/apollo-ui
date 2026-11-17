@@ -13,8 +13,8 @@ const DEFAULT_MANIFEST = {
 const {
   mockUpdateNode,
   mockUpdateNodeData,
-  mockGetNode,
   mockUpdateNodeInternals,
+  mockGetNode,
   mockStoreApi,
   mockNodeState,
   mockHandleConfigs,
@@ -31,8 +31,8 @@ const {
 } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
   mockUpdateNodeData: vi.fn(),
-  mockGetNode: vi.fn(),
   mockUpdateNodeInternals: vi.fn(),
+  mockGetNode: vi.fn(),
   mockStoreApi: { getState: vi.fn() },
   // Simulates React Flow's stored node: updateNode writes height here, getNode reads it.
   mockNodeState: { current: { height: undefined as number | undefined } },
@@ -330,6 +330,26 @@ describe('BaseNode', () => {
       mockHandleConfigs.current = makeHandles(Position.Left, 2);
       render(<BaseNode {...defaultProps} />);
       expect(mockUpdateNode).not.toHaveBeenCalled();
+    });
+
+    it('re-measures handles on a handle-set change, not on a data-only edit', async () => {
+      mockUpdateNodeInternals.mockClear();
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      const { rerender } = render(<BaseNode {...defaultProps} />);
+      await act(async () => {});
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+
+      // Rename keystroke: handleConfigurations is re-derived (new array, same layout).
+      mockUpdateNodeInternals.mockClear();
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      rerender(<BaseNode {...defaultProps} data={{ display: { label: 'Renamed' } }} />);
+      await act(async () => {});
+      expect(mockUpdateNodeInternals).not.toHaveBeenCalled();
+
+      mockHandleConfigs.current = makeHandles(Position.Left, 3);
+      rerender(<BaseNode {...defaultProps} data={{}} />);
+      await act(async () => {});
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
     });
 
     it('deflates the floor and settles when a handle is removed (MST-11677)', () => {
