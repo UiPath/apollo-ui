@@ -6,7 +6,12 @@ import { ConditionLine } from './ConditionLine';
 import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
 import { RuleLine } from './RuleLine';
-import { type RuleCardModelParams, type RuleRemovalLabels, ruleCardModel } from './ruleCardModel';
+import {
+  type CardMode,
+  type RuleCardBase,
+  type RuleRemovalLabels,
+  ruleCardModel,
+} from './ruleCardModel';
 import { StopLabels } from './StopLabels';
 import {
   CHANGE_SIGN_CLASS,
@@ -40,18 +45,25 @@ const ChangeSign: React.FC<{ diff: RuleDiff }> = ({ diff }) => {
 /** A card's editing strings: its actions', and its remove and clear buttons'. */
 export interface RuleCardEditLabels extends RuleActionsLabels, RuleRemovalLabels {}
 
-export interface RuleCardProps extends RuleCardModelParams {
-  setSize: number;
-  /** The selected cell, null when the rule is selected, undefined when the row is not. */
-  selectedColumnId: string | null | undefined;
-  /** The editing strings, or undefined for a read-only card. */
-  editLabels: RuleCardEditLabels | undefined;
-  /** The card's menu that is open, if any. */
-  openMenu: RuleMenuKind | undefined;
-  /** The line of the condition the open editor adds, if any. */
-  pendingColumnId: string | undefined;
-  dataTestId: string;
-}
+/** A card's mode: read, editable with its strings, open menu and pending line, or a diff's. */
+export type RuleCardMode =
+  | Exclude<CardMode, { kind: 'edit' }>
+  | {
+      kind: 'edit';
+      editLabels: RuleCardEditLabels;
+      /** The card's menu that is open, if any. */
+      openMenu: RuleMenuKind | undefined;
+      /** The line of the condition the open editor adds, if any. */
+      pendingColumnId: string | undefined;
+    };
+
+export type RuleCardProps = RuleCardBase &
+  RuleCardMode & {
+    setSize: number;
+    /** The selected cell, null when the rule is selected, undefined when the row is not. */
+    selectedColumnId: string | null | undefined;
+    dataTestId: string;
+  };
 
 /** One rule as a sentence: its heading, its lead and its condition lines. */
 export const RuleCard = memo<RuleCardProps>(
@@ -64,16 +76,15 @@ export const RuleCard = memo<RuleCardProps>(
     selectedColumnId,
     selectable,
     decisionLinks,
-    editLabels,
-    openMenu,
-    pendingColumnId,
-    diff,
     idPrefix,
     dataTestId,
     labels,
+    ...mode
   }) => {
+    const diff = mode.kind === 'diff' ? mode.diff : undefined;
+    const edit = mode.kind === 'edit' ? mode : undefined;
+    const pendingColumnId = edit?.pendingColumnId;
     const card = ruleCardModel({
-      diff,
       rule,
       position,
       numbered,
@@ -82,7 +93,7 @@ export const RuleCard = memo<RuleCardProps>(
       decisionLinks,
       idPrefix,
       labels,
-      editLabels,
+      ...mode,
     });
     const lineProps = {
       cells: card.cells,
@@ -128,7 +139,7 @@ export const RuleCard = memo<RuleCardProps>(
             badge={card.badges.heading}
             removals={card.removals.heading}
             unworded={diff?.removedOutcomes}
-            className={editLabels && HEADING_ACTIONS_SPACE_CLASS}
+            className={edit && HEADING_ACTIONS_SPACE_CLASS}
             {...lineProps}
           />
           <RuleLine
@@ -144,7 +155,7 @@ export const RuleCard = memo<RuleCardProps>(
                 <ConditionLine
                   key={line.columnId}
                   line={line}
-                  pending={line.columnId === pendingColumnId}
+                  state={line.columnId === pendingColumnId ? 'pending' : 'held'}
                   badge={card.badges.lines[index] ?? null}
                   removal={
                     line.columnId === pendingColumnId ? null : (card.removals.lines[index] ?? null)
@@ -156,8 +167,7 @@ export const RuleCard = memo<RuleCardProps>(
                 <ConditionLine
                   key={removedLineKey(line)}
                   line={line}
-                  pending={false}
-                  change={line.change}
+                  state={line.change}
                   badge={null}
                   removal={null}
                   {...lineProps}
@@ -165,12 +175,12 @@ export const RuleCard = memo<RuleCardProps>(
               ))}
             </ul>
           )}
-          {editLabels && (
+          {edit && (
             <RuleActions
               position={position}
               selected={selectedColumnId !== undefined}
-              labels={editLabels}
-              openMenu={openMenu}
+              labels={edit.editLabels}
+              openMenu={edit.openMenu}
             />
           )}
         </div>

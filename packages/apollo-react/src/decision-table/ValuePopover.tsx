@@ -251,9 +251,11 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
           links={footerLinks(expression ? undefined : editExpression, onClear, labels, dataTestId)}
           onCancel={onCancel}
           onApply={() => settle('none')}
-          applyDisabled={!expression && problem !== null}
-          applyDimmed={expression && draft === seed && !fieldsChanged && problem !== null}
-          applyKeepsFocus={!expression}
+          apply={
+            expression
+              ? { kind: 'editor', dimmed: draft === seed && !fieldsChanged && problem !== null }
+              : { kind: 'fields', disabled: problem !== null }
+          }
           labels={labels}
           dataTestId={dataTestId}
         />

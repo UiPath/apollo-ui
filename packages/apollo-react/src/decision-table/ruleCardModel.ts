@@ -128,7 +128,13 @@ interface RuleRemovals {
   lines: (RemoveConditionButtonProps | null)[];
 }
 
-export interface RuleCardModelParams {
+/** How a card is shown: read, editable with its removal strings, or painted with its change in a diff. */
+export type CardMode =
+  | { kind: 'read' }
+  | { kind: 'edit'; editLabels: RuleRemovalLabels }
+  | { kind: 'diff'; diff: RuleDiff };
+
+export interface RuleCardBase {
   rule: SentenceRule;
   /** 1-based, as announced and as numbered. */
   position: number;
@@ -137,12 +143,11 @@ export interface RuleCardModelParams {
   selectable: boolean;
   /** Whether an input another decision produces links to that decision. */
   decisionLinks: boolean;
-  editLabels: RuleRemovalLabels | undefined;
-  /** The rule's change and number in a diff. */
-  diff: RuleDiff | undefined;
   idPrefix: string;
   labels: RuleCardLabels;
 }
+
+export type RuleCardModelParams = RuleCardBase & CardMode;
 
 /** What a rule card renders, derived from its rule, its mark and its strings. */
 interface RuleCardModel
@@ -185,9 +190,10 @@ export const ruleCardModel = ({
   decisionLinks,
   idPrefix,
   labels,
-  editLabels,
-  diff,
+  ...mode
 }: RuleCardModelParams): RuleCardModel => {
+  const diff = mode.kind === 'diff' ? mode.diff : undefined;
+  const editLabels = mode.kind === 'edit' ? mode.editLabels : undefined;
   const id = `${idPrefix}-${position}`;
   const number = diff ? diff.number : position;
   const changed = (token: SentenceToken) => diff?.tokens.has(token) === true;

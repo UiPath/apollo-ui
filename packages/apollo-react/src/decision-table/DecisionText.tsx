@@ -248,14 +248,17 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         <SentenceBands
           bands={bands}
           marks={bandMarks}
-          changes={columns?.changes}
           style={listStyle}
           idPrefix={idPrefix}
           dataTestId={dataTestId}
           labels={labels}
-          onToggleColumn={columnEditing.onToggle}
-          openColumnId={columnEditing.openId}
-          editorId={columnEditorId}
+          mode={
+            columns
+              ? { kind: 'diff', changes: columns.changes }
+              : columnEditing.kind === 'edit'
+                ? { kind: 'edit', ...columnEditing.pills, editorId: columnEditorId }
+                : { kind: 'read' }
+          }
         />
       )}
       {listed.length === 0 ? (
@@ -264,9 +267,18 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
         <RuleList
           ref={ruleWindow.listRef}
           rules={listed}
-          pending={shown.pending}
-          diffRows={diffRows?.rows}
-          onExpandFold={onExpandFold}
+          mode={
+            diffRows
+              ? { kind: 'diff', diffRows: diffRows.rows, onExpandFold }
+              : edit
+                ? {
+                    kind: 'edit',
+                    editLabels: edit.labels,
+                    openMenu: ruleMenus.state,
+                    pending: shown.pending,
+                  }
+                : { kind: 'read' }
+          }
           segments={ruleWindow.segments}
           numbered={numbered}
           marks={rowMarks}
@@ -274,8 +286,6 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           selectedColumnId={navigation.selectedColumnId}
           selectable={selectable}
           decisionLinks={onOpenDecision !== undefined}
-          editLabels={edit?.labels}
-          openMenu={ruleMenus.state}
           style={listStyle}
           idPrefix={idPrefix}
           dataTestId={dataTestId}
@@ -297,7 +307,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
           dataTestId={dataTestId}
         />
       )}
-      {columnEditing.editor && edit?.column && (
+      {columnEditing.kind === 'edit' && columnEditing.editor && edit?.column && (
         <ColumnEditorOverlay
           key={columnEditing.editor.column.id}
           editor={columnEditing.editor}
