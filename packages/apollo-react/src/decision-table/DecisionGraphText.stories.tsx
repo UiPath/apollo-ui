@@ -138,73 +138,71 @@ const GraphHost = ({ graph, mode = 'select', caption }: GraphHostProps) => {
   );
 };
 
-const meta: Meta<typeof DecisionGraphText> = {
+const meta: Meta = {
   title: 'Decision Graph Text',
-  component: DecisionGraphText,
   parameters: { layout: 'padded' },
 };
 export default meta;
 
-type Story = StoryObj<typeof DecisionGraphText>;
+const GRAPHS = {
+  'shared dependency': {
+    graph: SHARED_DEPENDENCY,
+    caption: 'Risk is required by both Eligibility and Pricing: drawn once, linked from Pricing.',
+  },
+  'single decision': {
+    graph: SINGLE_DECISION,
+    caption: 'One decision, folded: open it to read its rules.',
+  },
+  cycle: {
+    graph: CYCLE,
+    caption: 'Approval requires Limit, which requires Approval: the loop ends in a link.',
+  },
+  'not a table': {
+    graph: NOT_A_TABLE,
+    caption: "Discount rate is a literal expression, so its body is the host's own text.",
+  },
+  empty: { graph: EMPTY_GRAPH, caption: 'A graph with no decisions.' },
+} as const;
 
-export const Empty: Story = {
-  render: () => <GraphHost graph={EMPTY_GRAPH} caption="A graph with no decisions." />,
-};
+const MODE_ARG = {
+  control: 'inline-radio',
+  options: ['read', 'select', 'edit'],
+  description: 'What the host wires: bodies only, then selection, then editing in place.',
+} as const;
 
-export const SingleDecision: Story = {
-  render: () => (
-    <GraphHost graph={SINGLE_DECISION} caption="One decision, folded: open it to read its rules." />
-  ),
-};
+interface GraphArgs {
+  mode: HostMode;
+}
 
-export const SharedDependency: Story = {
-  render: () => (
+interface DefaultArgs extends GraphArgs {
+  graph: keyof typeof GRAPHS;
+}
+
+export const Default: StoryObj<DefaultArgs> = {
+  args: { graph: 'shared dependency', mode: 'select' },
+  argTypes: {
+    graph: { control: 'select', options: Object.keys(GRAPHS) },
+    mode: MODE_ARG,
+  },
+  render: ({ graph, mode }) => (
     <GraphHost
-      graph={SHARED_DEPENDENCY}
-      caption="Risk is required by both Eligibility and Pricing: drawn once, linked from Pricing."
+      key={`${graph}-${mode}`}
+      graph={GRAPHS[graph].graph}
+      mode={mode}
+      caption={GRAPHS[graph].caption}
     />
   ),
 };
 
-export const Cycle: Story = {
-  render: () => (
+export const Errors: StoryObj<GraphArgs> = {
+  args: { mode: 'select' },
+  argTypes: { mode: MODE_ARG },
+  render: ({ mode }) => (
     <GraphHost
-      graph={CYCLE}
-      caption="Approval requires Limit, which requires Approval: the loop ends in a link."
-    />
-  ),
-};
-
-export const NotATable: Story = {
-  render: () => (
-    <GraphHost
-      graph={NOT_A_TABLE}
-      caption="Discount rate is a literal expression, so its body is the host's own text."
-    />
-  ),
-};
-
-export const HeaderMarks: Story = {
-  render: () => (
-    <GraphHost
+      key={mode}
       graph={MARKED}
+      mode={mode}
       caption="An error and a warning on the headings: the glyph opens the decision on the rule it names."
-    />
-  ),
-};
-
-export const ReadOnly: Story = {
-  render: () => (
-    <GraphHost graph={SHARED_DEPENDENCY} mode="read" caption="Bodies without selection." />
-  ),
-};
-
-export const Editable: Story = {
-  render: () => (
-    <GraphHost
-      graph={SHARED_DEPENDENCY}
-      mode="edit"
-      caption="Each open decision edits in place: click a value, change it, apply."
     />
   ),
 };
