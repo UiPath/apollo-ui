@@ -331,6 +331,14 @@ function DialogBody({
     loadModels(providerId, connections.find((c) => c.id === id) ?? null, generation.current);
   };
 
+  // A form not filled with the connection's settings would clear the ones it does not show
+  // when saved, so the edit stops; the failure stays shown and Edit connection reads again.
+  const failConnectionEdit = (failure: ByoFailure) => {
+    setEditingConnection(false);
+    resetFormValues();
+    setConnect({ status: 'error', failure });
+  };
+
   /** Opens the credentials form for the selected saved connection, filled with its current settings. */
   const startConnectionEdit = async () => {
     if (!connection) return;
@@ -347,13 +355,13 @@ function DialogBody({
       const result = await api.loadConnectionValues(providerId, connection);
       if (gen !== generation.current) return;
       if (!result.ok) {
-        setConnect({ status: 'error', failure: result.failure });
+        failConnectionEdit(result.failure);
         return;
       }
       setAuthType(result.value.authType ?? form.defaultAuthType);
       setValues({ ...defaultsOf(form), ...result.value.values });
     } catch (err) {
-      if (gen === generation.current) setConnect({ status: 'error', failure: unexpected(err) });
+      if (gen === generation.current) failConnectionEdit(unexpected(err));
     } finally {
       if (gen === generation.current) setLoadingConnectionValues(false);
     }
