@@ -385,9 +385,9 @@ export function createCommunityByoApi(
 
   function toForm(provider: CommunityByoProvider, entries: IsConfigEntry[]): ByoConnectionForm {
     const overlay = provider.overlay ?? {};
-    const auth = entries.find(
-      (c) => c.key === 'authentication.type' && (c.options?.length ?? 0) > 1
-    );
+    // A single authentication type is kept too, so the fields grouped under it are shown;
+    // the dialog offers a choice only when there are several.
+    const auth = entries.find((c) => c.key === 'authentication.type' && c.options?.length);
     const authTypes = (auth?.options ?? []).map((o) => ({
       value: o.value,
       label: provider.authLabels?.[o.value] || o.displayValue || o.description || o.value,
@@ -404,7 +404,8 @@ export function createCommunityByoApi(
           secret: c.type === 'PASSWORD',
           required: !optional && Boolean(c.required),
           advanced: optional && !o.primary,
-          group: c.groupBy || null,
+          // Without authentication types, a field's group could never be chosen, so none applies.
+          group: (auth && c.groupBy) || null,
           defaultValue: c.defaultValue ?? '',
           placeholder: o.placeholder ?? '',
           hint: o.hint ?? plainText(c.hintText),
