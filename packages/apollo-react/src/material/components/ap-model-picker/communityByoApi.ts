@@ -180,7 +180,7 @@ interface LlmConfigurationEntry {
   connectorType?: string;
   connectionId?: string;
   customFieldMappings?: Record<string, string> | null;
-  /** Set on a model that replaces a UiPath model, which only AI Trust Layer edits. */
+  /** Set on a model that replaces a UiPath model; an edit keeps it. */
   defaultModel?: string | null;
   apiFlavor?: string | null;
   [field: string]: unknown;
@@ -468,7 +468,7 @@ export function createCommunityByoApi(
     const provider = providers.find(
       (p) => p.connectorType.toLowerCase() === entry?.connectorType?.toLowerCase()
     );
-    if (!entry || !provider || !entry.connectionId || entry.defaultModel) {
+    if (!entry || !provider || !entry.connectionId) {
       return fail({
         title: `${name} cannot be edited here`,
         detail: JSON.stringify(saved, null, 2),

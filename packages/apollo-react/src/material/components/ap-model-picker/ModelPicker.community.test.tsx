@@ -50,6 +50,21 @@ const RESPONSES: Record<string, unknown> = {
     ],
   },
   [`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`]: {},
+  [`GET ${GATEWAY}/api/byo/product/llm-configurations/cfg-2`]: {
+    id: 'cfg-2',
+    folderId: 'me',
+    llmConfigurations: [
+      {
+        id: 'e2',
+        desiredModel: 'my-gpt',
+        customerModel: 'gpt-4o',
+        connectorType: 'OpenAi',
+        connectionId: 'conn-1',
+        defaultModel: 'gpt-4.1',
+      },
+    ],
+  },
+  [`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-2`]: {},
 };
 
 const fetchMock = vi.fn(async (url: string, init: RequestInit = {}) => {
@@ -81,6 +96,12 @@ const ADDED: DiscoveryModel = {
   vendor: 'OpenAi',
   modelSubscriptionType: 'BYOMAdded',
   byomDetails: { integrationServiceConnectionId: 'conn-1', byoConfigurationId: 'cfg-1' },
+};
+
+const REPLACING: DiscoveryModel = {
+  ...ADDED,
+  modelSubscriptionType: 'BYOMReplacedAlternative',
+  byomDetails: { integrationServiceConnectionId: 'conn-1', byoConfigurationId: 'cfg-2' },
 };
 
 /** Fills the open dialog with gpt-4o through the saved "My OpenAI" connection, as `my-gpt`. */
@@ -193,6 +214,40 @@ describe('<ModelPicker isCommunity>', () => {
     const keys = fetchMock.mock.calls.map(([url, init]) => `${init?.method ?? 'GET'} ${url}`);
     expect(keys).toContain(`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`);
     expect(keys).not.toContain(`POST ${GATEWAY}/api/byo/product/llm-configurations`);
+  });
+
+  it('edits a model that replaces a UiPath model in the same dialog, keeping what it replaces', async () => {
+    const user = userEvent.setup();
+    const onCustomModelSaved = vi.fn();
+    render(
+      <ModelPicker
+        models={[HOSTED, REPLACING]}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        isCommunity
+        requestContext={CTX}
+        onCustomModelSaved={onCustomModelSaved}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(await screen.findByRole('button', { name: 'Edit configuration' }));
+    expect(await screen.findByRole('dialog', { name: 'Edit your model' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
+    );
+    await user.click(screen.getByRole('button', { name: 'Test and save' }));
+
+    await waitFor(() => expect(onCustomModelSaved).toHaveBeenCalled());
+    const put = fetchMock.mock.calls.find(
+      ([url, init]) => init?.method === 'PUT' && url.endsWith('/llm-configurations/cfg-2')
+    );
+    const body = JSON.parse(String(put?.[1]?.body));
+    expect(body.llmConfigurations[0]).toMatchObject({
+      desiredModel: 'my-gpt',
+      defaultModel: 'gpt-4.1',
+    });
   });
 
   it('keeps the AI Trust Layer navigation when isCommunity is off', async () => {
