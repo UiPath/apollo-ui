@@ -1,17 +1,29 @@
-/** One row of the minimap: a decision holding rules and further decisions, a rule, or a link to a decision listed elsewhere. */
-export interface MinimapItem {
-  id: string;
-  kind: 'decision' | 'rule' | 'reference';
-  /** What the search matches and the row shows. */
-  label: string;
-  /** Trailing text after the label, such as a decision's rule count. */
-  meta?: string;
-  /** The row's accessible name, when it says more than `label`. */
-  ariaLabel?: string;
-  /** A reference's decision, where picking it goes. */
-  targetId?: string;
-  children?: readonly MinimapItem[];
+/** A decision's rule count as its row shows it and says it. */
+export interface MinimapCount {
+  /** Trailing text after the label. */
+  meta: string;
+  ariaLabel: string;
 }
+
+/** One row of the minimap: a decision holding rules and further decisions, a rule, or a link to a decision listed elsewhere. */
+export type MinimapItem =
+  | {
+      kind: 'decision';
+      id: string;
+      label: string;
+      /** Null when the decision's rules are not counted. */
+      count: MinimapCount | null;
+      children: readonly MinimapItem[];
+    }
+  | { kind: 'rule'; id: string; label: string }
+  | {
+      kind: 'reference';
+      id: string;
+      label: string;
+      ariaLabel: string;
+      /** Where picking it goes. */
+      targetId: string;
+    };
 
 /** A row as the list draws it, in reading order. */
 export interface MinimapRow {
@@ -34,7 +46,7 @@ export const minimapRows = (items: readonly MinimapItem[], query: string): Minim
         ? [{ item, depth, match }]
         : [];
     }
-    const below = (item.children ?? []).flatMap((child) => visit(child, depth + 1, match));
+    const below = item.children.flatMap((child) => visit(child, depth + 1, match));
     if (needle !== '' && !match && below.length === 0) return [];
     return [{ item, depth, match }, ...below];
   };

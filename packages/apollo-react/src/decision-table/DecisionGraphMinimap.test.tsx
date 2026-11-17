@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { vi } from 'vitest';
 import { largeGraph, SHARED_DEPENDENCY, tableOf } from './__fixtures__/decisionGraph.fixtures';
 import { tableColumns, wordedRules } from './__fixtures__/editableSentences.fixtures';
-import { DecisionGraphMinimap, WINDOW_MINIMAP_FROM } from './DecisionGraphMinimap';
+import { DecisionGraphMinimap } from './DecisionGraphMinimap';
 import { DecisionGraphText } from './DecisionGraphText';
-import type { DecisionGraphNode } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
+import type { DecisionGraphNode } from './decisionGraphTypes';
+import { WINDOW_MINIMAP_FROM } from './MinimapList';
 import { type MinimapItem, minimapRows } from './minimapRows';
 import type { SentenceSelection } from './sentenceTypes';
 
@@ -27,7 +28,7 @@ const ITEMS: MinimapItem[] = [
     id: 'd-eligibility',
     kind: 'decision',
     label: 'Eligibility',
-    meta: '2',
+    count: { meta: '2', ariaLabel: 'Eligibility, 2 rules' },
     children: [
       { id: 'r-1', kind: 'rule', label: 'risk is high when age < 25' },
       { id: 'r-2', kind: 'rule', label: 'risk is low otherwise' },
@@ -35,17 +36,25 @@ const ITEMS: MinimapItem[] = [
         id: 'd-risk',
         kind: 'decision',
         label: 'Risk',
+        count: null,
         children: [{ id: 'r-3', kind: 'rule', label: 'score above 700' }],
       },
     ],
   },
-  { id: 'ref-risk', kind: 'reference', label: 'Risk', targetId: 'd-risk' },
+  {
+    id: 'ref-risk',
+    kind: 'reference',
+    label: 'Risk',
+    ariaLabel: 'Risk, listed above',
+    targetId: 'd-risk',
+  },
 ];
 
 const minimap = (props: Partial<React.ComponentProps<typeof DecisionGraphMinimap>> = {}) => (
   <DecisionGraphMinimap
     items={() => ITEMS}
     triggerLabel="3 rules"
+    currentId={null}
     onPick={vi.fn()}
     labels={LABELS}
     dataTestId="map"
@@ -136,7 +145,11 @@ describe('DecisionGraphMinimap', () => {
     await user.keyboard('{ArrowUp}');
     expect(activeOption()).toHaveTextContent('Eligibility');
     await user.keyboard('{ArrowDown}{Enter}');
-    expect(onPick).toHaveBeenCalledWith(ITEMS[0]?.children?.[0]);
+    expect(onPick).toHaveBeenCalledWith({
+      id: 'r-1',
+      kind: 'rule',
+      label: 'risk is high when age < 25',
+    });
     expect(screen.queryByRole('listbox')).toBeNull();
   });
 
@@ -229,6 +242,7 @@ describe('DecisionGraphMinimap', () => {
         id: 'd-top',
         kind: 'decision',
         label: 'Top',
+        count: null,
         children: rules('nested', WINDOW_MINIMAP_FROM + 9),
       },
     ];

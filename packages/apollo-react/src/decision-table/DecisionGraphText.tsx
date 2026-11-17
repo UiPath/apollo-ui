@@ -2,7 +2,10 @@ import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { DecisionGraphCard, DecisionGraphReference } from './DecisionGraphCard';
-import { DecisionGraphMinimap } from './DecisionGraphMinimap';
+import {
+  DecisionGraphMinimapSlot,
+  type DecisionGraphMinimapSlotProps,
+} from './DecisionGraphMinimapSlot';
 import {
   GRAPH_BRANCH_CLASS,
   GRAPH_COLUMN_CLASS,
@@ -11,15 +14,12 @@ import {
   GRAPH_NEST_CLASS,
   GRAPH_OUTPUT_HUE_CLASS,
   GRAPH_SCROLLER_CLASS,
-  GRAPH_TOOLBAR_CLASS,
 } from './decisionGraphStyles';
 import type {
   DecisionGraphDecisionNode,
   DecisionGraphNode,
-  DecisionGraphRule,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
-import type { MinimapItem } from './minimapRows';
 import { SENTENCE_MIN_RULE_HEIGHT_PX } from './sentenceRuleHeights';
 import type { ContainerHandlersParams } from './useContainerHandlers';
 import { type DecisionGraphLabels, useDecisionGraphLabels } from './useDecisionGraphStrings';
@@ -42,7 +42,7 @@ export interface DecisionGraphTextProps {
   /** Opens a decision on its own, from a double-click on its heading or Alt+Enter on its toggle; a reference opens the decision it repeats. */
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
   /** A table's rules as the minimap lists them, read only while it is open; without it the minimap lists decisions alone. */
-  rules?: (decisionId: string) => readonly DecisionGraphRule[];
+  rules?: DecisionGraphMinimapSlotProps['rules'];
   /** Strings in place of the built-in ones, any subset. */
   labels?: Partial<DecisionGraphLabels>;
   /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-{rowId}`, `-no-match`). */
@@ -143,56 +143,6 @@ const perRuleHeightOf = (
   return rules === 0 ? SENTENCE_MIN_RULE_HEIGHT_PX : height / rules;
 };
 
-const decisionRowId = (decisionId: string) => `decision:${decisionId}`;
-
-/** The minimap's rows for the tree, and where each one goes. */
-const minimapOf = (
-  nodes: readonly DecisionGraphNode[],
-  rules: DecisionGraphTextProps['rules'],
-  labels: DecisionGraphLabels
-): { items: MinimapItem[]; targets: ReadonlyMap<string, DecisionGraphTarget> } => {
-  const targets = new Map<string, DecisionGraphTarget>();
-  const toItem = (node: DecisionGraphNode): MinimapItem => {
-    if (node.kind === 'reference') {
-      const id = `reference:${node.id}`;
-      targets.set(id, { decisionId: node.targetId });
-      return {
-        id,
-        kind: 'reference',
-        label: node.label,
-        ariaLabel: labels.minimapReference(node.label),
-        targetId: node.targetId,
-      };
-    }
-    const id = decisionRowId(node.id);
-    targets.set(id, { decisionId: node.id });
-    const ruleItems = (rules?.(node.id) ?? []).map((rule): MinimapItem => {
-      const ruleId = `rule:${node.id}:${rule.rowId}`;
-      targets.set(ruleId, { decisionId: node.id, rowId: rule.rowId });
-      return { id: ruleId, kind: 'rule', label: rule.label };
-    });
-    return {
-      id,
-      kind: 'decision',
-      label: node.label,
-      meta: node.ruleCount === undefined ? undefined : String(node.ruleCount),
-      ariaLabel:
-        node.ruleCount === undefined
-          ? undefined
-          : labels.minimapDecision(node.label, node.ruleCount),
-      children: [...ruleItems, ...node.children.map(toItem)],
-    };
-  };
-  return { items: nodes.map(toItem), targets };
-};
-
-const ruleTotalOf = (nodes: readonly DecisionGraphNode[]): number =>
-  nodes.reduce(
-    (total, node) =>
-      node.kind === 'decision' ? total + (node.ruleCount ?? 0) + ruleTotalOf(node.children) : total,
-    0
-  );
-
 /** A decision graph read as text: one folding card per decision in the order given, the decisions it requires nested under it. */
 export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   nodes,
@@ -226,14 +176,6 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
     size: ResizeObserver | null;
   } | null>(null);
   const ruleCounts = useMemo(() => ruleCountsOf(nodes), [nodes]);
-
-  const targetsRef = useRef<ReadonlyMap<string, DecisionGraphTarget>>(new Map());
-  const minimapItems = useCallback(() => {
-    const built = minimapOf(nodes, rules, labels);
-    targetsRef.current = built.targets;
-    return built.items;
-  }, [nodes, rules, labels]);
-  const ruleTotal = useMemo(() => ruleTotalOf(nodes), [nodes]);
 
   const setExpanded = (next: ReadonlySet<string>) => {
     if (hostExpanded === undefined) setOwnExpanded(next);
@@ -431,20 +373,16 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   return (
     <div className={cn(GRAPH_FRAME_CLASS, GRAPH_OUTPUT_HUE_CLASS)} data-testid={dataTestId}>
       {nodes.length > 0 && (
-        <div className={GRAPH_TOOLBAR_CLASS}>
-          <DecisionGraphMinimap
-            items={minimapItems}
-            triggerLabel={labels.ruleCount(ruleTotal)}
-            currentId={selected === null ? null : decisionRowId(selected)}
-            onPick={(item) => {
-              const target = targetsRef.current.get(item.id);
-              if (target)
-                reveal({ ...target, mode: { kind: 'navigate', focus: true, flash: true } });
-            }}
-            labels={labels}
-            dataTestId={`${dataTestId}-minimap`}
-          />
-        </div>
+        <DecisionGraphMinimapSlot
+          nodes={nodes}
+          rules={rules}
+          selected={selected}
+          onPick={(target) =>
+            reveal({ ...target, mode: { kind: 'navigate', focus: true, flash: true } })
+          }
+          labels={labels}
+          dataTestId={`${dataTestId}-minimap`}
+        />
       )}
       <section
         ref={setScroller}
