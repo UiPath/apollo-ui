@@ -35,11 +35,25 @@ export interface DecisionGraphCardProps {
   onToggle: () => void;
   /** `byKey` when the mark was pressed from the keyboard rather than clicked. */
   onShowProblem: (byKey: boolean) => void;
+  onOpen: (() => void) | undefined;
   cardRef: (element: HTMLElement | null) => void;
   dataTestId: string;
 }
 
 const HEADINGS = ['h3', 'h4', 'h5', 'h6'] as const;
+
+const OPEN_KEYS = 'Alt+Enter';
+
+const openOnKey = (event: React.KeyboardEvent, open: () => void) => {
+  if (event.key !== 'Enter' || !event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    return;
+  }
+  event.preventDefault();
+  open();
+};
+
+const isOtherAction = (target: EventTarget): boolean =>
+  target instanceof Element && target.closest('button:not([data-graph-toggle])') !== null;
 
 /** A decision as a card: a sticky heading that folds it, then the host's body for it while open. */
 export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
@@ -53,6 +67,7 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
   labels,
   onToggle,
   onShowProblem,
+  onOpen,
   cardRef,
   dataTestId,
 }) => {
@@ -72,13 +87,23 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
       data-active={active || undefined}
       data-testid={`${dataTestId}-decision-${node.id}`}
     >
-      <Heading className={GRAPH_HEADER_CLASS}>
+      <Heading
+        className={GRAPH_HEADER_CLASS}
+        onDoubleClick={
+          onOpen &&
+          ((event) => {
+            if (!isOtherAction(event.target)) onOpen();
+          })
+        }
+      >
         <button
           type="button"
           className={GRAPH_TOGGLE_CLASS}
           aria-expanded={open}
           aria-controls={open ? bodyId : undefined}
           onClick={onToggle}
+          onKeyDown={onOpen && ((event) => openOnKey(event, onOpen))}
+          aria-keyshortcuts={onOpen && OPEN_KEYS}
           data-graph-toggle
           data-testid={`${dataTestId}-toggle-${node.id}`}
         >
@@ -133,6 +158,7 @@ export interface DecisionGraphReferenceProps {
   labels: DecisionGraphLabels;
   /** `byKey` when the link was pressed from the keyboard rather than clicked. */
   onReveal: (byKey: boolean) => void;
+  onOpen: (() => void) | undefined;
   dataTestId: string;
 }
 
@@ -143,11 +169,16 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
   node,
   labels,
   onReveal,
+  onOpen,
   dataTestId,
 }) => {
   const [before = '', after = ''] = labels.seeAbove(NAME_SLOT).split(NAME_SLOT);
   return (
-    <div className={GRAPH_REFERENCE_CLASS} data-testid={`${dataTestId}-reference-${node.id}`}>
+    <div
+      className={GRAPH_REFERENCE_CLASS}
+      onDoubleClick={onOpen}
+      data-testid={`${dataTestId}-reference-${node.id}`}
+    >
       <CornerDownRight aria-hidden className="size-3 shrink-0" />
       <span>
         {before}
@@ -155,6 +186,8 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
           type="button"
           className={GRAPH_REFERENCE_CHIP_CLASS}
           onClick={(event) => onReveal(event.detail === 0)}
+          onKeyDown={onOpen && ((event) => openOnKey(event, onOpen))}
+          aria-keyshortcuts={onOpen && OPEN_KEYS}
           data-testid={`${dataTestId}-reference-link-${node.id}`}
         >
           <Network aria-hidden className="size-3" />
