@@ -394,6 +394,28 @@ describe('createCommunityByoApi', () => {
     expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
   });
 
+  it.each([
+    'dall-e-3',
+    'gpt-image-1',
+    'amazon.nova-canvas-v1:0',
+    'amazon.nova-reel-v1:1',
+    'Veo-3.0-generate',
+    'FLUX.1-pro',
+  ])('lists the image or video model %s as not supported', async (id) => {
+    routes.push(on('POST', `${GATEWAY}/api/byom/available-models`, () => ({ body: [id] })));
+
+    const result = await api().listModels('openai', {
+      id: 'c',
+      providerId: 'openai',
+      name: 'n',
+      folderId: 'f',
+    });
+
+    expect(result.ok && result.value.incompatible.map((m) => [m.id, m.short])).toEqual([
+      [id, 'Image or video model'],
+    ]);
+  });
+
   it('tags the models that are not chat models', async () => {
     routes.push(
       on('POST', `${GATEWAY}/api/byom/available-models`, () => ({
