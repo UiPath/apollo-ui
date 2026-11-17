@@ -88,6 +88,11 @@ export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
 export type { PolicyOption } from './PolicyOptionItem';
 export type { PolicyGroup, PolicyPickerProps } from './PolicyPicker';
+export {
+  type GridColumnIds,
+  selectSentenceInGrid,
+  sentenceSelectionOf,
+} from './sentenceGridSelection';
 export type { GlyphTone } from './sentenceMarks';
 export type {
   SentenceBandColumn,
