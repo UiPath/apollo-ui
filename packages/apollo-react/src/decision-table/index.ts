@@ -26,11 +26,7 @@ export type {
   DiffValueChange,
 } from './decisionTextDiff';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
-export type {
-  DecisionTextEdit,
-  DecisionTextEditLabels,
-  DecisionTextLabels,
-} from './decisionTextTypes';
+export type { DecisionTextEdit } from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
@@ -108,7 +104,6 @@ export type {
   SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
-export type { DecisionGraphLabels } from './useDecisionGraphStrings';
 export type { DecisionTextScroll } from './useRuleWindow';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';

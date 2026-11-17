@@ -6,7 +6,7 @@ import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
 import { type DecisionTextDiff, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
-import type { DecisionTextEdit, DecisionTextLabels } from './decisionTextTypes';
+import type { DecisionTextEdit } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
 import { MarkTooltip } from './MarkTooltip';
@@ -58,8 +58,6 @@ interface DecisionTextBaseProps {
   headerMark?: DecisionTextHeaderProps['mark'];
   /** Opens the decision a linked input names, from a click on it or Alt+Enter on its cell; without it inputs stay plain. */
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
-  /** Strings in place of the built-in ones, any subset; mounted rules re-render when it changes, so memoize it. */
-  labels?: Partial<DecisionTextLabels>;
   /** `{ container }` sizes the view to its rules and windows them against `container`, the page's scrolling element when it is null or omitted, whose `scroll-padding-top` covers what sticks over it; `self` by default. */
   scroll?: DecisionTextScroll;
   /** Accessible name of the scroll region. */
@@ -126,7 +124,6 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   mode,
   headerMark,
   onOpenDecision,
-  labels: hostLabels,
   scroll = 'self',
   ariaLabel,
   containerProps,
@@ -137,9 +134,9 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
   const diff = mode.kind === 'diff' ? mode.diff : undefined;
   const idPrefix = useId();
-  const labels = useDecisionTextLabels(hostLabels);
+  const labels = useDecisionTextLabels();
   const hostEdit = mode.kind === 'edit' ? mode.edit : undefined;
-  const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels(hostEdit?.labels));
+  const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels());
   const addRule =
     mode.kind === 'edit' ? { label: labels.addRule, onAdd: mode.onAddRule } : undefined;
   const columns = useMemo(

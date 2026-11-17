@@ -23,7 +23,7 @@ import type {
 } from './decisionGraphTypes';
 import { SENTENCE_MIN_RULE_HEIGHT_PX } from './sentenceRuleHeights';
 import type { ContainerHandlersParams } from './useContainerHandlers';
-import { type DecisionGraphLabels, useDecisionGraphLabels } from './useDecisionGraphStrings';
+import { useDecisionGraphLabels } from './useDecisionGraphStrings';
 import { contentTopIn, type DecisionTextScroll } from './useRuleWindow';
 
 export interface DecisionGraphTextProps {
@@ -44,8 +44,6 @@ export interface DecisionGraphTextProps {
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
   /** A table's rules as its body words them, which the minimap lists and searches by outputs and conditions; read only while it is open, and without it the minimap lists decisions alone. */
   rules?: DecisionGraphMinimapSlotProps['rules'];
-  /** Strings in place of the built-in ones, any subset. */
-  labels?: Partial<DecisionGraphLabels>;
   /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-decision-{id}`, `-row-rule-{id}-{rowId}`, `-row-reference-{id}`, `-no-match`). */
   dataTestId: string;
 }
@@ -155,10 +153,9 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   onReveal,
   onOpenDecision,
   rules,
-  labels: hostLabels,
   dataTestId,
 }) => {
-  const labels = useDecisionGraphLabels(hostLabels);
+  const labels = useDecisionGraphLabels();
   const idPrefix = useId();
   const [ownExpanded, setOwnExpanded] = useState(NO_EXPANDED);
   const expanded = hostExpanded ?? ownExpanded;
