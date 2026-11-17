@@ -4,7 +4,7 @@ import { CornerDownRight } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { MINIMAP_ROW_CLASS } from './decisionGraphStyles';
-import { type MinimapItem, type MinimapRow, matchRange } from './minimapRows';
+import { isCurrent, type MinimapItem, type MinimapRow, matchRange } from './minimapRows';
 
 export const WINDOW_MINIMAP_FROM = 200;
 const DECISION_ROW_PX = 24;
@@ -25,9 +25,9 @@ export interface MinimapListProps {
   activeIndex: number;
   /** Scrolls the active row into view each time it changes. */
   revealTick: number;
-  currentId: string | null;
+  currentDecisionId: string | null;
   idBase: string;
-  onHover: (id: string) => void;
+  onHover: (key: number) => void;
   onPick: (item: MinimapItem) => void;
   labels: MinimapListLabels;
   dataTestId: string;
@@ -56,6 +56,13 @@ const Highlighted = ({ text, query }: { text: string; query: string }) => {
   );
 };
 
+const testIdOf = (item: MinimapItem): string =>
+  item.kind === 'decision'
+    ? `decision-${item.decisionId}`
+    : item.kind === 'rule'
+      ? `rule-${item.decisionId}-${item.rowId}`
+      : `reference-${item.referenceId}`;
+
 const ariaLabelOf = (item: MinimapItem): string | undefined =>
   item.kind === 'reference'
     ? item.ariaLabel
@@ -69,7 +76,7 @@ export const MinimapList: React.FC<MinimapListProps> = ({
   query,
   activeIndex,
   revealTick,
-  currentId,
+  currentDecisionId,
   idBase,
   onHover,
   onPick,
@@ -83,7 +90,7 @@ export const MinimapList: React.FC<MinimapListProps> = ({
     count: windowed ? rows.length : 0,
     getScrollElement: () => list,
     estimateSize: (index) => rowHeight(rows[index]),
-    getItemKey: useCallback((index: number) => rows[index]?.item.id ?? index, [rows]),
+    getItemKey: useCallback((index: number) => rows[index]?.key ?? index, [rows]),
     initialRect: { width: 0, height: FALLBACK_LIST_PX },
     overscan: 10,
   });
@@ -103,11 +110,11 @@ export const MinimapList: React.FC<MinimapListProps> = ({
   });
 
   const renderRow = (row: MinimapRow, index: number, top: number | null) => {
-    const { item, depth } = row;
+    const { item, key, depth } = row;
     const selected = index === activeIndex;
     return (
       <div
-        key={item.id}
+        key={key}
         id={optionIdOf(idBase, index)}
         role="option"
         tabIndex={-1}
@@ -127,10 +134,10 @@ export const MinimapList: React.FC<MinimapListProps> = ({
           paddingInlineStart: 6 + depth * INDENT_PX,
         }}
         data-selected={selected || undefined}
-        data-current={item.id === currentId || undefined}
-        data-testid={`${dataTestId}-row-${item.id}`}
+        data-current={isCurrent(item, currentDecisionId) || undefined}
+        data-testid={`${dataTestId}-row-${testIdOf(item)}`}
         onMouseDown={(event) => event.preventDefault()}
-        onPointerMove={() => !selected && onHover(item.id)}
+        onPointerMove={() => !selected && onHover(key)}
         onClick={() => onPick(item)}
       >
         {item.kind === 'reference' && <CornerDownRight aria-hidden className="size-3 shrink-0" />}

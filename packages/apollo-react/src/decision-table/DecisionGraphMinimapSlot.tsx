@@ -1,19 +1,17 @@
 import type React from 'react';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import { DecisionGraphMinimap } from './DecisionGraphMinimap';
 import { GRAPH_TOOLBAR_CLASS } from './decisionGraphStyles';
-import type {
-  DecisionGraphNode,
-  DecisionGraphRule,
-  DecisionGraphTarget,
-} from './decisionGraphTypes';
+import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import type { MinimapItem } from './minimapRows';
+import { partsText } from './sentenceParts';
+import type { SentenceRule } from './sentenceTypes';
 import type { DecisionGraphLabels } from './useDecisionGraphStrings';
 
 export interface DecisionGraphMinimapSlotProps {
   nodes: readonly DecisionGraphNode[];
-  /** A table's rules as the minimap lists them, read only while it is open; without it the minimap lists decisions alone. */
-  rules?: (decisionId: string) => readonly DecisionGraphRule[];
+  /** A table's rules as its body words them, read only while the minimap is open; without it the minimap lists decisions alone. */
+  rules?: (decisionId: string) => readonly SentenceRule[];
   /** The decision the reader is on, null when none. */
   selected: string | null;
   onPick: (target: DecisionGraphTarget) => void;
@@ -21,37 +19,39 @@ export interface DecisionGraphMinimapSlotProps {
   dataTestId: string;
 }
 
-const decisionRowId = (decisionId: string) => `decision:${decisionId}`;
+/** A rule's outputs and every condition, as one searchable line. */
+const ruleLabel = (rule: SentenceRule): string =>
+  [rule.heading, rule.lead, ...rule.lines.map((line) => line.parts)]
+    .map((parts) => partsText(parts))
+    .join(' ');
 
-/** The minimap's rows for the tree, and where each one goes. */
+/** The minimap's rows for the tree. */
 const minimapOf = (
   nodes: readonly DecisionGraphNode[],
   rules: DecisionGraphMinimapSlotProps['rules'],
   labels: DecisionGraphLabels
-): { items: MinimapItem[]; targets: ReadonlyMap<string, DecisionGraphTarget> } => {
-  const targets = new Map<string, DecisionGraphTarget>();
+): MinimapItem[] => {
   const toItem = (node: DecisionGraphNode): MinimapItem => {
     if (node.kind === 'reference') {
-      const id = `reference:${node.id}`;
-      targets.set(id, { decisionId: node.targetId });
       return {
-        id,
         kind: 'reference',
+        referenceId: node.id,
         label: node.label,
         ariaLabel: labels.minimapReference(node.label),
         targetId: node.targetId,
       };
     }
-    const id = decisionRowId(node.id);
-    targets.set(id, { decisionId: node.id });
-    const ruleItems = (rules?.(node.id) ?? []).map((rule): MinimapItem => {
-      const ruleId = `rule:${node.id}:${rule.rowId}`;
-      targets.set(ruleId, { decisionId: node.id, rowId: rule.rowId });
-      return { id: ruleId, kind: 'rule', label: rule.label };
-    });
+    const ruleItems = (rules?.(node.id) ?? []).map(
+      (rule): MinimapItem => ({
+        kind: 'rule',
+        decisionId: node.id,
+        rowId: rule.rowId,
+        label: ruleLabel(rule),
+      })
+    );
     return {
-      id,
       kind: 'decision',
+      decisionId: node.id,
       label: node.label,
       count:
         node.ruleCount === undefined
@@ -63,8 +63,13 @@ const minimapOf = (
       children: [...ruleItems, ...node.children.map(toItem)],
     };
   };
-  return { items: nodes.map(toItem), targets };
+  return nodes.map(toItem);
 };
+
+const targetOf = (item: MinimapItem): DecisionGraphTarget =>
+  item.kind === 'rule'
+    ? { decisionId: item.decisionId, rowId: item.rowId }
+    : { decisionId: item.kind === 'decision' ? item.decisionId : item.targetId };
 
 const ruleTotalOf = (nodes: readonly DecisionGraphNode[]): number =>
   nodes.reduce(
@@ -82,23 +87,15 @@ export const DecisionGraphMinimapSlot: React.FC<DecisionGraphMinimapSlotProps> =
   labels,
   dataTestId,
 }) => {
-  const targetsRef = useRef<ReadonlyMap<string, DecisionGraphTarget>>(new Map());
-  const items = useCallback(() => {
-    const built = minimapOf(nodes, rules, labels);
-    targetsRef.current = built.targets;
-    return built.items;
-  }, [nodes, rules, labels]);
+  const items = useCallback(() => minimapOf(nodes, rules, labels), [nodes, rules, labels]);
   const ruleTotal = useMemo(() => ruleTotalOf(nodes), [nodes]);
   return (
     <div className={GRAPH_TOOLBAR_CLASS}>
       <DecisionGraphMinimap
         items={items}
         triggerLabel={labels.ruleCount(ruleTotal)}
-        currentId={selected === null ? null : decisionRowId(selected)}
-        onPick={(item) => {
-          const target = targetsRef.current.get(item.id);
-          if (target) onPick(target);
-        }}
+        currentDecisionId={selected}
+        onPick={(item) => onPick(targetOf(item))}
         labels={labels}
         dataTestId={dataTestId}
       />

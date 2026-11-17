@@ -13,7 +13,7 @@ import { MINIMAP_CONTENT_CLASS, MINIMAP_TRIGGER_CLASS } from './decisionGraphSty
 import { isComposing } from './gridEvents';
 import { listIdOf, MinimapList, type MinimapListLabels, optionIdOf } from './MinimapList';
 import { MinimapSearch, type MinimapSearchLabels } from './MinimapSearch';
-import { type MinimapItem, type MinimapRow, minimapRows } from './minimapRows';
+import { isCurrent, type MinimapItem, type MinimapRow, minimapRows } from './minimapRows';
 import { useMinimapNavigation } from './useMinimapNavigation';
 
 /** The minimap's own strings. */
@@ -25,8 +25,8 @@ export interface DecisionGraphMinimapProps {
   /** The rows, read only while the map is open. */
   items: () => readonly MinimapItem[];
   triggerLabel: string;
-  /** The row the reader is on, where the list opens; null when none. */
-  currentId: string | null;
+  /** The decision the reader is on, where the list opens; null when none. */
+  currentDecisionId: string | null;
   /** A row was picked; the map has closed. */
   onPick: (item: MinimapItem) => void;
   labels: DecisionGraphMinimapLabels;
@@ -36,18 +36,18 @@ export interface DecisionGraphMinimapProps {
 const landingOf = (
   rows: readonly MinimapRow[],
   query: string,
-  currentId: string | null
-): string | null =>
+  currentDecisionId: string | null
+): number | null =>
   (query.trim()
     ? (rows.find((row) => row.match) ?? rows[0])
-    : (rows.find((row) => row.item.id === currentId) ?? rows[0])
-  )?.item.id ?? null;
+    : (rows.find((row) => isCurrent(row.item, currentDecisionId)) ?? rows[0])
+  )?.key ?? null;
 
 /** A searchable outline of the graph's decisions and rules, a WAI-ARIA listbox driven from its search field. */
 export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
   items,
   triggerLabel,
-  currentId,
+  currentDecisionId,
   onPick,
   labels,
   dataTestId,
@@ -71,13 +71,13 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
     if (next) {
       picked.current = false;
       setQuery('');
-      navigation.land(landingOf(minimapRows(items(), ''), '', currentId));
+      navigation.land(landingOf(minimapRows(items(), ''), '', currentDecisionId));
     }
     setOpen(next);
   };
   const changeQuery = (next: string) => {
     setQuery(next);
-    navigation.land(landingOf(minimapRows(loaded, next), next, currentId));
+    navigation.land(landingOf(minimapRows(loaded, next), next, currentDecisionId));
   };
 
   return (
@@ -144,7 +144,7 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
           query={query}
           activeIndex={navigation.activeIndex}
           revealTick={navigation.revealTick}
-          currentId={currentId}
+          currentDecisionId={currentDecisionId}
           idBase={idBase}
           onHover={navigation.hover}
           onPick={pick}
