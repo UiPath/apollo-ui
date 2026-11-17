@@ -389,6 +389,53 @@ describe('ByoModelDialog', () => {
     expect(api.listModels).toHaveBeenCalledTimes(2);
   });
 
+  it('asks for the secrets of an authentication type the edited connection does not use', async () => {
+    const user = userEvent.setup();
+    const secret = (key: string, label: string, group: string) => ({
+      key,
+      label,
+      secret: true,
+      required: true,
+      advanced: false,
+      group,
+      defaultValue: '',
+      placeholder: '',
+      hint: '',
+    });
+    const form: ByoConnectionForm = {
+      authTypes: [
+        { value: 'key', label: 'API key' },
+        { value: 'app', label: 'Client credentials' },
+      ],
+      defaultAuthType: 'key',
+      fields: [
+        secret('api-key', 'API key', 'key'),
+        secret('client-secret', 'Client secret', 'app'),
+      ],
+    };
+    const api = fakeApi({
+      loadForm: vi.fn(async () => ({ ok: true as const, value: form })),
+      loadConnectionValues: vi.fn(async () => ({
+        ok: true as const,
+        value: { authType: 'key', values: {} },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await pick(user, 'Provider', 'OpenAI');
+    await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
+    const save = await screen.findByRole('button', { name: 'Save connection' });
+    // The connection holds its API key, so it may stay blank.
+    await waitFor(() => expect(save).toBeEnabled());
+    expect(screen.getByLabelText(/API key/)).not.toBeRequired();
+
+    await pick(user, 'Authentication', 'Client credentials');
+    expect(screen.getByLabelText(/Client secret/)).toBeRequired();
+    expect(save).toBeDisabled();
+    await user.type(screen.getByLabelText(/Client secret/), 'shh');
+    expect(save).toBeEnabled();
+  });
+
   it('keeps loading the form when the connection changes meanwhile', async () => {
     const user = userEvent.setup();
     let finishForm: () => void = () => {};

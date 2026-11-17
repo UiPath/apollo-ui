@@ -163,6 +163,8 @@ function DialogBody({
   const [folderId, setFolderId] = React.useState('');
   const [formState, setFormState] = React.useState<FormState>(NO_FORM);
   const [authType, setAuthType] = React.useState<string | null>(null);
+  // The authentication type of the connection being edited, whose secrets it already holds.
+  const [savedAuthType, setSavedAuthType] = React.useState<string | null>(null);
   const [values, setValues] = React.useState<Record<string, string>>({});
   const [moreOpen, setMoreOpen] = React.useState(false);
   const [editingConnection, setEditingConnection] = React.useState(false);
@@ -360,7 +362,9 @@ function DialogBody({
         failConnectionEdit(result.failure);
         return;
       }
-      setAuthType(result.value.authType ?? form.defaultAuthType);
+      const saved = result.value.authType ?? form.defaultAuthType;
+      setSavedAuthType(saved);
+      setAuthType(saved);
       setValues({ ...defaultsOf(form), ...result.value.values });
     } catch (err) {
       if (gen === generation.current) failConnectionEdit(unexpected(err));
@@ -387,7 +391,11 @@ function DialogBody({
   // An edited connection lives in its own folder; only a new one picks a folder.
   const formFolderId = editingConnection && connection ? connection.folderId : folderId;
   // A secret left blank keeps the connection's current value.
-  const isRequired = (f: ByoFormField) => f.required && !(editingConnection && f.secret);
+  // A secret the edited connection holds keeps its value when left blank; a secret of another
+  // authentication type has none to keep.
+  const keepsCurrentValue = (f: ByoFormField) =>
+    editingConnection && f.secret && (!f.group || f.group === savedAuthType);
+  const isRequired = (f: ByoFormField) => f.required && !keepsCurrentValue(f);
   const fields = shownFields(form, authType);
   const mainFields = fields.filter((f) => !f.advanced);
   const advancedFields = fields.filter((f) => f.advanced);
@@ -514,13 +522,12 @@ function DialogBody({
   }, [connect.status, modelsState.status]);
 
   const fieldInput = (f: ByoFormField, main: boolean) => {
-    const keepsCurrentValue = editingConnection && f.secret;
     return (
       <Field
         key={f.key}
         id={`byo-${f.key}`}
         label={f.label}
-        hint={keepsCurrentValue ? labels.secretKeepHint : f.hint}
+        hint={keepsCurrentValue(f) ? labels.secretKeepHint : f.hint}
         required={isRequired(f)}
       >
         <Input
