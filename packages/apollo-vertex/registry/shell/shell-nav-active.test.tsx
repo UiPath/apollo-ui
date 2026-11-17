@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { VERTEX_NAMESPACE } from "@/lib/vertex-translation";
 import {
+  activeNavMatch,
   mostSpecificActivePath,
   navItemIsCurrent,
   navItemState,
@@ -103,6 +104,49 @@ describe("mostSpecificActivePath", () => {
     expect(mostSpecificActivePath("/rules/exceptions", ["/rules"])).toBe(
       "/rules",
     );
+  });
+});
+
+describe("activeNavMatch", () => {
+  const sidebar = [
+    { path: "/acme" },
+    { path: "/acme/projects", childPaths: ["/acme/projects/archive"] },
+    { path: "/work", childPaths: ["/invoices"] },
+  ];
+
+  it("keeps a landing page off while a section under it is open", () => {
+    const section = { itemPath: "/acme/projects", path: "/acme/projects" };
+    expect(activeNavMatch("/acme/projects", sidebar)).toEqual(section);
+    expect(activeNavMatch("/acme/projects/42", sidebar)).toEqual(section);
+  });
+
+  it("selects the landing page on its own route", () => {
+    const landing = { itemPath: "/acme", path: "/acme" };
+    expect(activeNavMatch("/acme", sidebar)).toEqual(landing);
+    expect(activeNavMatch("/acme/unlisted", sidebar)).toEqual(landing);
+  });
+
+  it("gives a child page to its group, naming the child", () => {
+    expect(activeNavMatch("/acme/projects/archive", sidebar)).toEqual({
+      itemPath: "/acme/projects",
+      path: "/acme/projects/archive",
+    });
+    expect(activeNavMatch("/invoices/abc", sidebar)).toEqual({
+      itemPath: "/work",
+      path: "/invoices",
+    });
+  });
+
+  it("names the group's own path when it beats a less specific child", () => {
+    const items = [{ path: "/acme/projects", childPaths: ["/acme"] }];
+    expect(activeNavMatch("/acme/projects", items)).toEqual({
+      itemPath: "/acme/projects",
+      path: "/acme/projects",
+    });
+  });
+
+  it("returns null when no item matches", () => {
+    expect(activeNavMatch("/elsewhere", sidebar)).toBeNull();
   });
 });
 
