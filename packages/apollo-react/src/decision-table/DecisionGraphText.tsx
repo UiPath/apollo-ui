@@ -87,7 +87,7 @@ const nearAfter = (
   let next: Set<string> | undefined;
   for (const { target, isIntersecting } of entries) {
     const decisionId = target instanceof HTMLElement ? target.dataset.decisionId : undefined;
-    if (decisionId === undefined || current.has(decisionId) === isIntersecting) continue;
+    if (decisionId === undefined || (next ?? current).has(decisionId) === isIntersecting) continue;
     next ??= new Set(current);
     if (isIntersecting) next.add(decisionId);
     else next.delete(decisionId);
@@ -278,7 +278,10 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
         scroller,
         contentTopIn(rule, scroller) - (scroller.clientHeight - rule.offsetHeight) / 2
       );
-      if (pending.focus) rule.focus({ preventScroll: true });
+      if (pending.focus) {
+        if (!rule.hasAttribute('tabindex')) rule.tabIndex = -1;
+        rule.focus({ preventScroll: true });
+      }
       if (pending.flash) flash(rule);
       return true;
     };

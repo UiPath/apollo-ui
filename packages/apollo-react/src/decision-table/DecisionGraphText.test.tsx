@@ -80,6 +80,7 @@ const SelectingHost = ({
 };
 
 let nearCard: (decisionId: string) => boolean = () => true;
+let cardObservers: CardObserver[] = [];
 
 /** Reports each card it observes as the browser does: near the scrollport when `nearCard` says so. */
 class CardObserver {
@@ -90,15 +91,13 @@ class CardObserver {
   readonly #callback: IntersectionObserverCallback;
   constructor(callback: IntersectionObserverCallback) {
     this.#callback = callback;
+    cardObservers.push(this);
   }
-  observe(target: Element) {
-    const decisionId = target instanceof HTMLElement ? target.dataset.decisionId : undefined;
-    if (decisionId === undefined) return;
-    const rect = target.getBoundingClientRect();
-    const isIntersecting = nearCard(decisionId);
+  report(crossings: readonly { target: Element; isIntersecting: boolean }[]) {
     this.#callback(
-      [
-        {
+      crossings.map(({ target, isIntersecting }) => {
+        const rect = target.getBoundingClientRect();
+        return {
           target,
           isIntersecting,
           intersectionRatio: isIntersecting ? 1 : 0,
@@ -106,10 +105,15 @@ class CardObserver {
           intersectionRect: rect,
           rootBounds: null,
           time: 0,
-        },
-      ],
+        };
+      }),
       this
     );
+  }
+  observe(target: Element) {
+    const decisionId = target instanceof HTMLElement ? target.dataset.decisionId : undefined;
+    if (decisionId === undefined) return;
+    this.report([{ target, isIntersecting: nearCard(decisionId) }]);
   }
   unobserve() {}
   disconnect() {}
@@ -123,6 +127,7 @@ beforeEach(() => {
   scrollToSpy = vi.fn();
   HTMLElement.prototype.scrollTo = scrollToSpy as unknown as HTMLElement['scrollTo'];
   nearCard = () => true;
+  cardObservers = [];
   vi.stubGlobal('IntersectionObserver', CardObserver);
 });
 afterEach(() => {
@@ -228,6 +233,37 @@ describe('DecisionGraphText', () => {
     render(<SelectingHost />);
     await userEvent.click(screen.getByTestId('graph-mark-risk'));
     expect(document.activeElement).toBe(screen.getByTestId('text-risk-row-r20'));
+  });
+
+  it("focuses a revealed rule in a read-only body that shows the host's selection", async () => {
+    const ReadOnlyHost = () => {
+      const [shown, setShown] = useState<{ id: string; rowId: string } | null>(null);
+      return (
+        <DecisionGraphText
+          nodes={MARKED.nodes}
+          renderBody={(id, scroll) =>
+            textBody(id, scroll, shown?.id === id ? { rowId: shown.rowId } : null)
+          }
+          onReveal={(target) => {
+            if (target.rowId) setShown({ id: target.decisionId, rowId: target.rowId });
+          }}
+          dataTestId="graph"
+        />
+      );
+    };
+    const { container } = render(<ReadOnlyHost />);
+    await userEvent.click(screen.getByTestId('graph-mark-risk'));
+    const rule = screen.getByTestId('text-risk-row-r20');
+    expect(document.activeElement).toBe(rule);
+    expect(rule).toHaveAttribute('tabindex', '-1');
+    expect(container.querySelectorAll('li[tabindex="0"]')).toHaveLength(0);
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('keeps the roving tab stop of a selectable body it reveals a rule in', async () => {
+    render(<SelectingHost />);
+    await userEvent.click(screen.getByTestId('graph-mark-risk'));
+    expect(screen.getByTestId('text-risk-row-r20')).toHaveAttribute('tabindex', '0');
   });
 
   it('leaves keys typed in a body to the body', async () => {
@@ -401,5 +437,26 @@ describe('DecisionGraphText', () => {
     expect(document.activeElement).toBe(rule);
     expect(rule).toHaveAttribute('aria-current', 'true');
     expect(container.querySelectorAll('li[data-row-id]').length).toBeLessThan(100);
+  });
+
+  it('takes the last crossing of a card in one observer batch', () => {
+    nearCard = (decisionId) => decisionId === 'risk';
+    render(graph({ expanded: new Set(['eligibility', 'risk']) }));
+    const placeholder = (id: string) => body(id)?.querySelector('[data-graph-placeholder]');
+    expect(placeholder('risk')).toBeNull();
+    expect(placeholder('eligibility')).not.toBeNull();
+    const card = (id: string) => screen.getByTestId(`graph-decision-${id}`);
+    act(() => {
+      for (const observer of cardObservers) {
+        observer.report([
+          { target: card('risk'), isIntersecting: false },
+          { target: card('risk'), isIntersecting: true },
+          { target: card('eligibility'), isIntersecting: true },
+          { target: card('eligibility'), isIntersecting: false },
+        ]);
+      }
+    });
+    expect(placeholder('risk')).toBeNull();
+    expect(placeholder('eligibility')).not.toBeNull();
   });
 });
