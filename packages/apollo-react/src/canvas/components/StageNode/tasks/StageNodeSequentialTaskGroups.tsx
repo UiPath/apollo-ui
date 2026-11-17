@@ -229,10 +229,18 @@ export const StageNodeSequentialTaskGroups = ({
     >
       {sequentialTaskGroups.map((taskGroup, groupIndex) => {
         const isParallel = taskGroup.length > 1;
-        // Keyed by its first task, not its position, so a reorder moves a moved task's row instead
-        // of remounting it, which would drop the keyboard focus the task holds.
+        // Keyed by its members, not its position or its first task, so reordering inside a group or
+        // between groups keeps each row mounted instead of dropping the focus its task holds.
         return (
-          <Row key={taskGroup[0]?.id ?? `group-${groupIndex}`} gap={Spacing.SpacingS}>
+          <Row
+            key={
+              taskGroup
+                .map((task) => task.id)
+                .sort()
+                .join('|') || `group-${groupIndex}`
+            }
+            gap={Spacing.SpacingS}
+          >
             {isParallel && <StageParallelBracket />}
             <StageTaskGroupContainer isParallel={isParallel}>
               {isParallel && (

@@ -11,24 +11,31 @@ import type { StageNodeBaseProps, StageTaskItem } from './StageNode.types';
 // The shared setup mocks XYFlow; whether a key reaches the stage depends on the real node wrapper.
 vi.unmock('@uipath/apollo-react/canvas/xyflow/react');
 
-// Without layout in happy-dom a keyboard drag never travels, so the drop is forced to rotate the group.
-const dropMock = vi.hoisted(() => ({ rotateOnDrop: false }));
+// Without layout in happy-dom a keyboard drag never travels, so a test supplies the groups a drop commits.
+const dropMock = vi.hoisted(() => ({
+  commit: undefined as ((groups: StageTaskItem[][]) => StageTaskItem[][]) | undefined,
+  delayMs: 0,
+  initial: undefined as StageTaskItem[][] | undefined,
+}));
 vi.mock('./hooks/useStageTaskDragHandler', async (importOriginal) => {
   const original = await importOriginal<typeof import('./hooks/useStageTaskDragHandler')>();
   return {
     ...original,
     useStageTaskDragHandler: (args: Parameters<typeof original.useStageTaskDragHandler>[0]) => {
       const handler = original.useStageTaskDragHandler(args);
-      if (!dropMock.rotateOnDrop) {
+      const { commit, delayMs } = dropMock;
+      if (!commit) {
         return handler;
       }
       return {
         ...handler,
         handleDragEnd: () => {
-          const [group = [], ...rest] = args.taskGroups;
-          const rotated = [[...group.slice(1), ...group.slice(0, 1)], ...rest];
-          // The host commits after dnd-kit has already restored focus.
-          setTimeout(() => args.onTaskReorder(rotated), 100);
+          const committed = commit(args.taskGroups);
+          if (delayMs) {
+            setTimeout(() => args.onTaskReorder(committed), delayMs);
+          } else {
+            args.onTaskReorder(committed);
+          }
         },
       };
     },
@@ -64,7 +71,7 @@ function TestStageNode({ id, selected, dragging, width, data }: NodeProps<StageF
 }
 
 function ReorderableStageNode(props: NodeProps<StageFlowNode>) {
-  const [groups, setGroups] = useState<StageTaskItem[][]>(parallelTasks);
+  const [groups, setGroups] = useState<StageTaskItem[][]>(dropMock.initial ?? parallelTasks);
   return (
     <TestStageNode
       {...props}
@@ -128,7 +135,9 @@ const renderStage = (node: StageFlowNode) =>
 
 beforeEach(() => {
   onNodesChangeSpy.mockReset();
-  dropMock.rotateOnDrop = false;
+  dropMock.commit = undefined;
+  dropMock.delayMs = 0;
+  dropMock.initial = undefined;
 });
 
 describe('StageNode task activation in a real canvas', () => {
@@ -194,15 +203,60 @@ describe('StageNode task activation in a real canvas', () => {
     expect(canvasHandledKey()).toBe(false);
   });
 
-  it('keeps focus on a task whose parallel group is reordered by the host', async () => {
-    const user = userEvent.setup();
-    dropMock.rotateOnDrop = true;
-    renderStage({ ...stageWithTasks(), type: 'reorderable' });
-    taskRow('task-1')?.focus();
-
+  const pickUpAndDrop = async (user: ReturnType<typeof userEvent.setup>, taskId: string) => {
+    taskRow(taskId)?.focus();
     await user.keyboard(' ');
-    await waitFor(() => expect(dragAnnouncement()).toMatch(/item task-1/));
+    await waitFor(() => expect(dragAnnouncement()).toMatch(new RegExp(`item ${taskId}`)));
     await user.keyboard('{Enter}');
+  };
+
+  const rotate = (groups: StageTaskItem[][]) => {
+    const [group = [], ...rest] = groups;
+    return [[...group.slice(1), ...group.slice(0, 1)], ...rest];
+  };
+
+  it('keeps the same focused row when a task is reordered inside a parallel group', async () => {
+    const user = userEvent.setup();
+    dropMock.commit = rotate;
+    renderStage({ ...stageWithTasks(), type: 'reorderable' });
+    const row = taskRow('task-1');
+
+    await pickUpAndDrop(user, 'task-1');
+
+    await waitFor(() =>
+      expect(screen.getAllByTestId(/^stage-task-card-/)[0]).toHaveAttribute(
+        'data-testid',
+        'stage-task-card-task-2'
+      )
+    );
+    expect(taskRow('task-1')).toBe(row);
+    expect(row).toHaveFocus();
+  });
+
+  it('keeps focus on a task moved into a parallel group', async () => {
+    const user = userEvent.setup();
+    dropMock.initial = [[{ id: 'task-1', label: 'Task 1' }], parallelTasks[0]!.slice(1)];
+    dropMock.commit = ([, group = []]) => [[...group, { id: 'task-1', label: 'Task 1' }]];
+    renderStage({ ...stageWithTasks(), type: 'reorderable' });
+
+    await pickUpAndDrop(user, 'task-1');
+
+    await waitFor(() =>
+      expect(screen.getAllByTestId(/^stage-task-card-/)[0]).toHaveAttribute(
+        'data-testid',
+        'stage-task-card-task-2'
+      )
+    );
+    await waitFor(() => expect(taskRow('task-1')).toHaveFocus());
+  });
+
+  it('keeps focus on a task whose reorder the host commits late', async () => {
+    const user = userEvent.setup();
+    dropMock.commit = rotate;
+    dropMock.delayMs = 100;
+    renderStage({ ...stageWithTasks(), type: 'reorderable' });
+
+    await pickUpAndDrop(user, 'task-1');
 
     await waitFor(() =>
       expect(screen.getAllByTestId(/^stage-task-card-/)[0]).toHaveAttribute(
