@@ -5,19 +5,7 @@ import {
   EDITABLE_TABLE,
   type EditableTable,
   EMPTY_TABLE,
-  isOutput,
   manyRulesTable,
-  tableColumns,
-  tableWithClearedRule,
-  tableWithCondition,
-  tableWithDuplicate,
-  tableWithExpression,
-  tableWithMovedRule,
-  tableWithNewInput,
-  tableWithoutCell,
-  tableWithoutRule,
-  tableWithRuleAt,
-  tableWithValue,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
 import {
@@ -31,30 +19,25 @@ import {
   REMOVED_COLUMN_DIFF,
 } from './__fixtures__/diffSentences.fixtures';
 import {
-  HIT_POLICY_GROUPS,
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_HEADER,
   manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
-import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
+import {
+  type HostMode,
+  NUMERIC_INPUTS,
+  storyTableOf,
+  storyTableProps,
+} from './__fixtures__/storyTableHost';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextDiff } from './decisionTextDiff';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { Mark, RowMark, TableMarks } from './marks';
-import { pickedOption } from './PolicyOptionItem';
 import { valueTokenOf } from './sentenceParts';
-import type {
-  SentenceBandColumn,
-  SentenceCellId,
-  SentenceRule,
-  SentenceSelection,
-} from './sentenceTypes';
-import type {
-  ExpressionEditorProps,
-  RangeEnds,
-  ValueField,
-  ValueOperatorOption,
-} from './valueTypes';
+import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
+import type { ExpressionEditorProps } from './valueTypes';
+
+const NO_MARKS: TableMarks = { rows: new Map(), columns: new Map() };
 
 const selectionText = (selection: SentenceSelection | null) =>
   selection ? [selection.rowId, selection.columnId ?? 'rule'].join(' / ') : 'none';
@@ -69,147 +52,6 @@ interface StoryCaptionProps {
 const StoryCaption = ({ children }: StoryCaptionProps) => (
   <p className="text-xs text-foreground-de-emp">{children}</p>
 );
-
-/** How much of the view a host wires: rules only, then selection, then editing. */
-type HostMode = 'read' | 'select' | 'edit';
-
-const NUMERIC_INPUTS = new Set(['age', 'income']);
-
-const NO_MARKS: TableMarks = { rows: new Map(), columns: new Map() };
-
-/** The words a one-value condition of the story switches between, each its own id. */
-const SINGLE_VALUE_OPERATORS = [
-  'is',
-  'is not',
-  'is less than',
-  'is at most',
-  'is greater than',
-  'is at least',
-].map((label) => ({ id: label, label }));
-
-/** The story's operators: the one-value ones, then a range and two lists. */
-const CONDITION_OPERATORS: readonly ValueOperatorOption[] = [
-  ...SINGLE_VALUE_OPERATORS,
-  { id: 'is between', label: 'is between', shape: 'range' },
-  { id: 'is one of', label: 'is one of', shape: 'list' },
-  { id: 'is none of', label: 'is none of', shape: 'list' },
-];
-
-/** The story's conditions as FEEL unary tests, which its expression editor edits. */
-const FEEL_TESTS: Readonly<
-  Record<string, (values: readonly string[], ends: RangeEnds | undefined) => string>
-> = {
-  is: (values) => values.join(', '),
-  'is not': (values) => `not(${values.join(', ')})`,
-  'is less than': ([value = '']) => `< ${value}`,
-  'is at most': ([value = '']) => `<= ${value}`,
-  'is greater than': ([value = '']) => `> ${value}`,
-  'is at least': ([value = '']) => `>= ${value}`,
-  'is between': ([low = '', high = ''], ends) =>
-    `${ends?.lowInclusive === false ? '(' : '['}${low}..${high}${ends?.highInclusive === false ? ')' : ']'}`,
-  'is one of': (values) => values.join(', '),
-  'is none of': (values) => `not(${values.join(', ')})`,
-};
-
-/** The values the story's columns allow. */
-const ALLOWED_VALUES: Readonly<Record<string, readonly string[]>> = {
-  risk: ['"high"', '"standard"', '"review"'],
-  channel: ['"web"', '"app"', '"branch"'],
-};
-
-/** The types the story's column popover offers, each with its kind of value and an example of its values. */
-const COLUMN_TYPES: readonly ColumnTypeOption[] = [
-  { id: 'string', label: 'Text', type: 'text', allowedValuesPlaceholder: 'e.g. "web", "app"' },
-  {
-    id: 'number',
-    label: 'Number',
-    type: 'number',
-    allowedValuesPlaceholder: 'e.g. 10, 20, [30..40]',
-  },
-  { id: 'boolean', label: 'Boolean', type: 'boolean', allowedValuesPlaceholder: 'e.g. true' },
-  { id: 'date', label: 'Date', type: 'date', allowedValuesPlaceholder: 'e.g. date("2026-01-01")' },
-];
-
-/** What the story host keeps of a column beyond its name, once the column popover changes it. */
-type ColumnEdits = Readonly<Record<string, Omit<ColumnChange, 'label'>>>;
-
-const NO_COLUMN_EDITS: ColumnEdits = {};
-
-const columnTypeOf = (columnId: string, edits: ColumnEdits = NO_COLUMN_EDITS): string =>
-  edits[columnId]?.typeRef ?? (NUMERIC_INPUTS.has(columnId) ? 'number' : 'string');
-
-const columnValueType = (columnId: string, edits?: ColumnEdits) =>
-  COLUMN_TYPES.find((type) => type.id === columnTypeOf(columnId, edits))?.type;
-
-const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[] | undefined => {
-  const text = edits[columnId]?.allowedValues;
-  if (text === undefined) return ALLOWED_VALUES[columnId];
-  const values = text.split(',').flatMap((value) => (value.trim() ? [value.trim()] : []));
-  return values.length > 0 ? values : undefined;
-};
-
-/** The table's columns, each with its kind of value. */
-const typedColumns = (table: EditableTable, edits?: ColumnEdits) => {
-  const { inputs, outputs } = tableColumns(table);
-  const typed = (columns: readonly SentenceBandColumn[]) =>
-    columns.map((column) => ({ ...column, type: columnValueType(column.id, edits) }));
-  return { inputs: typed(inputs), outputs: typed(outputs) };
-};
-
-/** What the story host's column popover edits: the column's name as its label, and what the popover changed. */
-const storyColumnField = (
-  table: EditableTable,
-  edits: ColumnEdits,
-  columnId: string
-): ColumnField => {
-  const output = isOutput(table, columnId);
-  const column = [...table.inputs, ...table.outputs].find((candidate) => candidate.id === columnId);
-  return {
-    kind: output ? 'output' : 'input',
-    label: column?.name ?? columnId,
-    binding: edits[columnId]?.binding ?? columnId,
-    required: !output,
-    typeRef: columnTypeOf(columnId, edits),
-    allowedValues: edits[columnId]?.allowedValues ?? (ALLOWED_VALUES[columnId] ?? []).join(', '),
-  };
-};
-
-/** The table with a column renamed. */
-const tableWithColumnName = (
-  table: EditableTable,
-  columnId: string,
-  name: string
-): EditableTable => {
-  const rename = (columns: EditableTable['inputs']) =>
-    columns.map((column) => (column.id === columnId ? { ...column, name } : column));
-  return { ...table, inputs: rename(table.inputs), outputs: rename(table.outputs) };
-};
-
-const numberOrder = (low: string, high: string) => Number(low) <= Number(high);
-
-/** What the story host's popover offers: the column's type glyph, a condition's operators, its values and ends, and the column's allowed values. */
-const storyValueField = (
-  table: EditableTable,
-  edits: ColumnEdits,
-  cell: SentenceCellId
-): ValueField => {
-  const condition = table.rules
-    .find((rule) => rule.rowId === cell.rowId)
-    ?.conditions.find((candidate) => candidate.inputId === cell.columnId);
-  const offered = CONDITION_OPERATORS.find((option) => option.id === condition?.operator);
-  const switchable = !isOutput(table, cell.columnId) && (condition === undefined || offered);
-  const multiple = offered?.shape !== undefined && offered.shape !== 'single';
-  const test = condition ? FEEL_TESTS[condition.operator]?.(condition.values, condition.ends) : '';
-  return {
-    operators: switchable ? CONDITION_OPERATORS : undefined,
-    operator: condition?.operator ?? 'is',
-    allowedValues: allowedValuesOf(cell.columnId, edits),
-    values: multiple ? condition?.values : undefined,
-    ends: condition?.ends,
-    inOrder: columnTypeOf(cell.columnId, edits) === 'number' ? numberOrder : undefined,
-    expression: switchable ? test : undefined,
-  };
-};
 
 /** The host's validation, as the grid's host marks its cells: a number input holding text, and an empty outcome. */
 const validationMarks = (table: EditableTable): TableMarks => {
@@ -252,13 +94,6 @@ const liveSelection = (
 const sameSelection = (left: SentenceSelection | null, right: SentenceSelection | null) =>
   left?.rowId === right?.rowId && left?.columnId === right?.columnId;
 
-/** The rule a host selects once one is deleted: the next, else the previous. */
-const neighbourOf = (table: EditableTable, rowId: string): SentenceSelection | null => {
-  const index = table.rules.findIndex((rule) => rule.rowId === rowId);
-  const neighbour = table.rules[index + 1] ?? table.rules[index - 1];
-  return neighbour ? { rowId: neighbour.rowId } : null;
-};
-
 interface TableHostProps {
   initialTable: EditableTable;
   caption: string;
@@ -285,15 +120,13 @@ const TableHost = ({
   editLabels,
   frameClassName = 'h-[600px]',
 }: TableHostProps) => {
-  const [table, setTable] = useState(initialTable);
+  const [host, setHost] = useState(() => storyTableOf(initialTable));
+  const { table } = host;
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   const [hovered, setHovered] = useState<SentenceCellId | null>(null);
-  const [hitPolicy, setHitPolicy] = useState('UNIQUE');
   const [openedDecision, setOpenedDecision] = useState<string | null>(null);
-  const [columnEdits, setColumnEdits] = useState<ColumnEdits>(NO_COLUMN_EDITS);
   const [moreProperties, setMoreProperties] = useState<string | null>(null);
   const rules = useMemo(() => wordedRules(table), [table]);
-  const columns = useMemo(() => typedColumns(table, columnEdits), [table, columnEdits]);
   const marks = useMemo(
     () => fixedMarks ?? (validate ? validationMarks(table) : NO_MARKS),
     [fixedMarks, table, validate]
@@ -306,74 +139,15 @@ const TableHost = ({
     });
   }, [rules]);
 
-  const addRuleAt = (index: number) => {
-    const [next, rowId] = tableWithRuleAt(table, index);
-    setTable(next);
-    setSelected({ rowId });
-  };
-  const deleteRule = (rowId: string) => {
-    setTable(tableWithoutRule(table, rowId));
-    setSelected(neighbourOf(table, rowId));
-  };
-  const columnName = (columnId: string) =>
-    [...table.inputs, ...table.outputs].find((column) => column.id === columnId)?.name ?? columnId;
-
-  const edit: DecisionTextEdit = {
+  const { columns, header, edit, policy, addRule } = storyTableProps({
+    state: host,
+    onChange: setHost,
+    onSelect: setSelected,
+    onMoreProperties: setMoreProperties,
     renderEditor,
-    onCommit: (value, commit) => {
-      const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
-      if (!isOutput(table, value.columnId) && text.trim() === '') {
-        return `Not saved: the ${columnName(value.columnId)} condition needs a value. Type one, press Escape, or remove the condition.`;
-      }
-      setTable(
-        commit.kind === 'expression'
-          ? tableWithExpression(table, value, commit.text)
-          : commit.operator === undefined
-            ? tableWithValue(table, value, text)
-            : tableWithCondition(table, value, commit)
-      );
-      return undefined;
-    },
-    valueField: (cell) => storyValueField(table, columnEdits, cell),
-    column: {
-      field: (columnId) => storyColumnField(table, columnEdits, columnId),
-      types: COLUMN_TYPES,
-      onCommit: (columnId, { label, ...rest }) => {
-        if (label !== undefined) setTable(tableWithColumnName(table, columnId, label));
-        setColumnEdits({ ...columnEdits, [columnId]: { ...columnEdits[columnId], ...rest } });
-      },
-      onMoreProperties: setMoreProperties,
-    },
-    onClearCell: (cell) => setTable(tableWithoutCell(table, cell)),
-    inputIds: table.inputs.map((input) => input.id),
-    onAddInput: () => {
-      const [next, columnId] = tableWithNewInput(table);
-      setTable(next);
-      return columnId;
-    },
-    onInsertRule: addRuleAt,
-    onDuplicateRule: (rowId) => {
-      const [next, copyId] = tableWithDuplicate(table, rowId);
-      setTable(next);
-      setSelected({ rowId: copyId });
-    },
-    onClearRule: (rowId) => setTable(tableWithClearedRule(table, rowId)),
-    onMoveRule: (from, to) => setTable(tableWithMovedRule(table, from, to)),
-    onDeleteRule: deleteRule,
-    labels: editLabels,
-  };
+    editLabels,
+  });
   const editable = mode === 'edit';
-  const picked = pickedOption(
-    HIT_POLICY_GROUPS.flatMap((group) => group.options),
-    hitPolicy
-  );
-  const header = { label: picked?.label ?? '', hint: picked?.hint ?? '' };
-  const policy = {
-    value: hitPolicy,
-    groups: HIT_POLICY_GROUPS,
-    onChange: setHitPolicy,
-    label: `Hit policy: ${header.label}`,
-  };
 
   return (
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
@@ -393,9 +167,7 @@ const TableHost = ({
           : { selected, onSelect: setSelected, edit: editable ? edit : undefined })}
         policy={editable ? policy : undefined}
         onOpenDecision={setOpenedDecision}
-        addRule={
-          editable ? { label: 'Add rule', onAdd: () => addRuleAt(table.rules.length) } : undefined
-        }
+        addRule={editable ? addRule : undefined}
       />
       <StoryCaption>
         Selected: {selectionText(selected)} · Hovered: {cellText(hovered)} · Opened decision:{' '}

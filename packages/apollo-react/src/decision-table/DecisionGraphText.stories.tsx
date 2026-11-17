@@ -10,22 +10,17 @@ import {
   SHARED_DEPENDENCY,
   SINGLE_DECISION,
 } from './__fixtures__/decisionGraph.fixtures';
+import { type EditableTable, wordedRules } from './__fixtures__/editableSentences.fixtures';
 import {
-  type EditableTable,
-  tableColumns,
-  tableWithCondition,
-  tableWithExpression,
-  tableWithoutCell,
-  tableWithoutRule,
-  wordedRules,
-} from './__fixtures__/editableSentences.fixtures';
+  type HostMode,
+  type StoryTable,
+  storyTableOf,
+  storyTableProps,
+} from './__fixtures__/storyTableHost';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
-import type { DecisionGraphTarget } from './decisionGraphTypes';
+import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
-
-type HostMode = 'read' | 'select' | 'edit';
 
 interface GraphSelection {
   decisionId: string;
@@ -40,68 +35,92 @@ interface GraphHostProps {
 
 const isTable = (body: GraphBody | undefined): body is EditableTable => typeof body === 'object';
 
-const GraphHost = ({ graph, mode = 'select', caption }: GraphHostProps) => {
-  const [bodies, setBodies] = useState(graph.bodies);
+const tablesOf = (bodies: GraphFixture['bodies']): Readonly<Record<string, StoryTable>> =>
+  Object.fromEntries(
+    Object.entries(bodies).flatMap(([id, body]) =>
+      isTable(body) ? [[id, storyTableOf(body)]] : []
+    )
+  );
+
+/** The graph's nodes with each table's rule count as the host's table has it now. */
+const countedNodes = (
+  nodes: readonly DecisionGraphNode[],
+  tables: Readonly<Record<string, StoryTable>>
+): DecisionGraphNode[] =>
+  nodes.map((node) =>
+    node.kind === 'reference'
+      ? node
+      : {
+          ...node,
+          ruleCount: tables[node.id]?.table.rules.length ?? node.ruleCount,
+          children: countedNodes(node.children, tables),
+        }
+  );
+
+const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
+  const [tables, setTables] = useState(() => tablesOf(graph.bodies));
   const [selected, setSelected] = useState<GraphSelection | null>(null);
   const [editing, setEditing] = useState<{ decisionId: string; value: SentenceValueId } | null>(
     null
   );
   const [revealed, setRevealed] = useState<DecisionGraphTarget | null>(null);
+  const [opened, setOpened] = useState<string | null>(null);
+  const [moreProperties, setMoreProperties] = useState<string | null>(null);
   const rulesById = useMemo(
-    () =>
-      new Map(
-        Object.entries(bodies).flatMap(([id, body]) =>
-          isTable(body) ? [[id, wordedRules(body)] as const] : []
-        )
-      ),
-    [bodies]
+    () => new Map(Object.entries(tables).map(([id, { table }]) => [id, wordedRules(table)])),
+    [tables]
   );
-
-  const update = (decisionId: string, change: (table: EditableTable) => EditableTable) =>
-    setBodies((current) => {
-      const body = current[decisionId];
-      return isTable(body) ? { ...current, [decisionId]: change(body) } : current;
-    });
-
-  const editOf = (decisionId: string): DecisionTextEdit => ({
-    editing: editing?.decisionId === decisionId ? editing.value : null,
-    onStartEdit: (value) => setEditing({ decisionId, value }),
-    onCancel: () => setEditing(null),
-    onCommit: (value, commit) => {
-      update(decisionId, (table) =>
-        commit.kind === 'values'
-          ? tableWithCondition(table, value, commit)
-          : tableWithExpression(table, value, commit.text)
-      );
-      setEditing(null);
-    },
-    onClearCell: (cell) => update(decisionId, (table) => tableWithoutCell(table, cell)),
-    onDeleteRule: (rowId) => update(decisionId, (table) => tableWithoutRule(table, rowId)),
-  });
+  const nodes = useMemo(() => countedNodes(graph.nodes, tables), [graph.nodes, tables]);
 
   const renderBody: DecisionGraphTextProps['renderBody'] = (decisionId, scroll) => {
-    const body = bodies[decisionId];
-    if (!isTable(body)) {
-      return <p className="m-0 px-4 py-3 text-sm text-foreground-de-emp">{body}</p>;
+    const state = tables[decisionId];
+    if (!state) {
+      return (
+        <p className="m-0 px-4 py-3 text-sm text-foreground-de-emp">
+          {String(graph.bodies[decisionId] ?? '')}
+        </p>
+      );
     }
     const shown = selected?.decisionId === decisionId ? selected.selection : null;
     const onSelect = (selection: SentenceSelection | null) =>
       setSelected(selection ? { decisionId, selection } : null);
+    const { columns, header, edit, policy, addRule } = storyTableProps({
+      state,
+      onChange: (next) => setTables((current) => ({ ...current, [decisionId]: next })),
+      onSelect,
+      onMoreProperties: setMoreProperties,
+    });
+    const editable = mode === 'edit';
     return (
       <DecisionText
         rules={rulesById.get(decisionId) ?? []}
-        {...tableColumns(body)}
-        header={{ label: 'Unique', hint: 'One rule matches at most' }}
+        {...columns}
+        header={header}
         ariaLabel={`Rules of ${decisionId}`}
         dataTestId={`text-${decisionId}`}
         numbered
         scroll={scroll}
+        onOpenDecision={setOpened}
+        policy={editable ? policy : undefined}
+        addRule={editable ? addRule : undefined}
         {...(mode === 'read'
           ? { selected: shown }
           : {
               selected: shown,
               onSelect,
-              edit: mode === 'edit' ? editOf(decisionId) : undefined,
+              edit: editable
+                ? {
+                    ...edit,
+                    editing: editing?.decisionId === decisionId ? editing.value : null,
+                    onStartEdit: (value: SentenceValueId) => setEditing({ decisionId, value }),
+                    onCancel: () => setEditing(null),
+                    onCommit: (...args: Parameters<typeof edit.onCommit>) => {
+                      const refused = edit.onCommit(...args);
+                      if (typeof refused !== 'string') setEditing(null);
+                      return refused;
+                    },
+                  }
+                : undefined,
             })}
       />
     );
@@ -111,7 +130,7 @@ const GraphHost = ({ graph, mode = 'select', caption }: GraphHostProps) => {
     <div className="flex flex-col gap-2">
       <div className="flex h-[640px] flex-col border border-border-de-emp">
         <DecisionGraphText
-          nodes={graph.nodes}
+          nodes={nodes}
           renderBody={renderBody}
           onFold={(decisionId) => {
             if (editing?.decisionId === decisionId) setEditing(null);
@@ -123,6 +142,7 @@ const GraphHost = ({ graph, mode = 'select', caption }: GraphHostProps) => {
               setSelected({ decisionId: target.decisionId, selection: { rowId: target.rowId } });
             }
           }}
+          onOpenDecision={setOpened}
           dataTestId="graph"
         />
       </div>
@@ -131,9 +151,13 @@ const GraphHost = ({ graph, mode = 'select', caption }: GraphHostProps) => {
         {selected
           ? `${selected.decisionId} / ${selected.selection?.rowId ?? 'none'} / ${selected.selection?.columnId ?? 'rule'}`
           : 'none'}{' '}
-        · Revealed: {revealed ? `${revealed.decisionId} / ${revealed.rowId ?? 'decision'}` : 'none'}
+        · Revealed: {revealed ? `${revealed.decisionId} / ${revealed.rowId ?? 'decision'}` : 'none'}{' '}
+        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'}
       </p>
       <p className="text-xs text-foreground-de-emp">{caption}</p>
+      <p className="text-xs text-foreground-de-emp">
+        Double-click a heading, or press Alt+Enter on it, to open that decision on its own.
+      </p>
     </div>
   );
 };
@@ -179,7 +203,7 @@ interface DefaultArgs extends GraphArgs {
 }
 
 export const Default: StoryObj<DefaultArgs> = {
-  args: { graph: 'shared dependency', mode: 'select' },
+  args: { graph: 'shared dependency', mode: 'edit' },
   argTypes: {
     graph: { control: 'select', options: Object.keys(GRAPHS) },
     mode: MODE_ARG,
@@ -195,7 +219,7 @@ export const Default: StoryObj<DefaultArgs> = {
 };
 
 export const Errors: StoryObj<GraphArgs> = {
-  args: { mode: 'select' },
+  args: { mode: 'edit' },
   argTypes: { mode: MODE_ARG },
   render: ({ mode }) => (
     <GraphHost
