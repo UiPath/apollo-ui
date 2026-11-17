@@ -13,10 +13,11 @@ describe('DecisionGraphText stories', () => {
     'read',
     'select',
     'edit',
-  ] as const)('opens Risk on its far rule from the warning in %s mode', async (mode) => {
+  ] as const)('opens Risk on its far rule from the warning, pressed from the keyboard in %s mode', async (mode) => {
     HTMLElement.prototype.scrollTo = () => {};
     render(<Errors mode={mode} />);
-    await userEvent.click(screen.getByTestId('graph-mark-risk'));
+    screen.getByTestId('graph-mark-risk').focus();
+    await userEvent.keyboard('{Enter}');
     expect(document.activeElement).toBe(screen.getByTestId('text-risk-row-r20'));
   });
 });

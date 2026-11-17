@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { vi } from 'vitest';
+import { type Mock, vi } from 'vitest';
 import {
   CYCLE,
   MARKED,
@@ -52,6 +52,10 @@ const graph = (props: Partial<DecisionGraphTextProps> = {}) => (
 );
 
 const toggle = (id: string) => screen.getByTestId(`graph-toggle-${id}`);
+const press = async (element: HTMLElement) => {
+  element.focus();
+  await userEvent.keyboard('{Enter}');
+};
 const body = (id: string) => screen.queryByTestId(`graph-body-${id}`);
 
 /** A host that selects the rule the view reveals, as Studio Web does. */
@@ -180,12 +184,12 @@ describe('DecisionGraphText', () => {
     expect(body('risk')).toBeNull();
   });
 
-  it('links a decision drawn elsewhere, opening it and bringing it to the top without moving focus', async () => {
+  it('links a decision drawn elsewhere, opening it from the keyboard and bringing it to the top without moving focus', async () => {
     const onReveal = vi.fn();
     render(graph({ onReveal }));
     const link = screen.getByTestId('graph-reference-link-pricing-risk');
     expect(screen.getByTestId('graph-reference-pricing-risk')).toHaveTextContent('See Risk above');
-    await userEvent.click(link);
+    await press(link);
     expect(body('risk')).not.toBeNull();
     expect(onReveal).toHaveBeenCalledWith({ decisionId: 'risk', rowId: undefined });
     expect(scrollToSpy).toHaveBeenCalledTimes(1);
@@ -195,7 +199,7 @@ describe('DecisionGraphText', () => {
 
   it('brings an open decision to the top again from its link', async () => {
     render(graph({ expanded: new Set(['risk']) }));
-    await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
+    await press(screen.getByTestId('graph-reference-link-pricing-risk'));
     expect(scrollToSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -218,12 +222,12 @@ describe('DecisionGraphText', () => {
     expect(body('discount')).toHaveTextContent("isn't a decision table");
   });
 
-  it('opens a marked decision on the rule its mark names, focused and centred', async () => {
+  it('opens a marked decision from the keyboard on the rule its mark names, focused and centred', async () => {
     const onReveal = vi.fn();
     render(<SelectingHost onReveal={onReveal} />);
     const mark = screen.getByTestId('graph-mark-eligibility');
     expect(mark).toHaveAccessibleName('Error: Rules 1 and 3 overlap. Show it');
-    await userEvent.click(mark);
+    await press(mark);
     expect(onReveal).toHaveBeenCalledWith({ decisionId: 'eligibility', rowId: 'r3' });
     expect(document.activeElement).toBe(screen.getByTestId('text-eligibility-row-r3'));
     expect(scrollToSpy).toHaveBeenCalled();
@@ -231,7 +235,7 @@ describe('DecisionGraphText', () => {
 
   it('reveals a rule outside the mounted window once the host selects it', async () => {
     render(<SelectingHost />);
-    await userEvent.click(screen.getByTestId('graph-mark-risk'));
+    await press(screen.getByTestId('graph-mark-risk'));
     expect(document.activeElement).toBe(screen.getByTestId('text-risk-row-r20'));
   });
 
@@ -252,7 +256,7 @@ describe('DecisionGraphText', () => {
       );
     };
     const { container } = render(<ReadOnlyHost />);
-    await userEvent.click(screen.getByTestId('graph-mark-risk'));
+    await press(screen.getByTestId('graph-mark-risk'));
     const rule = screen.getByTestId('text-risk-row-r20');
     expect(document.activeElement).toBe(rule);
     expect(rule).toHaveAttribute('tabindex', '-1');
@@ -262,7 +266,7 @@ describe('DecisionGraphText', () => {
 
   it('keeps the roving tab stop of a selectable body it reveals a rule in', async () => {
     render(<SelectingHost />);
-    await userEvent.click(screen.getByTestId('graph-mark-risk'));
+    await press(screen.getByTestId('graph-mark-risk'));
     expect(screen.getByTestId('text-risk-row-r20')).toHaveAttribute('tabindex', '0');
   });
 
@@ -432,7 +436,7 @@ describe('DecisionGraphText', () => {
     const { container } = render(<Host />);
     expect(container.querySelectorAll('li[data-row-id]')).toHaveLength(30);
     expect(body('d50')?.querySelector('[data-graph-placeholder]')).not.toBeNull();
-    await userEvent.click(screen.getByTestId('graph-mark-d50'));
+    await press(screen.getByTestId('graph-mark-d50'));
     const rule = screen.getByTestId('text-d50-row-r10');
     expect(document.activeElement).toBe(rule);
     expect(rule).toHaveAttribute('aria-current', 'true');
@@ -458,5 +462,61 @@ describe('DecisionGraphText', () => {
     });
     expect(placeholder('risk')).toBeNull();
     expect(placeholder('eligibility')).not.toBeNull();
+  });
+});
+
+describe('DecisionGraphText mark clicks', () => {
+  let scrollIntoViewSpy: Mock<Element['scrollIntoView']>;
+  beforeEach(() => {
+    scrollIntoViewSpy = vi.fn<Element['scrollIntoView']>();
+    Element.prototype.scrollIntoView = scrollIntoViewSpy;
+  });
+
+  const scrolled = () => {
+    const scroller = screen.getByTestId('graph-scroller');
+    scroller.scrollTop = 240;
+    return () => ({
+      scrollTop: scroller.scrollTop,
+      scrollTo: scrollToSpy.mock.calls.length,
+      scrollIntoView: scrollIntoViewSpy.mock.calls.length,
+    });
+  };
+  const UNMOVED = { scrollTop: 240, scrollTo: 0, scrollIntoView: 0 };
+
+  it.each([
+    'mouse',
+    'touch',
+  ] as const)('opens and flashes the rule a heading mark names on a %s click without scrolling or moving focus', async (pointerType) => {
+    const onReveal = vi.fn();
+    render(<SelectingHost onReveal={onReveal} />);
+    const scrollNow = scrolled();
+    const mark = screen.getByTestId('graph-mark-eligibility');
+    const user = userEvent.setup();
+    if (pointerType === 'touch') await user.pointer({ keys: '[TouchA]', target: mark });
+    else await user.click(mark);
+    expect(body('eligibility')).not.toBeNull();
+    expect(scrollNow()).toEqual(UNMOVED);
+    expect(onReveal).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(mark);
+  });
+
+  it('opens a referenced decision on a click of its link without scrolling', async () => {
+    const onReveal = vi.fn();
+    render(graph({ onReveal }));
+    const scrollNow = scrolled();
+    await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
+    expect(body('risk')).not.toBeNull();
+    expect(scrollNow()).toEqual(UNMOVED);
+    expect(onReveal).not.toHaveBeenCalled();
+  });
+
+  it('still reveals from the keyboard after a click on the same mark', async () => {
+    render(<SelectingHost />);
+    const mark = screen.getByTestId('graph-mark-eligibility');
+    await userEvent.click(mark);
+    expect(scrollToSpy).not.toHaveBeenCalled();
+    await press(mark);
+    expect(scrollToSpy).toHaveBeenCalled();
+    expect(document.activeElement).toBe(screen.getByTestId('text-eligibility-row-r3'));
   });
 });

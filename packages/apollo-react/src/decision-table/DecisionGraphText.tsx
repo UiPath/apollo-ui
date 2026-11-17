@@ -32,7 +32,7 @@ export interface DecisionGraphTextProps {
   onExpandedChange?: (expanded: ReadonlySet<string>) => void;
   /** The decision the host's selection is in. */
   selected?: string | null;
-  /** The view brought a decision or one of its rules into view; a host that selects the rule there has it focused. */
+  /** The view brought a decision or one of its rules into view from the keyboard; a host that selects the rule there has it focused. A click on a mark or link opens and flashes its target without scrolling or telling the host. */
   onReveal?: (target: DecisionGraphTarget) => void;
   /** Strings in place of the built-in ones, any subset. */
   labels?: Partial<DecisionGraphLabels>;
@@ -43,6 +43,8 @@ export interface DecisionGraphTextProps {
 const NO_EXPANDED: ReadonlySet<string> = new Set();
 
 interface PendingReveal extends DecisionGraphTarget {
+  /** Scrolls what is revealed into view and tells the host. */
+  byKey: boolean;
   /** Moves focus to what is revealed. */
   focus: boolean;
   flash: boolean;
@@ -177,7 +179,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
     if (!expanded.has(target.decisionId)) setExpanded(new Set([...expanded, target.decisionId]));
     setPending(target);
     setRevealed(target.decisionId);
-    onReveal?.({ decisionId: target.decisionId, rowId: target.rowId });
+    if (target.byKey) onReveal?.({ decisionId: target.decisionId, rowId: target.rowId });
   };
 
   const cardRefsRef = useRef(new Map<string, (element: HTMLElement | null) => void>());
@@ -263,7 +265,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
       const card = cardsRef.current.get(pending.decisionId);
       if (!scroller || !card) return false;
       if (pending.rowId === undefined) {
-        scrollTo(scroller, contentTopIn(card, scroller));
+        if (pending.byKey) scrollTo(scroller, contentTopIn(card, scroller));
         if (pending.focus) {
           card.querySelector<HTMLElement>('[data-graph-toggle]')?.focus({ preventScroll: true });
         }
@@ -274,10 +276,12 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
         `li[data-row-id="${CSS.escape(pending.rowId)}"]`
       );
       if (!rule) return false;
-      scrollTo(
-        scroller,
-        contentTopIn(rule, scroller) - (scroller.clientHeight - rule.offsetHeight) / 2
-      );
+      if (pending.byKey) {
+        scrollTo(
+          scroller,
+          contentTopIn(rule, scroller) - (scroller.clientHeight - rule.offsetHeight) / 2
+        );
+      }
       if (pending.focus) {
         if (!rule.hasAttribute('tabindex')) rule.tabIndex = -1;
         rule.focus({ preventScroll: true });
@@ -302,7 +306,9 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
         <DecisionGraphReference
           node={node}
           labels={labels}
-          onReveal={() => reveal({ decisionId: node.targetId, focus: false, flash: false })}
+          onReveal={(byKey) =>
+            reveal({ decisionId: node.targetId, byKey, focus: false, flash: !byKey })
+          }
           dataTestId={dataTestId}
         />
       );
@@ -320,8 +326,8 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           body={open && scroller ? bodyOf(node.id, scroller) : null}
           labels={labels}
           onToggle={() => toggle(node.id)}
-          onShowProblem={() =>
-            reveal({ decisionId: node.id, rowId: node.markRowId, focus: true, flash: true })
+          onShowProblem={(byKey) =>
+            reveal({ decisionId: node.id, rowId: node.markRowId, byKey, focus: byKey, flash: true })
           }
           cardRef={cardRef(node.id)}
           dataTestId={dataTestId}

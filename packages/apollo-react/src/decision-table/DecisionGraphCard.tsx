@@ -33,7 +33,8 @@ export interface DecisionGraphCardProps {
   body: React.ReactNode;
   labels: DecisionGraphLabels;
   onToggle: () => void;
-  onShowProblem: () => void;
+  /** `byKey` when the mark was pressed from the keyboard rather than clicked. */
+  onShowProblem: (byKey: boolean) => void;
   cardRef: (element: HTMLElement | null) => void;
   dataTestId: string;
 }
@@ -106,7 +107,7 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
             title={mark.title}
             aria-label={labels.showProblem(labels.markStatus(mark.tone, mark.title))}
             data-tone={mark.tone}
-            onClick={onShowProblem}
+            onClick={(event) => onShowProblem(event.detail === 0)}
             data-testid={`${dataTestId}-mark-${node.id}`}
           >
             <MarkGlyph tone={mark.tone} className="size-3.5" />
@@ -130,13 +131,14 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
 export interface DecisionGraphReferenceProps {
   node: DecisionGraphReferenceNode;
   labels: DecisionGraphLabels;
-  onReveal: () => void;
+  /** `byKey` when the link was pressed from the keyboard rather than clicked. */
+  onReveal: (byKey: boolean) => void;
   dataTestId: string;
 }
 
 const NAME_SLOT = '\u0000';
 
-/** A decision shown in full elsewhere: a line whose link opens it there and brings it to the top. */
+/** A decision shown in full elsewhere: a line whose link opens it there, and from the keyboard brings it to the top. */
 export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
   node,
   labels,
@@ -152,7 +154,7 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
         <button
           type="button"
           className={GRAPH_REFERENCE_CHIP_CLASS}
-          onClick={onReveal}
+          onClick={(event) => onReveal(event.detail === 0)}
           data-testid={`${dataTestId}-reference-link-${node.id}`}
         >
           <Network aria-hidden className="size-3" />
