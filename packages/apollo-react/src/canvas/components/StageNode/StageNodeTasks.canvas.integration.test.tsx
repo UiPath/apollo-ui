@@ -213,6 +213,16 @@ describe('StageNode task activation in a real canvas', () => {
     await waitFor(() => expect(taskRow('task-1')).toHaveFocus());
   });
 
+  it('keeps pointer drag and pan off tasks that cannot be reordered', () => {
+    renderStage(stageWithTasks({ onTaskClick: vi.fn() }));
+
+    expect(screen.getByTestId('sequential-tasks-list-stage-1')).toHaveClass(
+      'nodrag',
+      'nopan',
+      'nokey'
+    );
+  });
+
   it('drops a picked-up task with Enter instead of opening it', async () => {
     const user = userEvent.setup();
     const onTaskClick = vi.fn();
