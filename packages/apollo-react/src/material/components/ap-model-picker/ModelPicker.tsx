@@ -280,9 +280,11 @@ export interface ModelPickerProps {
   isCommunity?: boolean;
   /**
    * Fired once the Community dialog added or edited a model. With a
-   * host-owned `models` list, refetch it here: the picker selects the saved
-   * model as soon as it appears in `models`. In self-fetch mode the picker
-   * has already refetched.
+   * host-owned `models` list, refetch it here and return a promise that
+   * settles once `models` holds the refreshed list: the picker then selects
+   * the saved model from it. Settling earlier lets the picker select the
+   * entry the list held before an edit. In self-fetch mode the picker has
+   * already refetched.
    */
   onCustomModelSaved?: (model: ByoSavedModel) => void | Promise<void>;
   /**
