@@ -531,6 +531,7 @@ function DialogBody({
           placeholder={f.placeholder}
           value={values[f.key] ?? ''}
           disabled={keyLocked}
+          aria-required={isRequired(f) || undefined}
           onChange={(e) => setValue(f.key, e.target.value)}
           onKeyDown={
             main
