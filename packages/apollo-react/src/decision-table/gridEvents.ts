@@ -69,8 +69,10 @@ export const onNextGesture = (node: Node, onGesture: () => void): (() => void) =
 export const commitMoveFor = (event: { key: string; shiftKey: boolean }): CellCommitMove =>
   event.key === 'Enter' ? 'down' : event.shiftKey ? 'left' : 'right';
 
-export const isComposing = (event: React.KeyboardEvent): boolean =>
-  event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229;
+export const isComposing = (event: React.KeyboardEvent | KeyboardEvent): boolean => {
+  const native = 'nativeEvent' in event ? event.nativeEvent : event;
+  return native.isComposing || native.keyCode === 229;
+};
 
 /** Whether a press landed on an element's scrollbar, which sits outside its client area. */
 const isOnScrollbar = (element: Element, event: React.PointerEvent): boolean => {

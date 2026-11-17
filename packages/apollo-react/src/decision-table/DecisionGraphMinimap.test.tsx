@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
@@ -240,6 +240,23 @@ describe('DecisionGraphMinimap', () => {
     rerender(minimap({ items: () => nested }));
     expect(screen.getByTestId('map-row-nested-0')).toHaveStyle({ top: '24px' });
     height.mockRestore();
+  });
+
+  it('leaves the keys to an IME while it composes', async () => {
+    const onPick = vi.fn();
+    const user = userEvent.setup();
+    render(minimap({ onPick }));
+    await user.click(screen.getByTestId('map-trigger'));
+    await user.keyboard('risk');
+    const landed = activeOption();
+    fireEvent.keyDown(search(), { key: 'ArrowDown', isComposing: true });
+    fireEvent.keyDown(search(), { key: 'Enter', keyCode: 229 });
+    expect(activeOption()).toBe(landed);
+    expect(onPick).not.toHaveBeenCalled();
+    fireEvent.keyDown(search(), { key: 'Escape', isComposing: true });
+    fireEvent.keyDown(search(), { key: 'Escape', keyCode: 229 });
+    expect(search()).toHaveValue('risk');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
 
   it('has no axe violations while open', async () => {
