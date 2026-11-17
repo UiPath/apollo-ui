@@ -4,15 +4,20 @@ import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   EVERY_STATE_DIFF,
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
-import { manySentenceRules } from './__fixtures__/sentences.fixtures';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
 import {
-  type DecisionTextDiff,
+  FIXTURE_VOCABULARY,
+  type FixtureDiff,
+  type FixtureMode,
+  type FixtureProps,
+} from './__fixtures__/hostVocabulary';
+import { manySentenceRules } from './__fixtures__/sentences.fixtures';
+import { DecisionText } from './DecisionText';
+import {
   DIFF_CONTEXT_RULES,
   DIFF_MIN_FOLDED,
   type DiffRow,
@@ -32,26 +37,26 @@ const nameOf = (columnId: string): SentenceNameToken => ({
 
 const NO_FOLDS: ReadonlySet<string> = new Set();
 
-type Accepts<Props> = Props extends DecisionTextProps ? true : false;
-
 const ids = (rows: { rules: readonly SentenceRule[] }) => rows.rules.map(({ rowId }) => rowId);
 
 const ruleRow = (row: DiffRow | undefined) => (row?.kind === 'rule' ? row.diff : undefined);
 
 const renderDiff = (
-  diff: DecisionTextDiff,
-  props: Partial<Pick<DecisionTextProps, 'rules' | 'marks'>> = {}
+  diff: FixtureDiff,
+  {
+    rules = DIFF_RULES,
+    marks,
+  }: Partial<Pick<FixtureProps['table'], 'rules'>> & Pick<FixtureProps, 'marks'> = {}
 ) =>
   render(
     <DecisionText
-      rules={DIFF_RULES}
-      {...DIFF_COLUMNS}
-      header={DIFF_HEADER}
+      {...FIXTURE_VOCABULARY}
+      table={{ ...DIFF_POLICY, ...DIFF_COLUMNS, rules }}
+      mode={{ kind: 'diff', diff }}
+      marks={marks}
       numbered
       ariaLabel="Rules"
       dataTestId="nl"
-      {...props}
-      diff={diff}
     />
   );
 
@@ -99,7 +104,7 @@ describe('withRemoved', () => {
 
 describe('diffRowsOf', () => {
   const rules = manySentenceRules(20);
-  const changedAt = (...indexes: number[]): DecisionTextDiff => ({
+  const changedAt = (...indexes: number[]): FixtureDiff => ({
     mode: 'compact',
     rules: indexes.map((index) => ({ rowId: rules[index]?.rowId ?? '', change: 'update' })),
   });
@@ -127,7 +132,13 @@ describe('diffRowsOf', () => {
         mode: 'full',
         rules: [{ rowId: rules[2]?.rowId ?? '', change: 'update', movedFrom: 1 }],
         values: [
-          { rowId: rules[1]?.rowId ?? '', columnId: 'risk', change: 'update', previous: '"low"' },
+          {
+            kind: 'cell',
+            rowId: rules[1]?.rowId ?? '',
+            columnId: 'risk',
+            change: 'update',
+            previous: '"low"',
+          },
         ],
       },
       nameOf,
@@ -135,7 +146,10 @@ describe('diffRowsOf', () => {
     );
     expect(ruleRow(rows.get(rules[0]?.rowId ?? ''))?.change).toBeUndefined();
     expect(ruleRow(rows.get(rules[1]?.rowId ?? ''))?.change).toBe('update');
-    expect(ruleRow(rows.get(rules[2]?.rowId ?? ''))?.movedFrom).toBe(1);
+    expect(ruleRow(rows.get(rules[2]?.rowId ?? ''))).toMatchObject({
+      change: 'update',
+      movedFrom: 1,
+    });
   });
 
   it(`keeps ${DIFF_CONTEXT_RULES} rules each side of a change and folds longer runs, numbered by the whole table`, () => {
@@ -250,7 +264,16 @@ describe('diffRowsOf value changes', () => {
       DIFF_RULES,
       {
         mode: 'full',
-        values: [{ rowId: 'r5', columnId: 'age', index: 0, change: 'update', previous: '25' }],
+        values: [
+          {
+            kind: 'value',
+            rowId: 'r5',
+            columnId: 'age',
+            index: 0,
+            change: 'update',
+            previous: '25',
+          },
+        ],
         removedRules: r5 ? [{ rule: r5, after: 'r5' }] : [],
       },
       nameOf,
@@ -266,7 +289,7 @@ describe('diffRowsOf value changes', () => {
   it('shows an added value on a cell the card does not word as a line', () => {
     const { rows } = diffRowsOf(
       DIFF_RULES,
-      { mode: 'full', values: [{ rowId: 'r5', columnId: 'region', change: 'add' }] },
+      { mode: 'full', values: [{ kind: 'cell', rowId: 'r5', columnId: 'region', change: 'add' }] },
       nameOf,
       NO_FOLDS
     );
@@ -279,10 +302,20 @@ describe('diffRowsOf value changes', () => {
 
   it('requires the old text of a deleted or updated value', () => {
     // @ts-expect-error
-    const deleted: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'delete' };
+    const deleted: DiffValueChange = {
+      kind: 'cell',
+      rowId: 'r5',
+      columnId: 'age',
+      change: 'delete',
+    };
     // @ts-expect-error
-    const updated: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'update' };
-    const added: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'add' };
+    const updated: DiffValueChange = {
+      kind: 'cell',
+      rowId: 'r5',
+      columnId: 'age',
+      change: 'update',
+    };
+    const added: DiffValueChange = { kind: 'cell', rowId: 'r5', columnId: 'age', change: 'add' };
     expect([deleted.change, updated.change, added.change]).toEqual(['delete', 'update', 'add']);
   });
 });
@@ -310,7 +343,7 @@ describe('diffColumnsOf', () => {
 });
 
 describe('DecisionText diff', () => {
-  const full: DecisionTextDiff = { mode: 'full', ...EVERY_STATE_DIFF };
+  const full: FixtureDiff = { mode: 'full', ...EVERY_STATE_DIFF };
 
   it('shows an added rule with its sign, number and status, and a removed one struck without a number', () => {
     renderDiff(full);
@@ -444,27 +477,9 @@ describe('DecisionText diff', () => {
   });
 
   it('takes no edit, selection or add-rule action with a diff', () => {
-    const base = {
-      ...DIFF_COLUMNS,
-      rules: DIFF_RULES,
-      header: DIFF_HEADER,
-      ariaLabel: 'Rules',
-      dataTestId: 'nl',
-      diff: full,
-    };
-    const edit = { onCommit: () => {}, onClearCell: () => {}, onDeleteRule: () => {} };
-    const withEdit = { ...base, selected: null, onSelect: () => {}, edit };
-    const withAddRule = { ...base, addRule: { label: 'Add rule', onAdd: () => {} } };
-    const accepted: Accepts<typeof base> = true;
-    const editRefused: Accepts<typeof withEdit> = false;
-    const addRuleRefused: Accepts<typeof withAddRule> = false;
-    const editableAccepted: Accepts<Omit<typeof withEdit, 'diff'>> = true;
-    expect([accepted, editRefused, addRuleRefused, editableAccepted]).toEqual([
-      true,
-      false,
-      false,
-      true,
-    ]);
+    type DiffMode = Extract<FixtureMode, { kind: 'diff' }>;
+    const keys: Record<keyof DiffMode, true> = { kind: true, diff: true };
+    expect(Object.keys(keys)).toEqual(['kind', 'diff']);
   });
 
   it('has no axe violations in full or compact mode', async () => {

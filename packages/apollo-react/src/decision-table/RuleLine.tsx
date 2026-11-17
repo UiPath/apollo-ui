@@ -1,8 +1,8 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
+import { type RemovedLine, removedLineKey } from './decisionTextDiff';
 import { LineText, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
-import { type RemovedLine, removedLineKey } from './decisionTextDiff';
 import { RemoveConditionButton, type RemoveConditionButtonProps } from './RemoveConditionButton';
 import { ADDED_LINE_CLASS, LINE_CLASS, REMOVED_LINE_CLASS } from './sentenceStyles';
 

@@ -3,16 +3,22 @@ import { useState } from 'react';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   EDITABLE_TABLE,
+  editableValueField,
   tableColumns,
-  tableWithExpression,
+  tableWithCommit,
   tableWithNewInput,
-  tableWithValue,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
+import {
+  FIXTURE_VOCABULARY,
+  type FixtureEdit,
+  type FixtureOperator,
+  type FixtureRefusal,
+  wordFixtureRefusal,
+} from './__fixtures__/hostVocabulary';
 import { installEscapeCloseRequest, pressOutside } from './__fixtures__/modalDialog';
-import { GRID_SENTENCE_HEADER } from './__fixtures__/sentences.fixtures';
+import { GRID_SENTENCE_POLICY } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 import type { ValueCommit } from './valueTypes';
 
@@ -25,25 +31,35 @@ beforeAll(() => {
 afterAll(() => uninstallEscape());
 
 const r3Age: SentenceValueId = { rowId: 'r3', columnId: 'age', index: 0 };
-const NOT_A_NUMBER = 'Not saved: age needs a number.';
+const notANumber = (text: string) => `Not saved: ${text} is not a value age can take.`;
 
-type Answer = (commit: ValueCommit) => string | void;
+type Answer = (commit: ValueCommit<FixtureOperator>) => FixtureRefusal | undefined;
+
+const textOf = (commit: ValueCommit<FixtureOperator>): string => {
+  switch (commit.kind) {
+    case 'expression':
+      return commit.text;
+    case 'outcome':
+    case 'single':
+      return commit.value;
+    default:
+      return '';
+  }
+};
 
 /** Refuses any text that is not a number, as a host's validation would. */
-const numbersOnly: Answer = (commit) => {
-  const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
-  return Number.isNaN(Number(text)) ? NOT_A_NUMBER : undefined;
-};
+const numbersOnly: Answer = (commit) =>
+  Number.isNaN(Number(textOf(commit))) ? { reason: 'not-a-literal', columnId: 'age' } : undefined;
 
 interface HostProps {
   answer?: Answer;
-  addInput?: DecisionTextEdit['onAddInput'];
+  addInput?: FixtureEdit['onAddInput'];
   /** The host keeps `editing`, starting here; undefined leaves it to the view. */
   controlled?: SentenceValueId | null;
   /** Whether a controlled host also closes the editor on a refusal. */
   closesOnRefusal?: boolean;
-  onCommit?: DecisionTextEdit['onCommit'];
-  valueField?: DecisionTextEdit['valueField'];
+  onCommit?: FixtureEdit['onCommit'];
+  valueField?: FixtureEdit['valueField'];
   editable?: boolean;
 }
 
@@ -60,24 +76,22 @@ const Host = ({
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   const [editing, setEditing] = useState(controlled ?? null);
   const hostKeeps = controlled !== undefined;
-  const edit: DecisionTextEdit = {
-    ...(hostKeeps ? { editing, onStartEdit: setEditing, onCancel: () => setEditing(null) } : {}),
-    valueField,
+  const edit: FixtureEdit = {
+    ...(hostKeeps
+      ? { editing: { value: editing, onStart: setEditing }, onCancel: () => setEditing(null) }
+      : { onCancel: () => {} }),
+    wordRefusal: wordFixtureRefusal,
+    valueField: valueField ?? ((cell) => editableValueField(table, cell)),
     onCommit: (value, commit, move) => {
       onCommit?.(value, commit, move);
       const refusal = answer(commit);
       if (refusal === undefined || closesOnRefusal) setEditing(null);
       if (refusal !== undefined) return refusal;
-      setTable((current) =>
-        commit.kind === 'expression'
-          ? tableWithExpression(current, value, commit.text)
-          : tableWithValue(current, value, commit.values[0] ?? '')
-      );
+      setTable((current) => tableWithCommit(current, value, commit));
       return undefined;
     },
     onClearCell: vi.fn(),
     onDeleteRule: vi.fn(),
-    inputIds: table.inputs.map((input) => input.id),
     onAddInput:
       addInput ??
       (() => {
@@ -88,14 +102,22 @@ const Host = ({
   };
   return (
     <DecisionText
-      rules={wordedRules(table)}
-      {...tableColumns(table)}
-      header={GRID_SENTENCE_HEADER}
+      {...FIXTURE_VOCABULARY}
+      table={{ ...GRID_SENTENCE_POLICY, ...tableColumns(table), rules: wordedRules(table) }}
+      mode={
+        editable
+          ? {
+              kind: 'edit',
+              selected,
+              onSelect: setSelected,
+              edit,
+              onPolicyChange: () => {},
+              onAddRule: () => {},
+            }
+          : { kind: 'select', selected, onSelect: setSelected }
+      }
       ariaLabel="Rules"
       dataTestId="nl"
-      selected={selected}
-      onSelect={setSelected}
-      edit={editable ? edit : undefined}
     />
   );
 };
@@ -129,7 +151,9 @@ describe('DecisionText editing state', () => {
       expect(field()).toHaveValue('60');
       type('70');
       apply();
-      expect(onCommit.mock.calls).toEqual([[r3Age, { kind: 'values', values: ['70'] }, 'none']]);
+      expect(onCommit.mock.calls).toEqual([
+        [r3Age, { kind: 'single', operator: '>', value: '70' }, 'none'],
+      ]);
       expect(dialog()).toBeNull();
       expect(chip('r3', 'age')).toHaveTextContent('70');
     });
@@ -195,7 +219,7 @@ describe('DecisionText editing state', () => {
       expect(field()).toHaveValue('old');
       const [alert, ...more] = alerts();
       expect(more).toEqual([]);
-      expect(alert).toHaveTextContent(NOT_A_NUMBER);
+      expect(alert).toHaveTextContent(notANumber('old'));
       expect(field().getAttribute('aria-describedby')?.split(' ')).toContain(alert?.id);
       expect(chip('r3', 'age')).toHaveTextContent('60');
     });
@@ -210,7 +234,7 @@ describe('DecisionText editing state', () => {
       fireEvent.keyDown(field(), { key: 'Enter' });
       const second = alerts()[0];
       expect(onCommit).toHaveBeenCalledTimes(2);
-      expect(second).toHaveTextContent(NOT_A_NUMBER);
+      expect(second).toHaveTextContent(notANumber('old'));
       expect(second).not.toBe(first);
       expect(first?.isConnected).toBe(false);
       expect(alerts()).toHaveLength(1);
@@ -276,15 +300,6 @@ describe('DecisionText editing state', () => {
       openAge();
       expect(alerts()).toEqual([]);
     });
-
-    it('stays open without a reason for a blank refusal', () => {
-      render(<Host answer={() => ' '} />);
-      openAge();
-      type('old');
-      apply();
-      expect(field()).toHaveValue('old');
-      expect(alerts()).toEqual([]);
-    });
   });
 
   describe('a host that refuses an expression', () => {
@@ -304,7 +319,7 @@ describe('DecisionText editing state', () => {
       editExpression('> x');
       fireEvent.keyDown(expression(), { key: 'Enter' });
       expect(onCommit.mock.calls).toEqual([[r3Age, { kind: 'expression', text: '> x' }, 'down']]);
-      expect(alerts().map((alert) => alert.textContent)).toEqual([NOT_A_NUMBER]);
+      expect(alerts().map((alert) => alert.textContent)).toEqual([notANumber('> x')]);
       expect(expression()).toHaveValue('> x');
       expect(document.activeElement).toBe(expression());
       expect(chip('r3', 'age')).toHaveTextContent('60');

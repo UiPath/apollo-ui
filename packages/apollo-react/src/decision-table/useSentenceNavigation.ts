@@ -3,6 +3,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { activeElementOf, focusStays, isFromTextField } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { firstValuesOf } from './ruleCardModel';
+import { selectedColumnOf, selectionOf } from './sentenceSelection';
 import { cardOf, cellOf } from './sentenceTargets';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import { ARROW_DELTAS, clamp, GRID_ENTRY_KEYS } from './useGridNavigation';
@@ -29,11 +30,11 @@ const selectionAt = (
   const target = rules[row];
   if (!target) return undefined;
   const columnId = stopsOf(target)[stop];
-  return columnId === undefined ? { rowId: target.rowId } : { rowId: target.rowId, columnId };
+  return selectionOf(target.rowId, columnId);
 };
 
 const sameSelection = (left: SentenceSelection | null, right: SentenceSelection | null): boolean =>
-  left?.rowId === right?.rowId && left?.columnId === right?.columnId;
+  left?.rowId === right?.rowId && selectedColumnOf(left) === selectedColumnOf(right);
 
 /** A move to another row, onto `columnId` where that row has it, else onto its rule. */
 const verticalMove = (
@@ -42,7 +43,7 @@ const verticalMove = (
   from: StopPosition,
   rowCount: number,
   stopsAt: (row: number) => Stops,
-  columnId: SentenceSelection['columnId']
+  columnId: string | undefined
 ): StopPosition => {
   const last = rowCount - 1;
   const row = meta ? (delta < 0 ? 0 : last) : clamp(from.row + delta, last);
@@ -92,7 +93,7 @@ const stopAfterKey = (
   from: StopPosition,
   rules: readonly SentenceRule[],
   rtl: boolean,
-  columnId: SentenceSelection['columnId']
+  columnId: string | undefined
 ): StopPosition | undefined => {
   const meta = event.metaKey || event.ctrlKey;
   const stopsAt = (row: number) => stopsOf(rules[row]);
@@ -125,14 +126,14 @@ export const isIgnoredKey = (event: React.KeyboardEvent): boolean =>
 
 const stopOf = (container: HTMLElement, selection: SentenceSelection): HTMLElement | undefined => {
   const card = cardOf(container, selection.rowId);
-  return card && selection.columnId !== undefined ? cellOf(card, selection.columnId) : card;
+  return card && selection.kind === 'cell' ? cellOf(card, selection.columnId) : card;
 };
 
 const movedStopOf = (
   element: HTMLElement | null,
   current: SentenceSelection | null
 ): HTMLElement | undefined => {
-  const cell = element && current?.columnId !== undefined ? stopOf(element, current) : undefined;
+  const cell = element && current?.kind === 'cell' ? stopOf(element, current) : undefined;
   const addRule = element?.querySelector<HTMLElement>('[data-add-rule]');
   const focusedAddRule = addRule?.contains(activeElementOf(addRule)) ? addRule : undefined;
   return focusedAddRule ?? cell;
@@ -161,7 +162,7 @@ interface PendingFocus {
 
 /** The column ↑ and ↓ keep: the one a run of them started from, while the selection is where the last one landed. */
 interface WantedColumn {
-  columnId: SentenceSelection['columnId'];
+  columnId: string | undefined;
   at: SentenceSelection;
 }
 
@@ -169,8 +170,8 @@ interface WantedColumn {
 const keptColumnOf = (
   wanted: WantedColumn | undefined,
   current: SentenceSelection | null
-): SentenceSelection['columnId'] =>
-  wanted && sameSelection(wanted.at, current) ? wanted.columnId : current?.columnId;
+): string | undefined =>
+  wanted && sameSelection(wanted.at, current) ? wanted.columnId : selectedColumnOf(current);
 
 const isVerticalKey = (key: string): boolean => (ARROW_DELTAS[key]?.row ?? 0) !== 0;
 
@@ -209,10 +210,10 @@ export const useSentenceNavigation = ({
   const position =
     selectedRow === null
       ? null
-      : { row: selectedRow, stop: Math.max(0, stops.indexOf(selected?.columnId)) };
+      : { row: selectedRow, stop: Math.max(0, stops.indexOf(selectedColumnOf(selected))) };
   const current = position && (selectionAt(rules, position) ?? null);
   const selectedRule = selectedRow === null ? undefined : rules[selectedRow];
-  const selectedColumnId = current?.columnId ?? null;
+  const selectedColumnId = selectedColumnOf(current) ?? null;
 
   const focusCurrent = (focus?: CardFocus, scroll = true) => {
     const element = container();

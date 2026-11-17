@@ -18,8 +18,6 @@ export interface RuleMenuLabels extends Pick<RuleActionsLabels, 'deleteRule'> {
 
 /** The host's actions the card menus offer; each one omitted leaves its entries out. */
 export interface RuleMenuActions {
-  /** The columns the add-condition menu offers, in its order, skipping those the rule holds and those the bands do not list. */
-  inputIds?: readonly string[];
   /** Add input in the add-condition menu; return the new input's column id to open the rule's condition on it. */
   onAddInput?: (rowId: string) => string | void;
   /** Insert rule above and below, at the index the new rule takes. */
@@ -88,7 +86,10 @@ export const ruleEntriesOf = (
 
 /** A rule's add-condition menu: the inputs it has no condition on, then Add input; each opens the rule's new condition. */
 export const conditionEntriesOf = (
-  actions: RuleMenuActions,
+  actions: RuleMenuActions & {
+    /** The columns the menu offers, in its order, skipping those the rule holds and those the bands do not list. */
+    inputIds: readonly string[];
+  },
   labels: RuleMenuLabels,
   rule: SentenceRule | undefined,
   bands: readonly SentenceBand[],

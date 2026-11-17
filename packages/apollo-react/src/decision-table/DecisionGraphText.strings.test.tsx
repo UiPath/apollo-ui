@@ -3,11 +3,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type I18n, setupI18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
-import { render, renderHook, screen } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import type React from 'react';
 import { describe, expect, it } from 'vitest';
-import { SHARED_DEPENDENCY } from './__fixtures__/decisionGraph.fixtures';
-import { DecisionGraphText } from './DecisionGraphText';
 import { type DecisionGraphLabels, useDecisionGraphLabels } from './useDecisionGraphStrings';
 
 type Calls<Labels> = {
@@ -31,7 +29,7 @@ const providerFor =
     i18n ? <I18nProvider i18n={i18n}>{children}</I18nProvider> : children;
 
 const builtInStrings = (i18n: I18n | null): string[] => {
-  const { markStatus: _, ...labels } = renderHook(() => useDecisionGraphLabels(undefined), {
+  const { markStatus: _, ...labels } = renderHook(() => useDecisionGraphLabels(), {
     wrapper: providerFor(i18n),
   }).result.current;
   return Object.entries(labels).flatMap(([key, value]) =>
@@ -66,18 +64,5 @@ describe('DecisionGraphText strings', () => {
     const fallback = builtInStrings(null);
     expect(builtInStrings(i18nWith('en', english))).toEqual(fallback);
     expect(fallback).toEqual(expect.arrayContaining(['1 rule', '12 rules', 'See Risk above']));
-  });
-
-  it("renders a host's partial strings over the view's own", () => {
-    render(
-      <DecisionGraphText
-        nodes={SHARED_DEPENDENCY.nodes}
-        renderBody={() => null}
-        labels={{ seeAbove: (name) => `Siehe ${name} oben`, ruleCount: undefined }}
-        dataTestId="graph"
-      />
-    );
-    expect(screen.getByTestId('graph-reference-pricing-risk')).toHaveTextContent('Siehe Risk oben');
-    expect(screen.getByTestId('graph-rule-count-risk')).toHaveTextContent('3 rules');
   });
 });

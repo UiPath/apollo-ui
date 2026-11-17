@@ -2,40 +2,79 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
 import { type Mock, onTestFinished, vi } from 'vitest';
-import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
-import {
-  MULTI_SENTENCE_COLUMNS,
-  MULTI_SENTENCE_HEADER,
-  manySentenceRules,
-} from './__fixtures__/sentences.fixtures';
 import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   EVERY_STATE_DIFF,
 } from './__fixtures__/diffSentences.fixtures';
+import { FIXTURE_OFFERS } from './__fixtures__/editableSentences.fixtures';
+import {
+  FIXTURE_VOCABULARY,
+  type FixtureEdit,
+  type FixtureMode,
+  type FixtureOperator,
+  type FixtureProps,
+  wordFixtureRefusal,
+} from './__fixtures__/hostVocabulary';
+import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
+import {
+  MULTI_SENTENCE_COLUMNS,
+  MULTI_SENTENCE_POLICY,
+  manySentenceRules,
+} from './__fixtures__/sentences.fixtures';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
-import { sentenceRuleOffsets } from './sentenceRuleHeights';
+import { DecisionText } from './DecisionText';
 import type { TableMarks } from './marks';
-import type { SentenceSelection } from './sentenceTypes';
+import { sentenceRuleOffsets } from './sentenceRuleHeights';
+import type { SentenceRule, SentenceSelection, SentenceValueId } from './sentenceTypes';
+import type { ValueFieldData } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
 const RULES = manySentenceRules(400);
 
-const text = (
-  props: Partial<Extract<DecisionTextProps, { selected: SentenceSelection | null }>>
-) => (
+const FIELD: ValueFieldData<FixtureOperator> = {
+  kind: 'condition',
+  allowedValues: [],
+  expression: '',
+  operators: FIXTURE_OFFERS,
+  held: { shape: 'single', operator: '=', value: '' },
+};
+
+type TestEdit = Omit<FixtureEdit, 'valueField'>;
+
+type SelectHandler = Extract<FixtureMode, { kind: 'select' }>['onSelect'];
+
+const text = ({
+  selected = null,
+  onSelect = vi.fn(),
+  rules = RULES,
+  edit,
+  ...props
+}: Omit<Partial<FixtureProps>, 'table' | 'mode'> & {
+  selected?: SentenceSelection | null;
+  onSelect?: SelectHandler;
+  rules?: readonly SentenceRule[];
+  edit?: TestEdit;
+}) => (
   <DecisionText
-    rules={RULES}
-    {...MULTI_SENTENCE_COLUMNS}
-    header={MULTI_SENTENCE_HEADER}
+    {...FIXTURE_VOCABULARY}
+    table={{ ...MULTI_SENTENCE_POLICY, ...MULTI_SENTENCE_COLUMNS, rules }}
+    mode={
+      edit
+        ? {
+            kind: 'edit',
+            selected,
+            onSelect,
+            edit: { valueField: () => FIELD, ...edit },
+            onPolicyChange: vi.fn(),
+            onAddRule: vi.fn(),
+          }
+        : { kind: 'select', selected, onSelect }
+    }
     ariaLabel="Rules"
     dataTestId="nl"
-    selected={props.selected ?? null}
-    onSelect={vi.fn()}
     {...props}
   />
 );
@@ -85,7 +124,7 @@ describe('DecisionText scroll', () => {
   it('scrolls the ancestor, not itself, to a rule the host selects', () => {
     const { rerender } = render(scroller({}));
     const outer = screen.getByTestId('scroller');
-    rerender(scroller({ selected: { rowId: 'row-300' } }));
+    rerender(scroller({ selected: { kind: 'rule', rowId: 'row-300' } }));
     const offsets = sentenceRuleOffsets(RULES);
     expect(outer.scrollTop).toBe((offsets[301] ?? 0) - FALLBACK_ROW_VIEWPORT_PX);
     expect(screen.getByTestId('nl').scrollTop).toBe(0);
@@ -93,7 +132,7 @@ describe('DecisionText scroll', () => {
 
   it('scrolls the named container past a content-sized wrapper that only says it scrolls', () => {
     const { rerender } = render(scroller({ wrapped: true }));
-    rerender(scroller({ wrapped: true, selected: { rowId: 'row-300' } }));
+    rerender(scroller({ wrapped: true, selected: { kind: 'rule', rowId: 'row-300' } }));
     const offsets = sentenceRuleOffsets(RULES);
     expect(screen.getByTestId('scroller').scrollTop).toBe(
       (offsets[301] ?? 0) - FALLBACK_ROW_VIEWPORT_PX
@@ -102,7 +141,7 @@ describe('DecisionText scroll', () => {
   });
 
   it('keeps the selected rule mounted far from the window', () => {
-    render(scroller({ selected: { rowId: 'row-350' } }));
+    render(scroller({ selected: { kind: 'rule', rowId: 'row-350' } }));
     expect(screen.getByTestId('nl-row-row-350')).toBeInTheDocument();
     expect(screen.queryByTestId('nl-row-row-200')).toBeNull();
   });
@@ -126,7 +165,7 @@ describe('DecisionText scroll', () => {
   it('scrolls the document to a rule the host selects when nothing else scrolls', () => {
     const { rerender } = render(text({ scroll: {} }));
     const page = document.documentElement;
-    rerender(text({ scroll: {}, selected: { rowId: 'row-300' } }));
+    rerender(text({ scroll: {}, selected: { kind: 'rule', rowId: 'row-300' } }));
     const offsets = sentenceRuleOffsets(RULES);
     expect(page.scrollTop).toBe((offsets[301] ?? 0) - FALLBACK_ROW_VIEWPORT_PX);
     expect(screen.getByTestId('nl').scrollTop).toBe(0);
@@ -243,7 +282,7 @@ describe('DecisionText scroll', () => {
     ])('leaves revealing a rule the host selects to the platform in %s', (_, style) => {
       const { rerender } = render(scroller({}));
       Object.assign(screen.getByTestId('scroller').style, style);
-      rerender(scroller({ selected: { rowId: 'row-10' } }));
+      rerender(scroller({ selected: { kind: 'rule', rowId: 'row-10' } }));
       const card = screen.getByTestId('nl-row-row-10');
       expect(
         native.mock.contexts.some((target) => target instanceof Node && card.contains(target))
@@ -253,14 +292,14 @@ describe('DecisionText scroll', () => {
 
     it('reveals a rule the host selects far from the window once it mounts', () => {
       const { rerender } = render(scroller({}));
-      rerender(scroller({ selected: { rowId: 'row-300' } }));
+      rerender(scroller({ selected: { kind: 'rule', rowId: 'row-300' } }));
       expect(native.mock.contexts).toContain(screen.getByTestId('nl-row-row-300'));
     });
 
     it('reveals only the stop, not its rule, in a rule taller than the container', () => {
       const { rerender } = render(scroller({}));
       vi.spyOn(screen.getByTestId('scroller'), 'clientHeight', 'get').mockReturnValue(10);
-      rerender(scroller({ selected: { rowId: 'row-1', columnId: 'country' } }));
+      rerender(scroller({ selected: { kind: 'cell', rowId: 'row-1', columnId: 'country' } }));
       const card = screen.getByTestId('nl-row-row-1');
       expect(native.mock.contexts).not.toContain(card);
       expect(native.mock.contexts.length).toBeGreaterThan(0);
@@ -397,7 +436,7 @@ describe('DecisionText scroll', () => {
 });
 
 describe('DecisionText unmount', () => {
-  const OPEN = { rowId: 'row-1', columnId: 'country', index: 0 };
+  const OPEN: SentenceValueId = { rowId: 'row-1', columnId: 'country', index: 0 };
   const flush = () => act(() => Promise.resolve());
 
   const Host = ({
@@ -409,7 +448,7 @@ describe('DecisionText unmount', () => {
   }) => {
     const [shown, setShown] = useState(true);
     const [rules, setRules] = useState(RULES);
-    const [editing, setEditing] = useState<DecisionTextEdit['editing']>(OPEN);
+    const [editing, setEditing] = useState<SentenceValueId | null>(OPEN);
     if (!shown) return null;
     return (
       <>
@@ -421,8 +460,11 @@ describe('DecisionText unmount', () => {
         {text({
           rules,
           edit: {
-            editing,
-            onStartEdit: setEditing,
+            editing: {
+              value: editing,
+              onStart: setEditing,
+            },
+            wordRefusal: wordFixtureRefusal,
             onCancel: () => {
               onCancel();
               setShown(false);
@@ -444,8 +486,9 @@ describe('DecisionText unmount', () => {
     const { unmount } = render(
       text({
         edit: {
-          editing: OPEN,
+          editing: { value: OPEN, onStart: vi.fn() },
           onCommit: vi.fn(),
+          wordRefusal: wordFixtureRefusal,
           onCancel,
           onClearCell: vi.fn(),
           onDeleteRule: vi.fn(),
@@ -463,8 +506,9 @@ describe('DecisionText unmount', () => {
       <StrictMode>
         {text({
           edit: {
-            editing: OPEN,
+            editing: { value: OPEN, onStart: vi.fn() },
             onCommit: vi.fn(),
+            wordRefusal: wordFixtureRefusal,
             onCancel,
             onClearCell: vi.fn(),
             onDeleteRule: vi.fn(),
@@ -540,7 +584,13 @@ const SelectingScroller = ({ editing }: { editing: boolean }) => {
     marks: MARKS,
     headerMark: { tone: 'error', glyph: true, title: MARK_TITLES.header },
     edit: editing
-      ? { onCommit: () => undefined, onClearCell: () => {}, onDeleteRule: () => {} }
+      ? {
+          onCommit: () => undefined,
+          wordRefusal: wordFixtureRefusal,
+          onCancel: () => {},
+          onClearCell: () => {},
+          onDeleteRule: () => {},
+        }
       : undefined,
   });
 };
@@ -605,12 +655,11 @@ describe('DecisionText mark clicks', () => {
     render(
       <div data-testid="scroller" style={{ overflowY: 'auto', height: 600 }}>
         <DecisionText
-          rules={DIFF_RULES}
-          {...DIFF_COLUMNS}
-          header={DIFF_HEADER}
+          {...FIXTURE_VOCABULARY}
+          table={{ ...DIFF_POLICY, ...DIFF_COLUMNS, rules: DIFF_RULES }}
+          mode={{ kind: 'diff', diff: { ...EVERY_STATE_DIFF, mode: 'full' } }}
           ariaLabel="Rules"
           dataTestId="nl"
-          diff={{ ...EVERY_STATE_DIFF, mode: 'full' }}
         />
       </div>
     );

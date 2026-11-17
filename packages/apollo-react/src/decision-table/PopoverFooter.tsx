@@ -27,10 +27,8 @@ export interface PopoverFooterProps {
   links: readonly PopoverFooterLink[];
   onCancel: () => void;
   onApply: () => void;
-  applyDisabled?: boolean;
-  /** Shows Apply as off while it stays pressable, so a press still takes focus from an editor that commits on blur. */
-  applyDimmed?: boolean;
-  applyKeepsFocus?: boolean;
+  /** Apply over the popover's own fields keeps focus and may be off; over an editor that commits on blur it takes focus, and shows as off while it stays pressable. */
+  apply: { kind: 'fields'; disabled: boolean } | { kind: 'editor'; dimmed: boolean };
   labels: PopoverFooterLabels;
   /** The popover's testid; derived ids: `-cancel`, `-apply`. */
   dataTestId: string;
@@ -44,67 +42,58 @@ export const lastActionIn = (root: ParentNode): HTMLElement | null =>
 
 /** The popover's actions: its links, then Cancel and Apply, wrapping before they overflow. */
 export const PopoverFooter = forwardRef<HTMLDivElement, PopoverFooterProps>(
-  (
-    {
-      links,
-      onCancel,
-      onApply,
-      applyDisabled = false,
-      applyDimmed = false,
-      applyKeepsFocus = true,
-      labels,
-      dataTestId,
-    },
-    ref
-  ) => (
-    <div ref={ref} className={POPOVER_FOOTER_CLASS}>
-      {links.length > 0 && (
-        <div className={POPOVER_LINKS_CLASS}>
-          {links.map((link) => (
-            <Button
-              key={link.dataTestId}
-              type="button"
-              variant="link"
-              size="sm"
-              className={POPOVER_LINK_CLASS}
-              onMouseDown={keepFocus}
-              onClick={link.onClick}
-              data-testid={link.dataTestId}
-            >
-              {link.icon}
-              {link.label}
-            </Button>
-          ))}
+  ({ links, onCancel, onApply, apply, labels, dataTestId }, ref) => {
+    const applyDisabled = apply.kind === 'fields' && apply.disabled;
+    return (
+      <div ref={ref} className={POPOVER_FOOTER_CLASS}>
+        {links.length > 0 && (
+          <div className={POPOVER_LINKS_CLASS}>
+            {links.map((link) => (
+              <Button
+                key={link.dataTestId}
+                type="button"
+                variant="link"
+                size="sm"
+                className={POPOVER_LINK_CLASS}
+                onMouseDown={keepFocus}
+                onClick={link.onClick}
+                data-testid={link.dataTestId}
+              >
+                {link.icon}
+                {link.label}
+              </Button>
+            ))}
+          </div>
+        )}
+        <div className={POPOVER_ACTIONS_CLASS}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onMouseDown={keepFocus}
+            onClick={onCancel}
+            data-last-action={applyDisabled || undefined}
+            data-testid={`${dataTestId}-cancel`}
+          >
+            {labels.cancel}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={applyDisabled}
+            aria-disabled={(apply.kind === 'editor' && apply.dimmed) || undefined}
+            className={POPOVER_APPLY_DIMMED_CLASS}
+            onMouseDown={apply.kind === 'fields' ? keepFocus : undefined}
+            onClick={onApply}
+            data-last-action={!applyDisabled || undefined}
+            data-testid={`${dataTestId}-apply`}
+          >
+            {labels.apply}
+          </Button>
         </div>
-      )}
-      <div className={POPOVER_ACTIONS_CLASS}>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onMouseDown={keepFocus}
-          onClick={onCancel}
-          data-last-action={applyDisabled || undefined}
-          data-testid={`${dataTestId}-cancel`}
-        >
-          {labels.cancel}
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          disabled={applyDisabled}
-          aria-disabled={applyDimmed || undefined}
-          className={POPOVER_APPLY_DIMMED_CLASS}
-          onMouseDown={applyKeepsFocus ? keepFocus : undefined}
-          onClick={onApply}
-          data-last-action={!applyDisabled || undefined}
-          data-testid={`${dataTestId}-apply`}
-        >
-          {labels.apply}
-        </Button>
       </div>
-    </div>
-  )
+    );
+  }
 );
 
 PopoverFooter.displayName = 'PopoverFooter';

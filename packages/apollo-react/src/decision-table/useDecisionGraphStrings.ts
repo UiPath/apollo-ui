@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSafeLingui } from '../i18n/useSafeLingui';
 import type { MarkBadgeLabels } from './MarkBadge';
-import { useDecisionTextLabels, withLabelOverrides } from './useDecisionTextStrings';
+import { useDecisionTextLabels } from './useDecisionTextStrings';
 
 /** The graph view's own strings, built in from the `decision-table` catalog. */
 export interface DecisionGraphLabels extends MarkBadgeLabels {
@@ -16,13 +16,11 @@ export interface DecisionGraphLabels extends MarkBadgeLabels {
   showProblem: (status: string) => string;
 }
 
-/** The graph view's strings in the active locale, with the host's in place of any it gives. */
-export const useDecisionGraphLabels = (
-  overrides: Partial<DecisionGraphLabels> | undefined
-): DecisionGraphLabels => {
+/** The graph view's strings in the active locale. */
+export const useDecisionGraphLabels = (): DecisionGraphLabels => {
   const { _ } = useSafeLingui();
-  const { markStatus } = useDecisionTextLabels(undefined);
-  const defaults = useMemo(
+  const { markStatus } = useDecisionTextLabels();
+  return useMemo(
     (): DecisionGraphLabels => ({
       graph: _({ id: 'decision-graph.graph', message: 'Decisions' }),
       empty: _({ id: 'decision-graph.empty', message: 'No decisions yet' }),
@@ -46,5 +44,4 @@ export const useDecisionGraphLabels = (
     }),
     [_, markStatus]
   );
-  return useMemo(() => withLabelOverrides(defaults, overrides), [defaults, overrides]);
 };

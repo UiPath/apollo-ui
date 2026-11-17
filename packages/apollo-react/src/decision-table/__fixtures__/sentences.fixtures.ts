@@ -1,14 +1,17 @@
-import type { DecisionTextProps } from '../DecisionText';
-import type { PolicyGroup } from '../PolicyPicker';
 import type {
   SentenceBandColumn,
-  SentenceHeader,
   SentenceLine,
   SentenceNameToken,
   SentencePart,
   SentenceRule,
   SentenceValueToken,
 } from '../sentenceTypes';
+import {
+  type AggregationOffers,
+  type FixtureTable,
+  type FixtureType,
+  policyOf,
+} from './hostVocabulary';
 
 /** Makes a cell's value token from its text and its place among the cell's values. */
 type ValueMaker = (text: string, index?: number) => SentenceValueToken;
@@ -29,13 +32,25 @@ const line = (name: SentenceNameToken, ...parts: SentencePart[]): SentenceLine =
 });
 
 /** A view's input and output columns. */
-export type SentenceColumns = Pick<DecisionTextProps, 'inputs' | 'outputs'>;
+export type SentenceColumns = Pick<FixtureTable, 'inputs' | 'outputs'>;
 
 /** No inputs and no outputs, so no bands. */
 export const NO_COLUMNS: SentenceColumns = { inputs: [], outputs: [] };
 
-const columnsOf = (names: readonly SentenceNameToken[]): SentenceBandColumn[] =>
-  names.map(({ columnId, text }) => ({ id: columnId, name: text }));
+const COLUMN_TYPES: Readonly<Record<string, FixtureType>> = {
+  age: 'number',
+  income: 'number',
+  score: 'number',
+  debt: 'number',
+  limit: 'number',
+  start: 'date',
+};
+
+/** A column's type in the fixtures: a number or a date by its id, text otherwise. */
+export const fixtureTypeOf = (columnId: string): FixtureType => COLUMN_TYPES[columnId] ?? 'string';
+
+const columnsOf = (names: readonly SentenceNameToken[]): SentenceBandColumn<FixtureType>[] =>
+  names.map(({ columnId, text }) => ({ id: columnId, name: text, type: fixtureTypeOf(columnId) }));
 
 /** Values as `{first}, {second}`. */
 export const valueList = (value: ValueMaker, texts: readonly string[]) =>
@@ -96,41 +111,17 @@ export const GRID_SENTENCE_COLUMNS: SentenceColumns = {
 };
 
 /** The grid story's hit policy, Unique. */
-export const GRID_SENTENCE_HEADER: SentenceHeader = {
-  label: 'Unique',
-  hint: 'Exactly one rule may match. Overlaps are errors.',
+export const GRID_SENTENCE_POLICY: Pick<FixtureTable, 'hitPolicy'> = {
+  hitPolicy: policyOf('UNIQUE'),
 };
 
-/** The hit policies a host offers in the header, with Sum refused as for a text output. */
-export const HIT_POLICY_GROUPS: readonly PolicyGroup[] = [
-  {
-    id: 'single',
-    label: 'One result',
-    options: [
-      { value: 'UNIQUE', code: 'U', label: 'Unique', hint: GRID_SENTENCE_HEADER.hint },
-      { value: 'FIRST', code: 'F', label: 'First', hint: 'Stops at the first matching rule.' },
-      {
-        value: 'COLLECT-TOTAL',
-        label: 'Collect and total',
-        options: [
-          {
-            value: 'COLLECT:SUM',
-            code: 'C+',
-            label: 'Sum',
-            disabledReason: 'Needs a number output.',
-          },
-          { value: 'COLLECT:MIN', code: 'C<', label: 'Minimum' },
-          { value: 'COLLECT:MAX', code: 'C>', label: 'Maximum' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'multiple',
-    label: 'Several results',
-    options: [{ value: 'COLLECT', code: 'C', label: 'Collect', hint: 'Returns the matches.' }],
-  },
-];
+/** Every total offered but Sum, refused as for a text output. */
+export const SUM_REFUSED_OFFERS: AggregationOffers = {
+  SUM: { kind: 'refused', reason: 'Needs a number output.' },
+  MIN: { kind: 'offered' },
+  MAX: { kind: 'offered' },
+  COUNT: { kind: 'offered' },
+};
 
 const [SCORE, score] = column('score', 'input', 'Credit Score');
 const [DEBT, debt] = column('debt', 'input', 'Debt Ratio');
@@ -206,10 +197,9 @@ export const MULTI_SENTENCE_COLUMNS: SentenceColumns = {
   outputs: columnsOf([DECISION, LIMIT, REASON]),
 };
 
-/** The Collect hit policy. */
-export const MULTI_SENTENCE_HEADER: SentenceHeader = {
-  label: 'Collect',
-  hint: 'Returns the matches as a list.',
+/** The Collect hit policy, returning the matches as a list. */
+export const MULTI_SENTENCE_POLICY: Pick<FixtureTable, 'hitPolicy'> = {
+  hitPolicy: policyOf('COLLECT'),
 };
 
 const firstRule = (): SentenceRule => {

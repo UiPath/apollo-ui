@@ -4,19 +4,23 @@
 // (`GridLabels`). The drag and insert titles are the table's own, from its `decision-table`
 // catalog (see `ApI18nProvider`).
 
-export type { AddRuleButtonProps } from './AddRuleButton';
-export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
+export type { ColumnChange, ColumnEdit, ColumnFieldData } from './ColumnPopover';
 export type { SizedColumn } from './columnSizing';
+export type { ColumnTypeOption } from './columnTypes';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
-export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
+export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
+export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
+export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type {
   DecisionGraphDecisionNode,
+  DecisionGraphExpansion,
+  DecisionGraphLogic,
+  DecisionGraphMark,
   DecisionGraphNode,
   DecisionGraphReferenceNode,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
-export { DecisionText, type DecisionTextProps } from './DecisionText';
 export type {
   DecisionTextDiff,
   DiffChange,
@@ -26,12 +30,7 @@ export type {
   DiffRuleChange,
   DiffValueChange,
 } from './decisionTextDiff';
-export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
-export type {
-  DecisionTextEdit,
-  DecisionTextEditLabels,
-  DecisionTextLabels,
-} from './decisionTextTypes';
+export type { DecisionTextEdit } from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
@@ -76,15 +75,22 @@ export {
   SEPARATOR_BODY_CELL_CLASS,
 } from './gridStyles';
 export * from './gridTypes';
+export type {
+  HitPolicyCatalog,
+  HitPolicyEntry,
+  HitPolicyGroup,
+  HitPolicyOffer,
+  HitPolicyPick,
+  HitPolicyTotal,
+} from './hitPolicyMenu';
+export type { RefusalContext } from './hostValues';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
-export type { PolicyOption } from './PolicyOptionItem';
-export type { PolicyGroup, PolicyPickerProps } from './PolicyPicker';
 export type { GlyphTone } from './sentenceMarks';
 export type {
+  DecisionTextTable,
   SentenceBandColumn,
   SentenceCellId,
-  SentenceHeader,
   SentenceLine,
   SentenceNameToken,
   SentencePart,
@@ -93,11 +99,8 @@ export type {
   SentenceToken,
   SentenceValueId,
   SentenceValueToken,
-  SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
-export type { DecisionGraphLabels } from './useDecisionGraphStrings';
-export type { DecisionTextScroll } from './useRuleWindow';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {
@@ -116,13 +119,15 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
+export type { DecisionTextScroll } from './useRuleWindow';
 export type { ValuePopoverProps } from './ValuePopover';
 export type {
   ExpressionEditorHandle,
   ExpressionEditorProps,
+  HeldValues,
+  OperatorOffer,
   RangeEnds,
   ValueCommit,
-  ValueField,
-  ValueOperatorOption,
+  ValueFieldData,
   ValueShape,
 } from './valueTypes';

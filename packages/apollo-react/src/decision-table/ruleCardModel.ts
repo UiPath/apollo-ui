@@ -128,7 +128,13 @@ interface RuleRemovals {
   lines: (RemoveConditionButtonProps | null)[];
 }
 
-export interface RuleCardModelParams {
+/** How a card is shown: read, editable with its removal strings, or painted with its change in a diff. */
+export type CardMode =
+  | { kind: 'read' }
+  | { kind: 'edit'; editLabels: RuleRemovalLabels }
+  | { kind: 'diff'; diff: RuleDiff };
+
+export interface RuleCardBase {
   rule: SentenceRule;
   /** 1-based, as announced and as numbered. */
   position: number;
@@ -137,12 +143,11 @@ export interface RuleCardModelParams {
   selectable: boolean;
   /** Whether an input another decision produces links to that decision. */
   decisionLinks: boolean;
-  editLabels: RuleRemovalLabels | undefined;
-  /** The rule's change and number in a diff. */
-  diff: RuleDiff | undefined;
   idPrefix: string;
   labels: RuleCardLabels;
 }
+
+export type RuleCardModelParams = RuleCardBase & CardMode;
 
 /** What a rule card renders, derived from its rule, its mark and its strings. */
 interface RuleCardModel
@@ -176,24 +181,16 @@ const inputColumnIds = (parts: readonly SentencePart[]): string[] => [
 ];
 
 /** A rule card's mark, name and description, cell stops and decision links, glyph badges and remove actions. */
-export const ruleCardModel = ({
-  rule,
-  position,
-  numbered,
-  mark,
-  selectable,
-  decisionLinks,
-  idPrefix,
-  labels,
-  editLabels,
-  diff,
-}: RuleCardModelParams): RuleCardModel => {
+export const ruleCardModel = (params: RuleCardModelParams): RuleCardModel => {
+  const { rule, position, numbered, mark, selectable, decisionLinks, idPrefix, labels } = params;
+  const diff = params.kind === 'diff' ? params.diff : undefined;
+  const editLabels = params.kind === 'edit' ? params.editLabels : undefined;
   const id = `${idPrefix}-${position}`;
   const number = diff ? diff.number : position;
   const changed = (token: SentenceToken) => diff?.tokens.has(token) === true;
   const changeStatus = [
     diff?.change && labels.changeStatus(diff.change),
-    diff?.movedFrom !== undefined && labels.movedFrom(diff.movedFrom),
+    diff?.change === 'update' && diff.movedFrom !== undefined && labels.movedFrom(diff.movedFrom),
   ]
     .filter(Boolean)
     .join(', ');
@@ -212,7 +209,7 @@ export const ruleCardModel = ({
         ]
           .filter(Boolean)
           .join(' '),
-        editable: editLabels !== undefined,
+        editable: params.kind === 'edit',
       }))
     : [];
   const stopByToken = new Map(stops.map((stop) => [stop.token, stop]));

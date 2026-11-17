@@ -1,13 +1,10 @@
 import type React from 'react';
+import type { HitPolicyPick } from './hitPolicyMenu';
 
-/** A column's name inside a sentence; `columnId` is the input's or output's id. */
-export interface SentenceNameToken {
-  kind: 'input' | 'output';
-  columnId: string;
-  text: string;
-  /** The id of the decision whose output this input is; set only on an input. */
-  producedBy?: string;
-}
+/** A column's name inside a sentence; `columnId` is the input's or output's id, and an input another decision produces names that decision. */
+export type SentenceNameToken =
+  | { kind: 'input'; columnId: string; text: string; producedBy?: string }
+  | { kind: 'output'; columnId: string; text: string };
 
 /** A cell's value inside a sentence, and its `index` among the cell's values, 0 for an outcome. */
 export interface SentenceValueToken {
@@ -41,40 +38,31 @@ export interface SentenceRule {
   lines: readonly SentenceLine[];
 }
 
-/** A kind of value a column holds, which picks its default type glyph. */
-export type SentenceValueType =
-  | 'text'
-  | 'number'
-  | 'boolean'
-  | 'date'
-  | 'time'
-  | 'dateTime'
-  | 'dayTimeDuration'
-  | 'yearMonthDuration'
-  | 'list'
-  | 'any';
-
-/** An input or output of a band, by its column's id and name. */
-export interface SentenceBandColumn {
+/** An input or output of a band, by its column's id and name, with the host's type of it. */
+export interface SentenceBandColumn<Type> {
   id: string;
   name: string;
-  /** The column's kind of value; without `icon`, its glyph. */
-  type?: SentenceValueType;
-  /** The column's type glyph, before its name, in place of its type's. */
-  icon?: React.ReactNode;
+  type: Type;
+}
+
+/** A band column as the view draws it, with its type's glyph. */
+export interface BandColumnView extends Omit<SentenceBandColumn<unknown>, 'type'> {
+  icon: React.ReactNode;
 }
 
 /** A labelled run of columns shown above the rules. */
 export interface SentenceBand {
   id: string;
   label: string;
-  columns: readonly SentenceBandColumn[];
+  columns: readonly BandColumnView[];
 }
 
-/** The sticky line above the rules: a label and its hint. */
-export interface SentenceHeader {
-  label: string;
-  hint: string;
+/** The decision table the view reads: its hit policy, its columns and its rules worded as sentences. */
+export interface DecisionTextTable<Policy, Total, Type> {
+  hitPolicy: HitPolicyPick<Policy, Total>;
+  inputs: readonly SentenceBandColumn<Type>[];
+  outputs: readonly SentenceBandColumn<Type>[];
+  rules: readonly SentenceRule[];
 }
 
 /** A cell, addressed as the grid's marks address it. */
@@ -88,8 +76,7 @@ export interface SentenceValueId extends SentenceCellId {
   index: number;
 }
 
-/** A rule, or one of its cells when `columnId` is set. */
-export interface SentenceSelection {
-  rowId: string;
-  columnId?: string;
-}
+/** A rule, or one of its cells. */
+export type SentenceSelection =
+  | { kind: 'rule'; rowId: string }
+  | ({ kind: 'cell' } & SentenceCellId);

@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { BandColumnProps } from './BandColumn';
 import type { ColumnEdit, ColumnPopoverProps } from './ColumnPopover';
 import type { EditorOverlayProps } from './EditorOverlay';
 import type { SentenceBand } from './sentenceTypes';
@@ -7,23 +6,24 @@ import type { EditorAnchor } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
 
 export interface ColumnEditingParams {
-  column: ColumnEdit | undefined;
+  column: ColumnEdit<number> | undefined;
   bands: readonly SentenceBand[];
   container: RuleWindow['container'];
 }
 
 /** The open pill's column and the actions that settle its popover. */
 export interface OpenColumnEditor
-  extends Pick<ColumnPopoverProps, 'column' | 'onApply' | 'onCancel' | 'onMoreProperties'> {
+  extends Pick<
+    ColumnPopoverProps,
+    'column' | 'field' | 'onApply' | 'onCancel' | 'onMoreProperties'
+  > {
   anchor: EditorAnchor;
   onDismiss: NonNullable<EditorOverlayProps['onPressOutside']>;
 }
 
 export interface ColumnEditing {
-  /** The column whose popover is open, or null. */
-  openId: string | null;
-  /** Opens a pill's popover, or closes it from its own pill; undefined while pills are plain. */
-  onToggle: BandColumnProps['onToggle'];
+  /** The pills' toggle, which opens a popover or closes it from its own pill, and the column whose popover is open, or null; undefined while pills are plain. */
+  pills: { onToggle: (columnId: string) => void; openId: string | null } | undefined;
   editor: OpenColumnEditor | undefined;
 }
 
@@ -44,7 +44,8 @@ export const useColumnEditing = ({
     column && openId !== null
       ? bands.flatMap((band) => band.columns).find((candidate) => candidate.id === openId)
       : undefined;
-  if (openId !== null && !open) setOpenId(null);
+  const field = column && open ? column.field(open.id) : undefined;
+  if (openId !== null && !field) setOpenId(null);
 
   useLayoutEffect(() => {
     const columnId = refocusRef.current;
@@ -57,13 +58,18 @@ export const useColumnEditing = ({
     refocusRef.current = refocus ? columnId : null;
     setOpenId(null);
   };
-  const editorOf = (edit: ColumnEdit, shown: OpenColumnEditor['column']): OpenColumnEditor => {
+  const editorOf = (
+    edit: ColumnEdit<number>,
+    shown: OpenColumnEditor['column'],
+    shownField: OpenColumnEditor['field']
+  ): OpenColumnEditor => {
     const { onMoreProperties } = edit;
     return {
       column: shown,
+      field: shownField,
       anchor: (section) => pillOf(section, shown.id),
       onApply: (change) => {
-        if (Object.keys(change).length > 0) edit.onCommit(shown.id, change);
+        if (Object.keys(change).some((key) => key !== 'kind')) edit.onCommit(shown.id, change);
         close(shown.id, true);
       },
       onCancel: () => close(shown.id, true),
@@ -78,10 +84,10 @@ export const useColumnEditing = ({
   };
 
   return {
-    openId: open ? open.id : null,
-    onToggle: column
-      ? (columnId) => setOpenId((current) => (current === columnId ? null : columnId))
-      : undefined,
-    editor: column && open ? editorOf(column, open) : undefined,
+    pills: column && {
+      onToggle: (columnId) => setOpenId((current) => (current === columnId ? null : columnId)),
+      openId: open && field ? open.id : null,
+    },
+    editor: column && open && field ? editorOf(column, open, field) : undefined,
   };
 };

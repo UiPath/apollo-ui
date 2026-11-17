@@ -7,12 +7,21 @@ import type {
   SentenceRule,
   SentenceValueId,
 } from '../sentenceTypes';
-import type { RangeEnds, ValueCommit } from '../valueTypes';
-import type { SentenceColumns } from './sentences.fixtures';
+import type { HeldValues, RangeEnds, ValueCommit, ValueFieldData } from '../valueTypes';
+import {
+  FIXTURE_OPERATOR_WORDS,
+  type FixtureOffer,
+  type FixtureOperator,
+  type FixtureType,
+} from './hostVocabulary';
+import { fixtureTypeOf, type SentenceColumns } from './sentences.fixtures';
 
-/** A column of the story table, and the decision that produces it when another one does. */
-type EditableColumn = Pick<SentenceBandColumn, 'id' | 'name'> &
-  Pick<SentenceNameToken, 'producedBy'>;
+/** A column of the story table. */
+type EditableColumn = SentenceBandColumn<FixtureType>;
+
+/** An input of the story table, and the decision that produces it when another one does. */
+type EditableInput = EditableColumn &
+  Pick<Extract<SentenceNameToken, { kind: 'input' }>, 'producedBy'>;
 
 /** One condition of a rule: its input, its operator words, its values, what joins them, and a range's ends. */
 interface EditableCondition {
@@ -32,21 +41,27 @@ interface EditableRule {
 
 /** A small decision table a story host edits and words back into sentences. */
 export interface EditableTable {
-  inputs: EditableColumn[];
+  inputs: EditableInput[];
   outputs: EditableColumn[];
   rules: EditableRule[];
   nextId: number;
 }
 
-const nameToken = (kind: SentenceNameToken['kind'], column: EditableColumn): SentenceNameToken => ({
-  kind,
-  columnId: column.id,
-  text: column.name,
-  producedBy: column.producedBy,
+const inputToken = (input: EditableInput): SentenceNameToken => ({
+  kind: 'input',
+  columnId: input.id,
+  text: input.name,
+  producedBy: input.producedBy,
 });
 
-const conditionParts = (input: EditableColumn, condition: EditableCondition): SentencePart[] => [
-  nameToken('input', input),
+const outputToken = (output: EditableColumn): SentenceNameToken => ({
+  kind: 'output',
+  columnId: output.id,
+  text: output.name,
+});
+
+const conditionParts = (input: EditableInput, condition: EditableCondition): SentencePart[] => [
+  inputToken(input),
   ` ${condition.operator} `,
   ...condition.values.flatMap((text, index): SentencePart[] => [
     ...(index === 0 ? [] : [condition.joiner]),
@@ -67,7 +82,7 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
     const conditions = orderedConditions(table, rule);
     const heading = table.outputs.flatMap((output, index): SentencePart[] => [
       ...(index === 0 ? [] : [' · ']),
-      nameToken('output', output),
+      outputToken(output),
       ' is ',
       { kind: 'value', columnId: output.id, index: 0, text: rule.outcomes[output.id] ?? '' },
     ]);
@@ -140,17 +155,53 @@ export const tableWithValue = (
     };
   });
 
-/** The table with a condition's committed values, operator and range ends written, the condition added when the rule has none. */
+const offer = (operator: FixtureOperator, shape: FixtureOffer['shape']): FixtureOffer => ({
+  operator,
+  label: FIXTURE_OPERATOR_WORDS[operator],
+  shape,
+});
+
+/** The operators the fixture host offers each condition. */
+export const FIXTURE_OFFERS: readonly FixtureOffer[] = [
+  offer('=', 'single'),
+  offer('!=', 'single'),
+  offer('<', 'single'),
+  offer('<=', 'single'),
+  offer('>', 'single'),
+  offer('>=', 'single'),
+  offer('between', 'range'),
+  offer('oneOf', 'list'),
+  offer('noneOf', 'list'),
+  offer('isEmpty', 'valueless'),
+];
+
+const operatorOfWords = (words: string): FixtureOffer | undefined =>
+  FIXTURE_OFFERS.find((candidate) => candidate.label === words);
+
+/** The table with a condition's committed operator, values and range ends written, the condition added when the rule has none. */
 export const tableWithCondition = (
   table: EditableTable,
   target: SentenceValueId,
-  { values, operator, ends }: Extract<ValueCommit, { kind: 'values' }>
+  commit: Extract<ValueCommit<FixtureOperator>, { kind: 'single' | 'range' | 'list' | 'valueless' }>
 ): EditableTable =>
   mapRule(table, target.rowId, (rule) => {
+    const valuesOf = (): { values: string[]; ends?: RangeEnds } => {
+      switch (commit.kind) {
+        case 'single':
+          return { values: [commit.value] };
+        case 'range':
+          return { values: [commit.low, commit.high], ends: commit.ends };
+        case 'list':
+          return { values: [...commit.values] };
+        case 'valueless':
+          return { values: [] };
+      }
+    };
+    const { values, ends } = valuesOf();
     const written: EditableCondition = {
       inputId: target.columnId,
-      operator: operator ?? 'is',
-      values: [...values],
+      operator: FIXTURE_OPERATOR_WORDS[commit.operator],
+      values,
       joiner: ends ? ' and ' : ', ',
       ends,
     };
@@ -181,6 +232,63 @@ export const tableWithExpression = (
         ],
       }));
 
+/** The table with a commit written, as the fixture host writes each kind. */
+export const tableWithCommit = (
+  table: EditableTable,
+  target: SentenceValueId,
+  commit: ValueCommit<FixtureOperator>
+): EditableTable => {
+  switch (commit.kind) {
+    case 'outcome':
+      return tableWithValue(table, target, commit.value);
+    case 'expression':
+      return tableWithExpression(table, target, commit.text);
+    default:
+      return tableWithCondition(table, target, commit);
+  }
+};
+
+/** What the fixture host's popover edits for a cell: an outcome, a `matches` condition as its expression, or a condition by operator. */
+export const editableValueField = (
+  table: EditableTable,
+  { rowId, columnId }: SentenceCellId
+): ValueFieldData<FixtureOperator> => {
+  if (isOutput(table, columnId)) return { kind: 'outcome', allowedValues: [] };
+  const condition = table.rules
+    .find((rule) => rule.rowId === rowId)
+    ?.conditions.find((candidate) => candidate.inputId === columnId);
+  const expression = condition ? condition.values.join(condition.joiner) : '';
+  const offer = condition ? operatorOfWords(condition.operator) : FIXTURE_OFFERS[0];
+  if (!condition || !offer) {
+    return condition
+      ? { kind: 'expression', allowedValues: [], expression }
+      : {
+          kind: 'condition',
+          allowedValues: [],
+          expression,
+          operators: FIXTURE_OFFERS,
+          held: { shape: 'single', operator: '=', value: '' },
+        };
+  }
+  const { operator, shape } = offer;
+  const [first = '', second = ''] = condition.values;
+  const held: HeldValues<FixtureOperator> =
+    shape === 'range'
+      ? {
+          shape,
+          operator,
+          low: first,
+          high: second,
+          ends: condition.ends ?? { lowInclusive: true, highInclusive: true },
+        }
+      : shape === 'list'
+        ? { shape, operator, values: condition.values }
+        : shape === 'valueless'
+          ? { shape, operator }
+          : { shape, operator, value: first };
+  return { kind: 'condition', allowedValues: [], expression, operators: FIXTURE_OFFERS, held };
+};
+
 /** The table with one cell cleared: an outcome emptied, or a condition removed. */
 export const tableWithoutCell = (table: EditableTable, cell: SentenceCellId): EditableTable =>
   mapRule(table, cell.rowId, (rule) =>
@@ -199,7 +307,10 @@ export const tableWithNewInput = (table: EditableTable): [EditableTable, string]
     {
       ...table,
       nextId: table.nextId + 1,
-      inputs: [...table.inputs, { id, name: `Input ${table.inputs.length + 1}` }],
+      inputs: [
+        ...table.inputs,
+        { id, name: `Input ${table.inputs.length + 1}`, type: fixtureTypeOf(id) },
+      ],
     },
     id,
   ];
@@ -265,11 +376,11 @@ export const tableWithoutRule = (table: EditableTable, rowId: string): EditableT
 /** The grid story's table (age, income and channel to risk), as an editable model. */
 export const EDITABLE_TABLE: EditableTable = {
   inputs: [
-    { id: 'age', name: 'age' },
-    { id: 'income', name: 'income', producedBy: 'net-income' },
-    { id: 'channel', name: 'channel', producedBy: 'sales-channel' },
+    { id: 'age', name: 'age', type: fixtureTypeOf('age') },
+    { id: 'income', name: 'income', producedBy: 'net-income', type: fixtureTypeOf('income') },
+    { id: 'channel', name: 'channel', producedBy: 'sales-channel', type: fixtureTypeOf('channel') },
   ],
-  outputs: [{ id: 'risk', name: 'risk' }],
+  outputs: [{ id: 'risk', name: 'risk', type: fixtureTypeOf('risk') }],
   rules: [
     {
       rowId: 'r1',
@@ -304,7 +415,11 @@ export const EMPTY_TABLE: EditableTable = { ...EDITABLE_TABLE, rules: [] };
 export const manyRulesTable = (count: number, values: number, inputs: number): EditableTable => {
   const extra = Array.from(
     { length: inputs },
-    (_, index): EditableColumn => ({ id: `input-${index + 1}`, name: `Input ${index + 1}` })
+    (_, index): EditableColumn => ({
+      id: `input-${index + 1}`,
+      name: `Input ${index + 1}`,
+      type: fixtureTypeOf(`input-${index + 1}`),
+    })
   );
   return {
     ...EDITABLE_TABLE,

@@ -19,10 +19,8 @@ export interface ConditionLineProps
     'cells' | 'selectedColumnId' | 'stopOf' | 'linkOf' | 'diffOf' | 'labels'
   > {
   line: SentenceLine;
-  /** A condition the open editor adds, its value a placeholder. */
-  pending: boolean;
-  /** A condition a diff removed, struck, or added. */
-  change?: 'add' | 'delete';
+  /** A condition the rule holds; one the open editor adds, its value a placeholder; or one a diff removed, struck, or added. */
+  state: 'held' | 'pending' | 'add' | 'delete';
   badge: MarkBadgeProps | null;
   removal: RemoveConditionButtonProps | null;
 }
@@ -30,24 +28,24 @@ export interface ConditionLineProps
 /** One condition line of a card: its bullet or its run's verdict, its text, its remove action, then its glyph. */
 export const ConditionLine: React.FC<ConditionLineProps> = ({
   line,
-  pending,
-  change,
+  state,
   badge,
   removal,
   ...lineProps
 }) => {
   const matched = lineProps.cells?.[line.columnId]?.matched;
+  const change = state === 'add' || state === 'delete' ? state : undefined;
   return (
     <li
       className={cn(
         LINE_CLASS,
         MATCHED_LINE_CLASS,
-        pending && PENDING_LINE_CLASS,
+        state === 'pending' && PENDING_LINE_CLASS,
         change === 'delete' && REMOVED_LINE_CLASS,
         change === 'add' && ADDED_LINE_CLASS
       )}
       data-column-id={line.columnId}
-      data-pending={pending || undefined}
+      data-pending={state === 'pending' || undefined}
       data-change={change}
       data-matched={matched}
     >

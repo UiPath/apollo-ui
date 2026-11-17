@@ -3,30 +3,28 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
-import { type DecisionTextDiff, withRemoved } from './decisionTextDiff';
+import { FIXTURE_VOCABULARY, type FixtureDiff } from './__fixtures__/hostVocabulary';
+import { DecisionText } from './DecisionText';
+import { withRemoved } from './decisionTextDiff';
 import type { SentencePart, SentenceRule } from './sentenceTypes';
 
-const renderDiff = (
-  diff: DecisionTextDiff,
-  props: Partial<Pick<DecisionTextProps, 'rules'>> = {}
-) =>
-  render(
-    <DecisionText
-      rules={DIFF_RULES}
-      {...DIFF_COLUMNS}
-      header={DIFF_HEADER}
-      numbered
-      ariaLabel="Rules"
-      dataTestId="nl"
-      {...props}
-      diff={diff}
-    />
-  );
+const diffView = (diff: FixtureDiff, rules: readonly SentenceRule[] = DIFF_RULES) => (
+  <DecisionText
+    {...FIXTURE_VOCABULARY}
+    table={{ ...DIFF_POLICY, ...DIFF_COLUMNS, rules }}
+    mode={{ kind: 'diff', diff }}
+    numbered
+    ariaLabel="Rules"
+    dataTestId="nl"
+  />
+);
+
+const renderDiff = (diff: FixtureDiff, { rules }: { rules?: readonly SentenceRule[] } = {}) =>
+  render(diffView(diff, rules));
 
 const manyValues = (count: number): SentencePart[] =>
   Array.from({ length: count }, (_, index) => [
@@ -56,7 +54,14 @@ describe('DecisionText diff edges', () => {
       {
         mode: 'full',
         values: [
-          { rowId: 'long', columnId: 'channel', index: 22, change: 'update', previous: '"old"' },
+          {
+            kind: 'value',
+            rowId: 'long',
+            columnId: 'channel',
+            index: 22,
+            change: 'update',
+            previous: '"old"',
+          },
         ],
       },
       { rules: [LONG_RULE] }
@@ -69,7 +74,7 @@ describe('DecisionText diff edges', () => {
   it('shows a value added past the cell end', () => {
     renderDiff({
       mode: 'full',
-      values: [{ rowId: 'r1', columnId: 'age', index: 5, change: 'add' }],
+      values: [{ kind: 'value', rowId: 'r1', columnId: 'age', index: 5, change: 'add' }],
     });
     const card = screen.getByTestId('nl-row-r1');
     expect(card).toHaveAttribute('data-change', 'update');
@@ -90,21 +95,11 @@ describe('DecisionText diff edges', () => {
     const { rerender } = renderDiff({ mode: 'compact', ...diff }, { rules });
     await user.click(within(screen.getByTestId('nl-fold-row-1')).getByRole('button'));
     expect(screen.queryByTestId('nl-fold-row-1')).toBeNull();
-    const next: DecisionTextDiff = {
+    const next: FixtureDiff = {
       mode: 'compact',
       rules: [{ rowId: 'row-200', change: 'update' }],
     };
-    rerender(
-      <DecisionText
-        rules={rules}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
-        numbered
-        ariaLabel="Rules"
-        dataTestId="nl"
-        diff={next}
-      />
-    );
+    rerender(diffView(next, rules));
     expect(screen.queryByTestId('nl-fold-row-1')).not.toBeNull();
   });
 });
@@ -123,15 +118,17 @@ const valuelessRule = (rowId: string): SentenceRule => ({
 describe('DecisionText diff review edges', () => {
   it('shows no hit-policy picker on a diff', () => {
     render(
-      // @ts-expect-error
       <DecisionText
-        rules={DIFF_RULES}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
+        {...FIXTURE_VOCABULARY}
+        table={{ ...DIFF_POLICY, ...DIFF_COLUMNS, rules: DIFF_RULES }}
+        mode={{
+          kind: 'diff',
+          diff: { mode: 'full' },
+          // @ts-expect-error
+          onPolicyChange: () => undefined,
+        }}
         ariaLabel="Rules"
         dataTestId="nl"
-        diff={{ mode: 'full' }}
-        policy={{ value: 'FIRST', groups: [], onChange: () => undefined, label: 'Hit policy' }}
       />
     );
     expect(screen.queryByTestId('nl-policy')).toBeNull();
@@ -146,7 +143,14 @@ describe('DecisionText diff review edges', () => {
       {
         mode: 'full',
         values: [
-          { rowId: 'long', columnId: 'channel', index: 5000, change: 'update', previous: '"old"' },
+          {
+            kind: 'value',
+            rowId: 'long',
+            columnId: 'channel',
+            index: 5000,
+            change: 'update',
+            previous: '"old"',
+          },
         ],
       },
       { rules: [rule] }
@@ -171,7 +175,7 @@ describe('DecisionText diff review edges', () => {
     ['add', { change: 'add' as const }],
   ])('marks a valueless condition line for a cell %s', (change, value) => {
     renderDiff(
-      { mode: 'full', values: [{ rowId: 'ne', columnId: 'income', ...value }] },
+      { mode: 'full', values: [{ kind: 'cell', rowId: 'ne', columnId: 'income', ...value }] },
       { rules: [valuelessRule('ne')] }
     );
     const card = screen.getByTestId('nl-row-ne');

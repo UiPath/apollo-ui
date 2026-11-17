@@ -1,7 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { forwardRef, useId } from 'react';
-import type { DecisionTextDiff, DiffLabels } from './decisionTextDiff';
+import type { DiffLabels } from './decisionTextDiff';
 import { MarkBadge, type MarkBadgeProps, markIds } from './MarkBadge';
 import type { Mark } from './marks';
 import { PolicyPicker, type PolicyPickerProps } from './PolicyPicker';
@@ -13,15 +13,17 @@ import {
   HIT_POLICY_CHANGE_CLASS,
   STRUCK_VALUE_CLASS,
 } from './sentenceStyles';
-import type { SentenceHeader } from './sentenceTypes';
 
 export interface DecisionTextHeaderProps {
-  header: SentenceHeader;
-  policy: Omit<PolicyPickerProps, 'dataTestId' | 'describedBy'> | undefined;
+  /** The hit policy: its label, the picker in its place, or its change in a diff. */
+  title:
+    | { kind: 'label'; label: string }
+    | { kind: 'picker'; policy: Omit<PolicyPickerProps, 'dataTestId' | 'describedBy'> }
+    | { kind: 'change'; before: string; after: string };
+  /** What the hit policy does. */
+  hint: string;
   /** The mark of the decision as a whole. */
   mark: Mark | undefined;
-  /** The hit policy's change in a diff, shown in place of the label or picker. */
-  hitPolicy: DecisionTextDiff['hitPolicy'];
   labels: MarkBadgeProps['labels'] & Pick<DiffLabels, 'previousValue' | 'currentValue'>;
   /** Sticks to the top of the view's own scroll frame. */
   sticky: boolean;
@@ -29,7 +31,7 @@ export interface DecisionTextHeaderProps {
 }
 
 type HitPolicyChangeProps = Pick<DecisionTextHeaderProps, 'labels'> & {
-  change: NonNullable<DecisionTextHeaderProps['hitPolicy']>;
+  change: Extract<DecisionTextHeaderProps['title'], { kind: 'change' }>;
   describedBy: string | undefined;
 };
 
@@ -50,7 +52,7 @@ const HitPolicyChange: React.FC<HitPolicyChangeProps> = ({ change, describedBy, 
 
 /** The sticky line above the rules: its label, or the picker in its place, its mark, then its hint. */
 export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderProps>(
-  ({ header, policy, mark, hitPolicy, labels, sticky, dataTestId }, ref) => {
+  ({ title, hint, mark, labels, sticky, dataTestId }, ref) => {
     const badgeId = useId();
     const marks: LineMarks | null = isLineMark(mark) ? [mark] : null;
     const describedBy = marks ? markIds(badgeId, marks).join(' ') : undefined;
@@ -60,17 +62,19 @@ export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderP
         className={sticky ? DECISION_TEXT_HEADER_CLASS : cn(DECISION_TEXT_HEADER_CLASS, 'static')}
         data-testid={`${dataTestId}-header`}
       >
-        {hitPolicy ? (
-          <HitPolicyChange change={hitPolicy} describedBy={describedBy} labels={labels} />
-        ) : policy ? (
-          <PolicyPicker {...policy} describedBy={describedBy} dataTestId={dataTestId} />
-        ) : (
+        {title.kind === 'change' && (
+          <HitPolicyChange change={title} describedBy={describedBy} labels={labels} />
+        )}
+        {title.kind === 'picker' && (
+          <PolicyPicker {...title.policy} describedBy={describedBy} dataTestId={dataTestId} />
+        )}
+        {title.kind === 'label' && (
           <span className={HEADER_LABEL_CLASS} aria-describedby={describedBy}>
-            {header.label}
+            {title.label}
           </span>
         )}
         {marks && <MarkBadge id={badgeId} marks={marks} labels={labels} />}
-        <span>{header.hint}</span>
+        <span>{hint}</span>
       </div>
     );
   }

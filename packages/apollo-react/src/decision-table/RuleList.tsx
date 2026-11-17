@@ -1,8 +1,8 @@
 import { forwardRef } from 'react';
-import type { DiffRow } from './decisionTextDiff';
 import { DiffFoldRow, type DiffFoldRowProps } from './DiffFoldRow';
+import type { DiffRow, RuleDiff } from './decisionTextDiff';
 import type { TableMarks } from './marks';
-import { RuleCard, type RuleCardProps } from './RuleCard';
+import { RuleCard, type RuleCardMode, type RuleCardProps } from './RuleCard';
 import type { SentenceListStyle } from './sentenceRuleHeights';
 import { GUTTER_CLASS } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
@@ -25,15 +25,20 @@ export interface RuleListProps {
   selectedColumnId: string | null;
   selectable: boolean;
   decisionLinks: boolean;
-  /** The editing strings, or undefined for read-only cards. */
-  editLabels: RuleCardProps['editLabels'];
-  /** The card menu that is open, or null. */
-  openMenu: OpenRuleMenu | null;
-  /** The condition the open editor adds to its rule, or null. */
-  pending: SentenceValueId | null;
-  /** Each shown row's change or fold by row id, in a diff. */
-  diffRows: ReadonlyMap<string, DiffRow> | undefined;
-  onExpandFold: DiffFoldRowProps['onExpand'];
+  /** Read cards; editable ones with the open menu and the condition the open editor adds; or a diff's, with each shown row's change or fold. */
+  mode:
+    | { kind: 'read' }
+    | {
+        kind: 'edit';
+        editLabels: Extract<RuleCardProps, { kind: 'edit' }>['editLabels'];
+        openMenu: OpenRuleMenu | null;
+        pending: SentenceValueId | null;
+      }
+    | {
+        kind: 'diff';
+        diffRows: ReadonlyMap<string, DiffRow>;
+        onExpandFold: DiffFoldRowProps['onExpand'];
+      };
   style: SentenceListStyle;
   idPrefix: string;
   dataTestId: string;
@@ -52,11 +57,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       selectedColumnId,
       selectable,
       decisionLinks,
-      editLabels,
-      openMenu,
-      pending,
-      diffRows,
-      onExpandFold,
+      mode,
       style,
       idPrefix,
       dataTestId,
@@ -65,6 +66,17 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
     ref
   ) => {
     let nextRuleIndex = 0;
+    const diff = mode.kind === 'diff' ? mode : undefined;
+    const cardModeOf = (rowId: string, diff: RuleDiff | undefined): RuleCardMode => {
+      if (diff) return { kind: 'diff', diff };
+      if (mode.kind !== 'edit') return { kind: 'read' };
+      return {
+        kind: 'edit',
+        editLabels: mode.editLabels,
+        openMenu: mode.openMenu?.rowId === rowId ? mode.openMenu.menu : undefined,
+        pendingColumnId: mode.pending?.rowId === rowId ? mode.pending.columnId : undefined,
+      };
+    };
     return (
       <ul ref={ref} className={GUTTER_CLASS} style={style}>
         {segments.flatMap((segment) => {
@@ -80,8 +92,8 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
           }
           nextRuleIndex = segment.to;
           return rules.slice(segment.from, segment.to).map((rule, offset) => {
-            const row = diffRows?.get(rule.rowId);
-            if (row?.kind === 'fold') {
+            const row = diff?.diffRows.get(rule.rowId);
+            if (diff && row?.kind === 'fold') {
               return (
                 <DiffFoldRow
                   key={rule.rowId}
@@ -89,7 +101,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                   fold={row.fold}
                   position={segment.from + offset + 1}
                   setSize={rules.length}
-                  onExpand={onExpandFold}
+                  onExpand={diff.onExpandFold}
                   dataTestId={dataTestId}
                   labels={labels}
                 />
@@ -108,10 +120,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                 }
                 selectable={selectable}
                 decisionLinks={decisionLinks}
-                editLabels={editLabels}
-                openMenu={openMenu?.rowId === rule.rowId ? openMenu.menu : undefined}
-                pendingColumnId={pending?.rowId === rule.rowId ? pending.columnId : undefined}
-                diff={row?.diff}
+                {...cardModeOf(rule.rowId, row?.kind === 'rule' ? row.diff : undefined)}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
                 labels={labels}

@@ -56,7 +56,7 @@ export const PolicyPicker: React.FC<PolicyPickerProps> = ({
       className={POLICY_TRIGGER_CLASS}
       data-testid={`${dataTestId}-policy`}
     >
-      {picked?.code && (
+      {picked && (
         <>
           <span className={POLICY_CODE_CLASS}>{picked.code}</span>
           <span aria-hidden>·</span>

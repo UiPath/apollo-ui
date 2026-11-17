@@ -1,6 +1,7 @@
-import type { DecisionTextDiff, DiffRuleChange, DiffValueChange } from '../decisionTextDiff';
-import type { SentenceHeader, SentenceRule } from '../sentenceTypes';
+import type { DiffRuleChange, DiffValueChange } from '../decisionTextDiff';
+import type { SentenceRule } from '../sentenceTypes';
 import { EDITABLE_TABLE, type EditableTable, wordedRules } from './editableSentences.fixtures';
+import { type FixtureDiff, type FixtureTable, policyOf } from './hostVocabulary';
 import type { SentenceColumns } from './sentences.fixtures';
 
 type TableRule = EditableTable['rules'][number];
@@ -16,7 +17,7 @@ const ageRule = (rowId: string, from: number, risk: string): TableRule => ({
 /** The table after the change: twenty-four rules over age, income, channel and the new region. */
 export const DIFF_TABLE: EditableTable = {
   ...EDITABLE_TABLE,
-  inputs: [...EDITABLE_TABLE.inputs, { id: 'region', name: 'region' }],
+  inputs: [...EDITABLE_TABLE.inputs, { id: 'region', name: 'region', type: 'string' }],
   rules: [
     ...[0, 1, 2, 3, 4, 5].map((index) => ageRule(`a${index + 1}`, index * 3, '"high"')),
     ageRule('r1', 18, '"high"'),
@@ -63,10 +64,7 @@ export const DIFF_COLUMNS: SentenceColumns = {
   outputs: DIFF_TABLE.outputs,
 };
 
-export const DIFF_HEADER: SentenceHeader = {
-  label: 'Unique',
-  hint: 'Exactly one rule may match.',
-};
+export const DIFF_POLICY: Pick<FixtureTable, 'hitPolicy'> = { hitPolicy: policyOf('UNIQUE') };
 
 /** The old table's rule for ages 70 to 74, which the change removed. */
 const REMOVED_RULE: SentenceRule = {
@@ -88,7 +86,7 @@ const REMOVED_RULE: SentenceRule = {
 };
 
 /** Every state at once: rules added, changed, removed and moved, values added, changed and removed, columns added, changed and removed, and the hit policy. */
-export const EVERY_STATE_DIFF: Omit<DecisionTextDiff, 'mode'> = {
+export const EVERY_STATE_DIFF: Omit<FixtureDiff, 'mode'> = {
   rules: [
     { rowId: 'r3', change: 'add' },
     { rowId: 'r5', change: 'update' },
@@ -96,12 +94,32 @@ export const EVERY_STATE_DIFF: Omit<DecisionTextDiff, 'mode'> = {
     { rowId: 'r11', change: 'update' },
   ],
   values: [
-    { rowId: 'r5', columnId: 'age', index: 0, change: 'update', previous: '25' },
-    { rowId: 'r5', columnId: 'channel', index: 1, change: 'update', previous: '"app"' },
-    { rowId: 'r5', columnId: 'channel', index: 2, change: 'delete', previous: '"kiosk"' },
-    { rowId: 'r5', columnId: 'income', change: 'delete', previous: 'is greater than 40000' },
-    { rowId: 'r5', columnId: 'risk', change: 'update', previous: '"standard"' },
-    { rowId: 'r11', columnId: 'channel', change: 'add' },
+    { kind: 'value', rowId: 'r5', columnId: 'age', index: 0, change: 'update', previous: '25' },
+    {
+      kind: 'value',
+      rowId: 'r5',
+      columnId: 'channel',
+      index: 1,
+      change: 'update',
+      previous: '"app"',
+    },
+    {
+      kind: 'value',
+      rowId: 'r5',
+      columnId: 'channel',
+      index: 2,
+      change: 'delete',
+      previous: '"kiosk"',
+    },
+    {
+      kind: 'cell',
+      rowId: 'r5',
+      columnId: 'income',
+      change: 'delete',
+      previous: 'is greater than 40000',
+    },
+    { kind: 'cell', rowId: 'r5', columnId: 'risk', change: 'update', previous: '"standard"' },
+    { kind: 'cell', rowId: 'r11', columnId: 'channel', change: 'add' },
   ],
   removedRules: [{ rule: REMOVED_RULE, after: 'r12' }],
   columns: [
@@ -109,13 +127,21 @@ export const EVERY_STATE_DIFF: Omit<DecisionTextDiff, 'mode'> = {
     { columnId: 'channel', change: 'update' },
   ],
   removedColumns: [
-    { column: { id: 'segment', name: 'segment', type: 'text' }, kind: 'input', after: 'income' },
+    {
+      column: {
+        id: 'segment',
+        name: 'segment',
+        type: 'string',
+      },
+      kind: 'input',
+      after: 'income',
+    },
   ],
-  hitPolicy: { before: 'First', after: 'Unique' },
+  hitPolicy: { before: policyOf('FIRST'), after: policyOf('UNIQUE') },
 };
 
 /** Every rule changed or new, and the old table's first rule removed. */
-export const EVERYTHING_CHANGED_DIFF: Omit<DecisionTextDiff, 'mode'> = {
+export const EVERYTHING_CHANGED_DIFF: Omit<FixtureDiff, 'mode'> = {
   rules: DIFF_RULES.map(
     ({ rowId }, index): DiffRuleChange => ({
       rowId,
@@ -123,26 +149,30 @@ export const EVERYTHING_CHANGED_DIFF: Omit<DecisionTextDiff, 'mode'> = {
     })
   ),
   values: DIFF_RULES.flatMap(({ rowId }, index): DiffValueChange[] =>
-    index % 3 === 0 ? [] : [{ rowId, columnId: 'risk', change: 'update', previous: '"low"' }]
+    index % 3 === 0
+      ? []
+      : [{ kind: 'cell', rowId, columnId: 'risk', change: 'update', previous: '"low"' }]
   ),
   removedRules: [{ rule: REMOVED_RULE, after: null }],
 };
 
 /** A removed input, shown struck in its band where it stood. */
-export const REMOVED_COLUMN_DIFF: Omit<DecisionTextDiff, 'mode'> = {
+export const REMOVED_COLUMN_DIFF: Omit<FixtureDiff, 'mode'> = {
   removedColumns: EVERY_STATE_DIFF.removedColumns,
-  values: [{ rowId: 'r4', columnId: 'segment', change: 'delete', previous: 'is "retail"' }],
+  values: [
+    { kind: 'cell', rowId: 'r4', columnId: 'segment', change: 'delete', previous: 'is "retail"' },
+  ],
 };
 
 /** Only the hit policy changed. */
-export const HIT_POLICY_DIFF: Omit<DecisionTextDiff, 'mode'> = {
-  hitPolicy: { before: 'First', after: 'Unique' },
+export const HIT_POLICY_DIFF: Omit<FixtureDiff, 'mode'> = {
+  hitPolicy: { before: policyOf('FIRST'), after: policyOf('UNIQUE') },
 };
 
 /** `count` rules cycling through the age rules, with five of them changed. */
 export const largeDiffTable = (
   count: number
-): { rules: SentenceRule[]; diff: Omit<DecisionTextDiff, 'mode'> } => {
+): { rules: SentenceRule[]; diff: Omit<FixtureDiff, 'mode'> } => {
   const rules = wordedRules({
     ...DIFF_TABLE,
     rules: Array.from({ length: count }, (_, index) =>
@@ -164,6 +194,7 @@ export const largeDiffTable = (
       ),
       values: changed.map(
         (index): DiffValueChange => ({
+          kind: 'cell',
           rowId: `row-${index + 1}`,
           columnId: 'risk',
           change: 'update',

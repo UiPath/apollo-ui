@@ -2,15 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  EDITABLE_TABLE,
-  type EditableTable,
-  EMPTY_TABLE,
-  manyRulesTable,
-  wordedRules,
-} from './__fixtures__/editableSentences.fixtures';
-import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   EVERY_STATE_DIFF,
   EVERYTHING_CHANGED_DIFF,
@@ -19,28 +12,49 @@ import {
   REMOVED_COLUMN_DIFF,
 } from './__fixtures__/diffSentences.fixtures';
 import {
+  EDITABLE_TABLE,
+  type EditableTable,
+  EMPTY_TABLE,
+  manyRulesTable,
+  wordedRules,
+} from './__fixtures__/editableSentences.fixtures';
+import {
+  type AggregationOffers,
+  ALL_TOTALS_OFFERED,
+  FIXTURE_COLUMN_TYPES,
+  FIXTURE_VOCABULARY,
+  type FixtureDiff,
+  type FixtureEdit,
+  type FixtureMode,
+  type FixturePolicy,
+  type FixtureProps,
+  type FixtureTable,
+  fixtureHitPolicies,
+  policyOf,
+} from './__fixtures__/hostVocabulary';
+import {
   MULTI_SENTENCE_COLUMNS,
-  MULTI_SENTENCE_HEADER,
+  MULTI_SENTENCE_POLICY,
   manySentenceRules,
+  SUM_REFUSED_OFFERS,
 } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
   NUMERIC_INPUTS,
+  storyColumnsOf,
+  storyModeOf,
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
-import type { DecisionTextDiff } from './decisionTextDiff';
-import type { DecisionTextEdit } from './decisionTextTypes';
+import { DecisionText } from './DecisionText';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
+import { selectedColumnOf } from './sentenceSelection';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import type { ExpressionEditorProps } from './valueTypes';
 
-const NO_MARKS: TableMarks = { rows: new Map(), columns: new Map() };
-
 const selectionText = (selection: SentenceSelection | null) =>
-  selection ? [selection.rowId, selection.columnId ?? 'rule'].join(' / ') : 'none';
+  selection ? [selection.rowId, selectedColumnOf(selection) ?? 'rule'].join(' / ') : 'none';
 
 const cellText = (cell: SentenceCellId | null) =>
   cell ? `${cell.rowId} / ${cell.columnId}` : 'none';
@@ -52,6 +66,25 @@ interface StoryCaptionProps {
 const StoryCaption = ({ children }: StoryCaptionProps) => (
   <p className="text-xs text-foreground-de-emp">{children}</p>
 );
+
+const NO_MARKS: TableMarks = { rows: new Map(), columns: new Map() };
+
+/** Every hit policy, with Collect's totals, by the story control's name. */
+const POLICIES = {
+  First: policyOf('FIRST'),
+  Unique: policyOf('UNIQUE'),
+  Priority: policyOf('PRIORITY'),
+  Any: policyOf('ANY'),
+  Collect: policyOf('COLLECT'),
+  'Collect · Sum': { kind: 'total', policy: 'COLLECT', total: 'SUM' },
+  'Collect · Minimum': { kind: 'total', policy: 'COLLECT', total: 'MIN' },
+  'Collect · Maximum': { kind: 'total', policy: 'COLLECT', total: 'MAX' },
+  'Collect · Count': { kind: 'total', policy: 'COLLECT', total: 'COUNT' },
+  'Rule order': policyOf('RULE ORDER'),
+  'Output order': policyOf('OUTPUT ORDER'),
+} satisfies Record<string, FixturePolicy>;
+
+const TOTALS = { 'Sum refused': SUM_REFUSED_OFFERS, 'All offered': ALL_TOTALS_OFFERED };
 
 /** The host's validation, as the grid's host marks its cells: a number input holding text, and an empty outcome. */
 const validationMarks = (table: EditableTable): TableMarks => {
@@ -84,53 +117,59 @@ const liveSelection = (
 ): SentenceSelection | null => {
   const rule = selected && rules.find((candidate) => candidate.rowId === selected.rowId);
   if (!selected || !rule) return null;
-  const { columnId } = selected;
-  if (columnId === undefined) return selected;
-  return valueTokenOf(rule, { rowId: rule.rowId, columnId, index: 0 })
+  if (selected.kind === 'rule') return selected;
+  return valueTokenOf(rule, { rowId: rule.rowId, columnId: selected.columnId, index: 0 })
     ? selected
-    : { rowId: rule.rowId };
+    : { kind: 'rule', rowId: rule.rowId };
 };
 
 const sameSelection = (left: SentenceSelection | null, right: SentenceSelection | null) =>
-  left?.rowId === right?.rowId && left?.columnId === right?.columnId;
+  left?.rowId === right?.rowId && selectedColumnOf(left) === selectedColumnOf(right);
 
 interface TableHostProps {
   initialTable: EditableTable;
   caption: string;
   mode?: HostMode;
+  policy?: FixturePolicy;
+  offers?: AggregationOffers;
   validate?: boolean;
   marks?: TableMarks;
-  headerMark?: DecisionTextProps['headerMark'];
-  renderEditor?: DecisionTextEdit['renderEditor'];
-  labels?: DecisionTextProps['labels'];
-  editLabels?: DecisionTextEdit['labels'];
+  headerMark?: FixtureProps['headerMark'];
+  renderEditor?: FixtureEdit['renderEditor'];
   frameClassName?: string;
 }
 
-/** A host that owns the table and the selection, words the table back after every write, and refuses an empty condition. */
+/** A host that owns the table, its hit policy and the selection, words the table back after every write, and refuses a condition left without a value. */
 const TableHost = ({
   initialTable,
   caption,
   mode = 'edit',
+  policy = POLICIES.Unique,
+  offers = SUM_REFUSED_OFFERS,
   validate = false,
   marks: fixedMarks,
   headerMark,
   renderEditor,
-  labels,
-  editLabels,
   frameClassName = 'h-[600px]',
 }: TableHostProps) => {
-  const [host, setHost] = useState(() => storyTableOf(initialTable));
-  const { table } = host;
+  const [host, setHost] = useState(() => storyTableOf(initialTable, policy));
+  const { table, columnEdits } = host;
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   const [hovered, setHovered] = useState<SentenceCellId | null>(null);
   const [openedDecision, setOpenedDecision] = useState<string | null>(null);
   const [moreProperties, setMoreProperties] = useState<string | null>(null);
   const rules = useMemo(() => wordedRules(table), [table]);
+  const columns = useMemo(() => storyColumnsOf({ table, columnEdits }), [table, columnEdits]);
   const marks = useMemo(
     () => fixedMarks ?? (validate ? validationMarks(table) : NO_MARKS),
     [fixedMarks, table, validate]
   );
+  const viewTable = useMemo<FixtureTable>(
+    () => ({ hitPolicy: host.policy, ...columns, rules }),
+    [host.policy, columns, rules]
+  );
+
+  useEffect(() => setHost((current) => ({ ...current, policy })), [policy]);
 
   useEffect(() => {
     setSelected((current) => {
@@ -139,35 +178,28 @@ const TableHost = ({
     });
   }, [rules]);
 
-  const { columns, header, edit, policy, addRule } = storyTableProps({
+  const wired = storyTableProps({
     state: host,
     onChange: setHost,
     onSelect: setSelected,
     onMoreProperties: setMoreProperties,
     renderEditor,
-    editLabels,
   });
-  const editable = mode === 'edit';
 
   return (
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
       <DecisionText
-        rules={rules}
-        {...columns}
-        header={header}
-        labels={labels}
+        hitPolicies={fixtureHitPolicies(offers)}
+        columnTypes={FIXTURE_COLUMN_TYPES}
+        table={viewTable}
+        mode={storyModeOf(mode, selected, setSelected, wired)}
         ariaLabel="Rules"
         dataTestId="decision-text"
         numbered
         marks={marks}
         headerMark={headerMark}
         onCellHover={setHovered}
-        {...(mode === 'read'
-          ? { selected: null }
-          : { selected, onSelect: setSelected, edit: editable ? edit : undefined })}
-        policy={editable ? policy : undefined}
         onOpenDecision={setOpenedDecision}
-        addRule={editable ? addRule : undefined}
       />
       <StoryCaption>
         Selected: {selectionText(selected)} · Hovered: {cellText(hovered)} · Opened decision:{' '}
@@ -278,13 +310,6 @@ const ERRORS_MARKS: TableMarks = {
   ]),
 };
 
-const GERMAN_LABELS = { emptyRules: 'Noch keine Regeln', inputs: 'Eingaben', outputs: 'Ausgaben' };
-const GERMAN_EDIT_LABELS = {
-  cancel: 'Abbrechen',
-  apply: 'Übernehmen',
-  ruleActions: (position: number) => `Aktionen für Regel ${position}`,
-};
-
 /** The story's expression editor: a monospace input in its own shadow root, as a host's code editor would mount. */
 const ShadowExpressionEditor = ({ value, ariaLabel, onChange, onReady }: ExpressionEditorProps) => {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -323,27 +348,40 @@ const MODE_CAPTIONS: Record<HostMode, string> = {
 
 interface RulesArgs {
   mode: HostMode;
+  hitPolicy: keyof typeof POLICIES;
+  totals: keyof typeof TOTALS;
   table: keyof typeof TABLES;
   validate: boolean;
-  labels: 'view' | 'host';
   editor: 'popover' | 'host';
 }
 
 export const Default: StoryObj<RulesArgs> = {
-  args: { mode: 'edit', table: 'rules', validate: false, labels: 'view', editor: 'popover' },
+  args: {
+    mode: 'edit',
+    hitPolicy: 'Unique',
+    totals: 'Sum refused',
+    table: 'rules',
+    validate: false,
+    editor: 'popover',
+  },
   argTypes: {
     mode: {
-      control: 'inline-radio',
+      control: 'select',
       options: ['read', 'select', 'edit'],
       description: 'What the host wires: rules only, then selection, then editing.',
     },
+    hitPolicy: {
+      control: 'select',
+      options: Object.keys(POLICIES),
+      description: "The table's hit policy, which the header shows and Edit's picker changes.",
+    },
+    totals: {
+      control: 'inline-radio',
+      options: Object.keys(TOTALS),
+      description: "Which of Collect's totals the picker offers, in Edit.",
+    },
     table: { control: 'inline-radio', options: Object.keys(TABLES) },
     validate: { control: 'boolean', description: 'Mark invalid values after every write.' },
-    labels: {
-      control: 'inline-radio',
-      options: ['view', 'host'],
-      description: "The view's strings, or a host's own words for some of them.",
-    },
     editor: {
       control: 'inline-radio',
       options: ['popover', 'host'],
@@ -351,14 +389,14 @@ export const Default: StoryObj<RulesArgs> = {
         "Under Edit expression: the popover's text field, or the host's editor in a shadow root.",
     },
   },
-  render: ({ mode, table, validate, labels, editor }) => (
+  render: ({ mode, hitPolicy, totals, table, validate, editor }) => (
     <TableHost
       key={table}
       initialTable={TABLES[table]}
       mode={mode}
+      policy={POLICIES[hitPolicy]}
+      offers={TOTALS[totals]}
       validate={validate}
-      labels={labels === 'host' ? GERMAN_LABELS : undefined}
-      editLabels={labels === 'host' ? GERMAN_EDIT_LABELS : undefined}
       renderEditor={editor === 'host' ? renderExpressionEditor : undefined}
       caption={MODE_CAPTIONS[mode]}
     />
@@ -400,7 +438,7 @@ const LARGE_DIFF = largeDiffTable(300);
 
 interface DiffScenario {
   rules?: readonly SentenceRule[];
-  changes: Omit<DecisionTextDiff, 'mode'>;
+  changes: Omit<FixtureDiff, 'mode'>;
   marks?: TableMarks;
   caption: string;
 }
@@ -437,32 +475,35 @@ const DIFF_SCENARIOS = {
   },
 } satisfies Record<string, DiffScenario>;
 
-const DIFF_MODE_CAPTIONS: Record<DecisionTextDiff['mode'], string> = {
+const DIFF_MODE_CAPTIONS: Record<FixtureDiff['mode'], string> = {
   compact:
     'Compact: two unchanged rules kept each side of a change, longer runs folded; open a fold to show its rules.',
   full: 'Full: every rule, the changed ones painted.',
 };
 
 interface DiffArgs {
-  mode: DecisionTextDiff['mode'];
+  mode: FixtureDiff['mode'];
   scenario: keyof typeof DIFF_SCENARIOS;
 }
 
 const DiffHost = ({ mode, scenario }: DiffArgs) => {
   const { rules = DIFF_RULES, changes, marks, caption }: DiffScenario = DIFF_SCENARIOS[scenario];
-  const diff = useMemo(() => ({ mode, ...changes }), [mode, changes]);
+  const table = useMemo(() => ({ ...DIFF_POLICY, ...DIFF_COLUMNS, rules }), [rules]);
+  const viewMode = useMemo(
+    (): FixtureMode => ({ kind: 'diff', diff: { mode, ...changes } }),
+    [mode, changes]
+  );
   return (
     <div className="flex h-[640px] flex-col gap-2">
       <DecisionText
+        {...FIXTURE_VOCABULARY}
         key={scenario}
-        rules={rules}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
+        table={table}
+        mode={viewMode}
         numbered
         marks={marks}
         ariaLabel="Rules"
         dataTestId="diff"
-        diff={diff}
       />
       <StoryCaption>{DIFF_MODE_CAPTIONS[mode]}</StoryCaption>
       <StoryCaption>{caption}</StoryCaption>
@@ -479,7 +520,11 @@ export const Diff: StoryObj<DiffArgs> = {
   render: (args) => <DiffHost {...args} />,
 };
 
-const STACKED_RULES = manySentenceRules(300);
+const STACKED_TABLE: FixtureTable = {
+  ...MULTI_SENTENCE_POLICY,
+  ...MULTI_SENTENCE_COLUMNS,
+  rules: manySentenceRules(300),
+};
 const STACKED_IDS = ['first', 'second', 'third'] as const;
 
 interface ScrollingArgs {
@@ -502,15 +547,17 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
           data-testid={`stacked-${id}`}
         >
           <DecisionText
-            rules={STACKED_RULES}
-            {...MULTI_SENTENCE_COLUMNS}
-            header={MULTI_SENTENCE_HEADER}
+            {...FIXTURE_VOCABULARY}
+            table={STACKED_TABLE}
+            mode={{
+              kind: 'select',
+              selected: selected[id] ?? null,
+              onSelect: (next) => setSelected((current) => ({ ...current, [id]: next })),
+            }}
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
             numbered
             scroll={scroll === 'container' ? { container } : 'self'}
-            selected={selected[id] ?? null}
-            onSelect={(next) => setSelected((current) => ({ ...current, [id]: next }))}
           />
         </div>
       ))}

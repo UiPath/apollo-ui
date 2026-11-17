@@ -11,16 +11,20 @@ import {
   SINGLE_DECISION,
 } from './__fixtures__/decisionGraph.fixtures';
 import { type EditableTable, wordedRules } from './__fixtures__/editableSentences.fixtures';
+import { FIXTURE_VOCABULARY } from './__fixtures__/hostVocabulary';
 import {
   type HostMode,
   type StoryTable,
+  storyColumnsOf,
   storyHeadingOf,
+  storyModeOf,
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
-import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
+import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
+import { ruleSelection, selectedColumnOf } from './sentenceSelection';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 
 interface GraphSelection {
@@ -85,44 +89,43 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     const shown = selected?.decisionId === decisionId ? selected.selection : null;
     const onSelect = (selection: SentenceSelection | null) =>
       setSelected(selection ? { decisionId, selection } : null);
-    const { columns, header, edit, policy, addRule } = storyTableProps({
+    const wired = storyTableProps({
       state,
       onChange: (next) => setTables((current) => ({ ...current, [decisionId]: next })),
       onSelect,
       onMoreProperties: setMoreProperties,
     });
-    const editable = mode === 'edit';
+    const { edit } = wired;
+    const inPlace = {
+      ...wired,
+      edit: {
+        ...edit,
+        editing: {
+          value: editing?.decisionId === decisionId ? editing.value : null,
+          onStart: (value: SentenceValueId) => setEditing({ decisionId, value }),
+        },
+        onCancel: () => setEditing(null),
+        onCommit: (...args: Parameters<typeof edit.onCommit>) => {
+          const refused = edit.onCommit(...args);
+          if (!refused) setEditing(null);
+          return refused;
+        },
+      },
+    };
     return (
       <DecisionText
-        rules={rulesById.get(decisionId) ?? []}
-        {...columns}
-        header={header}
+        {...FIXTURE_VOCABULARY}
+        table={{
+          hitPolicy: state.policy,
+          ...storyColumnsOf(state),
+          rules: rulesById.get(decisionId) ?? [],
+        }}
+        mode={storyModeOf(mode, shown, onSelect, inPlace)}
         ariaLabel={`Rules of ${decisionId}`}
         dataTestId={`text-${decisionId}`}
         numbered
         scroll={scroll}
         onOpenDecision={setOpened}
-        policy={editable ? policy : undefined}
-        addRule={editable ? addRule : undefined}
-        {...(mode === 'read'
-          ? { selected: shown }
-          : {
-              selected: shown,
-              onSelect,
-              edit: editable
-                ? {
-                    ...edit,
-                    editing: editing?.decisionId === decisionId ? editing.value : null,
-                    onStartEdit: (value: SentenceValueId) => setEditing({ decisionId, value }),
-                    onCancel: () => setEditing(null),
-                    onCommit: (...args: Parameters<typeof edit.onCommit>) => {
-                      const refused = edit.onCommit(...args);
-                      if (typeof refused !== 'string') setEditing(null);
-                      return refused;
-                    },
-                  }
-                : undefined,
-            })}
       />
     );
   };
@@ -139,8 +142,11 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
           selected={selected?.decisionId ?? null}
           onReveal={(target) => {
             setRevealed(target);
-            if (target.rowId !== undefined) {
-              setSelected({ decisionId: target.decisionId, selection: { rowId: target.rowId } });
+            if (target.kind === 'rule') {
+              setSelected({
+                decisionId: target.decisionId,
+                selection: ruleSelection(target.rowId),
+              });
             }
           }}
           onOpenDecision={setOpened}
@@ -150,9 +156,12 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
       <p className="text-xs text-foreground-de-emp" data-testid="graph-caption">
         Selected:{' '}
         {selected
-          ? `${selected.decisionId} / ${selected.selection?.rowId ?? 'none'} / ${selected.selection?.columnId ?? 'rule'}`
+          ? `${selected.decisionId} / ${selected.selection?.rowId ?? 'none'} / ${selectedColumnOf(selected.selection) ?? 'rule'}`
           : 'none'}{' '}
-        · Revealed: {revealed ? `${revealed.decisionId} / ${revealed.rowId ?? 'decision'}` : 'none'}{' '}
+        · Revealed:{' '}
+        {revealed
+          ? `${revealed.decisionId} / ${revealed.kind === 'rule' ? revealed.rowId : 'decision'}`
+          : 'none'}{' '}
         · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'}
       </p>
       <p className="text-xs text-foreground-de-emp">{caption}</p>

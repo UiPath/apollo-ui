@@ -1,3 +1,4 @@
+import { selectionOf } from './sentenceSelection';
 import type { SentenceCellId, SentenceSelection, SentenceValueId } from './sentenceTypes';
 
 /** A value chip under the pointer and the cell it stands for. */
@@ -35,7 +36,7 @@ export const clickedSelection = (target: EventTarget | null): SentenceSelection 
     inputStopAt(target)?.columnId ??
     element?.closest<HTMLElement>('[data-more-values]')?.dataset.columnId;
   if (rowId === undefined) return null;
-  return columnId === undefined ? { rowId } : { rowId, columnId };
+  return selectionOf(rowId, columnId);
 };
 
 /** The value a click on `target` hit: its cell and its place among the cell's values, the first for an input stop. */

@@ -1,14 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DIFF_COLUMNS, DIFF_HEADER, DIFF_RULES } from './__fixtures__/diffSentences.fixtures';
+import { DIFF_COLUMNS, DIFF_POLICY, DIFF_RULES } from './__fixtures__/diffSentences.fixtures';
+import { FIXTURE_VOCABULARY, type FixtureDiff } from './__fixtures__/hostVocabulary';
 import { DecisionText } from './DecisionText';
-import {
-  type DecisionTextDiff,
-  type DiffRemovedRule,
-  type DiffRow,
-  diffColumnsOf,
-  diffRowsOf,
-} from './decisionTextDiff';
+import { type DiffRemovedRule, type DiffRow, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
 import type { SentenceNameToken, SentenceRule } from './sentenceTypes';
 
 const nameOf = (columnId: string): SentenceNameToken => ({
@@ -16,6 +11,8 @@ const nameOf = (columnId: string): SentenceNameToken => ({
   columnId,
   text: columnId,
 });
+
+const NUMBER = 'number';
 
 const NO_FOLDS: ReadonlySet<string> = new Set();
 
@@ -70,7 +67,7 @@ describe('placing removed rules', () => {
       mode: 'full',
       removedColumns: [
         {
-          column: { id: 'income', name: 'income', type: 'number' },
+          column: { id: 'income', name: 'income', type: NUMBER },
           kind: 'input',
           after: 'income',
         },
@@ -121,18 +118,24 @@ describe('placing removed rules', () => {
 });
 
 describe('values of a removed column', () => {
-  const removedFee = {
-    mode: 'full' as const,
+  const removedFee: FixtureDiff = {
+    mode: 'full',
     removedColumns: [
       {
-        column: { id: 'fee', name: 'fee', type: 'number' as const },
-        kind: 'output' as const,
+        column: { id: 'fee', name: 'fee', type: NUMBER },
+        kind: 'output',
         after: 'risk',
       },
     ],
     values: [
-      { rowId: 'r5', columnId: 'fee', change: 'delete' as const, previous: '10' },
-      { rowId: 'r5', columnId: 'segment', change: 'delete' as const, previous: 'is "retail"' },
+      { kind: 'cell', rowId: 'r5', columnId: 'fee', change: 'delete', previous: '10' },
+      {
+        kind: 'cell',
+        rowId: 'r5',
+        columnId: 'segment',
+        change: 'delete',
+        previous: 'is "retail"',
+      },
     ],
   };
 
@@ -150,13 +153,12 @@ describe('values of a removed column', () => {
   it('shows the removed output value in the card heading, not among its conditions', () => {
     render(
       <DecisionText
-        rules={DIFF_RULES}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
+        {...FIXTURE_VOCABULARY}
+        table={{ ...DIFF_POLICY, ...DIFF_COLUMNS, rules: DIFF_RULES }}
+        mode={{ kind: 'diff', diff: removedFee }}
         numbered
         ariaLabel="Rules"
         dataTestId="nl"
-        diff={removedFee}
       />
     );
     const card = screen.getByTestId('nl-row-r5');
@@ -170,16 +172,15 @@ describe('values of a removed column', () => {
   });
 });
 
-const renderDiff = (diff: DecisionTextDiff, rules: readonly SentenceRule[] = DIFF_RULES) =>
+const renderDiff = (diff: FixtureDiff, rules: readonly SentenceRule[] = DIFF_RULES) =>
   render(
     <DecisionText
-      rules={rules}
-      {...DIFF_COLUMNS}
-      header={DIFF_HEADER}
+      {...FIXTURE_VOCABULARY}
+      table={{ ...DIFF_POLICY, ...DIFF_COLUMNS, rules }}
+      mode={{ kind: 'diff', diff }}
       numbered
       ariaLabel="Rules"
       dataTestId="nl"
-      diff={diff}
     />
   );
 
@@ -197,11 +198,18 @@ describe('a removed and an added value of one unworded column', () => {
       renderDiff({
         mode: 'full',
         removedColumns: [
-          { column: { id: 'fee', name: 'fee', type: 'number' }, kind: 'output', after: 'risk' },
+          { column: { id: 'fee', name: 'fee', type: NUMBER }, kind: 'output', after: 'risk' },
         ],
         values: [
-          { rowId: 'r5', columnId: 'fee', index: 0, change: 'delete', previous: '10' },
-          { rowId: 'r5', columnId: 'fee', index: 1, change: 'add' },
+          {
+            kind: 'value',
+            rowId: 'r5',
+            columnId: 'fee',
+            index: 0,
+            change: 'delete',
+            previous: '10',
+          },
+          { kind: 'value', rowId: 'r5', columnId: 'fee', index: 1, change: 'add' },
         ],
       })
     );
@@ -219,8 +227,15 @@ describe('a removed and an added value of one unworded column', () => {
       renderDiff({
         mode: 'full',
         values: [
-          { rowId: 'r5', columnId: 'segment', index: 0, change: 'delete', previous: 'is "retail"' },
-          { rowId: 'r5', columnId: 'segment', index: 1, change: 'add' },
+          {
+            kind: 'value',
+            rowId: 'r5',
+            columnId: 'segment',
+            index: 0,
+            change: 'delete',
+            previous: 'is "retail"',
+          },
+          { kind: 'value', rowId: 'r5', columnId: 'segment', index: 1, change: 'add' },
         ],
       })
     );
