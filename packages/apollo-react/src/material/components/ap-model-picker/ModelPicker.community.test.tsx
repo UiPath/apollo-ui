@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -155,6 +155,46 @@ describe('<ModelPicker isCommunity>', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Use your own model' })).toBeNull()
     );
+  });
+
+  it("keeps the user's own pick made while the catalog refreshes after a save", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    let finishRefresh: () => void = () => {};
+    const onCustomModelSaved = vi.fn(
+      () => new Promise<void>((resolve) => (finishRefresh = resolve))
+    );
+    const picker = (models: DiscoveryModel[]) => (
+      <ModelPicker
+        models={models}
+        value={null}
+        onChange={onChange}
+        canManageByo
+        isCommunity
+        requestContext={CTX}
+        onCustomModelSaved={onCustomModelSaved}
+      />
+    );
+    const { rerender } = render(picker([HOSTED]));
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(await screen.findByText(/use custom model/i));
+    await addMyGptThroughMyOpenAi(user);
+    await waitFor(() => expect(onCustomModelSaved).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Use your own model' })).toBeNull()
+    );
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(await screen.findByRole('option', { name: /gpt-4\.1/ }));
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ modelName: 'gpt-4.1' }));
+
+    rerender(picker([HOSTED, ADDED]));
+    await act(async () => {
+      finishRefresh();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(onChange).not.toHaveBeenCalledWith(expect.objectContaining({ modelName: 'my-gpt' }));
   });
 
   it("shows the saved model's folder when another folder is shown", async () => {

@@ -687,23 +687,23 @@ export function createCommunityByoApi(
 
   /**
    * Writes the edited model's new entry into its saved configuration.
-   * Returns what failed, or `null` once saved.
+   * Returns the folder the configuration is saved in.
    */
   async function updateConfiguration(
     editing: ByoModelToEdit,
     entry: LlmConfigurationEntry,
     folderId: string
-  ): Promise<ByoFailure | null> {
+  ): Promise<ByoResult<string>> {
     const notSaved = 'The model passed its test but could not be saved';
     const current = await call('GET', configurationUrl(editing.configurationId));
-    if (!current.ok) return failure(current, notSaved);
+    if (!current.ok) return fail(failure(current, notSaved));
     const configuration = current.data as ProductLlmConfiguration;
     const edited = entryNamed(configuration, editing.name);
     if (!edited) {
-      return {
+      return fail({
         title: `${editing.name} is no longer in its configuration`,
         detail: JSON.stringify(configuration, null, 2),
-      };
+      });
     }
 
     // Fields this dialog does not edit (configuration type, API flavor, …) are kept, apart from
@@ -722,14 +722,11 @@ export function createCommunityByoApi(
 
     // The configuration moves to the connection's folder only when this is its one model.
     const onlyModel = configuration.llmConfigurations.length === 1;
+    const savedFolderId = onlyModel ? folderId : configuration.folderId;
     const saved = await call('PUT', configurationUrl(editing.configurationId), {
-      body: {
-        ...configuration,
-        folderId: onlyModel ? folderId : configuration.folderId,
-        llmConfigurations,
-      },
+      body: { ...configuration, folderId: savedFolderId, llmConfigurations },
     });
-    return saved.ok ? null : failure(saved, notSaved);
+    return saved.ok ? ok(savedFolderId) : fail(failure(saved, notSaved));
   }
 
   const testAndSave: ByoModelDialogApi['testAndSave'] = async ({
@@ -799,13 +796,16 @@ export function createCommunityByoApi(
       return fail({ title: `The test call failed: ${reason}`, detail });
     }
 
+    // The folder the model's configuration is saved in, which is where the model is listed.
+    let savedFolderId = connection.folderId;
     if (editing) {
-      const notSaved = await updateConfiguration(
+      const updated = await updateConfiguration(
         editing,
         llmConfiguration(res.customFieldMappings),
         connection.folderId
       );
-      if (notSaved) return fail(notSaved);
+      if (!updated.ok) return updated;
+      savedFolderId = updated.value;
     } else {
       const saved = await call('POST', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations'), {
         body: newConfiguration(res.customFieldMappings),
@@ -818,7 +818,7 @@ export function createCommunityByoApi(
       name,
       modelId,
       connectionId: connection.id,
-      folderId: connection.folderId,
+      folderId: savedFolderId,
       latencyMs,
     });
   };
