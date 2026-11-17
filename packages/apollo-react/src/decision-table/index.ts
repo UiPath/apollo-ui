@@ -86,6 +86,11 @@ export type {
 export type { RefusalContext } from './hostValues';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
+export {
+  type GridColumnIds,
+  selectSentenceInGrid,
+  sentenceSelectionOf,
+} from './sentenceGridSelection';
 export type { GlyphTone } from './sentenceMarks';
 export type {
   DecisionTextTable,
