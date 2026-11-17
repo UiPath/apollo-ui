@@ -23,6 +23,20 @@ export const SUPPORTED_LOCALES = [
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
+/**
+ * Resolves a host-supplied tag to a shipped catalog tag, case-insensitively.
+ *
+ * BCP 47 tags are case-insensitive by spec, and hosts source theirs from
+ * wildly different places — PortalShell, `navigator.language`, a
+ * user-preferences API — so `zh-tw`, `zh-TW` and ` ZH-tw ` must all find the
+ * `zh-TW` catalog. Returns `undefined` for a tag we ship no catalog for.
+ */
+export function resolveSupportedLocale(tag: string | undefined): SupportedLocale | undefined {
+  const raw = tag?.trim();
+  if (!raw) return undefined;
+  return SUPPORTED_LOCALES.find((supported) => supported.toLowerCase() === raw.toLowerCase());
+}
+
 export interface ApI18nProviderProps {
   /**
    * Apollo-react component group whose pre-built lingui catalogs should be
@@ -33,9 +47,14 @@ export interface ApI18nProviderProps {
   component: string;
   /**
    * Locale to use for translations. If not provided, reads from document.documentElement.lang (set by the host app), falling back to 'en'.
+   *
+   * Matched case-insensitively, so any spelling of a supported tag works
+   * (`zh-tw` resolves to the `zh-TW` catalog). An unsupported tag falls back
+   * to English.
+   *
    * @default document.documentElement.lang || 'en'
    */
-  locale?: SupportedLocale;
+  locale?: SupportedLocale | (string & {});
   /**
    * Children components
    */
@@ -61,9 +80,17 @@ export interface ApI18nProviderProps {
  * ```
  */
 export function ApI18nProvider({ component, locale: propLocale, children }: ApI18nProviderProps) {
-  const detectedLang = document.documentElement.lang as SupportedLocale;
-  const fallback = SUPPORTED_LOCALES.includes(detectedLang) ? detectedLang : 'en';
-  const locale = propLocale || fallback;
+  const requested = propLocale || document.documentElement.lang || 'en';
+  const catalog = resolveSupportedLocale(requested) ?? 'en';
+
+  // Which *spelling* of that language to activate. Hosts key their lingui
+  // catalogs by whatever tag they were handed, and lingui compares those keys
+  // byte-for-byte — so activating our canonical tag over a host sitting on
+  // `zh-tw` would point the shared singleton at a bucket the host never wrote
+  // to, and every host string would miss and fall back to its source text.
+  // Keep the owner's spelling whenever it means the same language.
+  const preferred = propLocale || i18n.locale || undefined;
+  const target = preferred && resolveSupportedLocale(preferred) === catalog ? preferred : catalog;
 
   const loadAndActivate = useCallback(() => {
     const preImportedLocales = getAllPreImportedLocales(component);
@@ -71,8 +98,8 @@ export function ApI18nProvider({ component, locale: propLocale, children }: ApI1
     if (!preImportedLocales) {
       console.error(`No locales found for component: ${component}`);
       // Activate with empty messages rather than undefined forEach
-      i18n.load(locale, {});
-      i18n.activate(locale);
+      i18n.load(target, {});
+      i18n.activate(target);
       return;
     }
 
@@ -84,8 +111,14 @@ export function ApI18nProvider({ component, locale: propLocale, children }: ApI1
       }
     });
 
-    i18n.activate(locale);
-  }, [component, locale]);
+    // `load` merges, so filing our catalog under the host's spelling adds our
+    // strings to its bucket without disturbing the host's own.
+    if (target !== catalog) {
+      i18n.load(target, preImportedLocales[catalog] ?? {});
+    }
+
+    i18n.activate(target);
+  }, [component, catalog, target]);
 
   useEffect(() => {
     loadAndActivate();

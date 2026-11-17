@@ -3,7 +3,12 @@ import { Trans } from '@lingui/react';
 import { render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ApI18nProvider, SUPPORTED_LOCALES, useApI18n } from './ApI18nProvider';
+import {
+  ApI18nProvider,
+  resolveSupportedLocale,
+  SUPPORTED_LOCALES,
+  useApI18n,
+} from './ApI18nProvider';
 import { getAllPreImportedLocales } from './locale-registry';
 
 // Test message catalogs - pre-loaded directly into i18n for testing
@@ -323,6 +328,114 @@ describe('ApI18nProvider', () => {
       expect(loadSpy).toHaveBeenCalledWith('en', {});
 
       loadSpy.mockRestore();
+    });
+  });
+
+  describe('Host locale reconciliation', () => {
+    const originalLang = document.documentElement.lang;
+
+    afterEach(() => {
+      document.documentElement.lang = originalLang;
+    });
+
+    // The shell writes <html lang> lowercased, and lingui keys its message
+    // buckets by the exact string a host passed to loadAndActivate. Resolving
+    // 'zh-tw' to the canonical 'zh-TW' and activating *that* would point the
+    // shared singleton at a bucket the host never wrote to.
+    it('should keep the host bucket active when the page lang differs only by case', () => {
+      document.documentElement.lang = 'zh-tw';
+      i18n.loadAndActivate({ locale: 'zh-tw', messages: { 'host.string': '主機字串' } });
+
+      render(
+        <ApI18nProvider component="canvas">
+          <div data-testid="translated">
+            <Trans id="host.string" />
+          </div>
+        </ApI18nProvider>
+      );
+
+      expect(i18n.locale).toBe('zh-tw');
+      expect(screen.getByTestId('translated')).toHaveTextContent('主機字串');
+    });
+
+    it('should file its own catalog under the host spelling so canvas strings resolve', () => {
+      document.documentElement.lang = 'zh-tw';
+      i18n.loadAndActivate({ locale: 'zh-tw', messages: { 'host.string': '主機字串' } });
+
+      render(
+        <ApI18nProvider component="canvas">
+          <div data-testid="translated">
+            <Trans id="add-node-panel.search-nodes" />
+          </div>
+        </ApI18nProvider>
+      );
+
+      expect(screen.getByTestId('translated')).toHaveTextContent('搜尋節點');
+    });
+
+    it('should resolve a case-mismatched page lang to its catalog, not English', () => {
+      document.documentElement.lang = 'PT-br';
+      i18n.loadAndActivate({ locale: 'en', messages: {} });
+
+      render(
+        <ApI18nProvider component="canvas">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      expect(i18n.locale).toBe('pt-BR');
+    });
+
+    it('should still switch language when the host is on a different one', () => {
+      document.documentElement.lang = 'ja';
+      i18n.loadAndActivate({ locale: 'zh-tw', messages: {} });
+
+      render(
+        <ApI18nProvider component="canvas">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      expect(i18n.locale).toBe('ja');
+    });
+
+    it('should honour the spelling an explicit locale prop uses', () => {
+      i18n.loadAndActivate({ locale: 'en', messages: {} });
+
+      render(
+        <ApI18nProvider component="canvas" locale="zh-tw">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      expect(i18n.locale).toBe('zh-tw');
+    });
+  });
+
+  describe('resolveSupportedLocale', () => {
+    it('should match regardless of case', () => {
+      expect(resolveSupportedLocale('zh-tw')).toBe('zh-TW');
+      expect(resolveSupportedLocale('ZH-TW')).toBe('zh-TW');
+      expect(resolveSupportedLocale('pt-br')).toBe('pt-BR');
+      expect(resolveSupportedLocale('es-mx')).toBe('es-MX');
+      expect(resolveSupportedLocale('JA')).toBe('ja');
+    });
+
+    it('should return the canonical spelling unchanged', () => {
+      SUPPORTED_LOCALES.forEach((locale) => {
+        expect(resolveSupportedLocale(locale)).toBe(locale);
+      });
+    });
+
+    it('should tolerate surrounding whitespace', () => {
+      expect(resolveSupportedLocale(' zh-tw ')).toBe('zh-TW');
+    });
+
+    it('should return undefined for an unshipped or empty tag', () => {
+      expect(resolveSupportedLocale('zh')).toBeUndefined();
+      expect(resolveSupportedLocale('fr-CA')).toBeUndefined();
+      expect(resolveSupportedLocale('')).toBeUndefined();
+      expect(resolveSupportedLocale(undefined)).toBeUndefined();
     });
   });
 
