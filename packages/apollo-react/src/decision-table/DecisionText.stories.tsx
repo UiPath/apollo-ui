@@ -141,7 +141,7 @@ const TableHost = ({
     });
   }, [rules]);
 
-  const { columns, header, edit, policy, addRule } = storyTableProps({
+  const { columns, header, edit, policy, onAddRule } = storyTableProps({
     state: host,
     onChange: setHost,
     onSelect: setSelected,
@@ -149,7 +149,6 @@ const TableHost = ({
     renderEditor,
     editLabels,
   });
-  const editable = mode === 'edit';
 
   return (
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
@@ -164,12 +163,14 @@ const TableHost = ({
         marks={marks}
         headerMark={headerMark}
         onCellHover={setHovered}
-        {...(mode === 'read'
-          ? { selected: null }
-          : { selected, onSelect: setSelected, edit: editable ? edit : undefined })}
-        policy={editable ? policy : undefined}
+        mode={
+          mode === 'read'
+            ? { kind: 'read', selected: null }
+            : mode === 'edit'
+              ? { kind: 'edit', selected, onSelect: setSelected, edit, policy, onAddRule }
+              : { kind: 'select', selected, onSelect: setSelected }
+        }
         onOpenDecision={setOpenedDecision}
-        addRule={editable ? addRule : undefined}
       />
       <StoryCaption>
         Selected: {selectionText(selected)} · Hovered: {cellText(hovered)} · Opened decision:{' '}
@@ -464,7 +465,7 @@ const DiffHost = ({ mode, scenario }: DiffArgs) => {
         marks={marks}
         ariaLabel="Rules"
         dataTestId="diff"
-        diff={diff}
+        mode={{ kind: 'diff', diff }}
       />
       <StoryCaption>{DIFF_MODE_CAPTIONS[mode]}</StoryCaption>
       <StoryCaption>{caption}</StoryCaption>
@@ -511,8 +512,11 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
             dataTestId={`text-${id}`}
             numbered
             scroll={scroll === 'container' ? { container } : 'self'}
-            selected={selected[id] ?? null}
-            onSelect={(next) => setSelected((current) => ({ ...current, [id]: next }))}
+            mode={{
+              kind: 'select',
+              selected: selected[id] ?? null,
+              onSelect: (next) => setSelected((current) => ({ ...current, [id]: next })),
+            }}
           />
         </div>
       ))}

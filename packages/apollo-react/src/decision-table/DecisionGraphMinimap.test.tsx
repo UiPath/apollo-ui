@@ -380,9 +380,13 @@ describe('DecisionGraphText minimap', () => {
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
             scroll={scroll}
-            selected={selected?.id === id ? selected.rule : null}
-            onSelect={(rule) => setSelected(rule ? { id, rule } : null)}
-            edit={{ onCommit: vi.fn(), onClearCell: vi.fn(), onDeleteRule: vi.fn() }}
+            mode={{
+              kind: 'edit',
+              selected: selected?.id === id ? selected.rule : null,
+              onSelect: (rule) => setSelected(rule ? { id, rule } : null),
+              edit: { onCommit: vi.fn(), onClearCell: vi.fn(), onDeleteRule: vi.fn() },
+              onAddRule: vi.fn(),
+            }}
           />
         )}
         selected={selected?.id ?? null}

@@ -10,7 +10,7 @@ import {
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
 import { manySentenceRules } from './__fixtures__/sentences.fixtures';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
+import { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
 import {
   type DecisionTextDiff,
   DIFF_CONTEXT_RULES,
@@ -32,8 +32,6 @@ const nameOf = (columnId: string): SentenceNameToken => ({
 
 const NO_FOLDS: ReadonlySet<string> = new Set();
 
-type Accepts<Props> = Props extends DecisionTextProps ? true : false;
-
 const ids = (rows: { rules: readonly SentenceRule[] }) => rows.rules.map(({ rowId }) => rowId);
 
 const ruleRow = (row: DiffRow | undefined) => (row?.kind === 'rule' ? row.diff : undefined);
@@ -51,7 +49,7 @@ const renderDiff = (
       ariaLabel="Rules"
       dataTestId="nl"
       {...props}
-      diff={diff}
+      mode={{ kind: 'diff', diff }}
     />
   );
 
@@ -472,26 +470,23 @@ describe('DecisionText diff', () => {
   });
 
   it('takes no edit, selection or add-rule action with a diff', () => {
-    const base = {
-      ...DIFF_COLUMNS,
-      rules: DIFF_RULES,
-      header: DIFF_HEADER,
-      ariaLabel: 'Rules',
-      dataTestId: 'nl',
-      diff: full,
-    };
     const edit = { onCommit: () => {}, onClearCell: () => {}, onDeleteRule: () => {} };
-    const withEdit = { ...base, selected: null, onSelect: () => {}, edit };
-    const withAddRule = { ...base, addRule: { label: 'Add rule', onAdd: () => {} } };
-    const accepted: Accepts<typeof base> = true;
-    const editRefused: Accepts<typeof withEdit> = false;
-    const addRuleRefused: Accepts<typeof withAddRule> = false;
-    const editableAccepted: Accepts<Omit<typeof withEdit, 'diff'>> = true;
-    expect([accepted, editRefused, addRuleRefused, editableAccepted]).toEqual([
-      true,
-      false,
-      false,
-      true,
+    const accepted: DecisionTextMode = { kind: 'diff', diff: full };
+    // @ts-expect-error
+    const withEdit: DecisionTextMode = { kind: 'diff', diff: full, edit };
+    const withSelection: DecisionTextMode = {
+      kind: 'diff',
+      diff: full,
+      // @ts-expect-error
+      selected: null,
+    };
+    // @ts-expect-error
+    const withAddRule: DecisionTextMode = { kind: 'diff', diff: full, onAddRule: () => {} };
+    expect([accepted, withEdit, withSelection, withAddRule].map(({ kind }) => kind)).toEqual([
+      'diff',
+      'diff',
+      'diff',
+      'diff',
     ]);
   });
 

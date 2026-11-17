@@ -1,5 +1,5 @@
 import type { ColumnChange, ColumnField, ColumnTypeOption } from '../ColumnPopover';
-import type { DecisionTextProps } from '../DecisionText';
+import type { DecisionTextMode } from '../DecisionText';
 import type { DecisionGraphDecisionNode } from '../decisionGraphTypes';
 import type { DecisionTextEdit } from '../decisionTextTypes';
 import { pickedOption } from '../PolicyOptionItem';
@@ -175,6 +175,8 @@ export interface StoryTable {
   hitPolicy: string;
 }
 
+type EditMode = Extract<DecisionTextMode, { kind: 'edit' }>;
+
 export const storyTableOf = (table: EditableTable): StoryTable => ({
   table,
   columnEdits: NO_COLUMN_EDITS,
@@ -274,15 +276,12 @@ export const storyTableProps = ({
     labels: editLabels,
   };
   const header = headerOf(state);
-  const policy: DecisionTextProps['policy'] = {
+  const policy: EditMode['policy'] = {
     value: hitPolicy,
     groups: HIT_POLICY_GROUPS,
     onChange: (next) => onChange({ ...state, hitPolicy: next }),
     label: `Hit policy: ${header.label}`,
   };
-  const addRule: DecisionTextProps['addRule'] = {
-    label: 'Add rule',
-    onAdd: () => addRuleAt(table.rules.length),
-  };
-  return { columns: typedColumns(table, columnEdits), header, edit, policy, addRule };
+  const onAddRule = () => addRuleAt(table.rules.length);
+  return { columns: typedColumns(table, columnEdits), header, edit, policy, onAddRule };
 };

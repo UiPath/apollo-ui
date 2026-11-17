@@ -168,7 +168,7 @@ describe('values of a removed column', () => {
         numbered
         ariaLabel="Rules"
         dataTestId="nl"
-        diff={removedFee}
+        mode={{ kind: 'diff', diff: removedFee }}
       />
     );
     const card = screen.getByTestId('nl-row-r5');
@@ -191,7 +191,7 @@ const renderDiff = (diff: DecisionTextDiff, rules: readonly SentenceRule[] = DIF
       numbered
       ariaLabel="Rules"
       dataTestId="nl"
-      diff={diff}
+      mode={{ kind: 'diff', diff }}
     />
   );
 

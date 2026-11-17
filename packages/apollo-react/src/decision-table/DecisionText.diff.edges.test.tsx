@@ -24,7 +24,7 @@ const renderDiff = (
       ariaLabel="Rules"
       dataTestId="nl"
       {...props}
-      diff={diff}
+      mode={{ kind: 'diff', diff }}
     />
   );
 
@@ -109,7 +109,7 @@ describe('DecisionText diff edges', () => {
         numbered
         ariaLabel="Rules"
         dataTestId="nl"
-        diff={next}
+        mode={{ kind: 'diff', diff: next }}
       />
     );
     expect(screen.queryByTestId('nl-fold-row-1')).not.toBeNull();
@@ -130,15 +130,18 @@ const valuelessRule = (rowId: string): SentenceRule => ({
 describe('DecisionText diff review edges', () => {
   it('shows no hit-policy picker on a diff', () => {
     render(
-      // @ts-expect-error
       <DecisionText
         rules={DIFF_RULES}
         {...DIFF_COLUMNS}
         header={DIFF_HEADER}
         ariaLabel="Rules"
         dataTestId="nl"
-        diff={{ mode: 'full' }}
-        policy={{ value: 'FIRST', groups: [], onChange: () => undefined, label: 'Hit policy' }}
+        mode={{
+          kind: 'diff',
+          diff: { mode: 'full' },
+          // @ts-expect-error
+          policy: { value: 'FIRST', groups: [], onChange: () => undefined, label: 'Hit policy' },
+        }}
       />
     );
     expect(screen.queryByTestId('nl-policy')).toBeNull();

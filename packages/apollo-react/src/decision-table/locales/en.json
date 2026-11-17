@@ -18,6 +18,7 @@
   "decision-table.insert_row_above": "Insert row above",
   "decision-text.add_condition": "Add condition to rule {position}",
   "decision-text.add_input": "Add input column",
+  "decision-text.add_rule": "Add rule",
   "decision-text.add_value": "Add value",
   "decision-text.allowed_values": "Allowed values",
   "decision-text.allowed_values_hint": "Separate values with commas.",

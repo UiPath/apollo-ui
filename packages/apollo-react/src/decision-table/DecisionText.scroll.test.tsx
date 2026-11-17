@@ -14,8 +14,9 @@ import {
   DIFF_RULES,
   EVERY_STATE_DIFF,
 } from './__fixtures__/diffSentences.fixtures';
+import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
+import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { TableMarks } from './marks';
@@ -25,18 +26,17 @@ vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
 const RULES = manySentenceRules(400);
 
-const text = (
-  props: Partial<Extract<DecisionTextProps, { selected: SentenceSelection | null }>>
-) => (
+const text = (props: Partial<FlatTextProps>) => (
   <DecisionText
-    rules={RULES}
-    {...MULTI_SENTENCE_COLUMNS}
-    header={MULTI_SENTENCE_HEADER}
-    ariaLabel="Rules"
-    dataTestId="nl"
-    selected={props.selected ?? null}
-    onSelect={vi.fn()}
-    {...props}
+    {...textPropsOf({
+      rules: RULES,
+      ...MULTI_SENTENCE_COLUMNS,
+      header: MULTI_SENTENCE_HEADER,
+      ariaLabel: 'Rules',
+      dataTestId: 'nl',
+      onSelect: vi.fn(),
+      ...props,
+    })}
   />
 );
 
@@ -610,7 +610,7 @@ describe('DecisionText mark clicks', () => {
           header={DIFF_HEADER}
           ariaLabel="Rules"
           dataTestId="nl"
-          diff={{ ...EVERY_STATE_DIFF, mode: 'full' }}
+          mode={{ kind: 'diff', diff: { ...EVERY_STATE_DIFF, mode: 'full' } }}
         />
       </div>
     );

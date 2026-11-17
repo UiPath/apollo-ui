@@ -12,6 +12,7 @@ import {
   tableOf,
 } from './__fixtures__/decisionGraph.fixtures';
 import { tableColumns, wordedRules } from './__fixtures__/editableSentences.fixtures';
+import { modeOf } from './__fixtures__/textMode';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
@@ -38,7 +39,7 @@ const textBody = (
     ariaLabel={`Rules of ${decisionId}`}
     dataTestId={`text-${decisionId}`}
     scroll={scroll}
-    {...(onSelect ? { selected, onSelect, edit } : { selected })}
+    mode={modeOf({ selected, onSelect, edit })}
   />
 );
 
@@ -456,8 +457,11 @@ describe('DecisionGraphText', () => {
               ariaLabel={`Rules of ${id}`}
               dataTestId={`text-${id}`}
               scroll={scroll}
-              selected={selected?.id === id ? { kind: 'rule', rowId: selected.rowId } : null}
-              onSelect={() => {}}
+              mode={{
+                kind: 'select',
+                selected: selected?.id === id ? { kind: 'rule', rowId: selected.rowId } : null,
+                onSelect: () => {},
+              }}
             />
           )}
           selected={selected?.id ?? null}

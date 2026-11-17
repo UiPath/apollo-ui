@@ -139,9 +139,13 @@ describe('DecisionText strings', () => {
       labels: { inputs: 'Eingaben' },
       ariaLabel: 'Rules',
       dataTestId: 'nl',
-      selected: { kind: 'rule', rowId: 'r2' },
-      onSelect: vi.fn(),
-      edit,
+      mode: {
+        kind: 'edit',
+        selected: { kind: 'rule', rowId: 'r2' },
+        onSelect: vi.fn(),
+        edit,
+        onAddRule: vi.fn(),
+      },
     };
     render(<DecisionText {...props} />);
     const bands = screen.getByTestId('nl-bands');

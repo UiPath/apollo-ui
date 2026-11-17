@@ -64,24 +64,28 @@ const Host = ({
       header={MULTI_SENTENCE_HEADER}
       ariaLabel="Rules"
       dataTestId="nl"
-      selected={selected}
-      onSelect={setSelected}
-      edit={{
-        editing,
-        onStartEdit: setEditing,
-        onCommit: (value, commit, move) => {
-          onCommit(value, commit, move);
-          setEditing(null);
+      mode={{
+        kind: 'edit',
+        selected,
+        onSelect: setSelected,
+        onAddRule: () => {},
+        edit: {
+          editing,
+          onStartEdit: setEditing,
+          onCommit: (value, commit, move) => {
+            onCommit(value, commit, move);
+            setEditing(null);
+          },
+          onCancel: () => {
+            onCancel();
+            if (cancelsLater) setTimeout(() => setEditing(null));
+            else if (!refusesCancel) setEditing(null);
+          },
+          onClearCell: () => {},
+          onDeleteRule: () => {},
+          valueField,
+          renderEditor,
         },
-        onCancel: () => {
-          onCancel();
-          if (cancelsLater) setTimeout(() => setEditing(null));
-          else if (!refusesCancel) setEditing(null);
-        },
-        onClearCell: () => {},
-        onDeleteRule: () => {},
-        valueField,
-        renderEditor,
       }}
     />
   );
