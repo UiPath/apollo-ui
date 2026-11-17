@@ -436,6 +436,24 @@ describe('ByoModelDialog', () => {
     expect(save).toBeEnabled();
   });
 
+  it("shows why the provider's models could not be listed", async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({
+      listModels: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'Could not list your OpenAI models (HTTP 401)', message: 'Invalid key' },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await pick(user, 'Provider', 'OpenAI');
+
+    expect(
+      await screen.findByText('Could not list your OpenAI models (HTTP 401)')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Invalid key')).toBeInTheDocument();
+  });
+
   it('keeps loading the form when the connection changes meanwhile', async () => {
     const user = userEvent.setup();
     let finishForm: () => void = () => {};

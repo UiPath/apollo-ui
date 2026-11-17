@@ -94,7 +94,12 @@ const NO_MODELS: ModelsState = { status: 'idle', models: { compatible: [], incom
 type FormState =
   | { status: 'idle' | 'loading' | 'ok'; form: ByoConnectionForm }
   | { status: 'error'; form: ByoConnectionForm; failure: ByoFailure };
-type ModelsState = { status: 'idle' | 'loading' | 'ok' | 'error'; models: ByoProviderModels };
+type ModelsState = {
+  status: 'idle' | 'loading' | 'ok' | 'error';
+  models: ByoProviderModels;
+  /** Why the list could not be loaded; set with `error`. */
+  failure?: ByoFailure;
+};
 type Attempt<T> =
   | { status: 'idle' | 'running' }
   | { status: 'ok'; value: T }
@@ -207,10 +212,12 @@ function DialogBody({
       if (result.ok) {
         setModelsState({ status: 'ok', models: result.value });
       } else {
-        setModelsState({ ...NO_MODELS, status: 'error' });
+        setModelsState({ ...NO_MODELS, status: 'error', failure: result.failure });
       }
-    } catch {
-      if (gen === generation.current) setModelsState({ ...NO_MODELS, status: 'error' });
+    } catch (err) {
+      if (gen === generation.current) {
+        setModelsState({ ...NO_MODELS, status: 'error', failure: unexpected(err) });
+      }
     }
   };
 
@@ -570,6 +577,7 @@ function DialogBody({
   let failure: ByoFailure | null = null;
   if (connect.status === 'error') failure = connect.failure;
   else if (test.status === 'error') failure = test.failure;
+  else if (modelsState.status === 'error') failure = modelsState.failure ?? null;
 
   const title = editTarget ? labels.editTitle : labels.title;
   const description = editTarget ? labels.editDescription : labels.description;
