@@ -14,7 +14,6 @@ import type React from 'react';
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   MINIMAP_CONTENT_CLASS,
-  MINIMAP_FLOATING_CLASS,
   MINIMAP_ROW_CLASS,
   MINIMAP_TRIGGER_CLASS,
 } from './decisionGraphStyles';
@@ -232,7 +231,7 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
   return (
     <Popover open={open} onOpenChange={changeOpen}>
       <PopoverAnchor asChild>
-        <div className={MINIMAP_FLOATING_CLASS}>
+        <div>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
