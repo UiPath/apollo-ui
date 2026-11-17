@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { StrictMode, useState } from 'react';
-import { vi } from 'vitest';
+import { onTestFinished, vi } from 'vitest';
 import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
 import {
   MULTI_SENTENCE_COLUMNS,
@@ -286,6 +286,105 @@ describe('DecisionText scroll', () => {
       fireEvent.scroll(outer);
     });
     expect(dispatched).toHaveBeenCalledTimes(2);
+  });
+
+  it('mounts the rules exposed when slotted content above it shrinks, whatever its light-DOM order', () => {
+    const resizes: { callback: () => void; targets: Set<Element> }[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        targets = new Set<Element>();
+        constructor(callback: ResizeObserverCallback) {
+          resizes.push({ callback: () => callback([], this), targets: this.targets });
+        }
+        observe(target: Element) {
+          this.targets.add(target);
+        }
+        unobserve(target: Element) {
+          this.targets.delete(target);
+        }
+        disconnect() {
+          this.targets.clear();
+        }
+      }
+    );
+    const crossings: { callback: () => void }[] = [];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        targets = new Set<Element>();
+        constructor(callback: IntersectionObserverCallback) {
+          const rect = new DOMRect();
+          crossings.push({
+            callback: () =>
+              callback(
+                [...this.targets].map((target) => ({
+                  target,
+                  isIntersecting: true,
+                  intersectionRatio: 1,
+                  boundingClientRect: rect,
+                  intersectionRect: rect,
+                  rootBounds: rect,
+                  time: 0,
+                })),
+                this
+              ),
+          });
+        }
+        readonly root = null;
+        readonly rootMargin = '0px';
+        readonly scrollMargin = '0px';
+        readonly thresholds = [0];
+        observe(target: Element) {
+          this.targets.add(target);
+        }
+        unobserve(target: Element) {
+          this.targets.delete(target);
+        }
+        disconnect() {
+          this.targets.clear();
+        }
+        takeRecords() {
+          return [];
+        }
+      }
+    );
+    const host = document.body.appendChild(document.createElement('div'));
+    onTestFinished(() => host.remove());
+    const frame = document.createElement('div');
+    frame.style.overflowY = 'auto';
+    frame.style.height = '600px';
+    const slot = (name: string) => Object.assign(document.createElement('slot'), { name });
+    frame.append(slot('header'), slot('body'));
+    host.attachShadow({ mode: 'open' }).append(frame);
+    const body = host.appendChild(Object.assign(document.createElement('div'), { slot: 'body' }));
+    const header = host.appendChild(
+      Object.assign(document.createElement('div'), { slot: 'header' })
+    );
+    let listTop = 0;
+    const { getBoundingClientRect } = HTMLUListElement.prototype;
+    vi.spyOn(HTMLUListElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLUListElement
+    ) {
+      return this.closest('[data-testid="nl"]')
+        ? new DOMRect(0, listTop, 100, 100)
+        : getBoundingClientRect.call(this);
+    });
+    frame.scrollTop = 5000;
+    render(text({ scroll: { container: frame } }), { container: body });
+    act(() => {
+      for (const { callback } of resizes) callback();
+    });
+    const exposed = sentenceRuleOffsets(RULES).findIndex((offset) => offset > 4000);
+    expect(screen.getByTestId('nl-row-row-0')).toBeInTheDocument();
+    expect(screen.queryByTestId(`nl-row-row-${exposed}`)).toBeNull();
+    listTop = -4000;
+    act(() => {
+      for (const { callback, targets } of resizes) if (targets.has(header)) callback();
+      for (const { callback } of crossings) callback();
+    });
+    expect(screen.getByTestId(`nl-row-row-${exposed}`)).toBeInTheDocument();
+    vi.unstubAllGlobals();
   });
 });
 
