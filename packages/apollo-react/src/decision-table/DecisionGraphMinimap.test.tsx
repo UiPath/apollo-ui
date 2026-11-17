@@ -188,6 +188,34 @@ describe('DecisionGraphMinimap', () => {
     expect(activeOption()).toHaveAttribute('aria-posinset', String(many.length));
   });
 
+  it('leaves a long outline where the reader scrolls it, however fast, until the keys move', async () => {
+    const many: MinimapItem[] = Array.from({ length: WINDOW_MINIMAP_FROM + 300 }, (_, index) => ({
+      id: `rule-${index}`,
+      kind: 'rule',
+      label: `Rule ${index}`,
+    }));
+    const height = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(440);
+    const user = userEvent.setup();
+    render(minimap({ items: () => many }));
+    await user.click(screen.getByTestId('map-trigger'));
+    const list = screen.getByRole('listbox');
+    let top = 0;
+    Object.defineProperty(list, 'scrollTop', { configurable: true, get: () => top });
+    scrollToSpy.mockClear();
+    for (const next of [2000, 4000, 6000, 8000]) {
+      top = next;
+      act(() => {
+        list.dispatchEvent(new Event('scroll'));
+      });
+    }
+    expect(scrollToSpy).not.toHaveBeenCalled();
+    expect(within(list).getByText('Rule 370')).toBeInTheDocument();
+    await user.keyboard('{ArrowDown}');
+    expect(scrollToSpy).toHaveBeenCalledTimes(1);
+    expect(activeOption()).toHaveTextContent('Rule 1');
+    height.mockRestore();
+  });
+
   it('has no axe violations while open', async () => {
     const { baseElement } = render(minimap());
     await userEvent.click(screen.getByTestId('map-trigger'));

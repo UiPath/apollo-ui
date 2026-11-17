@@ -88,7 +88,9 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
   const [query, setQuery] = useState('');
   const [active, setActive] = useState<string | null>(null);
   const picked = useRef(false);
-  const listRef = useRef<HTMLDivElement | null>(null);
+  const [revealTick, setRevealTick] = useState(0);
+  const revealed = useRef(0);
+  const [list, setList] = useState<HTMLDivElement | null>(null);
   const idBase = useId();
   const loaded = useMemo(() => (open ? items() : []), [open, items]);
   const rows = useMemo(() => minimapRows(loaded, query), [loaded, query]);
@@ -97,7 +99,7 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
   const windowed = rows.length > WINDOW_MINIMAP_FROM;
   const virtualizer = useVirtualizer({
     count: windowed ? rows.length : 0,
-    getScrollElement: () => listRef.current,
+    getScrollElement: () => list,
     estimateSize: (index) => rowHeight(rows[index]),
     initialRect: { width: 0, height: FALLBACK_LIST_PX },
     overscan: 10,
@@ -107,13 +109,15 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
   const matchCount = rows.filter((row) => row.match).length;
 
   useLayoutEffect(() => {
-    if (!open || activeIndex < 0) return;
+    if (revealed.current === revealTick || !open || !list) return;
+    revealed.current = revealTick;
+    if (activeIndex < 0) return;
     if (windowed) {
       virtualizer.scrollToIndex(activeIndex, { align: 'auto' });
       return;
     }
-    listRef.current
-      ?.querySelector(`#${CSS.escape(optionId(activeIndex))}`)
+    list
+      .querySelector(`#${CSS.escape(optionId(activeIndex))}`)
       ?.scrollIntoView?.({ block: 'nearest' });
   });
 
@@ -121,12 +125,14 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
     if (next) {
       picked.current = false;
       setQuery('');
+      setRevealTick((tick) => tick + 1);
       setActive(landingOf(minimapRows(items(), ''), '', currentId));
     }
     setOpen(next);
   };
   const changeQuery = (next: string) => {
     setQuery(next);
+    setRevealTick((tick) => tick + 1);
     setActive(landingOf(minimapRows(loaded, next), next, currentId));
   };
   const pick = (item: MinimapItem) => {
@@ -138,7 +144,9 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
     const moveTo = (index: number) => {
       event.preventDefault();
       const row = rows[Math.max(0, Math.min(index, rows.length - 1))];
-      if (row) setActive(row.item.id);
+      if (!row) return;
+      setRevealTick((tick) => tick + 1);
+      setActive(row.item.id);
     };
     const jump = event.ctrlKey || event.metaKey;
     if (event.key === 'ArrowDown') moveTo(activeIndex + 1);
@@ -280,7 +288,7 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
           debounce={300}
         />
         <div
-          ref={listRef}
+          ref={setList}
           id={`${idBase}-list`}
           role="listbox"
           aria-label={labels.minimap}
