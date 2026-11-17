@@ -290,6 +290,44 @@ describe('<ModelPicker isCommunity>', () => {
     });
   });
 
+  it("selects an edited model from the saved folder's catalog, not the one shown before", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onFolderChange = vi.fn();
+    const onCustomModelSaved = vi.fn();
+    const fresh: DiscoveryModel = { ...ADDED, displayName: 'my-gpt (saved)' };
+    const picker = (models: DiscoveryModel[]) => (
+      <ModelPicker
+        models={models}
+        value={null}
+        onChange={onChange}
+        canManageByo
+        isCommunity
+        requestContext={CTX}
+        folder="shared-folder"
+        onFolderChange={onFolderChange}
+        onCustomModelSaved={onCustomModelSaved}
+      />
+    );
+    const { rerender } = render(picker([HOSTED, ADDED]));
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(await screen.findByRole('button', { name: 'Edit configuration' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
+    );
+    await user.click(screen.getByRole('button', { name: 'Test and save' }));
+    await waitFor(() => expect(onCustomModelSaved).toHaveBeenCalled());
+    await waitFor(() => expect(onFolderChange).toHaveBeenCalledWith('me'));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(onChange).not.toHaveBeenCalled();
+
+    rerender(picker([HOSTED, fresh]));
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith(fresh));
+  });
+
   it('offers no edit for a BYO row without a configuration id', async () => {
     const user = userEvent.setup();
     const unlinked: DiscoveryModel = {

@@ -576,7 +576,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
     // A model the Community dialog saved, selected as soon as it appears in the catalog.
     // The user's own pick cancels it, so a late catalog refresh cannot override that pick.
-    const [pendingSelection, setPendingSelection] = React.useState<ByoSavedModel | null>(null);
+    // `staleCatalog` is the catalog shown before a folder switch, whose entry for an edited
+    // model is the old one; the model is selected only from a catalog loaded since.
+    const [pendingSelection, setPendingSelection] = React.useState<{
+      model: ByoSavedModel;
+      staleCatalog: readonly DiscoveryModel[] | null;
+    } | null>(null);
     // Counts the user's own picks, so a save still refreshing when the user picks selects nothing.
     const userPicks = React.useRef(0);
     const handleUserChange = React.useCallback(
@@ -690,6 +695,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const handleCommunitySaved = React.useCallback(
       async (model: ByoSavedModel, edited: boolean) => {
         const picksBefore = userPicks.current;
+        const catalogBefore = catalogRef.current;
         notify?.(communitySavedMessage(i18n, model.name, edited), 'success');
         // A model saved in another folder than the one shown would never appear, so the
         // picker shows its folder; the folder switch refetches the catalog itself.
@@ -698,16 +704,19 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         if (showsOtherFolder) handleFolderChange(model.folderId);
         else if (selfFetchCtx) await refetchDiscovery();
         await onCustomModelSaved?.(model);
-        if (userPicks.current === picksBefore) setPendingSelection(model);
+        if (userPicks.current === picksBefore) {
+          setPendingSelection({ model, staleCatalog: showsOtherFolder ? catalogBefore : null });
+        }
       },
       [notify, i18n, folder, handleFolderChange, selfFetchCtx, refetchDiscovery, onCustomModelSaved]
     );
     React.useEffect(() => {
-      if (!pendingSelection) return;
+      if (!pendingSelection || catalog === pendingSelection.staleCatalog) return;
+      const { model } = pendingSelection;
       const added = catalog.find(
         (m) =>
-          m.modelName === pendingSelection.name &&
-          m.byomDetails?.integrationServiceConnectionId === pendingSelection.connectionId
+          m.modelName === model.name &&
+          m.byomDetails?.integrationServiceConnectionId === model.connectionId
       );
       if (!added) return;
       setPendingSelection(null);
