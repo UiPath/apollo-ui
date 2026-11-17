@@ -175,6 +175,50 @@ describe('createCommunityByoApi', () => {
     expect(result.value.fields[2]?.defaultValue).toBe('2023-10-01-preview');
   });
 
+  it.each([
+    [
+      'one authentication type',
+      [
+        {
+          key: 'authentication.type',
+          type: 'COMBO',
+          defaultValue: 'apiKey',
+          options: [{ value: 'apiKey' }],
+        },
+      ],
+      'apiKey',
+    ],
+    ['no authentication type', [], null],
+  ])('shows the grouped credentials of a connector with %s', async (_, auth, defaultAuthType) => {
+    routes.push(
+      on('GET', `${TENANT}/elements_/v3/element/elements/uipath-openai-openai`, () => ({
+        body: {
+          configuration: [
+            ...auth,
+            {
+              key: 'apikey',
+              name: 'API key',
+              type: 'PASSWORD',
+              required: true,
+              configScreenType: 'pre',
+              groupBy: 'apiKey',
+            },
+          ],
+        },
+      }))
+    );
+
+    const result = await api().loadForm('openai', null);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.defaultAuthType).toBe(defaultAuthType);
+    const key = result.value.fields.find((f) => f.key === 'apikey');
+    // The field is shown for the auth type in effect, so its required value is asked for.
+    expect(key?.required).toBe(true);
+    expect(key?.group === null || key?.group === result.value.defaultAuthType).toBe(true);
+  });
+
   it('creates the connection from the defaults, the session configs and what the user entered', async () => {
     routes.push(
       on('POST', `${TENANT}/connections_/api/v1/Connections/`, () => ({
