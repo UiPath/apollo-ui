@@ -76,8 +76,7 @@ const flash = (element: HTMLElement) => {
   );
 };
 
-const scrollTo = (scroller: HTMLElement, top: number) =>
-  scroller.scrollTo?.({ top, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+const scrollTo = (scroller: HTMLElement, top: number) => scroller.scrollTo?.({ top });
 
 /** Each decision's users by id: the decisions it sits under, in full or as a reference. */
 const usersOf = (nodes: readonly DecisionGraphNode[]): ReadonlyMap<string, string[]> => {
