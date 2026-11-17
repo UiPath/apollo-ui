@@ -79,12 +79,56 @@ const SelectingHost = ({
   );
 };
 
+let nearCard: (decisionId: string) => boolean = () => true;
+
+/** Reports each card it observes as the browser does: near the scrollport when `nearCard` says so. */
+class CardObserver {
+  readonly root = null;
+  readonly rootMargin = '0px';
+  readonly scrollMargin = '0px';
+  readonly thresholds = [0];
+  readonly #callback: IntersectionObserverCallback;
+  constructor(callback: IntersectionObserverCallback) {
+    this.#callback = callback;
+  }
+  observe(target: Element) {
+    const decisionId = target instanceof HTMLElement ? target.dataset.decisionId : undefined;
+    if (decisionId === undefined) return;
+    const rect = target.getBoundingClientRect();
+    const isIntersecting = nearCard(decisionId);
+    this.#callback(
+      [
+        {
+          target,
+          isIntersecting,
+          intersectionRatio: isIntersecting ? 1 : 0,
+          boundingClientRect: rect,
+          intersectionRect: rect,
+          rootBounds: null,
+          time: 0,
+        },
+      ],
+      this
+    );
+  }
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+}
+
 let scrollToSpy: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   scrollToSpy = vi.fn();
   HTMLElement.prototype.scrollTo = scrollToSpy as unknown as HTMLElement['scrollTo'];
+  nearCard = () => true;
+  vi.stubGlobal('IntersectionObserver', CardObserver);
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe('DecisionGraphText', () => {
   it('shows the empty state for a graph with no decisions', () => {
@@ -307,5 +351,55 @@ describe('DecisionGraphText', () => {
     expect(await axe(container)).toHaveNoViolations();
     rerender(graph({ expanded: new Set(['eligibility', 'risk']) }));
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('mounts the bodies near the scrollport only, and mounts a far rule it reveals', async () => {
+    nearCard = (decisionId) => ['d1', 'd2', 'd3'].includes(decisionId);
+    const table = tableOf(10);
+    const rules = wordedRules(table);
+    const ids = Array.from({ length: 50 }, (_, index) => `d${index + 1}`);
+    const nodes: DecisionGraphNode[] = ids.map((id) => ({
+      kind: 'decision',
+      id,
+      label: id,
+      ruleCount: 10,
+      mark: { tone: 'error', title: 'Rules 1 and 10 overlap', glyph: true },
+      markRowId: 'r10',
+      children: [],
+    }));
+    const Host = () => {
+      const [selected, setSelected] = useState<{ id: string; rowId: string } | null>(null);
+      return (
+        <DecisionGraphText
+          nodes={nodes}
+          expanded={new Set(ids)}
+          renderBody={(id, scroll) => (
+            <DecisionText
+              rules={rules}
+              {...tableColumns(table)}
+              header={{ label: 'Unique', hint: '' }}
+              ariaLabel={`Rules of ${id}`}
+              dataTestId={`text-${id}`}
+              scroll={scroll}
+              selected={selected?.id === id ? { rowId: selected.rowId } : null}
+              onSelect={() => {}}
+            />
+          )}
+          selected={selected?.id ?? null}
+          onReveal={(target) => {
+            if (target.rowId) setSelected({ id: target.decisionId, rowId: target.rowId });
+          }}
+          dataTestId="graph"
+        />
+      );
+    };
+    const { container } = render(<Host />);
+    expect(container.querySelectorAll('li[data-row-id]')).toHaveLength(30);
+    expect(body('d50')?.querySelector('[data-graph-placeholder]')).not.toBeNull();
+    await userEvent.click(screen.getByTestId('graph-mark-d50'));
+    const rule = screen.getByTestId('text-d50-row-r10');
+    expect(document.activeElement).toBe(rule);
+    expect(rule).toHaveAttribute('aria-current', 'true');
+    expect(container.querySelectorAll('li[data-row-id]').length).toBeLessThan(100);
   });
 });

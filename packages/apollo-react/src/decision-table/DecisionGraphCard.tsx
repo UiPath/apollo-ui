@@ -114,7 +114,12 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
         )}
       </Heading>
       {open && (
-        <div id={bodyId} className={GRAPH_BODY_CLASS} data-testid={`${dataTestId}-body-${node.id}`}>
+        <div
+          id={bodyId}
+          className={GRAPH_BODY_CLASS}
+          data-graph-body
+          data-testid={`${dataTestId}-body-${node.id}`}
+        >
           {body}
         </div>
       )}
