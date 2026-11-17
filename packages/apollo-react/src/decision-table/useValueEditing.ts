@@ -14,6 +14,7 @@ import {
   tokenText,
   valueTokenOf,
 } from './sentenceParts';
+import { cellSelection, ruleSelection, selectedColumnOf } from './sentenceSelection';
 import {
   addConditionOf,
   clickedAction,
@@ -93,7 +94,7 @@ export const valueKey = ({ rowId, columnId, index }: SentenceValueId): string =>
 /** A cell's text, or an empty one for a rule, as the rules hold it; undefined once its rule is gone. */
 const textIn = (rules: readonly SentenceRule[], cell: SentenceSelection): string | undefined => {
   const rule = rules.find((candidate) => candidate.rowId === cell.rowId);
-  return rule && (cell.columnId === undefined ? '' : cellTextOf(rule, cell.columnId));
+  return rule && (cell.kind === 'rule' ? '' : cellTextOf(rule, cell.columnId));
 };
 
 const rowIdOf = (element: Element | null): string | undefined =>
@@ -136,8 +137,8 @@ export const useValueEditing = ({
   const start = (value: SentenceValueId) => {
     if (!edit) return;
     awaitHost(null);
-    if (selected?.rowId !== value.rowId || selected?.columnId !== value.columnId) {
-      navigation.select({ rowId: value.rowId, columnId: value.columnId }, () => null, false);
+    if (selected?.rowId !== value.rowId || selectedColumnOf(selected) !== value.columnId) {
+      navigation.select(cellSelection(value), () => null, false);
     }
     edit.onStartEdit(value);
   };
@@ -181,8 +182,8 @@ export const useValueEditing = ({
     const cell = { rowId: from.rowId, columnId: from.columnId };
     const rowRule = rules.find((candidate) => candidate.rowId === from.rowId);
     if (move === 'cancel' || (move === 'none' && refocus)) {
-      if (hasStop(rowRule, cell.columnId)) navigation.select(cell);
-      else navigation.select({ rowId: from.rowId }, addConditionOf);
+      if (hasStop(rowRule, cell.columnId)) navigation.select(cellSelection(cell));
+      else navigation.select(ruleSelection(from.rowId), addConditionOf);
       return;
     }
     const sibling = { ...from, index: from.index + (move === 'left' ? -1 : 1) };
@@ -197,8 +198,11 @@ export const useValueEditing = ({
     const opened = target ? valueKey(target) : undefined;
     if (opened === openedRef.current) return;
     openedRef.current = opened;
-    if (target && (selected?.rowId !== target.rowId || selected?.columnId !== target.columnId)) {
-      onSelect?.({ rowId: target.rowId, columnId: target.columnId });
+    if (
+      target &&
+      (selected?.rowId !== target.rowId || selectedColumnOf(selected) !== target.columnId)
+    ) {
+      onSelect?.(cellSelection(target));
     }
   });
 
@@ -231,16 +235,17 @@ export const useValueEditing = ({
   });
 
   const cancelEditOf = (cell: SentenceSelection) => {
-    if (target?.rowId !== cell.rowId || (cell.columnId && target.columnId !== cell.columnId))
+    if (target?.rowId !== cell.rowId || (cell.kind === 'cell' && target.columnId !== cell.columnId))
       return;
     awaitHost(null);
     edit?.onCancel();
   };
 
   const clear = (cell: SentenceCellId, refocusNow: boolean, scroll: boolean) => {
-    refocusRef.current = { cell, text: textIn(rules, cell), scroll };
+    const selection = cellSelection(cell);
+    refocusRef.current = { cell: selection, text: textIn(rules, selection), scroll };
     edit?.onClearCell(cell);
-    cancelEditOf(cell);
+    cancelEditOf(selection);
     if (refocusNow && staysOn(cell.rowId)) navigation.refocus(scroll);
   };
 
@@ -260,18 +265,15 @@ export const useValueEditing = ({
     if (action.action === 'clear') {
       clear(action.cell, selected?.rowId === action.cell.rowId, false);
       if (selected?.rowId !== action.cell.rowId) {
-        navigation.select({ rowId: action.cell.rowId }, undefined, false);
+        navigation.select(ruleSelection(action.cell.rowId), undefined, false);
       }
       return true;
     }
     if (action.action !== 'delete') return false;
-    refocusRef.current = {
-      cell: { rowId: action.rowId },
-      text: textIn(rules, { rowId: action.rowId }),
-      scroll: true,
-    };
+    const deleted = ruleSelection(action.rowId);
+    refocusRef.current = { cell: deleted, text: textIn(rules, deleted), scroll: true };
     edit?.onDeleteRule(action.rowId);
-    cancelEditOf({ rowId: action.rowId });
+    cancelEditOf(deleted);
     if (selected?.rowId === action.rowId && staysOn(action.rowId)) navigation.refocus();
     return true;
   };

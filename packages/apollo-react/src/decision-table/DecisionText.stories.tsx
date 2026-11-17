@@ -34,13 +34,16 @@ import type { DecisionTextDiff } from './decisionTextDiff';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
+import { selectedColumnOf } from './sentenceSelection';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import type { ExpressionEditorProps } from './valueTypes';
 
 const NO_MARKS: TableMarks = { rows: new Map(), columns: new Map() };
 
 const selectionText = (selection: SentenceSelection | null) =>
-  selection ? [selection.rowId, selection.columnId ?? 'rule'].join(' / ') : 'none';
+  selection
+    ? [selection.rowId, selection.kind === 'cell' ? selection.columnId : 'rule'].join(' / ')
+    : 'none';
 
 const cellText = (cell: SentenceCellId | null) =>
   cell ? `${cell.rowId} / ${cell.columnId}` : 'none';
@@ -84,15 +87,14 @@ const liveSelection = (
 ): SentenceSelection | null => {
   const rule = selected && rules.find((candidate) => candidate.rowId === selected.rowId);
   if (!selected || !rule) return null;
-  const { columnId } = selected;
-  if (columnId === undefined) return selected;
-  return valueTokenOf(rule, { rowId: rule.rowId, columnId, index: 0 })
+  if (selected.kind === 'rule') return selected;
+  return valueTokenOf(rule, { rowId: rule.rowId, columnId: selected.columnId, index: 0 })
     ? selected
-    : { rowId: rule.rowId };
+    : { kind: 'rule', rowId: rule.rowId };
 };
 
 const sameSelection = (left: SentenceSelection | null, right: SentenceSelection | null) =>
-  left?.rowId === right?.rowId && left?.columnId === right?.columnId;
+  left?.rowId === right?.rowId && selectedColumnOf(left) === selectedColumnOf(right);
 
 interface TableHostProps {
   initialTable: EditableTable;

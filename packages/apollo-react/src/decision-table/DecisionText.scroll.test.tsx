@@ -85,7 +85,7 @@ describe('DecisionText scroll', () => {
   it('scrolls the ancestor, not itself, to a rule the host selects', () => {
     const { rerender } = render(scroller({}));
     const outer = screen.getByTestId('scroller');
-    rerender(scroller({ selected: { rowId: 'row-300' } }));
+    rerender(scroller({ selected: { kind: 'rule', rowId: 'row-300' } }));
     const offsets = sentenceRuleOffsets(RULES);
     expect(outer.scrollTop).toBe((offsets[301] ?? 0) - FALLBACK_ROW_VIEWPORT_PX);
     expect(screen.getByTestId('nl').scrollTop).toBe(0);
@@ -93,7 +93,7 @@ describe('DecisionText scroll', () => {
 
   it('scrolls the named container past a content-sized wrapper that only says it scrolls', () => {
     const { rerender } = render(scroller({ wrapped: true }));
-    rerender(scroller({ wrapped: true, selected: { rowId: 'row-300' } }));
+    rerender(scroller({ wrapped: true, selected: { kind: 'rule', rowId: 'row-300' } }));
     const offsets = sentenceRuleOffsets(RULES);
     expect(screen.getByTestId('scroller').scrollTop).toBe(
       (offsets[301] ?? 0) - FALLBACK_ROW_VIEWPORT_PX
@@ -102,7 +102,7 @@ describe('DecisionText scroll', () => {
   });
 
   it('keeps the selected rule mounted far from the window', () => {
-    render(scroller({ selected: { rowId: 'row-350' } }));
+    render(scroller({ selected: { kind: 'rule', rowId: 'row-350' } }));
     expect(screen.getByTestId('nl-row-row-350')).toBeInTheDocument();
     expect(screen.queryByTestId('nl-row-row-200')).toBeNull();
   });
@@ -126,7 +126,7 @@ describe('DecisionText scroll', () => {
   it('scrolls the document to a rule the host selects when nothing else scrolls', () => {
     const { rerender } = render(text({ scroll: {} }));
     const page = document.documentElement;
-    rerender(text({ scroll: {}, selected: { rowId: 'row-300' } }));
+    rerender(text({ scroll: {}, selected: { kind: 'rule', rowId: 'row-300' } }));
     const offsets = sentenceRuleOffsets(RULES);
     expect(page.scrollTop).toBe((offsets[301] ?? 0) - FALLBACK_ROW_VIEWPORT_PX);
     expect(screen.getByTestId('nl').scrollTop).toBe(0);
@@ -243,7 +243,7 @@ describe('DecisionText scroll', () => {
     ])('leaves revealing a rule the host selects to the platform in %s', (_, style) => {
       const { rerender } = render(scroller({}));
       Object.assign(screen.getByTestId('scroller').style, style);
-      rerender(scroller({ selected: { rowId: 'row-10' } }));
+      rerender(scroller({ selected: { kind: 'rule', rowId: 'row-10' } }));
       const card = screen.getByTestId('nl-row-row-10');
       expect(
         native.mock.contexts.some((target) => target instanceof Node && card.contains(target))
@@ -253,14 +253,14 @@ describe('DecisionText scroll', () => {
 
     it('reveals a rule the host selects far from the window once it mounts', () => {
       const { rerender } = render(scroller({}));
-      rerender(scroller({ selected: { rowId: 'row-300' } }));
+      rerender(scroller({ selected: { kind: 'rule', rowId: 'row-300' } }));
       expect(native.mock.contexts).toContain(screen.getByTestId('nl-row-row-300'));
     });
 
     it('reveals only the stop, not its rule, in a rule taller than the container', () => {
       const { rerender } = render(scroller({}));
       vi.spyOn(screen.getByTestId('scroller'), 'clientHeight', 'get').mockReturnValue(10);
-      rerender(scroller({ selected: { rowId: 'row-1', columnId: 'country' } }));
+      rerender(scroller({ selected: { kind: 'cell', rowId: 'row-1', columnId: 'country' } }));
       const card = screen.getByTestId('nl-row-row-1');
       expect(native.mock.contexts).not.toContain(card);
       expect(native.mock.contexts.length).toBeGreaterThan(0);
