@@ -202,7 +202,7 @@ export const Errors: StoryObj<GraphArgs> = {
       key={mode}
       graph={MARKED}
       mode={mode}
-      caption="An error and a warning on the headings: the glyph opens the decision on the rule it names."
+      caption="An error and a warning on the headings: a click on the glyph opens the decision and flashes the rule it names, in place; Enter on it brings the rule into view."
     />
   ),
 };

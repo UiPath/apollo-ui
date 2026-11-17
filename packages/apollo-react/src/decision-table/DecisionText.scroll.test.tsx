@@ -1,16 +1,24 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
-import { onTestFinished, vi } from 'vitest';
+import { type Mock, onTestFinished, vi } from 'vitest';
 import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
 import {
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_HEADER,
   manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
+import {
+  DIFF_COLUMNS,
+  DIFF_HEADER,
+  DIFF_RULES,
+  EVERY_STATE_DIFF,
+} from './__fixtures__/diffSentences.fixtures';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
+import type { TableMarks } from './marks';
 import type { SentenceSelection } from './sentenceTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
@@ -506,5 +514,112 @@ describe('DecisionText unmount', () => {
     await flush();
     expect(screen.queryByTestId('nl')).toBeNull();
     expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+});
+
+const MARK_TITLES = {
+  header: 'Header mark',
+  rule: 'Rule mark',
+  value: 'Value mark',
+  band: 'Band mark',
+} as const;
+
+const MARKS: TableMarks = {
+  rows: new Map([
+    ['row-2', { tone: 'error', glyph: true, title: MARK_TITLES.rule }],
+    ['row-3', { cells: { score: { tone: 'warning', glyph: true, title: MARK_TITLES.value } } }],
+  ]),
+  columns: new Map([['score', { tone: 'warning', glyph: true, title: MARK_TITLES.band }]]),
+};
+
+const SelectingScroller = ({ editing }: { editing: boolean }) => {
+  const [selected, setSelected] = useState<SentenceSelection | null>(null);
+  return scroller({
+    selected,
+    onSelect: setSelected,
+    marks: MARKS,
+    headerMark: { tone: 'error', glyph: true, title: MARK_TITLES.header },
+    edit: editing
+      ? { onCommit: () => undefined, onClearCell: () => {}, onDeleteRule: () => {} }
+      : undefined,
+  });
+};
+
+describe('DecisionText mark clicks', () => {
+  let scrollIntoViewSpy: Mock<Element['scrollIntoView']>;
+  beforeEach(() => {
+    scrollIntoViewSpy = vi.fn<Element['scrollIntoView']>();
+    Element.prototype.scrollIntoView = scrollIntoViewSpy;
+  });
+
+  const marked = (title: string): HTMLElement => {
+    const element = [...document.querySelectorAll<HTMLElement>('[data-mark-title]')].find(
+      (candidate) => candidate.dataset.markTitle === title
+    );
+    if (!element) throw new Error(`No mark titled ${title}`);
+    return element;
+  };
+
+  const scrolledBy = () => {
+    const outer = screen.getByTestId('scroller');
+    outer.scrollTop = 40;
+    return () => ({
+      scrollTop: outer.scrollTop,
+      scrollIntoView: scrollIntoViewSpy.mock.calls.length,
+    });
+  };
+
+  it.each([
+    ['select', false],
+    ['edit', true],
+  ] as const)('never scrolls when a mark is clicked in %s mode', async (_mode, editing) => {
+    render(<SelectingScroller editing={editing} />);
+    for (const title of Object.values(MARK_TITLES)) {
+      const scrollNow = scrolledBy();
+      await userEvent.click(marked(title));
+      expect({ title, ...scrollNow() }).toEqual({ title, scrollTop: 40, scrollIntoView: 0 });
+      await userEvent.keyboard('{Escape}');
+    }
+  });
+
+  it('never scrolls when a mark is tapped', async () => {
+    render(<SelectingScroller editing />);
+    const user = userEvent.setup();
+    for (const title of Object.values(MARK_TITLES)) {
+      const scrollNow = scrolledBy();
+      await user.pointer({ keys: '[TouchA]', target: marked(title) });
+      expect({ title, ...scrollNow() }).toEqual({ title, scrollTop: 40, scrollIntoView: 0 });
+      await user.keyboard('{Escape}');
+    }
+  });
+
+  it('still scrolls a rule the keyboard moves to after a mark is clicked', async () => {
+    render(<SelectingScroller editing={false} />);
+    await userEvent.click(marked(MARK_TITLES.rule));
+    expect(scrollIntoViewSpy).not.toHaveBeenCalled();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(scrollIntoViewSpy).toHaveBeenCalled();
+  });
+
+  it('never scrolls when a changed value or rule of a diff is clicked', async () => {
+    render(
+      <div data-testid="scroller" style={{ overflowY: 'auto', height: 600 }}>
+        <DecisionText
+          rules={DIFF_RULES}
+          {...DIFF_COLUMNS}
+          header={DIFF_HEADER}
+          ariaLabel="Rules"
+          dataTestId="nl"
+          diff={{ ...EVERY_STATE_DIFF, mode: 'full' }}
+        />
+      </div>
+    );
+    const changed = [...document.querySelectorAll<HTMLElement>('[data-change]')];
+    expect(changed.length).toBeGreaterThan(2);
+    for (const element of changed) {
+      const scrollNow = scrolledBy();
+      await userEvent.click(element);
+      expect(scrollNow()).toEqual({ scrollTop: 40, scrollIntoView: 0 });
+    }
   });
 });
