@@ -9,7 +9,11 @@ import {
 import { ListTree } from 'lucide-react';
 import type React from 'react';
 import { useId, useMemo, useRef, useState } from 'react';
-import { MINIMAP_CONTENT_CLASS, MINIMAP_TRIGGER_CLASS } from './decisionGraphStyles';
+import {
+  MINIMAP_CONTENT_CLASS,
+  MINIMAP_FLOATING_CLASS,
+  MINIMAP_TRIGGER_CLASS,
+} from './decisionGraphStyles';
 import { isComposing } from './gridEvents';
 import { listIdOf, MinimapList, type MinimapListLabels, optionIdOf } from './MinimapList';
 import { MinimapSearch, type MinimapSearchLabels } from './MinimapSearch';
@@ -83,7 +87,7 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
   return (
     <Popover open={open} onOpenChange={changeOpen}>
       <PopoverAnchor asChild>
-        <div>
+        <div className={MINIMAP_FLOATING_CLASS}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
