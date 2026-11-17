@@ -17,6 +17,7 @@ import type {
   DecisionGraphTarget,
 } from './decisionGraphTypes';
 import { SENTENCE_MIN_RULE_HEIGHT_PX } from './sentenceRuleHeights';
+import type { ContainerHandlersParams } from './useContainerHandlers';
 import { type DecisionGraphLabels, useDecisionGraphLabels } from './useDecisionGraphStrings';
 import { contentTopIn, type DecisionTextScroll } from './useRuleWindow';
 
@@ -34,6 +35,8 @@ export interface DecisionGraphTextProps {
   selected?: string | null;
   /** The view brought a decision or one of its rules into view from the keyboard; a host that selects the rule there has it focused. A click on a mark or link opens and flashes its target without scrolling or telling the host. */
   onReveal?: (target: DecisionGraphTarget) => void;
+  /** Opens a decision on its own, from a double-click on its heading or Alt+Enter on its toggle; a reference opens the decision it repeats. */
+  onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
   /** Strings in place of the built-in ones, any subset. */
   labels?: Partial<DecisionGraphLabels>;
   /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`. */
@@ -141,6 +144,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   onFold,
   selected = null,
   onReveal,
+  onOpenDecision,
   labels: hostLabels,
   dataTestId,
 }) => {
@@ -181,6 +185,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
     setRevealed(target.decisionId);
     if (target.byKey) onReveal?.({ decisionId: target.decisionId, rowId: target.rowId });
   };
+  const openOf = (decisionId: string) => onOpenDecision && (() => onOpenDecision(decisionId));
 
   const cardRefsRef = useRef(new Map<string, (element: HTMLElement | null) => void>());
   const cardRef = useCallback((decisionId: string) => {
@@ -309,6 +314,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           onReveal={(byKey) =>
             reveal({ decisionId: node.targetId, byKey, focus: false, flash: !byKey })
           }
+          onOpen={openOf(node.targetId)}
           dataTestId={dataTestId}
         />
       );
@@ -329,6 +335,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           onShowProblem={(byKey) =>
             reveal({ decisionId: node.id, rowId: node.markRowId, byKey, focus: byKey, flash: true })
           }
+          onOpen={openOf(node.id)}
           cardRef={cardRef(node.id)}
           dataTestId={dataTestId}
         />

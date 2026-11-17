@@ -465,6 +465,91 @@ describe('DecisionGraphText', () => {
   });
 });
 
+const OPENED = { nodes: MARKED.nodes };
+
+describe('DecisionGraphText open', () => {
+  it('opens a decision once on a double-click of its heading, the way the canvas drills in', async () => {
+    const onOpenDecision = vi.fn();
+    render(graph({ onOpenDecision }));
+    await userEvent.dblClick(within(toggle('risk')).getByText('Risk'));
+    expect(onOpenDecision).toHaveBeenCalledTimes(1);
+    expect(onOpenDecision).toHaveBeenCalledWith('risk');
+    onOpenDecision.mockClear();
+    await userEvent.dblClick(screen.getByTestId('graph-rule-count-pricing'));
+    expect(onOpenDecision).toHaveBeenCalledWith('pricing');
+  });
+
+  it('opens nothing on a double-click inside a body, and leaves the double-click to the body', async () => {
+    const onOpenDecision = vi.fn();
+    const onStartEdit = vi.fn();
+    render(
+      graph({
+        expanded: new Set(['risk']),
+        onOpenDecision,
+        renderBody: (id, scroll) =>
+          textBody(id, scroll, null, () => {}, {
+            onCommit: () => undefined,
+            onClearCell: () => {},
+            onDeleteRule: () => {},
+            onStartEdit,
+          }),
+      })
+    );
+    const value = screen
+      .getByTestId('text-risk-row-r1')
+      .querySelector<HTMLElement>('[data-kind="value"]');
+    expect(value).not.toBeNull();
+    if (value) await userEvent.dblClick(value);
+    expect(onOpenDecision).not.toHaveBeenCalled();
+    expect(onStartEdit).toHaveBeenCalled();
+  });
+
+  it('opens nothing on a double-click of a heading mark', async () => {
+    const onOpenDecision = vi.fn();
+    render(graph({ ...OPENED, onOpenDecision }));
+    await userEvent.dblClick(screen.getByTestId('graph-mark-risk'));
+    expect(onOpenDecision).not.toHaveBeenCalled();
+  });
+
+  it('opens a decision on Alt+Enter on its toggle, leaving Enter and Space to fold it', async () => {
+    const onOpenDecision = vi.fn();
+    render(graph({ onOpenDecision }));
+    expect(toggle('risk')).toHaveAttribute('aria-keyshortcuts', 'Alt+Enter');
+    toggle('risk').focus();
+    await userEvent.keyboard('{Alt>}{Enter}{/Alt}');
+    expect(onOpenDecision).toHaveBeenCalledTimes(1);
+    expect(onOpenDecision).toHaveBeenCalledWith('risk');
+    expect(toggle('risk')).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.keyboard('{Enter}');
+    expect(toggle('risk')).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.keyboard(' ');
+    expect(toggle('risk')).toHaveAttribute('aria-expanded', 'false');
+    expect(onOpenDecision).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the decision a reference repeats, by double-click and by Alt+Enter on its link', async () => {
+    const onOpenDecision = vi.fn();
+    render(graph({ onOpenDecision }));
+    await userEvent.dblClick(screen.getByTestId('graph-reference-pricing-risk'));
+    expect(onOpenDecision).toHaveBeenCalledTimes(1);
+    expect(onOpenDecision).toHaveBeenCalledWith('risk');
+    const link = screen.getByTestId('graph-reference-link-pricing-risk');
+    expect(link).toHaveAttribute('aria-keyshortcuts', 'Alt+Enter');
+    link.focus();
+    await userEvent.keyboard('{Alt>}{Enter}{/Alt}');
+    expect(onOpenDecision).toHaveBeenLastCalledWith('risk');
+    expect(onOpenDecision).toHaveBeenCalledTimes(2);
+  });
+
+  it('offers no open shortcut without a host to open in', () => {
+    render(graph());
+    expect(toggle('risk')).not.toHaveAttribute('aria-keyshortcuts');
+    expect(screen.getByTestId('graph-reference-link-pricing-risk')).not.toHaveAttribute(
+      'aria-keyshortcuts'
+    );
+  });
+});
+
 describe('DecisionGraphText mark clicks', () => {
   let scrollIntoViewSpy: Mock<Element['scrollIntoView']>;
   beforeEach(() => {
