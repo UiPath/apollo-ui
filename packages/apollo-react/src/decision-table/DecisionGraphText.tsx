@@ -33,7 +33,7 @@ export interface DecisionGraphTextProps {
   onExpandedChange?: (expanded: ReadonlySet<string>) => void;
   /** The decision the host's selection is in. */
   selected?: string | null;
-  /** The view brought a decision or one of its rules into view from the keyboard; a host that selects the rule there has it focused. A click on a mark or link opens and flashes its target without scrolling or telling the host. */
+  /** The view brought a decision or one of its rules into view from the keyboard; a host that selects the rule there has it focused. A click on a mark opens and flashes its target without scrolling or telling the host. */
   onReveal?: (target: DecisionGraphTarget) => void;
   /** Opens a decision on its own, from a double-click on its heading or Alt+Enter on its toggle; a reference opens the decision it repeats. */
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
@@ -299,7 +299,8 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
       return;
     }
     const frame = requestAnimationFrame(() => {
-      apply();
+      const card = cardsRef.current.get(pending.decisionId);
+      if (!apply() && pending.flash && card) flash(card);
       setPending(null);
     });
     return () => cancelAnimationFrame(frame);
@@ -311,8 +312,8 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
         <DecisionGraphReference
           node={node}
           labels={labels}
-          onReveal={(byKey) =>
-            reveal({ decisionId: node.targetId, byKey, focus: false, flash: !byKey })
+          onReveal={() =>
+            reveal({ decisionId: node.targetId, byKey: true, focus: false, flash: false })
           }
           onOpen={openOf(node.targetId)}
           dataTestId={dataTestId}

@@ -1,5 +1,6 @@
 import type { ColumnChange, ColumnField, ColumnTypeOption } from '../ColumnPopover';
 import type { DecisionTextProps } from '../DecisionText';
+import type { DecisionGraphDecisionNode } from '../decisionGraphTypes';
 import type { DecisionTextEdit } from '../decisionTextTypes';
 import { pickedOption } from '../PolicyOptionItem';
 import type { SentenceBandColumn, SentenceCellId, SentenceSelection } from '../sentenceTypes';
@@ -180,6 +181,22 @@ export const storyTableOf = (table: EditableTable): StoryTable => ({
   hitPolicy: 'UNIQUE',
 });
 
+const headerOf = ({ hitPolicy }: StoryTable) => {
+  const picked = pickedOption(
+    HIT_POLICY_GROUPS.flatMap((group) => group.options),
+    hitPolicy
+  );
+  return { label: picked?.label ?? '', hint: picked?.hint ?? '' };
+};
+
+/** What a graph heading shows of a story table as it stands: its hit policy and rule count. */
+export const storyHeadingOf = (
+  state: StoryTable
+): Pick<DecisionGraphDecisionNode, 'hitPolicy' | 'ruleCount'> => ({
+  hitPolicy: headerOf(state).label,
+  ruleCount: state.table.rules.length,
+});
+
 export interface StoryTableHost {
   state: StoryTable;
   onChange: (next: StoryTable) => void;
@@ -256,11 +273,7 @@ export const storyTableProps = ({
     },
     labels: editLabels,
   };
-  const picked = pickedOption(
-    HIT_POLICY_GROUPS.flatMap((group) => group.options),
-    hitPolicy
-  );
-  const header = { label: picked?.label ?? '', hint: picked?.hint ?? '' };
+  const header = headerOf(state);
   const policy: DecisionTextProps['policy'] = {
     value: hitPolicy,
     groups: HIT_POLICY_GROUPS,
