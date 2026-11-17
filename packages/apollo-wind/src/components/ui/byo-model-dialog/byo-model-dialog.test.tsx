@@ -8,6 +8,7 @@ import type {
   ByoDialogContext,
   ByoModelDialogApi,
   ByoModelToEdit,
+  ByoProviderModels,
   ByoResult,
   ByoSavedModel,
   ByoSaveRequest,
@@ -354,6 +355,36 @@ describe('ByoModelDialog', () => {
       expect(screen.getByLabelText(/Endpoint/)).toHaveValue('https://old.example.com')
     );
     expect(api.loadConnectionValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('loads the model list again when a connection edit fails while the list was loading', async () => {
+    const user = userEvent.setup();
+    let finishFirstList: () => void = () => {};
+    const models = { compatible: [{ id: 'gpt-5.1' }], incompatible: [] };
+    const api = fakeApi({
+      listModels: vi
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise<ByoResult<ByoProviderModels>>((resolve) => {
+              finishFirstList = () => resolve({ ok: true, value: models });
+            })
+        )
+        .mockResolvedValue({ ok: true, value: models }),
+      loadConnectionValues: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'Could not read the connection settings' },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await pick(user, 'Provider', 'OpenAI');
+    await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
+    await screen.findByText('Could not read the connection settings');
+    finishFirstList();
+
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+    expect(api.listModels).toHaveBeenCalledTimes(2);
   });
 
   it('keeps loading the form when the connection changes meanwhile', async () => {
