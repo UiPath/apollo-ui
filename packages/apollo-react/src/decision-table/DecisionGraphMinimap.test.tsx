@@ -216,6 +216,32 @@ describe('DecisionGraphMinimap', () => {
     height.mockRestore();
   });
 
+  it('places each row by its own kind when the rows change under the same count', async () => {
+    const rules = (prefix: string, count: number): MinimapItem[] =>
+      Array.from({ length: count }, (_, index) => ({
+        id: `${prefix}-${index}`,
+        kind: 'rule',
+        label: `${prefix} ${index}`,
+      }));
+    const flat = rules('flat', WINDOW_MINIMAP_FROM + 10);
+    const nested: MinimapItem[] = [
+      {
+        id: 'd-top',
+        kind: 'decision',
+        label: 'Top',
+        children: rules('nested', WINDOW_MINIMAP_FROM + 9),
+      },
+    ];
+    const height = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(440);
+    const user = userEvent.setup();
+    const { rerender } = render(minimap({ items: () => flat }));
+    await user.click(screen.getByTestId('map-trigger'));
+    expect(screen.getByTestId('map-row-flat-1')).toHaveStyle({ top: '22px' });
+    rerender(minimap({ items: () => nested }));
+    expect(screen.getByTestId('map-row-nested-0')).toHaveStyle({ top: '24px' });
+    height.mockRestore();
+  });
+
   it('has no axe violations while open', async () => {
     const { baseElement } = render(minimap());
     await userEvent.click(screen.getByTestId('map-trigger'));
