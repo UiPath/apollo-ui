@@ -136,6 +136,8 @@ describe('DecisionGraphText stories', () => {
     await userEvent.click(body('risk').getByRole('button', { name: /Hit policy/ }));
     await userEvent.click(await screen.findByRole('menuitemradio', { name: /First/ }));
     expect(screen.getByTestId('graph-body-risk')).toHaveTextContent('First');
+    expect(screen.getByTestId('graph-hit-policy-risk')).toHaveTextContent('First');
+    expect(screen.getByTestId('graph-hit-policy-eligibility')).toHaveTextContent('Unique');
   });
 
   it('renames a column of one decision', async () => {

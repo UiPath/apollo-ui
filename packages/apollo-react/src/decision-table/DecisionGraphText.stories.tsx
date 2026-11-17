@@ -14,6 +14,7 @@ import { type EditableTable, wordedRules } from './__fixtures__/editableSentence
 import {
   type HostMode,
   type StoryTable,
+  storyHeadingOf,
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
@@ -42,20 +43,20 @@ const tablesOf = (bodies: GraphFixture['bodies']): Readonly<Record<string, Story
     )
   );
 
-/** The graph's nodes with each table's rule count as the host's table has it now. */
-const countedNodes = (
+/** The graph's nodes with each table's heading as the host's table has it now. */
+const headedNodes = (
   nodes: readonly DecisionGraphNode[],
   tables: Readonly<Record<string, StoryTable>>
 ): DecisionGraphNode[] =>
-  nodes.map((node) =>
-    node.kind === 'reference'
-      ? node
-      : {
-          ...node,
-          ruleCount: tables[node.id]?.table.rules.length ?? node.ruleCount,
-          children: countedNodes(node.children, tables),
-        }
-  );
+  nodes.map((node) => {
+    if (node.kind === 'reference') return node;
+    const state = tables[node.id];
+    return {
+      ...node,
+      ...(state ? storyHeadingOf(state) : {}),
+      children: headedNodes(node.children, tables),
+    };
+  });
 
 const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
   const [tables, setTables] = useState(() => tablesOf(graph.bodies));
@@ -70,7 +71,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     () => new Map(Object.entries(tables).map(([id, { table }]) => [id, wordedRules(table)])),
     [tables]
   );
-  const nodes = useMemo(() => countedNodes(graph.nodes, tables), [graph.nodes, tables]);
+  const nodes = useMemo(() => headedNodes(graph.nodes, tables), [graph.nodes, tables]);
 
   const renderBody: DecisionGraphTextProps['renderBody'] = (decisionId, scroll) => {
     const state = tables[decisionId];

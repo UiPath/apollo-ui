@@ -184,12 +184,16 @@ describe('DecisionGraphText', () => {
     expect(body('risk')).toBeNull();
   });
 
-  it('links a decision drawn elsewhere, opening it from the keyboard and bringing it to the top without moving focus', async () => {
+  it.each([
+    'click',
+    'keyboard',
+  ] as const)('links a decision drawn elsewhere, opening it by %s and bringing it to the top without moving focus', async (how) => {
     const onReveal = vi.fn();
     render(graph({ onReveal }));
     const link = screen.getByTestId('graph-reference-link-pricing-risk');
     expect(screen.getByTestId('graph-reference-pricing-risk')).toHaveTextContent('See Risk above');
-    await press(link);
+    if (how === 'click') await userEvent.click(link);
+    else await press(link);
     expect(body('risk')).not.toBeNull();
     expect(onReveal).toHaveBeenCalledWith({ decisionId: 'risk', rowId: undefined });
     expect(scrollToSpy).toHaveBeenCalledTimes(1);
@@ -199,7 +203,7 @@ describe('DecisionGraphText', () => {
 
   it('brings an open decision to the top again from its link', async () => {
     render(graph({ expanded: new Set(['risk']) }));
-    await press(screen.getByTestId('graph-reference-link-pricing-risk'));
+    await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
     expect(scrollToSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -585,14 +589,16 @@ describe('DecisionGraphText mark clicks', () => {
     expect(document.activeElement).toBe(mark);
   });
 
-  it('opens a referenced decision on a click of its link without scrolling', async () => {
-    const onReveal = vi.fn();
-    render(graph({ onReveal }));
+  it('flashes the decision when the rule its mark names is outside the mounted window', async () => {
+    const animate = vi.fn();
+    HTMLElement.prototype.animate = animate;
+    render(<SelectingHost />);
     const scrollNow = scrolled();
-    await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
-    expect(body('risk')).not.toBeNull();
+    await userEvent.click(screen.getByTestId('graph-mark-risk'));
+    expect(screen.queryByTestId('text-risk-row-r20')).toBeNull();
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    expect(animate.mock.contexts).toContain(screen.getByTestId('graph-decision-risk'));
     expect(scrollNow()).toEqual(UNMOVED);
-    expect(onReveal).not.toHaveBeenCalled();
   });
 
   it('still reveals from the keyboard after a click on the same mark', async () => {

@@ -156,15 +156,14 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
 export interface DecisionGraphReferenceProps {
   node: DecisionGraphReferenceNode;
   labels: DecisionGraphLabels;
-  /** `byKey` when the link was pressed from the keyboard rather than clicked. */
-  onReveal: (byKey: boolean) => void;
+  onReveal: () => void;
   onOpen: (() => void) | undefined;
   dataTestId: string;
 }
 
 const NAME_SLOT = '\u0000';
 
-/** A decision shown in full elsewhere: a line whose link opens it there, and from the keyboard brings it to the top. */
+/** A decision shown in full elsewhere: a line whose link opens it there and brings it to the top. */
 export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
   node,
   labels,
@@ -185,7 +184,7 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
         <button
           type="button"
           className={GRAPH_REFERENCE_CHIP_CLASS}
-          onClick={(event) => onReveal(event.detail === 0)}
+          onClick={onReveal}
           onKeyDown={onOpen && ((event) => openOnKey(event, onOpen))}
           aria-keyshortcuts={onOpen && OPEN_KEYS}
           data-testid={`${dataTestId}-reference-link-${node.id}`}
