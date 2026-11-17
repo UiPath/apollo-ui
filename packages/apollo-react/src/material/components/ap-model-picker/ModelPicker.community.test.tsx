@@ -290,6 +290,29 @@ describe('<ModelPicker isCommunity>', () => {
     });
   });
 
+  it('offers no edit for a BYO row without a configuration id', async () => {
+    const user = userEvent.setup();
+    const unlinked: DiscoveryModel = {
+      ...ADDED,
+      byomDetails: { integrationServiceConnectionId: 'conn-1' },
+    };
+    render(
+      <ModelPicker
+        models={[HOSTED, unlinked]}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        isCommunity
+        requestContext={CTX}
+        onCustomModelSaved={() => {}}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await screen.findByRole('option', { name: /my-gpt/ });
+    expect(screen.queryByRole('button', { name: 'Edit configuration' })).toBeNull();
+  });
+
   it('keeps the AI Trust Layer navigation when isCommunity is off', async () => {
     const user = userEvent.setup();
     const onUseCustomModel = vi.fn();

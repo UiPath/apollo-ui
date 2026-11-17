@@ -833,9 +833,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
       return (m: DiscoveryModel) => {
         const hasConfigurationId = !!m.byomDetails?.byoConfigurationId;
-        // The Community dialog opens a model by its configuration.
-        const editsInDialog = editInDialog && hasConfigurationId;
-        const onEdit = editsInDialog ? editInDialog : editInTrustLayer;
+        // The Community dialog opens a model by its configuration, so a row without one has
+        // no edit action there.
+        let onEdit = editInTrustLayer;
+        if (editInDialog) onEdit = hasConfigurationId ? editInDialog : undefined;
         // When the picker owns the DELETE it needs a configuration id to
         // target, so rows lacking one get edit only. A host-supplied
         // handler may know another way, so it always gets the action.
