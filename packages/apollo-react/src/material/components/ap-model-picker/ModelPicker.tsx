@@ -15,7 +15,7 @@ import React from 'react';
 import { useSafeLingui } from '../../../i18n';
 import type { ModelBadgeKind } from './badges';
 import { createCommunityByoApi } from './communityByoApi';
-import { communityDialogLabels } from './communityByoLabels';
+import { communityDialogLabels, communitySavedMessage } from './communityByoLabels';
 import { DELETE_CONFIRM } from './i18n';
 import { FolderSwitcher, type FolderSwitcherFolder } from './primitives/FolderSwitcher';
 import { defaultRowActions } from './primitives/ModelOptionRow';
@@ -42,6 +42,9 @@ import { resolveHomeGeography } from './utils';
 const EMPTY_MODELS: DiscoveryModel[] = [];
 
 export type ModelPickerVariant = 'searchable' | 'virtualized';
+
+/** The kind of message the picker hands a host's `notify`. */
+export type ModelPickerNoticeStatus = 'success' | 'error' | 'info' | 'warning';
 
 /**
  * Selection callback. The picker calls `onChange(model)` with the full
@@ -289,6 +292,12 @@ export interface ModelPickerProps {
    */
   communityDialogHost?: React.ComponentType<{ children: React.ReactNode }>;
   /**
+   * Shows a short message through the host's own toasts. The picker raises one
+   * when the Community dialog has added a model or saved changes to one, since
+   * the dialog closes at that point. Without it, nothing is shown.
+   */
+  notify?: (message: string, status: ModelPickerNoticeStatus) => void;
+  /**
    * Auth + routing context for the picker's built-in platform calls —
    * the folder list (`enableFolders`) and the org-admin check
    * (`canManageByo` unset) — and for the default add/edit navigation
@@ -426,6 +435,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       isCommunity = false,
       onCustomModelSaved,
       communityDialogHost: CommunityDialogHost,
+      notify,
       requestContext,
       enableFolders = false,
       folders,
@@ -675,7 +685,8 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       if (!open) setCommunityDialog(null);
     }, []);
     const handleCommunitySaved = React.useCallback(
-      async (model: ByoSavedModel) => {
+      async (model: ByoSavedModel, edited: boolean) => {
+        notify?.(communitySavedMessage(i18n, model.name, edited), 'success');
         // A model saved in another folder than the one shown would never appear, so the
         // picker shows its folder; the folder switch refetches the catalog itself.
         const showsOtherFolder =
@@ -685,7 +696,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         await onCustomModelSaved?.(model);
         setPendingSelection(model);
       },
-      [folder, handleFolderChange, selfFetchCtx, refetchDiscovery, onCustomModelSaved]
+      [notify, i18n, folder, handleFolderChange, selfFetchCtx, refetchDiscovery, onCustomModelSaved]
     );
     React.useEffect(() => {
       if (!pendingSelection) return;
@@ -1170,7 +1181,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               onOpenChange={closeCommunityDialog}
               api={communityApi}
               editing={communityDialog.editing}
-              onSaved={handleCommunitySaved}
+              onSaved={(model) => handleCommunitySaved(model, Boolean(communityDialog.editing))}
               labels={communityLabels}
             />
           </CommunityDialogFrame>

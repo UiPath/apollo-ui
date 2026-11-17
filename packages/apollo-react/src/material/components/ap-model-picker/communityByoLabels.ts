@@ -154,6 +154,20 @@ const M = {
   }),
 } satisfies Record<keyof ByoModelDialogLabels, MessageDescriptor>;
 
+const SAVED = {
+  added: msg({ id: 'modelPicker.community.savedAdded', message: '{name} added to your models' }),
+  edited: msg({ id: 'modelPicker.community.savedEdited', message: 'Changes to {name} saved' }),
+};
+
+/** The message the picker hands its host's `notify` once the dialog saved a model. */
+export function communitySavedMessage(
+  { _ }: PickerTranslator,
+  name: string,
+  edited: boolean
+): string {
+  return _({ ...(edited ? SAVED.edited : SAVED.added), values: { name } });
+}
+
 /** The Community dialog's strings, resolved through the picker's translator. */
 export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLabels {
   const t = (d: MessageDescriptor, values?: Record<string, string | number>) => _({ ...d, values });

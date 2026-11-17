@@ -103,6 +103,7 @@ describe('<ModelPicker isCommunity>', () => {
     const onUseCustomModel = vi.fn();
     let rerenderWith: (models: DiscoveryModel[]) => void = () => {};
     const onCustomModelSaved = vi.fn(async () => rerenderWith([HOSTED, ADDED]));
+    const notify = vi.fn();
     const picker = (models: DiscoveryModel[]) => (
       <ModelPicker
         models={models}
@@ -112,6 +113,7 @@ describe('<ModelPicker isCommunity>', () => {
         isCommunity
         requestContext={CTX}
         onCustomModelSaved={onCustomModelSaved}
+        notify={notify}
       />
     );
     const { rerender } = render(picker([HOSTED]));
@@ -125,6 +127,7 @@ describe('<ModelPicker isCommunity>', () => {
     await addMyGptThroughMyOpenAi(user);
 
     await waitFor(() => expect(onChange).toHaveBeenCalledWith(ADDED));
+    expect(notify).toHaveBeenCalledWith('my-gpt added to your models', 'success');
     expect(onCustomModelSaved).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'my-gpt', modelId: 'gpt-4o', connectionId: 'conn-1' })
     );
@@ -160,6 +163,7 @@ describe('<ModelPicker isCommunity>', () => {
   it("edits a BYO row's model in the same dialog", async () => {
     const user = userEvent.setup();
     const onCustomModelSaved = vi.fn();
+    const notify = vi.fn();
     render(
       <ModelPicker
         models={[HOSTED, ADDED]}
@@ -169,6 +173,7 @@ describe('<ModelPicker isCommunity>', () => {
         isCommunity
         requestContext={CTX}
         onCustomModelSaved={onCustomModelSaved}
+        notify={notify}
       />
     );
 
@@ -184,6 +189,7 @@ describe('<ModelPicker isCommunity>', () => {
     await user.click(screen.getByRole('button', { name: 'Test and save' }));
 
     await waitFor(() => expect(onCustomModelSaved).toHaveBeenCalled());
+    expect(notify).toHaveBeenCalledWith('Changes to my-gpt saved', 'success');
     const keys = fetchMock.mock.calls.map(([url, init]) => `${init?.method ?? 'GET'} ${url}`);
     expect(keys).toContain(`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`);
     expect(keys).not.toContain(`POST ${GATEWAY}/api/byo/product/llm-configurations`);

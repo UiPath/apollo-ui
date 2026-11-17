@@ -18,6 +18,7 @@ export {
 } from './loadMessages';
 export type {
   ModelPickerChangeHandler,
+  ModelPickerNoticeStatus,
   ModelPickerProps,
   ModelPickerSlotContext,
   ModelPickerSlots,
