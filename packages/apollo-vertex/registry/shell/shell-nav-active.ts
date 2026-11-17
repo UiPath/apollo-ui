@@ -44,3 +44,19 @@ export function navItemState(
     current: navItemIsCurrent(pathname, item.path, childPaths),
   };
 }
+
+export function activeNavMatch(
+  pathname: string,
+  items: readonly { path: string; childPaths?: readonly string[] }[],
+): { itemPath: string; path: string } | null {
+  let match: { itemPath: string; path: string } | null = null;
+  for (const item of items) {
+    for (const path of [item.path, ...(item.childPaths ?? [])]) {
+      if (!navPathIsActive(pathname, path)) continue;
+      if (match === null || path.length > match.path.length) {
+        match = { itemPath: item.path, path };
+      }
+    }
+  }
+  return match;
+}
