@@ -4,8 +4,9 @@ import { Activity, createElement, StrictMode, useEffect, useRef, useState } from
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installEscapeCloseRequest, installModalInertness } from './__fixtures__/modalDialog';
 import {
+  HIT_POLICIES,
   MULTI_SENTENCE_COLUMNS,
-  MULTI_SENTENCE_HEADER,
+  MULTI_SENTENCE_POLICY,
   MULTI_SENTENCE_RULES,
 } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
@@ -59,15 +60,19 @@ const Host = ({
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   return (
     <DecisionText
-      rules={MULTI_SENTENCE_RULES}
-      {...MULTI_SENTENCE_COLUMNS}
-      header={MULTI_SENTENCE_HEADER}
+      table={{
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+      }}
+      hitPolicies={HIT_POLICIES}
       ariaLabel="Rules"
       dataTestId="nl"
       mode={{
         kind: 'edit',
         selected,
         onSelect: setSelected,
+        onPolicyChange: () => {},
         onAddRule: () => {},
         edit: {
           editing,

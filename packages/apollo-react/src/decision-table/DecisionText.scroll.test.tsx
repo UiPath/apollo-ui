@@ -2,24 +2,25 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
 import { type Mock, onTestFinished, vi } from 'vitest';
-import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
-import {
-  MULTI_SENTENCE_COLUMNS,
-  MULTI_SENTENCE_HEADER,
-  manySentenceRules,
-} from './__fixtures__/sentences.fixtures';
 import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   EVERY_STATE_DIFF,
 } from './__fixtures__/diffSentences.fixtures';
+import { installEscapeCloseRequest } from './__fixtures__/modalDialog';
+import {
+  HIT_POLICIES,
+  MULTI_SENTENCE_COLUMNS,
+  MULTI_SENTENCE_POLICY,
+  manySentenceRules,
+} from './__fixtures__/sentences.fixtures';
 import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
-import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { TableMarks } from './marks';
+import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentenceSelection } from './sentenceTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
@@ -31,7 +32,7 @@ const text = (props: Partial<FlatTextProps>) => (
     {...textPropsOf({
       rules: RULES,
       ...MULTI_SENTENCE_COLUMNS,
-      header: MULTI_SENTENCE_HEADER,
+      hitPolicy: MULTI_SENTENCE_POLICY,
       ariaLabel: 'Rules',
       dataTestId: 'nl',
       onSelect: vi.fn(),
@@ -605,9 +606,8 @@ describe('DecisionText mark clicks', () => {
     render(
       <div data-testid="scroller" style={{ overflowY: 'auto', height: 600 }}>
         <DecisionText
-          rules={DIFF_RULES}
-          {...DIFF_COLUMNS}
-          header={DIFF_HEADER}
+          table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
+          hitPolicies={HIT_POLICIES}
           ariaLabel="Rules"
           dataTestId="nl"
           mode={{ kind: 'diff', diff: { ...EVERY_STATE_DIFF, mode: 'full' } }}

@@ -1,4 +1,5 @@
 import type React from 'react';
+import type { HitPolicyPick } from './hitPolicyMenu';
 
 /** A column's name inside a sentence; `columnId` is the input's or output's id, and an input another decision produces names that decision. */
 export type SentenceNameToken =
@@ -67,10 +68,12 @@ export interface SentenceBand {
   columns: readonly SentenceBandColumn[];
 }
 
-/** The sticky line above the rules: a label and its hint. */
-export interface SentenceHeader {
-  label: string;
-  hint: string;
+/** The decision table the view reads: its hit policy, its columns and its rules worded as sentences. */
+export interface DecisionTextTable<Policy, Total> {
+  hitPolicy: HitPolicyPick<Policy, Total>;
+  inputs: readonly SentenceBandColumn[];
+  outputs: readonly SentenceBandColumn[];
+  rules: readonly SentenceRule[];
 }
 
 /** A cell, addressed as the grid's marks address it. */

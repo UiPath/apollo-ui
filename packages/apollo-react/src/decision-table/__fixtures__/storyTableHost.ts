@@ -1,8 +1,7 @@
 import type { ColumnChange, ColumnField, ColumnTypeOption } from '../ColumnPopover';
-import type { DecisionTextMode } from '../DecisionText';
 import type { DecisionGraphDecisionNode } from '../decisionGraphTypes';
 import type { DecisionTextEdit } from '../decisionTextTypes';
-import { pickedOption } from '../PolicyOptionItem';
+import { policyHeaderOf } from '../hitPolicyMenu';
 import type { SentenceBandColumn, SentenceCellId, SentenceSelection } from '../sentenceTypes';
 import type { RangeEnds, ValueField, ValueOperatorOption } from '../valueTypes';
 import {
@@ -20,7 +19,8 @@ import {
   tableWithRuleAt,
   tableWithValue,
 } from './editableSentences.fixtures';
-import { HIT_POLICY_GROUPS } from './sentences.fixtures';
+import { type FixturePick, HIT_POLICIES } from './sentences.fixtures';
+import type { FixtureMode } from './textMode';
 
 /** How much of the view a host wires: rules only, then selection, then editing. */
 export type HostMode = 'read' | 'select' | 'edit';
@@ -172,30 +172,22 @@ const neighbourOf = (table: EditableTable, rowId: string): SentenceSelection | n
 export interface StoryTable {
   table: EditableTable;
   columnEdits: ColumnEdits;
-  hitPolicy: string;
+  hitPolicy: FixturePick;
 }
 
-type EditMode = Extract<DecisionTextMode, { kind: 'edit' }>;
+type EditMode = Extract<FixtureMode, { kind: 'edit' }>;
 
 export const storyTableOf = (table: EditableTable): StoryTable => ({
   table,
   columnEdits: NO_COLUMN_EDITS,
-  hitPolicy: 'UNIQUE',
+  hitPolicy: { kind: 'policy', policy: 'unique' },
 });
-
-const headerOf = ({ hitPolicy }: StoryTable) => {
-  const picked = pickedOption(
-    HIT_POLICY_GROUPS.flatMap((group) => group.options),
-    hitPolicy
-  );
-  return { label: picked?.label ?? '', hint: picked?.note.kind === 'hint' ? picked.note.text : '' };
-};
 
 /** What a graph heading shows of a story table as it stands: its hit policy and rule count. */
 export const storyHeadingOf = (
   state: StoryTable
 ): Pick<DecisionGraphDecisionNode, 'hitPolicy' | 'ruleCount'> => ({
-  hitPolicy: headerOf(state).label,
+  hitPolicy: policyHeaderOf(HIT_POLICIES, state.hitPolicy).label,
   ruleCount: state.table.rules.length,
 });
 
@@ -207,7 +199,7 @@ export interface StoryTableHost {
   renderEditor?: DecisionTextEdit['renderEditor'];
 }
 
-/** A story host's props for an editable view of one table: its typed columns, header and hit-policy picker, every edit action, and Add rule. */
+/** A story host's props for an editable view of one table: its typed columns, hit policy and its change, every edit action, and Add rule. */
 export const storyTableProps = ({
   state,
   onChange,
@@ -272,13 +264,8 @@ export const storyTableProps = ({
       onSelect(neighbourOf(table, rowId));
     },
   };
-  const header = headerOf(state);
-  const policy: EditMode['policy'] = {
-    value: hitPolicy,
-    groups: HIT_POLICY_GROUPS,
-    onChange: (next) => onChange({ ...state, hitPolicy: next }),
-    label: `Hit policy: ${header.label}`,
-  };
+  const onPolicyChange: EditMode['onPolicyChange'] = (next) =>
+    onChange({ ...state, hitPolicy: next });
   const onAddRule = () => addRuleAt(table.rules.length);
-  return { columns: typedColumns(table, columnEdits), header, edit, policy, onAddRule };
+  return { columns: typedColumns(table, columnEdits), hitPolicy, edit, onPolicyChange, onAddRule };
 };

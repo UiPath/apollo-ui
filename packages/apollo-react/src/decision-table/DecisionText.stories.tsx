@@ -1,16 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  EDITABLE_TABLE,
-  type EditableTable,
-  EMPTY_TABLE,
-  manyRulesTable,
-  wordedRules,
-} from './__fixtures__/editableSentences.fixtures';
+import type { FixtureDiff } from './__fixtures__/diffSentences.fixtures';
 import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   EVERY_STATE_DIFF,
   EVERYTHING_CHANGED_DIFF,
@@ -19,8 +13,16 @@ import {
   REMOVED_COLUMN_DIFF,
 } from './__fixtures__/diffSentences.fixtures';
 import {
+  EDITABLE_TABLE,
+  type EditableTable,
+  EMPTY_TABLE,
+  manyRulesTable,
+  wordedRules,
+} from './__fixtures__/editableSentences.fixtures';
+import {
+  HIT_POLICIES,
   MULTI_SENTENCE_COLUMNS,
-  MULTI_SENTENCE_HEADER,
+  MULTI_SENTENCE_POLICY,
   manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
 import {
@@ -29,8 +31,8 @@ import {
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
-import type { DecisionTextDiff } from './decisionTextDiff';
+import type { FixtureTextProps } from './__fixtures__/textMode';
+import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
@@ -102,7 +104,7 @@ interface TableHostProps {
   mode?: HostMode;
   validate?: boolean;
   marks?: TableMarks;
-  headerMark?: DecisionTextProps['headerMark'];
+  headerMark?: FixtureTextProps['headerMark'];
   renderEditor?: DecisionTextEdit['renderEditor'];
   frameClassName?: string;
 }
@@ -137,7 +139,7 @@ const TableHost = ({
     });
   }, [rules]);
 
-  const { columns, header, edit, policy, onAddRule } = storyTableProps({
+  const { columns, hitPolicy, edit, onPolicyChange, onAddRule } = storyTableProps({
     state: host,
     onChange: setHost,
     onSelect: setSelected,
@@ -148,9 +150,8 @@ const TableHost = ({
   return (
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
       <DecisionText
-        rules={rules}
-        {...columns}
-        header={header}
+        table={{ rules, ...columns, hitPolicy }}
+        hitPolicies={HIT_POLICIES}
         ariaLabel="Rules"
         dataTestId="decision-text"
         numbered
@@ -161,7 +162,7 @@ const TableHost = ({
           mode === 'read'
             ? { kind: 'read', selected: null }
             : mode === 'edit'
-              ? { kind: 'edit', selected, onSelect: setSelected, edit, policy, onAddRule }
+              ? { kind: 'edit', selected, onSelect: setSelected, edit, onPolicyChange, onAddRule }
               : { kind: 'select', selected, onSelect: setSelected }
         }
         onOpenDecision={setOpenedDecision}
@@ -382,7 +383,7 @@ const LARGE_DIFF = largeDiffTable(300);
 
 interface DiffScenario {
   rules?: readonly SentenceRule[];
-  changes: Omit<DecisionTextDiff, 'mode'>;
+  changes: Omit<FixtureDiff, 'mode'>;
   marks?: TableMarks;
   caption: string;
 }
@@ -419,14 +420,14 @@ const DIFF_SCENARIOS = {
   },
 } satisfies Record<string, DiffScenario>;
 
-const DIFF_MODE_CAPTIONS: Record<DecisionTextDiff['mode'], string> = {
+const DIFF_MODE_CAPTIONS: Record<FixtureDiff['mode'], string> = {
   compact:
     'Compact: two unchanged rules kept each side of a change, longer runs folded; open a fold to show its rules.',
   full: 'Full: every rule, the changed ones painted.',
 };
 
 interface DiffArgs {
-  mode: DecisionTextDiff['mode'];
+  mode: FixtureDiff['mode'];
   scenario: keyof typeof DIFF_SCENARIOS;
 }
 
@@ -437,9 +438,8 @@ const DiffHost = ({ mode, scenario }: DiffArgs) => {
     <div className="flex h-[640px] flex-col gap-2">
       <DecisionText
         key={scenario}
-        rules={rules}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
+        table={{ rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
+        hitPolicies={HIT_POLICIES}
         numbered
         marks={marks}
         ariaLabel="Rules"
@@ -484,9 +484,12 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
           data-testid={`stacked-${id}`}
         >
           <DecisionText
-            rules={STACKED_RULES}
-            {...MULTI_SENTENCE_COLUMNS}
-            header={MULTI_SENTENCE_HEADER}
+            table={{
+              rules: STACKED_RULES,
+              ...MULTI_SENTENCE_COLUMNS,
+              hitPolicy: MULTI_SENTENCE_POLICY,
+            }}
+            hitPolicies={HIT_POLICIES}
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
             numbered

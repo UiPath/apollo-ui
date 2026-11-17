@@ -1,30 +1,32 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import type { FixtureDiff } from './__fixtures__/diffSentences.fixtures';
 import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
-import { type DecisionTextDiff, withRemoved } from './decisionTextDiff';
+import { HIT_POLICIES } from './__fixtures__/sentences.fixtures';
+import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
+import { DecisionText } from './DecisionText';
+import { withRemoved } from './decisionTextDiff';
 import type { SentencePart, SentenceRule } from './sentenceTypes';
 
-const renderDiff = (
-  diff: DecisionTextDiff,
-  props: Partial<Pick<DecisionTextProps, 'rules'>> = {}
-) =>
+const renderDiff = (diff: FixtureDiff, props: Partial<Pick<FlatTextProps, 'rules'>> = {}) =>
   render(
     <DecisionText
-      rules={DIFF_RULES}
-      {...DIFF_COLUMNS}
-      header={DIFF_HEADER}
-      numbered
-      ariaLabel="Rules"
-      dataTestId="nl"
-      {...props}
-      mode={{ kind: 'diff', diff }}
+      {...textPropsOf({
+        rules: DIFF_RULES,
+        ...DIFF_COLUMNS,
+        hitPolicy: DIFF_POLICY,
+        numbered: true,
+        ariaLabel: 'Rules',
+        dataTestId: 'nl',
+        ...props,
+        diff,
+      })}
     />
   );
 
@@ -97,15 +99,14 @@ describe('DecisionText diff edges', () => {
     const { rerender } = renderDiff({ mode: 'compact', ...diff }, { rules });
     await user.click(within(screen.getByTestId('nl-fold-row-1')).getByRole('button'));
     expect(screen.queryByTestId('nl-fold-row-1')).toBeNull();
-    const next: DecisionTextDiff = {
+    const next: FixtureDiff = {
       mode: 'compact',
       rules: [{ rowId: 'row-200', change: 'update' }],
     };
     rerender(
       <DecisionText
-        rules={rules}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
+        table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
+        hitPolicies={HIT_POLICIES}
         numbered
         ariaLabel="Rules"
         dataTestId="nl"
@@ -131,9 +132,8 @@ describe('DecisionText diff review edges', () => {
   it('shows no hit-policy picker on a diff', () => {
     render(
       <DecisionText
-        rules={DIFF_RULES}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
+        table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
+        hitPolicies={HIT_POLICIES}
         ariaLabel="Rules"
         dataTestId="nl"
         mode={{

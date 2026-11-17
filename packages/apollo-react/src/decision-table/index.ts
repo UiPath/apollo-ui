@@ -7,15 +7,16 @@
 export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
-export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
+export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
+export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
+export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type {
   DecisionGraphDecisionNode,
   DecisionGraphNode,
   DecisionGraphReferenceNode,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
-export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
 export type {
   DecisionTextDiff,
   DiffChange,
@@ -25,7 +26,6 @@ export type {
   DiffRuleChange,
   DiffValueChange,
 } from './decisionTextDiff';
-export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type { DecisionTextEdit } from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
@@ -90,9 +90,9 @@ export {
 } from './sentenceGridSelection';
 export type { GlyphTone } from './sentenceMarks';
 export type {
+  DecisionTextTable,
   SentenceBandColumn,
   SentenceCellId,
-  SentenceHeader,
   SentenceLine,
   SentenceNameToken,
   SentencePart,
@@ -104,7 +104,6 @@ export type {
   SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
-export type { DecisionTextScroll } from './useRuleWindow';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {
@@ -123,6 +122,7 @@ export {
   type Updater,
   useGridNavigation,
 } from './useGridNavigation';
+export type { DecisionTextScroll } from './useRuleWindow';
 export type { ValuePopoverProps } from './ValuePopover';
 export type {
   ExpressionEditorHandle,

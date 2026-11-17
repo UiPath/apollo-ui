@@ -2,17 +2,18 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
+import type { FixtureDiff } from './__fixtures__/diffSentences.fixtures';
 import {
   DIFF_COLUMNS,
-  DIFF_HEADER,
+  DIFF_POLICY,
   DIFF_RULES,
   EVERY_STATE_DIFF,
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
 import { manySentenceRules } from './__fixtures__/sentences.fixtures';
-import { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
+import { type FixtureMode, type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
+import { DecisionText } from './DecisionText';
 import {
-  type DecisionTextDiff,
   DIFF_CONTEXT_RULES,
   DIFF_MIN_FOLDED,
   type DiffRow,
@@ -37,19 +38,21 @@ const ids = (rows: { rules: readonly SentenceRule[] }) => rows.rules.map(({ rowI
 const ruleRow = (row: DiffRow | undefined) => (row?.kind === 'rule' ? row.diff : undefined);
 
 const renderDiff = (
-  diff: DecisionTextDiff,
-  props: Partial<Pick<DecisionTextProps, 'rules' | 'marks'>> = {}
+  diff: FixtureDiff,
+  props: Partial<Pick<FlatTextProps, 'rules' | 'marks'>> = {}
 ) =>
   render(
     <DecisionText
-      rules={DIFF_RULES}
-      {...DIFF_COLUMNS}
-      header={DIFF_HEADER}
-      numbered
-      ariaLabel="Rules"
-      dataTestId="nl"
-      {...props}
-      mode={{ kind: 'diff', diff }}
+      {...textPropsOf({
+        rules: DIFF_RULES,
+        ...DIFF_COLUMNS,
+        hitPolicy: DIFF_POLICY,
+        numbered: true,
+        ariaLabel: 'Rules',
+        dataTestId: 'nl',
+        ...props,
+        diff,
+      })}
     />
   );
 
@@ -97,7 +100,7 @@ describe('withRemoved', () => {
 
 describe('diffRowsOf', () => {
   const rules = manySentenceRules(20);
-  const changedAt = (...indexes: number[]): DecisionTextDiff => ({
+  const changedAt = (...indexes: number[]): FixtureDiff => ({
     mode: 'compact',
     rules: indexes.map((index) => ({ rowId: rules[index]?.rowId ?? '', change: 'update' })),
   });
@@ -336,7 +339,7 @@ describe('diffColumnsOf', () => {
 });
 
 describe('DecisionText diff', () => {
-  const full: DecisionTextDiff = { mode: 'full', ...EVERY_STATE_DIFF };
+  const full: FixtureDiff = { mode: 'full', ...EVERY_STATE_DIFF };
 
   it('shows an added rule with its sign, number and status, and a removed one struck without a number', () => {
     renderDiff(full);
@@ -471,17 +474,17 @@ describe('DecisionText diff', () => {
 
   it('takes no edit, selection or add-rule action with a diff', () => {
     const edit = { onCommit: () => {}, onClearCell: () => {}, onDeleteRule: () => {} };
-    const accepted: DecisionTextMode = { kind: 'diff', diff: full };
+    const accepted: FixtureMode = { kind: 'diff', diff: full };
     // @ts-expect-error
-    const withEdit: DecisionTextMode = { kind: 'diff', diff: full, edit };
-    const withSelection: DecisionTextMode = {
+    const withEdit: FixtureMode = { kind: 'diff', diff: full, edit };
+    const withSelection: FixtureMode = {
       kind: 'diff',
       diff: full,
       // @ts-expect-error
       selected: null,
     };
     // @ts-expect-error
-    const withAddRule: DecisionTextMode = { kind: 'diff', diff: full, onAddRule: () => {} };
+    const withAddRule: FixtureMode = { kind: 'diff', diff: full, onAddRule: () => {} };
     expect([accepted, withEdit, withSelection, withAddRule].map(({ kind }) => kind)).toEqual([
       'diff',
       'diff',

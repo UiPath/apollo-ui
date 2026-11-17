@@ -1,7 +1,12 @@
 import type { DecisionTextDiff, DiffRuleChange, DiffValueChange } from '../decisionTextDiff';
-import type { SentenceHeader, SentenceRule } from '../sentenceTypes';
+import type { SentenceRule } from '../sentenceTypes';
 import { EDITABLE_TABLE, type EditableTable, wordedRules } from './editableSentences.fixtures';
-import type { SentenceColumns } from './sentences.fixtures';
+import type {
+  FixturePick,
+  FixturePolicy,
+  FixtureTotal,
+  SentenceColumns,
+} from './sentences.fixtures';
 
 type TableRule = EditableTable['rules'][number];
 
@@ -63,10 +68,10 @@ export const DIFF_COLUMNS: SentenceColumns = {
   outputs: DIFF_TABLE.outputs,
 };
 
-export const DIFF_HEADER: SentenceHeader = {
-  label: 'Unique',
-  hint: 'Exactly one rule may match.',
-};
+export const DIFF_POLICY: FixturePick = { kind: 'policy', policy: 'unique' };
+
+/** A diff in the fixtures' hit policies. */
+export type FixtureDiff = DecisionTextDiff<FixturePolicy, FixtureTotal>;
 
 /** The old table's rule for ages 70 to 74, which the change removed. */
 const REMOVED_RULE: SentenceRule = {
@@ -88,7 +93,7 @@ const REMOVED_RULE: SentenceRule = {
 };
 
 /** Every state at once: rules added, changed, removed and moved, values added, changed and removed, columns added, changed and removed, and the hit policy. */
-export const EVERY_STATE_DIFF: Omit<DecisionTextDiff, 'mode'> = {
+export const EVERY_STATE_DIFF: Omit<FixtureDiff, 'mode'> = {
   rules: [
     { rowId: 'r3', change: 'add' },
     { rowId: 'r5', change: 'update' },
@@ -131,11 +136,11 @@ export const EVERY_STATE_DIFF: Omit<DecisionTextDiff, 'mode'> = {
   removedColumns: [
     { column: { id: 'segment', name: 'segment', type: 'text' }, kind: 'input', after: 'income' },
   ],
-  hitPolicy: { before: 'First', after: 'Unique' },
+  hitPolicy: { before: { kind: 'policy', policy: 'first' }, after: DIFF_POLICY },
 };
 
 /** Every rule changed or new, and the old table's first rule removed. */
-export const EVERYTHING_CHANGED_DIFF: Omit<DecisionTextDiff, 'mode'> = {
+export const EVERYTHING_CHANGED_DIFF: Omit<FixtureDiff, 'mode'> = {
   rules: DIFF_RULES.map(
     ({ rowId }, index): DiffRuleChange => ({
       rowId,
@@ -151,7 +156,7 @@ export const EVERYTHING_CHANGED_DIFF: Omit<DecisionTextDiff, 'mode'> = {
 };
 
 /** A removed input, shown struck in its band where it stood. */
-export const REMOVED_COLUMN_DIFF: Omit<DecisionTextDiff, 'mode'> = {
+export const REMOVED_COLUMN_DIFF: Omit<FixtureDiff, 'mode'> = {
   removedColumns: EVERY_STATE_DIFF.removedColumns,
   values: [
     { kind: 'cell', rowId: 'r4', columnId: 'segment', change: 'delete', previous: 'is "retail"' },
@@ -159,14 +164,14 @@ export const REMOVED_COLUMN_DIFF: Omit<DecisionTextDiff, 'mode'> = {
 };
 
 /** Only the hit policy changed. */
-export const HIT_POLICY_DIFF: Omit<DecisionTextDiff, 'mode'> = {
-  hitPolicy: { before: 'First', after: 'Unique' },
+export const HIT_POLICY_DIFF: Omit<FixtureDiff, 'mode'> = {
+  hitPolicy: { before: { kind: 'policy', policy: 'first' }, after: DIFF_POLICY },
 };
 
 /** `count` rules cycling through the age rules, with five of them changed. */
 export const largeDiffTable = (
   count: number
-): { rules: SentenceRule[]; diff: Omit<DecisionTextDiff, 'mode'> } => {
+): { rules: SentenceRule[]; diff: Omit<FixtureDiff, 'mode'> } => {
   const rules = wordedRules({
     ...DIFF_TABLE,
     rules: Array.from({ length: count }, (_, index) =>

@@ -12,10 +12,11 @@ import {
   tableOf,
 } from './__fixtures__/decisionGraph.fixtures';
 import { tableColumns, wordedRules } from './__fixtures__/editableSentences.fixtures';
+import { GRID_SENTENCE_POLICY, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import { modeOf } from './__fixtures__/textMode';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
-import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
+import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 import type { DecisionTextScroll } from './useRuleWindow';
@@ -33,9 +34,8 @@ const textBody = (
   edit?: DecisionTextEdit
 ) => (
   <DecisionText
-    rules={RULES}
-    {...tableColumns(TABLE)}
-    header={{ label: 'Unique', hint: '' }}
+    table={{ rules: RULES, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
+    hitPolicies={HIT_POLICIES}
     ariaLabel={`Rules of ${decisionId}`}
     dataTestId={`text-${decisionId}`}
     scroll={scroll}
@@ -451,9 +451,8 @@ describe('DecisionGraphText', () => {
           expanded={new Set(ids)}
           renderBody={(id, scroll) => (
             <DecisionText
-              rules={rules}
-              {...tableColumns(table)}
-              header={{ label: 'Unique', hint: '' }}
+              table={{ rules: rules, ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
+              hitPolicies={HIT_POLICIES}
               ariaLabel={`Rules of ${id}`}
               dataTestId={`text-${id}`}
               scroll={scroll}
