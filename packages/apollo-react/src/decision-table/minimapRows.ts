@@ -40,15 +40,37 @@ export interface MinimapRow {
 export const isCurrent = (item: MinimapItem, currentDecisionId: string | null): boolean =>
   item.kind === 'decision' && item.decisionId === currentDecisionId;
 
-const includes = (text: string, needle: string): boolean => text.toLowerCase().includes(needle);
+/** Where `query` sits in `text`, for highlighting and filtering alike; null when it does not. */
+export const matchRange = (text: string, query: string): { start: number; end: number } | null => {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return null;
+  let folded = '';
+  const startOf: number[] = [];
+  const endOf: number[] = [];
+  let offset = 0;
+  for (const char of text) {
+    const lower = char.toLowerCase();
+    for (let i = 0; i < lower.length; i++) {
+      startOf.push(offset);
+      endOf.push(offset + char.length);
+    }
+    folded += lower;
+    offset += char.length;
+  }
+  const at = folded.indexOf(needle);
+  if (at < 0) return null;
+  const start = startOf[at];
+  const end = endOf[at + needle.length - 1];
+  return start === undefined || end === undefined ? null : { start, end };
+};
 
 /** The rows in reading order narrowed to `query`: a match keeps the decisions above it, and a decision that matches keeps its rules. */
 export const minimapRows = (items: readonly MinimapItem[], query: string): MinimapRow[] => {
-  const needle = query.trim().toLowerCase();
+  const needle = query.trim();
   let next = 0;
   const visit = (item: MinimapItem, depth: number, parentMatched: boolean): MinimapRow[] => {
     const key = next++;
-    const match = needle !== '' && includes(item.label, needle);
+    const match = needle !== '' && matchRange(item.label, needle) !== null;
     if (item.kind !== 'decision') {
       return needle === '' || match || (parentMatched && item.kind === 'rule')
         ? [{ item, key, depth, match }]
@@ -59,12 +81,4 @@ export const minimapRows = (items: readonly MinimapItem[], query: string): Minim
     return [{ item, key, depth, match }, ...below];
   };
   return items.flatMap((item) => visit(item, 0, false));
-};
-
-/** Where `query` sits in `text`, for highlighting; null when it does not. */
-export const matchRange = (text: string, query: string): { start: number; end: number } | null => {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return null;
-  const start = text.toLowerCase().indexOf(needle);
-  return start < 0 ? null : { start, end: start + needle.length };
 };

@@ -19,7 +19,7 @@ import { DecisionGraphText } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
 import type { DecisionGraphNode } from './decisionGraphTypes';
 import { WINDOW_MINIMAP_FROM } from './MinimapList';
-import { type MinimapItem, minimapRows } from './minimapRows';
+import { type MinimapItem, matchRange, minimapRows } from './minimapRows';
 import type { SentenceRule, SentenceSelection } from './sentenceTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
@@ -120,6 +120,40 @@ describe('minimapRows', () => {
 
   it('is empty when nothing matches', () => {
     expect(minimapRows(ITEMS, 'zzz')).toEqual([]);
+  });
+});
+
+describe('matchRange', () => {
+  it.each([
+    ['İİ risk', 'risk'],
+    ['ẞ risk', 'risk'],
+    ['İstanbul İzmir', 'zmir'],
+    ['İ', 'i'],
+  ])('highlights exactly the matched characters of %s for %s', (text, query) => {
+    const range = matchRange(text, query);
+    expect(range).not.toBeNull();
+    expect(text.slice(range?.start, range?.end).toLowerCase()).toContain(query.toLowerCase());
+  });
+
+  it('points at the same characters the row filter matched', () => {
+    expect(matchRange('İİ risk', 'RISK')).toEqual({ start: 3, end: 7 });
+    expect(matchRange('ẞ risk', 'risk')).toEqual({ start: 2, end: 6 });
+    expect(matchRange('İİ risk', 'zzz')).toBeNull();
+    expect(matchRange('abc', ' ')).toBeNull();
+  });
+
+  it('agrees with the row filter on every label', () => {
+    const labels = ['İİ risk', 'ẞ risk', 'İstanbul', 'plain'];
+    const items: MinimapItem[] = labels.map((label, i) => ({
+      kind: 'rule',
+      decisionId: 'd',
+      rowId: String(i),
+      label,
+    }));
+    for (const query of ['risk', 'i', 'stan', 'zz']) {
+      const filtered = minimapRows(items, query).map(({ item }) => item.label);
+      expect(labels.filter((label) => matchRange(label, query) !== null)).toEqual(filtered);
+    }
   });
 });
 
