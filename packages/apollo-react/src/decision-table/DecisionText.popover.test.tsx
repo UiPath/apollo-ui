@@ -8,6 +8,8 @@ import {
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_POLICY,
   MULTI_SENTENCE_RULES,
+  COLUMN_TYPES,
+  type FixtureType,
 } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
@@ -49,10 +51,10 @@ const Host = ({
   cancelsLater = false,
 }: {
   initial: SentenceValueId;
-  valueField: DecisionTextEdit['valueField'];
-  renderEditor?: DecisionTextEdit['renderEditor'];
-  onCommit: DecisionTextEdit['onCommit'];
-  onCancel?: DecisionTextEdit['onCancel'];
+  valueField: DecisionTextEdit<FixtureType>['valueField'];
+  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
+  onCommit: DecisionTextEdit<FixtureType>['onCommit'];
+  onCancel?: DecisionTextEdit<FixtureType>['onCancel'];
   refusesCancel?: boolean;
   cancelsLater?: boolean;
 }) => {
@@ -66,6 +68,7 @@ const Host = ({
         hitPolicy: MULTI_SENTENCE_POLICY,
       }}
       hitPolicies={HIT_POLICIES}
+      columnTypes={COLUMN_TYPES}
       ariaLabel="Rules"
       dataTestId="nl"
       mode={{
@@ -369,7 +372,7 @@ describe('DecisionText value popover settling', () => {
 
 describe('DecisionText expression editor contract', () => {
   const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
-  const open = (editor: DecisionTextEdit['renderEditor'], onCommit = vi.fn()) => {
+  const open = (editor: DecisionTextEdit<FixtureType>['renderEditor'], onCommit = vi.fn()) => {
     render(
       <Host
         initial={at('m3', 'score')}
@@ -770,38 +773,43 @@ describe('DecisionText popover Escape during composition', () => {
 describe('DecisionText popover Escape for a host that cancels later or refuses', () => {
   const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
   const closeEvents = () => act(() => new Promise((resolve) => setTimeout(resolve)));
-  const editors: [string, DecisionTextEdit['renderEditor'], boolean, () => HTMLElement, number][] =
+  const editors: [
+    string,
+    DecisionTextEdit<FixtureType>['renderEditor'],
+    boolean,
+    () => HTMLElement,
+    number,
+  ][] = [
+    ['the value field', undefined, false, () => popover().getByRole('textbox'), 1],
     [
-      ['the value field', undefined, false, () => popover().getByRole('textbox'), 1],
-      [
-        'the default expression editor',
-        undefined,
-        true,
-        () => screen.getByTestId('nl-editor-expression-editor'),
-        1,
-      ],
-      [
-        'a host editor that leaves Escape to the popover',
-        (props) => <ContractEditor props={props} prevents />,
-        true,
-        domInput,
-        1,
-      ],
-      [
-        'a host editor that owns Escape and prevents it',
-        (props) => <ContractEditor props={props} ownsKeys={() => true} />,
-        true,
-        domInput,
-        0,
-      ],
-      [
-        'a host editor that owns Escape without preventing it',
-        (props) => <ContractEditor props={props} ownsKeys={() => true} prevents={false} />,
-        true,
-        domInput,
-        1,
-      ],
-    ];
+      'the default expression editor',
+      undefined,
+      true,
+      () => screen.getByTestId('nl-editor-expression-editor'),
+      1,
+    ],
+    [
+      'a host editor that leaves Escape to the popover',
+      (props) => <ContractEditor props={props} prevents />,
+      true,
+      domInput,
+      1,
+    ],
+    [
+      'a host editor that owns Escape and prevents it',
+      (props) => <ContractEditor props={props} ownsKeys={() => true} />,
+      true,
+      domInput,
+      0,
+    ],
+    [
+      'a host editor that owns Escape without preventing it',
+      (props) => <ContractEditor props={props} ownsKeys={() => true} prevents={false} />,
+      true,
+      domInput,
+      1,
+    ],
+  ];
   it.each(
     (['cancels later', 'refuses'] as const).flatMap((host) =>
       editors.map((editor) => [host, ...editor] as const)
@@ -834,7 +842,12 @@ describe('DecisionText popover Escape for a host that cancels later or refuses',
 describe('DecisionText expression editor during composition', () => {
   const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
   const keys: string[] = [];
-  const editors: [string, DecisionTextEdit['renderEditor'], () => HTMLElement, string[]][] = [
+  const editors: [
+    string,
+    DecisionTextEdit<FixtureType>['renderEditor'],
+    () => HTMLElement,
+    string[],
+  ][] = [
     ['the default editor', undefined, () => screen.getByTestId('nl-editor-expression-editor'), []],
     [
       'a host editor',

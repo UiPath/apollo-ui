@@ -1,11 +1,12 @@
 import { Input, Label } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useId, useState } from 'react';
-import { valueTypeIcon } from './bandColumns';
+import { useSafeLingui } from '../i18n/useSafeLingui';
+import { type ColumnTypeOption, columnTypeChoicesOf } from './columnTypes';
 import { isComposing } from './gridEvents';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
 import { PopoverHeader } from './PopoverHeader';
-import { PopoverSelect, type PopoverSelectOption } from './PopoverSelect';
+import { PopoverSelect } from './PopoverSelect';
 import {
   COLUMN_CODE_FIELD_CLASS,
   COLUMN_FIELD_CLASS,
@@ -16,42 +17,31 @@ import {
   POPOVER_ERROR_CLASS,
   POPOVER_FIELD_CLASS,
 } from './sentenceStyles';
-import type { SentenceBand, SentenceNameToken, SentenceValueType } from './sentenceTypes';
+import type { SentenceBand } from './sentenceTypes';
 
-/** What a band column's popover edits, from the host's column. */
-export interface ColumnField {
-  kind: SentenceNameToken['kind'];
-  label: string;
-  /** An input's expression, or an output's name. */
-  binding: string;
-  /** Whether Apply waits for a binding. */
-  required: boolean;
-  /** The id of the column's type; one the host's types lack is offered as itself. */
-  typeRef: string;
-  /** The column's allowed values as text; without it the popover offers none. */
-  allowedValues?: string;
-}
+/** What a band column's popover edits, from the host's column: an input's expression, or an output's name and whether it needs one, with the host's type of it. */
+export type ColumnFieldData<Type> =
+  | { kind: 'input'; label: string; expression: string; type: Type; allowedValues: string }
+  | {
+      kind: 'output';
+      label: string;
+      name: string;
+      nameRequired: boolean;
+      type: Type;
+      allowedValues: string;
+    };
 
-/** The fields Apply changed, trimmed. */
-export type ColumnChange = Partial<
-  Pick<ColumnField, 'label' | 'binding' | 'typeRef' | 'allowedValues'>
->;
+/** The fields Apply changed, trimmed; a field left out is unchanged. */
+export type ColumnChange<Type> =
+  | { kind: 'input'; label?: string; expression?: string; type?: Type; allowedValues?: string }
+  | { kind: 'output'; label?: string; name?: string; type?: Type; allowedValues?: string };
 
-/** A type the popover offers. */
-export interface ColumnTypeOption extends PopoverSelectOption {
-  /** The type's kind of value; without `icon`, its glyph. */
-  type?: SentenceValueType;
-  /** The allowed values' placeholder while this type is picked, e.g. "e.g. 10, 20". */
-  allowedValuesPlaceholder?: string;
-}
-
-/** Editing of a band's input or output from its pill. */
-export interface ColumnEdit {
-  /** What the open pill's popover edits; called only while it is open. */
-  field: (columnId: string) => ColumnField;
-  types: readonly ColumnTypeOption[];
+/** Editing of a band's input or output from its pill, in the host's column types. */
+export interface ColumnEdit<Type> {
+  /** What the open pill's popover edits, or undefined to close it; called only while it is open. */
+  field: (columnId: string) => ColumnFieldData<Type> | undefined;
   /** Apply's changes; not called when nothing changed. */
-  onCommit: (columnId: string, change: ColumnChange) => void;
+  onCommit: (columnId: string, change: ColumnChange<Type>) => void;
   /** Opens the host's full properties of the column; without it the popover offers none. */
   onMoreProperties?: (columnId: string) => void;
 }
@@ -74,11 +64,11 @@ export interface ColumnPopoverLabels extends PopoverFooterLabels {
   moreProperties: string;
 }
 
-export interface ColumnPopoverProps {
+export interface ColumnPopoverProps<Type> {
   column: SentenceBand['columns'][number];
-  field: ColumnField;
-  types: ColumnEdit['types'];
-  onApply: (change: ColumnChange) => void;
+  field: ColumnFieldData<Type>;
+  types: readonly ColumnTypeOption<Type>[];
+  onApply: (change: ColumnChange<Type>) => void;
   onCancel: () => void;
   onMoreProperties: (() => void) | undefined;
   labels: ColumnPopoverLabels;
@@ -88,27 +78,44 @@ export interface ColumnPopoverProps {
 
 /** The popover's title for a column of its kind. */
 export const columnTitle = (
-  kind: ColumnField['kind'],
+  kind: ColumnFieldData<unknown>['kind'],
   name: string,
   labels: ColumnPopoverLabels
 ): string => (kind === 'input' ? labels.inputColumn(name) : labels.outputColumn(name));
 
-/** The fields a draft changed from the column's, trimmed. */
-const changeOf = (field: ColumnField, draft: Required<ColumnChange>): ColumnChange => {
-  const change: ColumnChange = {};
-  if (draft.label.trim() !== field.label.trim()) change.label = draft.label.trim();
-  if (draft.binding.trim() !== field.binding.trim()) change.binding = draft.binding.trim();
-  if (draft.typeRef !== field.typeRef) change.typeRef = draft.typeRef;
-  if (
-    field.allowedValues !== undefined &&
-    draft.allowedValues.trim() !== field.allowedValues.trim()
-  )
-    change.allowedValues = draft.allowedValues.trim();
-  return change;
+interface ColumnDraft<Type> {
+  label: string;
+  binding: string;
+  type: Type;
+  allowedValues: string;
+}
+
+const bindingOf = (field: ColumnFieldData<unknown>): string =>
+  field.kind === 'input' ? field.expression : field.name;
+
+const changed = (draft: string, held: string): string | undefined =>
+  draft.trim() === held.trim() ? undefined : draft.trim();
+
+/** The fields a draft changed from the column's, trimmed; nothing changed when it has only its kind. */
+const changeOf = <Type,>(
+  field: ColumnFieldData<Type>,
+  draft: ColumnDraft<Type>
+): ColumnChange<Type> => {
+  const label = changed(draft.label, field.label);
+  const allowedValues = changed(draft.allowedValues, field.allowedValues);
+  const common = {
+    ...(label === undefined ? {} : { label }),
+    ...(draft.type === field.type ? {} : { type: draft.type }),
+    ...(allowedValues === undefined ? {} : { allowedValues }),
+  };
+  const binding = changed(draft.binding, bindingOf(field));
+  if (field.kind === 'input')
+    return { kind: 'input', ...common, ...(binding === undefined ? {} : { expression: binding }) };
+  return { kind: 'output', ...common, ...(binding === undefined ? {} : { name: binding }) };
 };
 
 /** A band column's editor: its label, its expression or name, its type and allowed values. Enter in a field applies. */
-export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
+export const ColumnPopover = <Type,>({
   column,
   field,
   types,
@@ -117,26 +124,28 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
   onMoreProperties,
   labels,
   dataTestId,
-}) => {
+}: ColumnPopoverProps<Type>): React.JSX.Element => {
   const id = useId();
+  const { _ } = useSafeLingui();
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
-  const [draft, setDraft] = useState<Required<ColumnChange>>({
+  const [draft, setDraft] = useState<ColumnDraft<Type>>({
     label: field.label,
-    binding: field.binding,
-    typeRef: field.typeRef,
-    allowedValues: field.allowedValues ?? '',
+    binding: bindingOf(field),
+    type: field.type,
+    allowedValues: field.allowedValues,
   });
-  const missing = field.required && draft.binding.trim() === '';
+  const required = field.kind === 'input' || field.nameRequired;
+  const missing = required && draft.binding.trim() === '';
   const missingLabel = draft.label.trim() === '';
-  const typed = types.map((type) => ({ ...type, icon: type.icon ?? valueTypeIcon(type.type) }));
-  const options = types.some((type) => type.id === field.typeRef)
-    ? typed
-    : [{ id: field.typeRef, label: field.typeRef }, ...typed];
-  const placeholder = types.find((type) => type.id === draft.typeRef)?.allowedValuesPlaceholder;
-  const set = (key: keyof ColumnChange) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value;
-    setDraft((current) => ({ ...current, [key]: value }));
-  };
+  const choices = columnTypeChoicesOf(types, _);
+  const place = types.findIndex((option) => option.type === draft.type);
+  const placeholder = choices.find((_choice, index) => index === place)?.allowedValuesPlaceholder;
+  const set =
+    (key: 'label' | 'binding' | 'allowedValues') =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.currentTarget.value;
+      setDraft((current) => ({ ...current, [key]: value }));
+    };
   const apply = () => {
     if (!missing && !missingLabel) onApply(changeOf(field, draft));
   };
@@ -187,7 +196,7 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
       <div className={COLUMN_FIELD_CLASS}>
         <Label htmlFor={`${id}-binding`} className={COLUMN_FIELD_LABEL_CLASS}>
           {bindingLabel}
-          {field.required && (
+          {required && (
             <span aria-hidden className={COLUMN_REQUIRED_CLASS}>
               {' *'}
             </span>
@@ -196,7 +205,7 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
         <Input
           id={`${id}-binding`}
           className={COLUMN_CODE_FIELD_CLASS}
-          aria-required={field.required}
+          aria-required={required}
           aria-invalid={missing}
           aria-describedby={missing ? `${id}-missing` : undefined}
           value={draft.binding}
@@ -215,33 +224,34 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
         </Label>
         <PopoverSelect
           id={`${id}-type`}
-          value={draft.typeRef}
-          options={options}
-          onChange={(typeRef) => setDraft((current) => ({ ...current, typeRef }))}
+          value={String(place)}
+          options={choices}
+          onChange={(picked) => {
+            const option = types.find((_option, index) => String(index) === picked);
+            if (option) setDraft((current) => ({ ...current, type: option.type }));
+          }}
           container={root}
           label={labels.dataType}
           dataTestId={`${dataTestId}-type`}
         />
       </div>
-      {field.allowedValues !== undefined && (
-        <div className={COLUMN_FIELD_CLASS}>
-          <Label htmlFor={`${id}-allowed`} className={COLUMN_FIELD_LABEL_CLASS}>
-            {labels.allowedValues}
-          </Label>
-          <Input
-            id={`${id}-allowed`}
-            className={COLUMN_CODE_FIELD_CLASS}
-            placeholder={placeholder}
-            aria-describedby={`${id}-allowed-hint`}
-            value={draft.allowedValues}
-            onChange={set('allowedValues')}
-            data-testid={`${dataTestId}-allowed-values`}
-          />
-          <span id={`${id}-allowed-hint`} className={COLUMN_HINT_CLASS}>
-            {labels.allowedValuesHint}
-          </span>
-        </div>
-      )}
+      <div className={COLUMN_FIELD_CLASS}>
+        <Label htmlFor={`${id}-allowed`} className={COLUMN_FIELD_LABEL_CLASS}>
+          {labels.allowedValues}
+        </Label>
+        <Input
+          id={`${id}-allowed`}
+          className={COLUMN_CODE_FIELD_CLASS}
+          placeholder={placeholder}
+          aria-describedby={`${id}-allowed-hint`}
+          value={draft.allowedValues}
+          onChange={set('allowedValues')}
+          data-testid={`${dataTestId}-allowed-values`}
+        />
+        <span id={`${id}-allowed-hint`} className={COLUMN_HINT_CLASS}>
+          {labels.allowedValuesHint}
+        </span>
+      </div>
       <PopoverFooter
         links={links}
         onCancel={onCancel}

@@ -8,7 +8,7 @@ import {
   DIFF_RULES,
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
-import { HIT_POLICIES } from './__fixtures__/sentences.fixtures';
+import { HIT_POLICIES, COLUMN_TYPES } from './__fixtures__/sentences.fixtures';
 import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
 import { withRemoved } from './decisionTextDiff';
@@ -107,6 +107,7 @@ describe('DecisionText diff edges', () => {
       <DecisionText
         table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
+        columnTypes={COLUMN_TYPES}
         numbered
         ariaLabel="Rules"
         dataTestId="nl"
@@ -134,6 +135,7 @@ describe('DecisionText diff review edges', () => {
       <DecisionText
         table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
+        columnTypes={COLUMN_TYPES}
         ariaLabel="Rules"
         dataTestId="nl"
         mode={{

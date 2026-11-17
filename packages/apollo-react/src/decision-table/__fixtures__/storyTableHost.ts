@@ -1,4 +1,4 @@
-import type { ColumnChange, ColumnField, ColumnTypeOption } from '../ColumnPopover';
+import type { ColumnChange, ColumnFieldData } from '../ColumnPopover';
 import type { DecisionGraphDecisionNode } from '../decisionGraphTypes';
 import type { DecisionTextEdit } from '../decisionTextTypes';
 import { policyHeaderOf } from '../hitPolicyMenu';
@@ -19,7 +19,7 @@ import {
   tableWithRuleAt,
   tableWithValue,
 } from './editableSentences.fixtures';
-import { type FixturePick, HIT_POLICIES } from './sentences.fixtures';
+import { type FixturePick, type FixtureType, HIT_POLICIES } from './sentences.fixtures';
 import type { FixtureMode } from './textMode';
 
 /** How much of the view a host wires: rules only, then selection, then editing. */
@@ -67,29 +67,15 @@ const ALLOWED_VALUES: Readonly<Record<string, readonly string[]>> = {
   channel: ['"web"', '"app"', '"branch"'],
 };
 
-/** The types the story's column popover offers, each with its kind of value and an example of its values. */
-const COLUMN_TYPES: readonly ColumnTypeOption[] = [
-  { id: 'string', label: 'Text', type: 'text', allowedValuesPlaceholder: 'e.g. "web", "app"' },
-  {
-    id: 'number',
-    label: 'Number',
-    type: 'number',
-    allowedValuesPlaceholder: 'e.g. 10, 20, [30..40]',
-  },
-  { id: 'boolean', label: 'Boolean', type: 'boolean', allowedValuesPlaceholder: 'e.g. true' },
-  { id: 'date', label: 'Date', type: 'date', allowedValuesPlaceholder: 'e.g. date("2026-01-01")' },
-];
-
 /** What the story host keeps of a column beyond its name, once the column popover changes it. */
-export type ColumnEdits = Readonly<Record<string, Omit<ColumnChange, 'label'>>>;
+export type ColumnEdits = Readonly<
+  Record<string, { binding?: string; type?: FixtureType; allowedValues?: string }>
+>;
 
 export const NO_COLUMN_EDITS: ColumnEdits = {};
 
-const columnTypeOf = (columnId: string, edits: ColumnEdits = NO_COLUMN_EDITS): string =>
-  edits[columnId]?.typeRef ?? (NUMERIC_INPUTS.has(columnId) ? 'number' : 'string');
-
-const columnValueType = (columnId: string, edits?: ColumnEdits) =>
-  COLUMN_TYPES.find((type) => type.id === columnTypeOf(columnId, edits))?.type;
+const columnTypeOf = (columnId: string, edits: ColumnEdits = NO_COLUMN_EDITS): FixtureType =>
+  edits[columnId]?.type ?? (NUMERIC_INPUTS.has(columnId) ? 'number' : 'text');
 
 const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[] | undefined => {
   const text = edits[columnId]?.allowedValues;
@@ -101,8 +87,8 @@ const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[
 /** The table's columns, each with its kind of value. */
 const typedColumns = (table: EditableTable, edits?: ColumnEdits) => {
   const { inputs, outputs } = tableColumns(table);
-  const typed = (columns: readonly SentenceBandColumn[]) =>
-    columns.map((column) => ({ ...column, type: columnValueType(column.id, edits) }));
+  const typed = (columns: readonly SentenceBandColumn<FixtureType>[]) =>
+    columns.map((column) => ({ ...column, type: columnTypeOf(column.id, edits) }));
   return { inputs: typed(inputs), outputs: typed(outputs) };
 };
 
@@ -111,16 +97,26 @@ const storyColumnField = (
   table: EditableTable,
   edits: ColumnEdits,
   columnId: string
-): ColumnField => {
-  const output = isOutput(table, columnId);
+): ColumnFieldData<FixtureType> => {
   const column = [...table.inputs, ...table.outputs].find((candidate) => candidate.id === columnId);
-  return {
-    kind: output ? 'output' : 'input',
+  const common = {
     label: column?.name ?? columnId,
-    binding: edits[columnId]?.binding ?? columnId,
-    required: !output,
-    typeRef: columnTypeOf(columnId, edits),
+    type: columnTypeOf(columnId, edits),
     allowedValues: edits[columnId]?.allowedValues ?? (ALLOWED_VALUES[columnId] ?? []).join(', '),
+  };
+  const binding = edits[columnId]?.binding ?? columnId;
+  return isOutput(table, columnId)
+    ? { kind: 'output', ...common, name: binding, nameRequired: false }
+    : { kind: 'input', ...common, expression: binding };
+};
+
+const columnEditOf = ({ label: _label, ...change }: ColumnChange<FixtureType>) => {
+  const { type, allowedValues } = change;
+  const binding = change.kind === 'input' ? change.expression : change.name;
+  return {
+    ...(binding === undefined ? {} : { binding }),
+    ...(type === undefined ? {} : { type }),
+    ...(allowedValues === undefined ? {} : { allowedValues }),
   };
 };
 
@@ -196,7 +192,7 @@ export interface StoryTableHost {
   onChange: (next: StoryTable) => void;
   onSelect: (selection: SentenceSelection | null) => void;
   onMoreProperties: (columnId: string) => void;
-  renderEditor?: DecisionTextEdit['renderEditor'];
+  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
 }
 
 /** A story host's props for an editable view of one table: its typed columns, hit policy and its change, every edit action, and Add rule. */
@@ -216,7 +212,7 @@ export const storyTableProps = ({
   };
   const columnName = (columnId: string) =>
     [...table.inputs, ...table.outputs].find((column) => column.id === columnId)?.name ?? columnId;
-  const edit: DecisionTextEdit = {
+  const edit: DecisionTextEdit<FixtureType> = {
     renderEditor,
     onCommit: (value, commit) => {
       const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
@@ -235,12 +231,15 @@ export const storyTableProps = ({
     valueField: (cell) => storyValueField(table, columnEdits, cell),
     column: {
       field: (columnId) => storyColumnField(table, columnEdits, columnId),
-      types: COLUMN_TYPES,
-      onCommit: (columnId, { label, ...rest }) =>
+      onCommit: (columnId, change) =>
         onChange({
           ...state,
-          table: label === undefined ? table : tableWithColumnName(table, columnId, label),
-          columnEdits: { ...columnEdits, [columnId]: { ...columnEdits[columnId], ...rest } },
+          table:
+            change.label === undefined ? table : tableWithColumnName(table, columnId, change.label),
+          columnEdits: {
+            ...columnEdits,
+            [columnId]: { ...columnEdits[columnId], ...columnEditOf(change) },
+          },
         }),
       onMoreProperties,
     },

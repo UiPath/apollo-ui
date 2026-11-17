@@ -33,26 +33,26 @@ export interface DiffRemovedRule {
 
 /** An added or changed input or output. */
 export interface DiffColumnChange {
-  columnId: SentenceBandColumn['id'];
+  columnId: SentenceCellId['columnId'];
   change: Exclude<DiffChange, 'delete'>;
 }
 
 /** A removed input or output, shown in its band under the column `after` names, or first when null. */
-export interface DiffRemovedColumn {
-  column: SentenceBandColumn;
+export interface DiffRemovedColumn<Type> {
+  column: SentenceBandColumn<Type>;
   kind: SentenceNameToken['kind'];
-  after: SentenceBandColumn['id'] | null;
+  after: SentenceCellId['columnId'] | null;
 }
 
 /** What changed between two versions of the table, shown on the after-state `rules`. */
-export interface DecisionTextDiff<Policy, Total> {
+export interface DecisionTextDiff<Policy, Total, Type> {
   /** `compact` folds runs of unchanged rules; `full` shows every rule. */
   mode: 'compact' | 'full';
   rules?: readonly DiffRuleChange[];
   values?: readonly DiffValueChange[];
   removedRules?: readonly DiffRemovedRule[];
   columns?: readonly DiffColumnChange[];
-  removedColumns?: readonly DiffRemovedColumn[];
+  removedColumns?: readonly DiffRemovedColumn<Type>[];
   hitPolicy?: { before: HitPolicyPick<Policy, Total>; after: HitPolicyPick<Policy, Total> };
 }
 
@@ -301,7 +301,10 @@ const tokenDiffsOf = (
 /** Each rule's change and number, removed rules in place, and in compact mode each long unchanged run folded unless `expanded` holds its first rule. */
 export const diffRowsOf = (
   rules: readonly SentenceRule[],
-  diff: Pick<DecisionTextDiff<unknown, unknown>, 'mode' | 'rules' | 'values' | 'removedRules'>,
+  diff: Pick<
+    DecisionTextDiff<unknown, unknown, unknown>,
+    'mode' | 'rules' | 'values' | 'removedRules'
+  >,
   nameOf: (columnId: string) => SentenceNameToken,
   expanded: ReadonlySet<string>
 ): DiffRows => {
@@ -399,15 +402,18 @@ export const diffRowsOf = (
 };
 
 /** The inputs and outputs with the removed ones in place, and each column's change by id. */
-export const diffColumnsOf = <Policy, Total>(
-  inputs: readonly SentenceBandColumn[],
-  outputs: readonly SentenceBandColumn[],
-  diff: DecisionTextDiff<Policy, Total>
+export const diffColumnsOf = <Policy, Total, Type>(
+  inputs: readonly SentenceBandColumn<Type>[],
+  outputs: readonly SentenceBandColumn<Type>[],
+  diff: DecisionTextDiff<Policy, Total, Type>
 ) => {
   const changes = new Map<string, DiffChange>(
     (diff.columns ?? []).map(({ columnId, change }) => [columnId, change])
   );
-  const bandOf = (columns: readonly SentenceBandColumn[], kind: DiffRemovedColumn['kind']) =>
+  const bandOf = (
+    columns: readonly SentenceBandColumn<Type>[],
+    kind: DiffRemovedColumn<Type>['kind']
+  ) =>
     withRemoved(
       columns,
       (diff.removedColumns ?? []).filter((removed) => removed.kind === kind),

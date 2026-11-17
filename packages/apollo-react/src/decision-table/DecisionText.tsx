@@ -5,6 +5,7 @@ import { useSafeLingui } from '../i18n/useSafeLingui';
 import { AddRuleFooter } from './AddRuleFooter';
 import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
+import { type ColumnTypeOption, glyphOf } from './columnTypes';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
 import { type DecisionTextDiff, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
 import type { DecisionTextEdit } from './decisionTextTypes';
@@ -49,29 +50,31 @@ import { ValueEditorOverlay } from './ValueEditorOverlay';
 /** A click or key asks for this selection, or null on Escape. */
 type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
 
-/** How the view is used: read, select rules and cells the host keeps, edit them and the host's hit policy, or read what changed. */
-export type DecisionTextMode<Policy, Total> =
+/** How the view is used: read, select rules and cells the host keeps, edit them in the host's hit policies and column types, or read what changed. */
+export type DecisionTextMode<Policy, Total, Type> =
   | { kind: 'read'; selected: SentenceSelection | null }
   | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
   | {
       kind: 'edit';
       selected: SentenceSelection | null;
       onSelect: SelectHandler;
-      edit: DecisionTextEdit;
+      edit: DecisionTextEdit<Type>;
       onPolicyChange: (picked: HitPolicyPick<Policy, Total>) => void;
       onAddRule: () => void;
     }
   | {
       kind: 'diff';
       /** What changed, painted on the table's after-state rules; a new diff closes every fold, so memoize it. */
-      diff: DecisionTextDiff<Policy, Total>;
+      diff: DecisionTextDiff<Policy, Total, Type>;
     };
 
-export interface DecisionTextProps<Policy, Total> {
-  table: DecisionTextTable<Policy, Total>;
-  mode: DecisionTextMode<Policy, Total>;
+export interface DecisionTextProps<Policy, Total, Type> {
+  table: DecisionTextTable<Policy, Total, Type>;
+  mode: DecisionTextMode<Policy, Total, Type>;
   /** The host's hit policies, grouped and worded, which the header and its picker show. */
   hitPolicies: HitPolicyCatalog<Policy, Total>;
+  /** The host's column types, worded and each told apart by `===`, which the band glyphs and the column popover's select show. */
+  columnTypes: readonly ColumnTypeOption<Type>[];
   /** Shows each rule's 1-based position before its heading. */
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
@@ -110,11 +113,12 @@ const nameTokensOf = (bands: readonly SentenceBand[]) => {
     names.get(columnId) ?? { kind: 'input', columnId, text: columnId };
 };
 
-/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's hit policies. */
-export const DecisionText = <Policy, Total>({
+/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's hit policies and column types. */
+export const DecisionText = <Policy, Total, Type>({
   table,
   mode,
   hitPolicies,
+  columnTypes,
   numbered = false,
   marks = EMPTY_MARKS,
   onCellHover,
@@ -125,7 +129,7 @@ export const DecisionText = <Policy, Total>({
   containerProps,
   dataTestId,
   children,
-}: DecisionTextProps<Policy, Total>): React.JSX.Element => {
+}: DecisionTextProps<Policy, Total, Type>): React.JSX.Element => {
   const { rules, inputs, outputs } = table;
   const selected = mode.kind === 'diff' ? null : mode.selected;
   const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
@@ -156,8 +160,14 @@ export const DecisionText = <Policy, Total>({
     [inputs, outputs, diff]
   );
   const bands = useMemo(
-    () => bandsOf(columns?.inputs ?? inputs, columns?.outputs ?? outputs, labels),
-    [columns, inputs, outputs, labels]
+    () =>
+      bandsOf(
+        columns?.inputs ?? inputs,
+        columns?.outputs ?? outputs,
+        (type) => glyphOf(columnTypes, type),
+        labels
+      ),
+    [columns, inputs, outputs, columnTypes, labels]
   );
   const [folds, setFolds] = useState({ diff, expanded: NO_FOLDS });
   const expanded = folds.diff === diff ? folds.expanded : NO_FOLDS;
@@ -206,7 +216,7 @@ export const DecisionText = <Policy, Total>({
     stopTabbable: selectable && ruleWindow.selectedRow !== null,
   });
   const columnEditing = useColumnEditing({
-    column: edit?.column,
+    column: mode.kind === 'edit' ? mode.edit.column : undefined,
     bands,
     container: ruleWindow.container,
   });
@@ -304,11 +314,11 @@ export const DecisionText = <Policy, Total>({
           dataTestId={dataTestId}
         />
       )}
-      {columnEditing.kind === 'edit' && columnEditing.editor && edit?.column && (
+      {columnEditing.kind === 'edit' && columnEditing.editor && edit && (
         <ColumnEditorOverlay
           key={columnEditing.editor.column.id}
           editor={columnEditing.editor}
-          edit={edit.column}
+          types={columnTypes}
           labels={edit.labels}
           container={ruleWindow.container}
           id={columnEditorId}

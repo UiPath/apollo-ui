@@ -11,7 +11,7 @@ import {
   CHANGED_CHIP_CLASS,
   POPOVER_ICON_CLASS,
 } from './sentenceStyles';
-import type { SentenceBandColumn } from './sentenceTypes';
+import type { BandColumnView } from './sentenceTypes';
 
 /** The `Mark` fields a band column paints; a field added to `Mark` fails to compile here until the column decides on it. */
 const columnMark = (mark: Mark | undefined) =>
@@ -23,7 +23,7 @@ const columnMark = (mark: Mark | undefined) =>
   }) satisfies MarkFields<Mark>;
 
 export interface BandColumnProps {
-  column: SentenceBandColumn;
+  column: BandColumnView;
   mark: Mark | undefined;
   badgeId: string;
   /** The column's change in a diff. */

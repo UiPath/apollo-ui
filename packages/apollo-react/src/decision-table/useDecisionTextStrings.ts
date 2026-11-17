@@ -164,7 +164,7 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
       allowedValues: _({ id: 'decision-text.allowed_values', message: 'Allowed values' }),
       allowedValuesHint: _({
         id: 'decision-text.allowed_values_hint',
-        message: 'Separate values with commas.',
+        message: 'Separate values with commas, and write each one as the example shows.',
       }),
       moreProperties: _({ id: 'decision-text.more_properties', message: 'More properties' }),
     }),

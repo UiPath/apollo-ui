@@ -49,9 +49,12 @@ import {
   manySentenceRules,
   NO_COLUMNS,
   valueList,
+  COLUMN_TYPES,
+  type FixtureType,
 } from './__fixtures__/sentences.fixtures';
 import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
-import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
+import type { ColumnEdit, ColumnFieldData } from './ColumnPopover';
+import type { ColumnTypeOption } from './columnTypes';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
@@ -59,7 +62,6 @@ import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type {
-  SentenceBandColumn,
   SentenceCellId,
   SentencePart,
   SentenceRule,
@@ -206,13 +208,13 @@ const rect = (left: number, right: number): DOMRect => ({
 
 interface EditSpies {
   onSelect: Mock<NonNullable<ViewProps['onSelect']>>;
-  onStartEdit: Mock<NonNullable<DecisionTextEdit['onStartEdit']>>;
+  onStartEdit: Mock<NonNullable<DecisionTextEdit<FixtureType>['onStartEdit']>>;
   onCommit: Mock<
     (value: SentenceValueId, text: string, move: CellCommitMove, operator?: string) => void
   >;
-  onCommitValues: Mock<DecisionTextEdit['onCommit']>;
-  onCancel: Mock<NonNullable<DecisionTextEdit['onCancel']>>;
-  onClearCell: Mock<DecisionTextEdit['onClearCell']>;
+  onCommitValues: Mock<DecisionTextEdit<FixtureType>['onCommit']>;
+  onCancel: Mock<NonNullable<DecisionTextEdit<FixtureType>['onCancel']>>;
+  onClearCell: Mock<DecisionTextEdit<FixtureType>['onClearCell']>;
 }
 
 interface EditingHostProps extends Omit<SelectableProps, 'initial' | 'onSelect' | 'edit'> {
@@ -220,10 +222,10 @@ interface EditingHostProps extends Omit<SelectableProps, 'initial' | 'onSelect' 
   initial?: SentenceSelection | null;
   initialEditing?: SentenceValueId | null;
   refuse?: boolean;
-  renderEditor?: DecisionTextEdit['renderEditor'];
-  valueField?: DecisionTextEdit['valueField'];
-  column?: DecisionTextEdit['column'];
-  inputIds?: DecisionTextEdit['inputIds'];
+  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
+  valueField?: DecisionTextEdit<FixtureType>['valueField'];
+  column?: DecisionTextEdit<FixtureType>['column'];
+  inputIds?: DecisionTextEdit<FixtureType>['inputIds'];
 }
 
 const EditingHost = ({
@@ -299,7 +301,9 @@ const valuesOf = (commit: ValueCommit) => {
   if (commit.kind !== 'values') throw new Error(`an expression commit, ${commit.text}`);
   return commit.values;
 };
-const editWith = (overrides: Partial<DecisionTextEdit> = {}): DecisionTextEdit => ({
+const editWith = (
+  overrides: Partial<DecisionTextEdit<FixtureType>> = {}
+): DecisionTextEdit<FixtureType> => ({
   editing: null,
   onStartEdit: vi.fn(),
   onCommit: vi.fn(),
@@ -327,15 +331,11 @@ describe('DecisionText', () => {
 
     it("draws a band column's type glyph before its name, hidden from its accessible name", () => {
       renderView({
-        inputs: [
-          {
-            id: 'score',
-            name: 'Credit Score',
-            type: 'number',
-            icon: <svg data-testid="type-icon" />,
-          },
-        ],
+        inputs: [{ id: 'score', name: 'Credit Score', type: 'number' }],
         outputs: [],
+        columnTypes: [
+          { type: 'number', label: 'Number', icon: <svg data-testid="type-icon" />, example: '1' },
+        ],
       });
       const column = within(screen.getByTestId('nl-bands')).getByRole('listitem');
       expect(column.firstElementChild).toHaveAttribute('aria-hidden', 'true');
@@ -343,14 +343,12 @@ describe('DecisionText', () => {
       expect(column).toHaveTextContent(/^Credit Score$/);
     });
 
-    it("draws a column's glyph from its kind of value, and none for a kind the view lacks", () => {
-      const unknownType = 'toString' as unknown as SentenceBandColumn['type'];
+    it("draws a column's glyph from the host's types, and any value's for a type they lack", () => {
       renderView({
         inputs: [
           { id: 'score', name: 'Credit Score', type: 'number' },
-          { id: 'start', name: 'Start', type: 'dateTime' },
-          { id: 'flag', name: 'Flag', type: unknownType },
-          { id: 'note', name: 'Note' },
+          { id: 'note', name: 'Note', type: 'text' },
+          { id: 'start', name: 'Start', type: 'date' },
         ],
       });
       const glyphOf = (columnId: string) =>
@@ -359,11 +357,10 @@ describe('DecisionText', () => {
           .querySelector(`[data-column-id="${columnId}"]`)
           ?.querySelector('svg')
           ?.getAttribute('class');
-      expect(['score', 'start', 'flag', 'note'].map(glyphOf)).toEqual([
+      expect(['score', 'note', 'start'].map(glyphOf)).toEqual([
         'lucide lucide-hash',
-        'lucide lucide-calendar-clock',
-        undefined,
-        undefined,
+        'lucide lucide-type',
+        'lucide lucide-braces',
       ]);
     });
 
@@ -1580,7 +1577,10 @@ describe('DecisionText', () => {
       resize(first);
       expect(inputs()).toHaveAttribute('tabindex', '0');
       setWidths(inputs(), 400, 400);
-      const grown = [...MULTI_SENTENCE_COLUMNS.inputs, { id: 'age', name: 'Age' }];
+      const grown = [
+        ...MULTI_SENTENCE_COLUMNS.inputs,
+        { id: 'age', name: 'Age', type: 'number' as const },
+      ];
       await act(async () => rerender(view({ inputs: grown })));
       expect(inputs()).not.toHaveAttribute('tabindex');
       setWidths(inputs(), 700, 400);
@@ -1600,11 +1600,10 @@ describe('DecisionText', () => {
             field: () => ({
               kind: 'input',
               label: 'x',
-              binding: 'x',
-              required: false,
-              typeRef: 't',
+              expression: 'x',
+              type: 'text',
+              allowedValues: '',
             }),
-            types: [],
             onCommit: vi.fn(),
           },
         }),
@@ -2735,6 +2734,7 @@ describe('DecisionText', () => {
             hitPolicy: GRID_SENTENCE_POLICY,
           }}
           hitPolicies={HIT_POLICIES}
+          columnTypes={COLUMN_TYPES}
           ariaLabel="Rules"
           dataTestId="nl"
           // @ts-expect-error
@@ -3323,7 +3323,10 @@ describe('DecisionText', () => {
     const r3Channel: SentenceValueId = { rowId: 'r3', columnId: 'channel', index: 0 };
     const CHANNEL_COLUMNS = {
       ...GRID_SENTENCE_COLUMNS,
-      inputs: [...GRID_SENTENCE_COLUMNS.inputs, { id: 'channel', name: 'channel' }],
+      inputs: [
+        ...GRID_SENTENCE_COLUMNS.inputs,
+        { id: 'channel', name: 'channel', type: 'text' as const },
+      ],
     };
     const field = (cell: SentenceCellId): ValueField => {
       if (cell.columnId === 'risk') return { allowedValues: RISKS };
@@ -4472,37 +4475,28 @@ describe('DecisionText', () => {
       uninstallInertness = installModalInertness();
     });
     afterAll(() => uninstallInertness());
-    const TYPES: ColumnTypeOption[] = [
-      {
-        id: 'number',
-        label: 'Number',
-        icon: <svg data-testid="number-icon" />,
-        allowedValuesPlaceholder: 'e.g. 10, 20',
-      },
-      { id: 'string', label: 'Text', allowedValuesPlaceholder: 'e.g. "a", "b"' },
-    ];
-    const AGE_FIELD: ColumnField = {
+    const AGE_FIELD: ColumnFieldData<FixtureType> = {
       kind: 'input',
       label: 'age',
-      binding: 'applicant.age',
-      required: true,
-      typeRef: 'string',
+      expression: 'applicant.age',
+      type: 'text',
       allowedValues: '',
     };
-    const FIELDS: Record<string, ColumnField> = {
+    const FIELDS: Record<string, ColumnFieldData<FixtureType>> = {
       age: AGE_FIELD,
       risk: {
         kind: 'output',
         label: 'risk',
-        binding: 'risk',
-        required: false,
-        typeRef: 'string',
+        name: 'risk',
+        nameRequired: false,
+        type: 'text',
         allowedValues: '"high", "low"',
       },
     };
-    const columnEdit = (overrides: Partial<ColumnEdit> = {}): ColumnEdit => ({
+    const columnEdit = (
+      overrides: Partial<ColumnEdit<FixtureType>> = {}
+    ): ColumnEdit<FixtureType> => ({
       field: (columnId) => FIELDS[columnId] ?? AGE_FIELD,
-      types: TYPES,
       onCommit: vi.fn(),
       ...overrides,
     });
@@ -4513,7 +4507,7 @@ describe('DecisionText', () => {
     const field = (name: string) => inPopover().getByRole('textbox', { name }) as HTMLInputElement;
     const typeSelect = () => inPopover().getByRole('combobox', { name: 'Data type' });
     const action = (name: string) => inPopover().getByRole('button', { name });
-    const renderColumns = (overrides: Partial<ColumnEdit> = {}) => {
+    const renderColumns = (overrides: Partial<ColumnEdit<FixtureType>> = {}) => {
       const column = columnEdit(overrides);
       renderEditing({ column });
       return column;
@@ -4537,8 +4531,10 @@ describe('DecisionText', () => {
       expect(field('Input expression')).toBeRequired();
       expect(typeSelect()).toHaveTextContent('Text');
       expect(field('Allowed values')).toHaveValue('');
-      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. "a", "b"');
-      expect(field('Allowed values')).toHaveAccessibleDescription('Separate values with commas.');
+      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. "web", "app"');
+      expect(field('Allowed values')).toHaveAccessibleDescription(
+        'Separate values with commas, and write each one as the example shows.'
+      );
       expect(
         inPopover()
           .getAllByRole('button')
@@ -4548,23 +4544,18 @@ describe('DecisionText', () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
-    it("titles a column's popover with its kind of value's glyph, and offers each type with its own", () => {
+    it("titles a column's popover with its type's glyph, and offers each of the host's types with its own", () => {
       renderEditing({
-        column: columnEdit({
-          types: [
-            { id: 'string', label: 'Text', type: 'text' },
-            { ...TYPES[0], id: 'number', label: 'Number', type: 'number' },
-          ],
-        }),
+        column: columnEdit({ field: () => ({ ...AGE_FIELD, type: 'number' }) }),
         inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
       });
       fireEvent.click(pill('age'));
       const header = inPopover().getByText('Input · age').parentElement;
       expect(header?.querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-hash');
-      expect(typeSelect().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-type');
+      expect(typeSelect().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-hash');
       fireEvent.click(typeSelect());
-      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
-      expect(typeSelect().querySelector('svg')).toBe(inPopover().getByTestId('number-icon'));
+      fireEvent.click(screen.getByRole('option', { name: 'Text' }));
+      expect(typeSelect().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-type');
     });
 
     it("names an output's binding as its output name, required only when the host says so", () => {
@@ -4598,11 +4589,10 @@ describe('DecisionText', () => {
       fireEvent.click(typeSelect());
       fireEvent.click(screen.getByRole('option', { name: 'Number' }));
       expect(typeSelect()).toHaveTextContent('Number');
-      expect(inPopover().getByTestId('number-icon')).toBeInTheDocument();
       expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. 10, 20');
       fireEvent.click(action('Apply'));
       expect(vi.mocked(onCommit).mock.calls).toEqual([
-        ['age', { label: 'Age', typeRef: 'number' }],
+        ['age', { kind: 'input', label: 'Age', type: 'number' }],
       ]);
       expect(screen.queryByTestId('nl-column-editor')).toBeNull();
       expect(document.activeElement).toBe(pill('age'));
@@ -4617,7 +4607,7 @@ describe('DecisionText', () => {
       expect(onCommit).not.toHaveBeenCalled();
       fireEvent.keyDown(field('Allowed values'), { key: 'Enter' });
       expect(vi.mocked(onCommit).mock.calls).toEqual([
-        ['risk', { binding: 'riskLevel', allowedValues: '"high"' }],
+        ['risk', { kind: 'output', name: 'riskLevel', allowedValues: '"high"' }],
       ]);
       expect(document.activeElement).toBe(pill('risk'));
     });
@@ -4725,38 +4715,85 @@ describe('DecisionText', () => {
       expect(document.activeElement).not.toBe(pill('risk'));
     });
 
-    it("offers the column's own type when the host's types lack it, and no allowed values the host leaves out", () => {
-      renderColumns({
-        field: () => ({
-          kind: 'input',
-          label: 'age',
-          binding: 'age',
-          required: true,
-          typeRef: 'tPeriod',
-        }),
-      });
+    it("lets a column of a type the host's types lack pick one of them, with its allowed values", () => {
+      const { onCommit } = renderColumns({ field: () => ({ ...AGE_FIELD, type: 'date' }) });
       fireEvent.click(pill('age'));
-      expect(typeSelect()).toHaveTextContent('tPeriod');
-      expect(inPopover().queryByRole('textbox', { name: 'Allowed values' })).toBeNull();
-    });
-
-    it.each<[string, ColumnTypeOption[]]>([
-      ["the host's types", TYPES],
-      [
-        "the host's types without their empty or repeated ids",
-        [{ id: '', label: 'Any' }, ...TYPES, { id: 'number', label: 'Number again' }],
-      ],
-    ])('lets an untyped column pick a type from %s', (_, types) => {
-      const { onCommit } = renderColumns({ field: () => ({ ...AGE_FIELD, typeRef: '' }), types });
-      fireEvent.click(pill('age'));
+      expect(field('Allowed values')).toHaveValue('');
       fireEvent.click(typeSelect());
       expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
-        'Number',
         'Text',
+        'Number',
       ]);
       fireEvent.click(screen.getByRole('option', { name: 'Number' }));
       fireEvent.click(action('Apply'));
-      expect(vi.mocked(onCommit).mock.calls).toEqual([['age', { typeRef: 'number' }]]);
+      expect(vi.mocked(onCommit).mock.calls).toEqual([['age', { kind: 'input', type: 'number' }]]);
+    });
+
+    it.each<[string, readonly ColumnTypeOption<FixtureType>[]]>([
+      ['reordered', [...COLUMN_TYPES].reverse()],
+      ['shrunk', COLUMN_TYPES.slice(0, 1)],
+    ])("keeps the column's type while the host's types are %s under the open popover, committing nothing unchanged", (_, types) => {
+      const column = columnEdit();
+      const { rerender, onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell } =
+        renderEditing({ column });
+      fireEvent.click(pill('age'));
+      rerender(
+        <EditingHost
+          spies={{ onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell }}
+          column={column}
+          columnTypes={types}
+        />
+      );
+      expect(typeSelect()).toHaveTextContent('Text');
+      fireEvent.click(action('Apply'));
+      expect(column.onCommit).not.toHaveBeenCalled();
+    });
+
+    it('commits a type picked before the host shrinks its types, and nothing for a repeat of the held one', () => {
+      const repeated: ColumnTypeOption<FixtureType>[] = [
+        ...COLUMN_TYPES,
+        { type: 'text', label: 'Text again', icon: null, example: 'x' },
+      ];
+      const column = columnEdit();
+      const { rerender, onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell } =
+        renderEditing({ column, columnTypes: repeated });
+      fireEvent.click(pill('age'));
+      fireEvent.click(typeSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'Text again' }));
+      fireEvent.click(action('Apply'));
+      expect(column.onCommit).not.toHaveBeenCalled();
+      fireEvent.click(pill('age'));
+      fireEvent.click(typeSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      rerender(
+        <EditingHost
+          spies={{ onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell }}
+          column={column}
+          columnTypes={COLUMN_TYPES.slice(0, 1)}
+        />
+      );
+      fireEvent.click(action('Apply'));
+      expect(vi.mocked(column.onCommit).mock.calls).toEqual([
+        ['age', { kind: 'input', type: 'number' }],
+      ]);
+    });
+
+    it('closes once the host has no field for the open column', () => {
+      const fields = { current: true };
+      const column = columnEdit({ field: () => (fields.current ? AGE_FIELD : undefined) });
+      const { rerender, onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell } =
+        renderEditing({ column });
+      fireEvent.click(pill('age'));
+      expect(popover()).toBeInTheDocument();
+      fields.current = false;
+      rerender(
+        <EditingHost
+          spies={{ onSelect, onStartEdit, onCommit, onCommitValues, onCancel, onClearCell }}
+          column={column}
+        />
+      );
+      expect(screen.queryByTestId('nl-column-editor')).toBeNull();
+      expect(pill('age')).toHaveAttribute('aria-expanded', 'false');
     });
 
     it('closes once the column is gone', () => {
@@ -5128,7 +5165,7 @@ describe('DecisionText', () => {
   describe('rule menu', () => {
     const actions = (rowId: string) =>
       within(card(rowId)).getByRole('button', { name: `Rule ${rowId.slice(1)} actions` });
-    const renderMenus = (overrides: Partial<DecisionTextEdit> = {}) =>
+    const renderMenus = (overrides: Partial<DecisionTextEdit<FixtureType>> = {}) =>
       render(
         view({
           rules: GRID_SENTENCE_RULES,
@@ -5147,7 +5184,7 @@ describe('DecisionText', () => {
       change: RuleChange;
       next?: string;
       initial?: string;
-      onDeleteRule?: DecisionTextEdit['onDeleteRule'];
+      onDeleteRule?: DecisionTextEdit<FixtureType>['onDeleteRule'];
       late?: boolean;
     }
     const RuleChangeHost = ({
@@ -5846,6 +5883,7 @@ describe('DecisionText', () => {
         <DecisionText
           table={{ rules: linkedRules, ...GRID_SENTENCE_COLUMNS, hitPolicy: GRID_SENTENCE_POLICY }}
           hitPolicies={HIT_POLICIES}
+          columnTypes={COLUMN_TYPES}
           ariaLabel="Rules"
           dataTestId="nl"
           onOpenDecision={vi.fn()}

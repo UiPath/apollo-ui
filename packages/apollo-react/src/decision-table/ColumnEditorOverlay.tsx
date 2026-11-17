@@ -1,18 +1,14 @@
 import type React from 'react';
-import {
-  type ColumnEdit,
-  ColumnPopover,
-  type ColumnPopoverLabels,
-  columnTitle,
-} from './ColumnPopover';
+import { ColumnPopover, type ColumnPopoverLabels, columnTitle } from './ColumnPopover';
+import type { ColumnTypeOption } from './columnTypes';
 import { EditorOverlay } from './EditorOverlay';
 import { COLUMN_EDITOR_CLASS } from './sentenceStyles';
 import type { OpenColumnEditor } from './useColumnEditing';
 import type { RuleWindow } from './useRuleWindow';
 
-export interface ColumnEditorOverlayProps {
-  editor: OpenColumnEditor;
-  edit: ColumnEdit;
+export interface ColumnEditorOverlayProps<Type> {
+  editor: OpenColumnEditor<Type>;
+  types: readonly ColumnTypeOption<Type>[];
   labels: ColumnPopoverLabels;
   container: RuleWindow['container'];
   id: string;
@@ -20,15 +16,15 @@ export interface ColumnEditorOverlayProps {
 }
 
 /** The open pill's popover, under its pill. */
-export const ColumnEditorOverlay: React.FC<ColumnEditorOverlayProps> = ({
+export const ColumnEditorOverlay = <Type,>({
   editor,
-  edit,
+  types,
   labels,
   container,
   id,
   dataTestId,
-}) => {
-  const field = edit.field(editor.column.id);
+}: ColumnEditorOverlayProps<Type>): React.JSX.Element => {
+  const { field } = editor;
   return (
     <EditorOverlay
       anchor={editor.anchor}
@@ -43,7 +39,7 @@ export const ColumnEditorOverlay: React.FC<ColumnEditorOverlayProps> = ({
       <ColumnPopover
         column={editor.column}
         field={field}
-        types={edit.types}
+        types={types}
         onApply={editor.onApply}
         onCancel={editor.onCancel}
         onMoreProperties={editor.onMoreProperties}

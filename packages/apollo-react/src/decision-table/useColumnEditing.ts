@@ -6,26 +6,29 @@ import type { SentenceBand } from './sentenceTypes';
 import type { EditorAnchor } from './useEditorPlacement';
 import type { RuleWindow } from './useRuleWindow';
 
-export interface ColumnEditingParams {
-  column: ColumnEdit | undefined;
+export interface ColumnEditingParams<Type> {
+  column: ColumnEdit<Type> | undefined;
   bands: readonly SentenceBand[];
   container: RuleWindow['container'];
 }
 
 /** The open pill's column and the actions that settle its popover. */
-export interface OpenColumnEditor
-  extends Pick<ColumnPopoverProps, 'column' | 'onApply' | 'onCancel' | 'onMoreProperties'> {
+export interface OpenColumnEditor<Type>
+  extends Pick<
+    ColumnPopoverProps<Type>,
+    'column' | 'field' | 'onApply' | 'onCancel' | 'onMoreProperties'
+  > {
   anchor: EditorAnchor;
   onDismiss: NonNullable<EditorOverlayProps['onPressOutside']>;
 }
 
 /** Plain pills, or the pills' toggle, which opens a popover or closes it from its own pill, the column whose popover is open, or null, and its editor. */
-export type ColumnEditing =
+export type ColumnEditing<Type> =
   | { kind: 'plain' }
   | {
       kind: 'edit';
       pills: Pick<Extract<BandMode, { kind: 'edit' }>, 'onToggle' | 'openColumnId'>;
-      editor: OpenColumnEditor | undefined;
+      editor: OpenColumnEditor<Type> | undefined;
     };
 
 const pillOf = (section: HTMLElement | null, columnId: string): HTMLElement | undefined =>
@@ -34,18 +37,19 @@ const pillOf = (section: HTMLElement | null, columnId: string): HTMLElement | un
     ?.querySelector<HTMLElement>('button') ?? undefined;
 
 /** Which band column's popover is open; Apply, Cancel and Escape return focus to its pill, a press outside leaves it where it lands. */
-export const useColumnEditing = ({
+export const useColumnEditing = <Type>({
   column,
   bands,
   container,
-}: ColumnEditingParams): ColumnEditing => {
+}: ColumnEditingParams<Type>): ColumnEditing<Type> => {
   const [openId, setOpenId] = useState<string | null>(null);
   const refocusRef = useRef<string | null>(null);
   const open =
     column && openId !== null
       ? bands.flatMap((band) => band.columns).find((candidate) => candidate.id === openId)
       : undefined;
-  if (openId !== null && !open) setOpenId(null);
+  const field = column && open ? column.field(open.id) : undefined;
+  if (openId !== null && !field) setOpenId(null);
 
   useLayoutEffect(() => {
     const columnId = refocusRef.current;
@@ -58,13 +62,18 @@ export const useColumnEditing = ({
     refocusRef.current = refocus ? columnId : null;
     setOpenId(null);
   };
-  const editorOf = (edit: ColumnEdit, shown: OpenColumnEditor['column']): OpenColumnEditor => {
+  const editorOf = (
+    edit: ColumnEdit<Type>,
+    shown: OpenColumnEditor<Type>['column'],
+    shownField: OpenColumnEditor<Type>['field']
+  ): OpenColumnEditor<Type> => {
     const { onMoreProperties } = edit;
     return {
       column: shown,
+      field: shownField,
       anchor: (section) => pillOf(section, shown.id),
       onApply: (change) => {
-        if (Object.keys(change).length > 0) edit.onCommit(shown.id, change);
+        if (Object.keys(change).some((key) => key !== 'kind')) edit.onCommit(shown.id, change);
         close(shown.id, true);
       },
       onCancel: () => close(shown.id, true),
@@ -83,8 +92,8 @@ export const useColumnEditing = ({
     kind: 'edit',
     pills: {
       onToggle: (columnId) => setOpenId((current) => (current === columnId ? null : columnId)),
-      openColumnId: open ? open.id : null,
+      openColumnId: open && field ? open.id : null,
     },
-    editor: open ? editorOf(column, open) : undefined,
+    editor: open && field ? editorOf(column, open, field) : undefined,
   };
 };
