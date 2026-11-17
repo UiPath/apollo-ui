@@ -12,7 +12,12 @@ import {
   tableOf,
 } from './__fixtures__/decisionGraph.fixtures';
 import { tableColumns, wordedRules } from './__fixtures__/editableSentences.fixtures';
-import { GRID_SENTENCE_POLICY, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
+import {
+  GRID_SENTENCE_POLICY,
+  HIT_POLICIES,
+  COLUMN_TYPES,
+  type FixtureType,
+} from './__fixtures__/sentences.fixtures';
 import { modeOf } from './__fixtures__/textMode';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
@@ -31,11 +36,12 @@ const textBody = (
   scroll: DecisionTextScroll,
   selected: SentenceSelection | null = null,
   onSelect?: (selection: SentenceSelection | null) => void,
-  edit?: DecisionTextEdit
+  edit?: DecisionTextEdit<FixtureType>
 ) => (
   <DecisionText
     table={{ rules: RULES, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
     hitPolicies={HIT_POLICIES}
+    columnTypes={COLUMN_TYPES}
     ariaLabel={`Rules of ${decisionId}`}
     dataTestId={`text-${decisionId}`}
     scroll={scroll}
@@ -329,7 +335,7 @@ describe('DecisionGraphText', () => {
   it('tells the host which decision it folds, and not the ones the host folds', async () => {
     const onCancel = vi.fn();
     const editing: SentenceValueId = { rowId: 'r1', columnId: 'age', index: 0 };
-    const edit: DecisionTextEdit = {
+    const edit: DecisionTextEdit<FixtureType> = {
       editing,
       onCommit: vi.fn(),
       onCancel,
@@ -453,6 +459,7 @@ describe('DecisionGraphText', () => {
             <DecisionText
               table={{ rules: rules, ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
               hitPolicies={HIT_POLICIES}
+              columnTypes={COLUMN_TYPES}
               ariaLabel={`Rules of ${id}`}
               dataTestId={`text-${id}`}
               scroll={scroll}

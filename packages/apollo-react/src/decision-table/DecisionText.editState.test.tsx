@@ -10,7 +10,12 @@ import {
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
 import { installEscapeCloseRequest, pressOutside } from './__fixtures__/modalDialog';
-import { GRID_SENTENCE_POLICY, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
+import {
+  GRID_SENTENCE_POLICY,
+  HIT_POLICIES,
+  COLUMN_TYPES,
+  type FixtureType,
+} from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
@@ -37,13 +42,13 @@ const numbersOnly: Answer = (commit) => {
 
 interface HostProps {
   answer?: Answer;
-  addInput?: DecisionTextEdit['onAddInput'];
+  addInput?: DecisionTextEdit<FixtureType>['onAddInput'];
   /** The host keeps `editing`, starting here; undefined leaves it to the view. */
   controlled?: SentenceValueId | null;
   /** Whether a controlled host also closes the editor on a refusal. */
   closesOnRefusal?: boolean;
-  onCommit?: DecisionTextEdit['onCommit'];
-  valueField?: DecisionTextEdit['valueField'];
+  onCommit?: DecisionTextEdit<FixtureType>['onCommit'];
+  valueField?: DecisionTextEdit<FixtureType>['valueField'];
   editable?: boolean;
 }
 
@@ -60,7 +65,7 @@ const Host = ({
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   const [editing, setEditing] = useState(controlled ?? null);
   const hostKeeps = controlled !== undefined;
-  const edit: DecisionTextEdit = {
+  const edit: DecisionTextEdit<FixtureType> = {
     ...(hostKeeps ? { editing, onStartEdit: setEditing, onCancel: () => setEditing(null) } : {}),
     valueField,
     onCommit: (value, commit, move) => {
@@ -90,6 +95,7 @@ const Host = ({
     <DecisionText
       table={{ rules: wordedRules(table), ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
       hitPolicies={HIT_POLICIES}
+      columnTypes={COLUMN_TYPES}
       ariaLabel="Rules"
       dataTestId="nl"
       mode={

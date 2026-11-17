@@ -4,8 +4,9 @@
 // (`GridLabels`). The drag and insert titles are the table's own, from its `decision-table`
 // catalog (see `ApI18nProvider`).
 
-export type { ColumnChange, ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
+export type { ColumnChange, ColumnEdit, ColumnFieldData } from './ColumnPopover';
 export type { SizedColumn } from './columnSizing';
+export type { ColumnTypeOption } from './columnTypes';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
@@ -101,7 +102,6 @@ export type {
   SentenceToken,
   SentenceValueId,
   SentenceValueToken,
-  SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
 export { usePressDrag } from './useDragReorder';

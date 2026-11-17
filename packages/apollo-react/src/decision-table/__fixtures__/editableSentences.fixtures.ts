@@ -11,7 +11,7 @@ import type { RangeEnds, ValueCommit } from '../valueTypes';
 import type { SentenceColumns } from './sentences.fixtures';
 
 /** A column of the story table. */
-type EditableColumn = Pick<SentenceBandColumn, 'id' | 'name'>;
+type EditableColumn = Pick<SentenceBandColumn<unknown>, 'id' | 'name'>;
 
 /** An input of the story table, and the decision that produces it when another one does. */
 type EditableInput = EditableColumn &
@@ -101,8 +101,8 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
 
 /** The table's inputs and outputs. */
 export const tableColumns = ({ inputs, outputs }: EditableTable): SentenceColumns => ({
-  inputs,
-  outputs,
+  inputs: inputs.map(({ id, name }) => ({ id, name, type: 'text' })),
+  outputs: outputs.map(({ id, name }) => ({ id, name, type: 'text' })),
 });
 
 /** Whether a column of the table is one of its outputs. */

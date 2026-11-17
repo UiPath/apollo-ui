@@ -27,8 +27,8 @@ export interface DecisionTextEditLabels
   setValue: string;
 }
 
-/** Editing on the cards, the grid's cell-editing contract addressed by value; omit it for a read-only view. */
-export interface DecisionTextEdit extends RuleMenuActions {
+/** Editing on the cards, the grid's cell-editing contract addressed by value, in the host's column types; omit it for a read-only view. */
+export interface DecisionTextEdit<Type> extends RuleMenuActions {
   /** The value whose editor is open, or null, addressed by ids as `selected` is; without it the view keeps which one is open. */
   editing?: SentenceValueId | null;
   onStartEdit?: (value: SentenceValueId) => void;
@@ -41,13 +41,16 @@ export interface DecisionTextEdit extends RuleMenuActions {
   /** The host's expression editor, which the popover's Edit expression swaps in for its fields on the whole condition, where `valueField` gives the condition's `expression` or the value is the whole condition; without it the popover's own text field. */
   renderEditor?: ValuePopoverProps['renderEditor'];
   /** Editing of a band's input or output from its pill; without it the pills stay plain. */
-  column?: ColumnEdit;
+  column?: ColumnEdit<Type>;
   /** A condition's remove action, or Delete or Backspace on a selected value: the grid's clear, for one cell. */
   onClearCell: (cell: SentenceCellId) => void;
 }
 
+/** The host's edit of its cards and rules, without its column edit. */
+export type CellEdit = Omit<DecisionTextEdit<unknown>, 'column'>;
+
 /** The host's edit as the view runs it, with which value is open and every string settled. */
-export type ViewEdit = Omit<DecisionTextEdit, 'labels'> &
-  Required<Pick<DecisionTextEdit, 'editing' | 'onStartEdit' | 'onCancel'>> & {
+export type ViewEdit = Omit<CellEdit, 'labels'> &
+  Required<Pick<CellEdit, 'editing' | 'onStartEdit' | 'onCancel'>> & {
     labels: DecisionTextEditLabels;
   };

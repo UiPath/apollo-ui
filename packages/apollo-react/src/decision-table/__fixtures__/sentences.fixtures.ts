@@ -1,3 +1,6 @@
+import { Hash, Type as TextGlyph } from 'lucide-react';
+import { createElement } from 'react';
+import type { ColumnTypeOption } from '../columnTypes';
 import type { HitPolicyCatalog, HitPolicyPick } from '../hitPolicyMenu';
 import type {
   DecisionTextTable,
@@ -28,13 +31,25 @@ const line = (name: SentenceNameToken, ...parts: SentencePart[]): SentenceLine =
 });
 
 /** A view's input and output columns. */
-export type SentenceColumns = Pick<DecisionTextTable<unknown, unknown>, 'inputs' | 'outputs'>;
+export type SentenceColumns = Pick<
+  DecisionTextTable<unknown, unknown, FixtureType>,
+  'inputs' | 'outputs'
+>;
+
+/** The fixtures' column types; the host's list lacks dates. */
+export type FixtureType = 'text' | 'number' | 'date';
+
+/** The column types a host offers. */
+export const COLUMN_TYPES: readonly ColumnTypeOption<FixtureType>[] = [
+  { type: 'text', label: 'Text', icon: createElement(TextGlyph), example: '"web", "app"' },
+  { type: 'number', label: 'Number', icon: createElement(Hash), example: '10, 20' },
+];
 
 /** No inputs and no outputs, so no bands. */
 export const NO_COLUMNS: SentenceColumns = { inputs: [], outputs: [] };
 
-const columnsOf = (names: readonly SentenceNameToken[]): SentenceBandColumn[] =>
-  names.map(({ columnId, text }) => ({ id: columnId, name: text }));
+const columnsOf = (names: readonly SentenceNameToken[]): SentenceBandColumn<FixtureType>[] =>
+  names.map(({ columnId, text }) => ({ id: columnId, name: text, type: 'text' }));
 
 /** Values as `{first}, {second}`. */
 export const valueList = (value: ValueMaker, texts: readonly string[]) =>

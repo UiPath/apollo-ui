@@ -1,6 +1,6 @@
 import type { GridCellEditorContext } from './gridTypes';
 import type { PopoverSelectOption } from './PopoverSelect';
-import type { SentenceBandColumn, SentenceValueId } from './sentenceTypes';
+import type { BandColumnView, SentenceValueId } from './sentenceTypes';
 
 /** What the popover asks of a mounted expression editor. */
 export interface ExpressionEditorHandle {
@@ -34,7 +34,7 @@ export interface RangeEnds {
 /** What a cell's popover offers, from the host's column. */
 export interface ValueField {
   /** The popover's type glyph; without it, its column's. */
-  icon?: SentenceBandColumn['icon'];
+  icon?: BandColumnView['icon'];
   /** A condition's operators; without them the popover shows none. */
   operators?: readonly ValueOperatorOption[];
   /** The id of the operator the condition has, or a new condition starts with; without it, the first of `operators`. */

@@ -21,7 +21,7 @@
   "decision-text.add_rule": "Add rule",
   "decision-text.add_value": "Add value",
   "decision-text.allowed_values": "Allowed values",
-  "decision-text.allowed_values_hint": "Separate values with commas.",
+  "decision-text.allowed_values_hint": "Separate values with commas, and write each one as the example shows.",
   "decision-text.apply": "Apply",
   "decision-text.band_inputs": "Inputs",
   "decision-text.band_outputs": "Outputs",

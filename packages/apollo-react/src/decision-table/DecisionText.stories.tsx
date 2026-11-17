@@ -24,6 +24,8 @@ import {
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_POLICY,
   manySentenceRules,
+  COLUMN_TYPES,
+  type FixtureType,
 } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
@@ -105,7 +107,7 @@ interface TableHostProps {
   validate?: boolean;
   marks?: TableMarks;
   headerMark?: FixtureTextProps['headerMark'];
-  renderEditor?: DecisionTextEdit['renderEditor'];
+  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
   frameClassName?: string;
 }
 
@@ -152,6 +154,7 @@ const TableHost = ({
       <DecisionText
         table={{ rules, ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
+        columnTypes={COLUMN_TYPES}
         ariaLabel="Rules"
         dataTestId="decision-text"
         numbered
@@ -440,6 +443,7 @@ const DiffHost = ({ mode, scenario }: DiffArgs) => {
         key={scenario}
         table={{ rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
+        columnTypes={COLUMN_TYPES}
         numbered
         marks={marks}
         ariaLabel="Rules"
@@ -490,6 +494,7 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
               hitPolicy: MULTI_SENTENCE_POLICY,
             }}
             hitPolicies={HIT_POLICIES}
+            columnTypes={COLUMN_TYPES}
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
             numbered

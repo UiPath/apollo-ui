@@ -14,6 +14,8 @@ import {
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_POLICY,
   manySentenceRules,
+  COLUMN_TYPES,
+  type FixtureType,
 } from './__fixtures__/sentences.fixtures';
 import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
@@ -410,7 +412,7 @@ describe('DecisionText unmount', () => {
   }) => {
     const [shown, setShown] = useState(true);
     const [rules, setRules] = useState(RULES);
-    const [editing, setEditing] = useState<DecisionTextEdit['editing']>(OPEN);
+    const [editing, setEditing] = useState<DecisionTextEdit<FixtureType>['editing']>(OPEN);
     if (!shown) return null;
     return (
       <>
@@ -608,6 +610,7 @@ describe('DecisionText mark clicks', () => {
         <DecisionText
           table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
           hitPolicies={HIT_POLICIES}
+          columnTypes={COLUMN_TYPES}
           ariaLabel="Rules"
           dataTestId="nl"
           mode={{ kind: 'diff', diff: { ...EVERY_STATE_DIFF, mode: 'full' } }}

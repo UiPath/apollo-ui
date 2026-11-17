@@ -38,41 +38,30 @@ export interface SentenceRule {
   lines: readonly SentenceLine[];
 }
 
-/** A kind of value a column holds, which picks its default type glyph. */
-export type SentenceValueType =
-  | 'text'
-  | 'number'
-  | 'boolean'
-  | 'date'
-  | 'time'
-  | 'dateTime'
-  | 'dayTimeDuration'
-  | 'yearMonthDuration'
-  | 'list'
-  | 'any';
-
-/** An input or output of a band, by its column's id and name. */
-export interface SentenceBandColumn {
+/** An input or output of a band, by its column's id and name, with the host's type of it. */
+export interface SentenceBandColumn<Type> {
   id: string;
   name: string;
-  /** The column's kind of value; without `icon`, its glyph. */
-  type?: SentenceValueType;
-  /** The column's type glyph, before its name, in place of its type's. */
-  icon?: React.ReactNode;
+  type: Type;
+}
+
+/** A band column as the view draws it, with its type's glyph. */
+export interface BandColumnView extends Omit<SentenceBandColumn<unknown>, 'type'> {
+  icon: React.ReactNode;
 }
 
 /** A labelled run of columns shown above the rules. */
 export interface SentenceBand {
   id: string;
   label: string;
-  columns: readonly SentenceBandColumn[];
+  columns: readonly BandColumnView[];
 }
 
 /** The decision table the view reads: its hit policy, its columns and its rules worded as sentences. */
-export interface DecisionTextTable<Policy, Total> {
+export interface DecisionTextTable<Policy, Total, Type> {
   hitPolicy: HitPolicyPick<Policy, Total>;
-  inputs: readonly SentenceBandColumn[];
-  outputs: readonly SentenceBandColumn[];
+  inputs: readonly SentenceBandColumn<Type>[];
+  outputs: readonly SentenceBandColumn<Type>[];
   rules: readonly SentenceRule[];
 }
 

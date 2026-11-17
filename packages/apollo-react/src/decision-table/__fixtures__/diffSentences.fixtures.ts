@@ -1,10 +1,16 @@
 import type { DecisionTextDiff, DiffRuleChange, DiffValueChange } from '../decisionTextDiff';
 import type { SentenceRule } from '../sentenceTypes';
-import { EDITABLE_TABLE, type EditableTable, wordedRules } from './editableSentences.fixtures';
+import {
+  EDITABLE_TABLE,
+  type EditableTable,
+  tableColumns,
+  wordedRules,
+} from './editableSentences.fixtures';
 import type {
   FixturePick,
   FixturePolicy,
   FixtureTotal,
+  FixtureType,
   SentenceColumns,
 } from './sentences.fixtures';
 
@@ -63,15 +69,12 @@ export const DIFF_TABLE: EditableTable = {
 
 export const DIFF_RULES: SentenceRule[] = wordedRules(DIFF_TABLE);
 
-export const DIFF_COLUMNS: SentenceColumns = {
-  inputs: DIFF_TABLE.inputs,
-  outputs: DIFF_TABLE.outputs,
-};
+export const DIFF_COLUMNS: SentenceColumns = tableColumns(DIFF_TABLE);
 
 export const DIFF_POLICY: FixturePick = { kind: 'policy', policy: 'unique' };
 
 /** A diff in the fixtures' hit policies. */
-export type FixtureDiff = DecisionTextDiff<FixturePolicy, FixtureTotal>;
+export type FixtureDiff = DecisionTextDiff<FixturePolicy, FixtureTotal, FixtureType>;
 
 /** The old table's rule for ages 70 to 74, which the change removed. */
 const REMOVED_RULE: SentenceRule = {

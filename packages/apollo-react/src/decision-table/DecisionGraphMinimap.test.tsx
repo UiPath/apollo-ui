@@ -14,7 +14,11 @@ import {
   tableColumns,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
-import { GRID_SENTENCE_POLICY, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
+import {
+  GRID_SENTENCE_POLICY,
+  HIT_POLICIES,
+  COLUMN_TYPES,
+} from './__fixtures__/sentences.fixtures';
 import { DecisionGraphMinimap } from './DecisionGraphMinimap';
 import { DecisionGraphText } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
@@ -377,6 +381,7 @@ describe('DecisionGraphText minimap', () => {
           <DecisionText
             table={{ rules: rules, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
             hitPolicies={HIT_POLICIES}
+            columnTypes={COLUMN_TYPES}
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
             scroll={scroll}

@@ -12,7 +12,7 @@ import {
   SINGLE_DECISION,
 } from './__fixtures__/decisionGraph.fixtures';
 import { type EditableTable, wordedRules } from './__fixtures__/editableSentences.fixtures';
-import { HIT_POLICIES } from './__fixtures__/sentences.fixtures';
+import { HIT_POLICIES, COLUMN_TYPES } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
   type StoryTable,
@@ -98,6 +98,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
       <DecisionText
         table={{ rules: rulesById.get(decisionId) ?? [], ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
+        columnTypes={COLUMN_TYPES}
         ariaLabel={`Rules of ${decisionId}`}
         dataTestId={`text-${decisionId}`}
         numbered
