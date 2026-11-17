@@ -40,23 +40,29 @@ export interface MinimapRow {
 export const isCurrent = (item: MinimapItem, currentDecisionId: string | null): boolean =>
   item.kind === 'decision' && item.decisionId === currentDecisionId;
 
-/** Where `query` sits in `text`, for highlighting and filtering alike; null when it does not. */
-export const matchRange = (text: string, query: string): { start: number; end: number } | null => {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return null;
+/** `text` case folded per code point, with the original offsets each folded unit came from. */
+const foldCase = (text: string) => {
   let folded = '';
   const startOf: number[] = [];
   const endOf: number[] = [];
   let offset = 0;
   for (const char of text) {
-    const lower = char.toLowerCase();
-    for (let i = 0; i < lower.length; i++) {
+    const fold = char.toLowerCase().toUpperCase().toLowerCase();
+    for (let i = 0; i < fold.length; i++) {
       startOf.push(offset);
       endOf.push(offset + char.length);
     }
-    folded += lower;
+    folded += fold;
     offset += char.length;
   }
+  return { folded, startOf, endOf };
+};
+
+/** Where `query` sits in `text`, for highlighting and filtering alike; null when it does not. */
+export const matchRange = (text: string, query: string): { start: number; end: number } | null => {
+  const needle = foldCase(query.trim()).folded;
+  if (!needle) return null;
+  const { folded, startOf, endOf } = foldCase(text);
   const at = folded.indexOf(needle);
   if (at < 0) return null;
   const start = startOf[at];
