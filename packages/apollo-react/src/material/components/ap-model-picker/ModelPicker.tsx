@@ -577,8 +577,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // A model the Community dialog saved, selected as soon as it appears in the catalog.
     // The user's own pick cancels it, so a late catalog refresh cannot override that pick.
     const [pendingSelection, setPendingSelection] = React.useState<ByoSavedModel | null>(null);
+    // Counts the user's own picks, so a save still refreshing when the user picks selects nothing.
+    const userPicks = React.useRef(0);
     const handleUserChange = React.useCallback(
       (model: DiscoveryModel) => {
+        userPicks.current += 1;
         setPendingSelection(null);
         onChange?.(model);
       },
@@ -686,6 +689,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     }, []);
     const handleCommunitySaved = React.useCallback(
       async (model: ByoSavedModel, edited: boolean) => {
+        const picksBefore = userPicks.current;
         notify?.(communitySavedMessage(i18n, model.name, edited), 'success');
         // A model saved in another folder than the one shown would never appear, so the
         // picker shows its folder; the folder switch refetches the catalog itself.
@@ -694,7 +698,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         if (showsOtherFolder) handleFolderChange(model.folderId);
         else if (selfFetchCtx) await refetchDiscovery();
         await onCustomModelSaved?.(model);
-        setPendingSelection(model);
+        if (userPicks.current === picksBefore) setPendingSelection(model);
       },
       [notify, i18n, folder, handleFolderChange, selfFetchCtx, refetchDiscovery, onCustomModelSaved]
     );

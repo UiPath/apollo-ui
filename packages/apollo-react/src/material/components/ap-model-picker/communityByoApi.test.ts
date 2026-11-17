@@ -640,6 +640,8 @@ describe('createCommunityByoApi', () => {
     });
 
     expect(result.ok).toBe(true);
+    // The model is listed where its configuration stays, not in the connection's folder.
+    expect(result.ok && result.value.folderId).toBe('old-folder');
     const put = calls.find((c) => c.method === 'PUT');
     // The other model keeps the configuration in its folder, and the old mappings go.
     expect(put?.body).toEqual({
