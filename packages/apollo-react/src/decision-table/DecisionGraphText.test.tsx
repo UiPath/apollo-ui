@@ -201,6 +201,13 @@ describe('DecisionGraphText', () => {
     expect(document.activeElement).toBe(link);
   });
 
+  it('lands a far reveal at once, so rule windows mounting on the way cannot stop it short', async () => {
+    render(graph());
+    await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
+    expect(scrollToSpy).toHaveBeenCalledTimes(1);
+    expect(scrollToSpy.mock.calls[0]?.[0]).not.toHaveProperty('behavior', 'smooth');
+  });
+
   it('brings an open decision to the top again from its link', async () => {
     render(graph({ expanded: new Set(['risk']) }));
     await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
