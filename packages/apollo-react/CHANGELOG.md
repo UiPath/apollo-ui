@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v7.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.25.0...@uipath/apollo-react@7.26.0) (2026-11-17)
+
+### Features
+
+* **apollo-react:** drop the text views' label override props [ECS-2139] ([6347966](https://github.com/UiPath/apollo-ui/commit/63479665d46c96bdcb8427035e757301e04aba09))
+* **apollo-react:** map the grid's selection to the text view and back [ECS-2139] ([cf4a795](https://github.com/UiPath/apollo-ui/commit/cf4a79573b7bbb4d203e5a70733dfb249d6f12d3))
+* **apollo-react:** pass the text view's mode as one tagged prop [ECS-2139] ([09fb639](https://github.com/UiPath/apollo-ui/commit/09fb639d7f06f977cb14eb3e1da192e385cf6b43))
+* **apollo-react:** tag a text selection as a rule or a cell [ECS-2139] ([ee78a81](https://github.com/UiPath/apollo-ui/commit/ee78a811b429b1ba2e631c3276936c8944a7190d))
+
 ## [@uipath/apollo-react-v7.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.24.1...@uipath/apollo-react@7.25.0) (2026-11-17)
 
 ### Features
