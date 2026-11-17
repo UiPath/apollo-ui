@@ -829,10 +829,8 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
       return (m: DiscoveryModel) => {
         const hasConfigurationId = !!m.byomDetails?.byoConfigurationId;
-        // The Community dialog edits a model the user added; a model that replaces a UiPath
-        // one is still edited in AI Trust Layer.
-        const editsInDialog =
-          editInDialog && hasConfigurationId && m.modelSubscriptionType === 'BYOMAdded';
+        // The Community dialog opens a model by its configuration.
+        const editsInDialog = editInDialog && hasConfigurationId;
         const onEdit = editsInDialog ? editInDialog : editInTrustLayer;
         // When the picker owns the DELETE it needs a configuration id to
         // target, so rows lacking one get edit only. A host-supplied
