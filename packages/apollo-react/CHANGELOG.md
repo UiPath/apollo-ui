@@ -1,3 +1,20 @@
+## [@uipath/apollo-react-v7.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.22.0...@uipath/apollo-react@7.23.0) (2026-11-17)
+
+### Features
+
+* **apollo-react:** let decision text size to its rules and scroll in an ancestor [ECS-2149] ([4df7911](https://github.com/UiPath/apollo-ui/commit/4df7911e0c6ce283b04ac835425406ae3d2fa13d))
+
+### Bug Fixes
+
+* **apollo-react:** cancel on unmount only an editor that is still unsettled [ECS-2149] ([64fd769](https://github.com/UiPath/apollo-ui/commit/64fd76981547bd052069b158874ffbaeaf602428))
+* **apollo-react:** hide the mark tooltip when anything holding the view scrolls [ECS-2149] ([a67191b](https://github.com/UiPath/apollo-ui/commit/a67191b538fb2c9e22bb6ec1965cc1f78f2df8b5))
+* **apollo-react:** resolve a percentage scroll-padding-top against the scrollport [ECS-2149] ([52526f6](https://github.com/UiPath/apollo-ui/commit/52526f6006248e2ccf9b1305ccfe3ca3d572f7c8))
+* **apollo-react:** reveal rules and stops in a named container with native scrollIntoView [ECS-2149] ([05586b2](https://github.com/UiPath/apollo-ui/commit/05586b20ad915202e7a8858a922ba6e827b42fbc))
+* **apollo-react:** rewindow when a decision text spacer enters the named container [ECS-2149] ([56de826](https://github.com/UiPath/apollo-ui/commit/56de82671207edf944ff79bd51a73aba80e16a9c))
+* **apollo-react:** take the scroll container from the host and leave unmount to it [ECS-2149] ([c1d51b4](https://github.com/UiPath/apollo-ui/commit/c1d51b463b80a2695877340dce3ee1751ad8f5dc))
+* **apollo-react:** track the window height on the page and settle reopened editors [ECS-2149] ([237bbaf](https://github.com/UiPath/apollo-ui/commit/237bbaf9ff811d9a3d4e798a7044b545eb03b3a6))
+* **apollo-react:** window decision text against the page when no ancestor scrolls [ECS-2149] ([9443398](https://github.com/UiPath/apollo-ui/commit/9443398f0813cfcbc5a25e0fb4f9e39582cc411f))
+
 ## [@uipath/apollo-react-v7.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.21.1...@uipath/apollo-react@7.22.0) (2026-11-16)
 
 ### Features
