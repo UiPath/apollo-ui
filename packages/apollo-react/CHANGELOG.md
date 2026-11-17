@@ -1,3 +1,23 @@
+## [@uipath/apollo-react-v7.24.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.24.0...@uipath/apollo-react@7.24.1) (2026-11-17)
+
+### Bug Fixes
+
+* **apollo-react:** keep a picked-up stage task's row named by the task ([6124870](https://github.com/UiPath/apollo-ui/commit/61248705509fd69ab2c3fa8c11784c5dea8acda0))
+* **apollo-react:** keep canvas node keys from acting on the stage from its tasks ([974af4c](https://github.com/UiPath/apollo-ui/commit/974af4c61e4152591a5030e7cbaa2658d4fd8fa1))
+* **apollo-react:** keep keyboard focus on a stage task while it is moved ([88ff18d](https://github.com/UiPath/apollo-ui/commit/88ff18db911c8c73ef4a1c4c8e86a365c6859839))
+* **apollo-react:** keep pointer drag and pan off stage tasks whether or not they reorder [MST-12262] ([d728a03](https://github.com/UiPath/apollo-ui/commit/d728a0327320baf9815381042cb326b0600f1087))
+* **apollo-react:** keep stage task group keys when a group gains or loses a task [MST-12262] ([4e7d9cc](https://github.com/UiPath/apollo-ui/commit/4e7d9cc93baef38c3ee376b870051ec498fd184e))
+* **apollo-react:** key stage task groups by their tasks so reordering keeps focus [MST-12262] ([812568c](https://github.com/UiPath/apollo-ui/commit/812568cae5b531a7e4ebc9c719cd6d0ab29c186a))
+* **apollo-react:** let keyboard users open tasks in a stage that cannot be reordered ([9aff20e](https://github.com/UiPath/apollo-ui/commit/9aff20e4e290b4edb2017cfa61344c8551671b28))
+* **apollo-react:** make a read-only stage task keyboard-openable only when the host opens tasks ([d96b477](https://github.com/UiPath/apollo-ui/commit/d96b47740ef7fe04f7af5c58b78a8e8ece44a8c0))
+* **apollo-react:** open a read-only stage task from its label instead of the card ([7037cde](https://github.com/UiPath/apollo-ui/commit/7037cde91f7adce1b8694460806d7946f761d4ad))
+* **apollo-react:** open a stage task once per keypress and show which task has focus ([55b3150](https://github.com/UiPath/apollo-ui/commit/55b3150348f25e04c5040707445bcb2f74bc4ebb))
+* **apollo-react:** open a stage task with Enter instead of picking it up ([4b93c2b](https://github.com/UiPath/apollo-ui/commit/4b93c2bfcd385fd17feda0e641f12b48f4680961))
+* **apollo-react:** pass the opening event to the stage onTaskClick ([4e6a2a1](https://github.com/UiPath/apollo-ui/commit/4e6a2a167a13a4267ee1f1b1bcd722cba48cf55b))
+* **apollo-react:** refocus a dropped stage task after a late host reorder [MST-12262] ([5b5c498](https://github.com/UiPath/apollo-ui/commit/5b5c4985f6b072dc6a70c77ac7e0d1ba1bb0f7c1))
+* **apollo-react:** refocus a stage task only after a focused drop commits a reorder [MST-12262] ([511a4c7](https://github.com/UiPath/apollo-ui/commit/511a4c792c1c339d0d7d8570567a53280f09ea00))
+* **apollo-react:** tell screen readers how to open and reorder a stage task ([69bf2d2](https://github.com/UiPath/apollo-ui/commit/69bf2d23693a68be8c3fbbc5e808005dca5de529))
+
 ## [@uipath/apollo-react-v7.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.23.0...@uipath/apollo-react@7.24.0) (2026-11-17)
 
 ### Features

@@ -1,26 +1,18 @@
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { closestCenter, DndContext, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { type CSSProperties, useCallback, useMemo } from 'react';
+import { type CSSProperties, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import {
   GroupModificationType,
   moveGroupDown,
   moveGroupUp,
 } from '../../../utils/GroupModificationUtils';
 import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageGroupKeys } from '../hooks/useStageGroupKeys';
+import { useStageTaskDragAccessibility } from '../hooks/useStageTaskDragAccessibility';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
+import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
 import {
   StageItemsList,
   StageItemsSection,
@@ -28,7 +20,7 @@ import {
   StageParallelLabel,
   StageTaskGroupContainer,
 } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskActivationEvent, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { DraggableTask } from './DraggableTask';
@@ -52,7 +44,7 @@ export const StageNodeSequentialTaskGroups = ({
   isReadOnly: boolean;
   selectedTaskId?: string;
   taskWidthStyle?: CSSProperties;
-  handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
+  handleTaskClick: (e: StageTaskActivationEvent, taskElementId: string) => void;
   handleReorderSequentialTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,
@@ -65,6 +57,7 @@ export const StageNodeSequentialTaskGroups = ({
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
     onTaskReorder,
+    onTaskClick,
     hideParallelOptions,
     loadingTaskIds,
     onTaskBreakpointToggle,
@@ -72,11 +65,25 @@ export const StageNodeSequentialTaskGroups = ({
   } = props;
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const isDragDisabled = !onTaskReorder || isReadOnly;
+  const isLabelOpenable = isDragDisabled && !!onTaskClick;
   const labels = useStageNodeLabels();
 
+  const groupKeys = useStageGroupKeys(sequentialTaskGroups);
   const sequentialTaskIds = useMemo(
     () => sequentialTaskGroups.flat().map((task) => task.id),
     [sequentialTaskGroups]
+  );
+
+  const listRef = useRef<HTMLDivElement>(null);
+  const focusedDragIdRef = useRef<string | undefined>(undefined);
+  const taskToRefocusRef = useRef<string | undefined>(undefined);
+
+  const commitDropReorder = useCallback(
+    (newTasks: StageTaskItem[][]) => {
+      taskToRefocusRef.current = focusedDragIdRef.current;
+      handleReorderSequentialTasks(newTasks);
+    },
+    [handleReorderSequentialTasks]
   );
 
   const {
@@ -84,12 +91,41 @@ export const StageNodeSequentialTaskGroups = ({
     isActiveTaskParallel,
     handleDragStart,
     handleDragMove,
-    handleDragEnd,
+    handleDragEnd: handleTaskDragEnd,
     handleDragCancel,
   } = useStageTaskDragHandler({
     taskGroups: sequentialTaskGroups,
-    onTaskReorder: handleReorderSequentialTasks,
+    onTaskReorder: commitDropReorder,
   });
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const taskId = String(event.active.id);
+      const hasFocus =
+        document.activeElement instanceof HTMLElement &&
+        document.activeElement.dataset.taskRowId === taskId;
+      focusedDragIdRef.current = hasFocus ? taskId : undefined;
+      handleTaskDragEnd(event);
+    },
+    [handleTaskDragEnd]
+  );
+
+  // A reorder can move the task's row under another parent, which remounts it and drops its focus.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: must run on each committed reorder
+  useLayoutEffect(() => {
+    const taskId = taskToRefocusRef.current;
+    if (!taskId) {
+      return;
+    }
+    taskToRefocusRef.current = undefined;
+    if (document.activeElement !== document.body) {
+      return;
+    }
+    const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-task-row-id]') ?? [];
+    Array.from(rows)
+      .find((row) => row.dataset.taskRowId === taskId)
+      ?.focus();
+  }, [sequentialTaskGroups]);
 
   const handleTaskRegroup = useCallback(
     (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => {
@@ -182,24 +218,22 @@ export const StageNodeSequentialTaskGroups = ({
     ]
   );
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  const sensors = useStageTaskSensors();
+  const dragAccessibility = useStageTaskDragAccessibility();
 
-  // Swallow the canvas drag/pan only while these rows are drag handles.
+  // Swallow the canvas drag/pan, and XYFlow's node keys (select, move, delete), so neither a
+  // pointer nor a key on a task acts on the stage.
   const taskList = (
-    <StageItemsList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
+    <StageItemsList
+      ref={listRef}
+      data-testid={`sequential-tasks-list-${id}`}
+      className="nodrag nopan nokey"
+    >
       {sequentialTaskGroups.map((taskGroup, groupIndex) => {
         const isParallel = taskGroup.length > 1;
+        // Keyed by an identity that survives membership changes, so rows stay mounted and keep focus.
         return (
-          <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
+          <Row key={groupKeys[groupIndex]} gap={Spacing.SpacingS}>
             {isParallel && <StageParallelBracket />}
             <StageTaskGroupContainer isParallel={isParallel}>
               {isParallel && (
@@ -229,6 +263,7 @@ export const StageNodeSequentialTaskGroups = ({
                     isParallel={isParallel}
                     onTaskClick={handleTaskClick}
                     isDragDisabled={isDragDisabled}
+                    isLabelOpenable={isLabelOpenable}
                     isTaskLoading={loadingTaskIds?.has(task.id)}
                     isReadOnly={isReadOnly}
                     onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
@@ -258,6 +293,7 @@ export const StageNodeSequentialTaskGroups = ({
         <DndContext
           collisionDetection={closestCenter}
           sensors={sensors}
+          accessibility={dragAccessibility}
           onDragStart={handleDragStart}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}

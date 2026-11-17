@@ -6,6 +6,7 @@ import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 import { TaskMockedChip } from './TaskMockedChip';
+import { useTaskLabelOpen } from './useTaskLabelOpen';
 
 const DraggableTaskComponent = ({
   task,
@@ -15,6 +16,7 @@ const DraggableTaskComponent = ({
   getContextMenuItems,
   onTaskClick,
   isDragDisabled,
+  isLabelOpenable = false,
   isTaskLoading,
   isReadOnly,
   onToggleBreakpoint,
@@ -32,6 +34,8 @@ const DraggableTaskComponent = ({
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     menuRef.current?.handleContextMenu(e);
   }, []);
+
+  const onOpenKeyDown = useTaskLabelOpen(task.id, onTaskClick, isLabelOpenable);
 
   const taskElement = (
     <StageItemPill
@@ -55,6 +59,7 @@ const DraggableTaskComponent = ({
       <TaskContent
         task={task}
         taskExecution={taskExecution}
+        onOpenKeyDown={onOpenKeyDown}
         trailingContent={
           getContextMenuItems ? (
             <TaskMenu
@@ -75,7 +80,12 @@ const DraggableTaskComponent = ({
   }
 
   return (
-    <SortableTaskRow taskId={task.id} isParallel={isParallel}>
+    <SortableTaskRow
+      taskId={task.id}
+      label={task.label}
+      isParallel={isParallel}
+      onActivate={onTaskClick}
+    >
       {taskElement}
     </SortableTaskRow>
   );

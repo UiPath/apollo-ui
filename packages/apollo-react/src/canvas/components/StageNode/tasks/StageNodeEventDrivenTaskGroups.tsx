@@ -1,21 +1,12 @@
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { closestCenter, DndContext } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { type CSSProperties, memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageTaskDragAccessibility } from '../hooks/useStageTaskDragAccessibility';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
+import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskActivationEvent, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { EventDrivenTaskItem } from './EventDrivenTask';
@@ -39,7 +30,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   isReadOnly: boolean;
   selectedTaskId?: string;
   taskWidthStyle?: CSSProperties;
-  handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
+  handleTaskClick: (e: StageTaskActivationEvent, taskElementId: string) => void;
   handleReorderEventDrivenTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,
@@ -53,6 +44,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
     onTaskReorder,
+    onTaskClick,
     loadingTaskIds,
     onTaskBreakpointToggle,
     getTaskContextMenuItems,
@@ -60,6 +52,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
+  const isLabelOpenable = isDragDisabled && !!onTaskClick;
   const rows = useMemo(() => eventDrivenTaskGroups.flat(), [eventDrivenTaskGroups]);
 
   const rowIds = useMemo(() => rows.map((task) => task.id), [rows]);
@@ -71,10 +64,8 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     allowRegrouping: false,
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
+  const sensors = useStageTaskSensors();
+  const dragAccessibility = useStageTaskDragAccessibility();
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -104,11 +95,12 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
   );
 
-  // Swallow the canvas drag/pan only while these rows are drag handles.
+  // Swallow the canvas drag/pan only while these rows are drag handles, and XYFlow's node keys
+  // (select, move, delete) always, so keys on a task never act on the stage.
   const taskList = (
     <StageItemsList
       data-testid={`event-driven-tasks-list-${id}`}
-      className={isDragDisabled ? undefined : 'nodrag nopan'}
+      className={isDragDisabled ? 'nokey' : 'nodrag nopan nokey'}
     >
       {rows.map((task) => {
         const taskExecution = execution?.taskStatus?.[task.id];
@@ -133,6 +125,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
             isTaskLoading={loadingTaskIds?.has(task.id)}
             isReadOnly={isReadOnly}
             onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+            isLabelOpenable={isLabelOpenable}
             getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
           />
         );
@@ -141,7 +134,12 @@ const StageNodeEventDrivenTaskGroupsInner = ({
         return isDragDisabled ? (
           row
         ) : (
-          <SortableTaskRow key={task.id} taskId={task.id}>
+          <SortableTaskRow
+            key={task.id}
+            taskId={task.id}
+            label={task.label}
+            onActivate={handleTaskClick}
+          >
             {row}
           </SortableTaskRow>
         );
@@ -164,6 +162,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
         <DndContext
           collisionDetection={closestCenter}
           sensors={sensors}
+          accessibility={dragAccessibility}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}

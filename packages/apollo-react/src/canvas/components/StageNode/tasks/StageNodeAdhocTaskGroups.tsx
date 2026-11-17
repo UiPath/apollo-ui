@@ -1,21 +1,12 @@
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { closestCenter, DndContext } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { type CSSProperties, memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageTaskDragAccessibility } from '../hooks/useStageTaskDragAccessibility';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
+import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskActivationEvent, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { AdhocTaskItem } from './AdhocTask';
@@ -39,7 +30,7 @@ const StageNodeAdhocTaskGroupsInner = ({
   isReadOnly: boolean;
   selectedTaskId?: string;
   taskWidthStyle?: CSSProperties;
-  handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
+  handleTaskClick: (e: StageTaskActivationEvent, taskElementId: string) => void;
   handleReorderAdhocTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,
@@ -53,6 +44,7 @@ const StageNodeAdhocTaskGroupsInner = ({
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
     onTaskReorder,
+    onTaskClick,
     onTaskPlay,
     loadingTaskIds,
     onTaskBreakpointToggle,
@@ -61,6 +53,7 @@ const StageNodeAdhocTaskGroupsInner = ({
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
+  const isLabelOpenable = isDragDisabled && !!onTaskClick;
   const rows = useMemo(() => adhocTaskGroups.flat(), [adhocTaskGroups]);
 
   const rowIds = useMemo(() => rows.map((task) => task.id), [rows]);
@@ -72,10 +65,8 @@ const StageNodeAdhocTaskGroupsInner = ({
     allowRegrouping: false,
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
+  const sensors = useStageTaskSensors();
+  const dragAccessibility = useStageTaskDragAccessibility();
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -105,11 +96,12 @@ const StageNodeAdhocTaskGroupsInner = ({
     [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
   );
 
-  // Swallow the canvas drag/pan only while these rows are drag handles.
+  // Swallow the canvas drag/pan only while these rows are drag handles, and XYFlow's node keys
+  // (select, move, delete) always, so keys on a task never act on the stage.
   const taskList = (
     <StageItemsList
       data-testid={`adhoc-tasks-list-${id}`}
-      className={isDragDisabled ? undefined : 'nodrag nopan'}
+      className={isDragDisabled ? 'nokey' : 'nodrag nopan nokey'}
     >
       {rows.map((task) => {
         const taskExecution = execution?.taskStatus?.[task.id];
@@ -132,6 +124,7 @@ const StageNodeAdhocTaskGroupsInner = ({
             isTaskLoading={loadingTaskIds?.has(task.id)}
             isReadOnly={isReadOnly}
             onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+            isLabelOpenable={isLabelOpenable}
             getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
           />
         );
@@ -140,7 +133,12 @@ const StageNodeAdhocTaskGroupsInner = ({
         return isDragDisabled ? (
           row
         ) : (
-          <SortableTaskRow key={task.id} taskId={task.id}>
+          <SortableTaskRow
+            key={task.id}
+            taskId={task.id}
+            label={task.label}
+            onActivate={handleTaskClick}
+          >
             {row}
           </SortableTaskRow>
         );
@@ -160,6 +158,7 @@ const StageNodeAdhocTaskGroupsInner = ({
         <DndContext
           collisionDetection={closestCenter}
           sensors={sensors}
+          accessibility={dragAccessibility}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}

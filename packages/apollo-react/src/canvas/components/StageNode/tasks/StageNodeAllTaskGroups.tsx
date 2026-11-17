@@ -2,7 +2,12 @@ import { Button } from '@uipath/apollo-wind';
 import { type CSSProperties, memo, type RefObject, useCallback, useMemo } from 'react';
 import { GroupModificationType } from '../../../utils';
 import { useStageTasksByGroups } from '../hooks/useStageTasksByGroups';
-import type { StageNodeProps, StageTaskItem, TaskStateReference } from '../StageNode.types';
+import type {
+  StageNodeProps,
+  StageTaskActivationEvent,
+  StageTaskItem,
+  TaskStateReference,
+} from '../StageNode.types';
 import { CollapsibleStageHeader } from '../shared/CollapsibleStageHeader';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { StageNodeAdhocTaskGroups } from './StageNodeAdhocTaskGroups';
@@ -75,9 +80,9 @@ const StageNodeAllTaskGroupsInner = ({
   );
 
   const handleTaskClick = useCallback(
-    (e: React.MouseEvent, taskElementId: string) => {
+    (e: StageTaskActivationEvent, taskElementId: string) => {
       e.stopPropagation();
-      onTaskClick?.(taskElementId);
+      onTaskClick?.(taskElementId, e);
       setSelectedNodeId(id);
     },
     [onTaskClick, setSelectedNodeId, id]
