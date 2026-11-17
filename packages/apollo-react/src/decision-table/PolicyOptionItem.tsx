@@ -21,27 +21,30 @@ import {
   POLICY_SUBMENU_CLASS,
 } from './sentenceStyles';
 
-/** One choice of the picker; one with `options` opens them as a submenu. */
-export interface PolicyOption {
-  /** What `onChange` receives; a submenu's own value is only its key. */
-  value: string;
-  /** The short form the trigger shows before the label, e.g. "U"; a submenu has none. */
-  code?: string;
-  label: string;
-  /** Shown under the label, and its description. */
-  hint?: string;
-  /** Why the option cannot be picked; set, it greys the option and shows in place of the hint. */
-  disabledReason?: string;
-  options?: readonly PolicyOption[];
-}
+/** One choice of the picker, with its hint or why it cannot be picked; a submenu opens its own options. */
+export type PolicyOption =
+  | {
+      kind: 'option';
+      value: string;
+      code: string;
+      label: string;
+      note: { kind: 'hint'; text: string } | { kind: 'disabled'; reason: string };
+    }
+  | {
+      kind: 'submenu';
+      value: string;
+      label: string;
+      hint: string;
+      options: readonly PolicyOption[];
+    };
 
 /** The option, at any depth, that a pick of `value` is; a submenu is never one. */
 export const pickedOption = (
   options: readonly PolicyOption[],
   value: string
-): PolicyOption | undefined => {
+): Extract<PolicyOption, { kind: 'option' }> | undefined => {
   for (const option of options) {
-    const picked = option.options ? pickedOption(option.options, value) : option;
+    const picked = option.kind === 'submenu' ? pickedOption(option.options, value) : option;
     if (picked?.value === value) return picked;
   }
   return undefined;
@@ -57,11 +60,17 @@ export interface PolicyOptionItemProps {
 export const PolicyOptionItem: React.FC<PolicyOptionItemProps> = ({ option, value }) => {
   const noteId = useId();
   const portalContainer = useResolvedPortalContainer();
-  const note = option.disabledReason ?? option.hint;
-  const disabled = option.disabledReason !== undefined;
-  const checked = option.options
-    ? pickedOption(option.options, value) !== undefined
-    : option.value === value;
+  const note =
+    option.kind === 'submenu'
+      ? option.hint
+      : option.note.kind === 'hint'
+        ? option.note.text
+        : option.note.reason;
+  const disabled = option.kind === 'option' && option.note.kind === 'disabled';
+  const checked =
+    option.kind === 'submenu'
+      ? pickedOption(option.options, value) !== undefined
+      : option.value === value;
   const content = (
     <>
       {checked && (
@@ -72,13 +81,13 @@ export const PolicyOptionItem: React.FC<PolicyOptionItemProps> = ({ option, valu
       <div className={POLICY_OPTION_CLASS}>
         <div className={POLICY_OPTION_TITLE_CLASS}>
           <span className={POLICY_OPTION_LABEL_CLASS}>{option.label}</span>
-          {option.code && (
+          {option.kind === 'option' && (
             <Badge variant="secondary" aria-hidden className={POLICY_OPTION_CODE_CLASS}>
               {option.code}
             </Badge>
           )}
         </div>
-        {note && (
+        {note !== '' && (
           <span aria-hidden id={noteId} className={POLICY_HINT_CLASS}>
             {note}
           </span>
@@ -86,9 +95,9 @@ export const PolicyOptionItem: React.FC<PolicyOptionItemProps> = ({ option, valu
       </div>
     </>
   );
-  const describedBy = note ? noteId : undefined;
+  const describedBy = note === '' ? undefined : noteId;
 
-  if (!option.options) {
+  if (option.kind === 'option') {
     return (
       <DropdownMenuRadioItem
         value={option.value}
@@ -102,12 +111,7 @@ export const PolicyOptionItem: React.FC<PolicyOptionItemProps> = ({ option, valu
   }
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger
-        inset
-        disabled={disabled}
-        aria-describedby={describedBy}
-        className={POLICY_ITEM_CLASS}
-      >
+      <DropdownMenuSubTrigger inset aria-describedby={describedBy} className={POLICY_ITEM_CLASS}>
         {content}
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal container={portalContainer}>

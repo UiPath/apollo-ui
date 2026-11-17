@@ -76,6 +76,14 @@ export {
   SEPARATOR_BODY_CELL_CLASS,
 } from './gridStyles';
 export * from './gridTypes';
+export type {
+  HitPolicyCatalog,
+  HitPolicyEntry,
+  HitPolicyGroup,
+  HitPolicyOffer,
+  HitPolicyPick,
+  HitPolicyTotal,
+} from './hitPolicyMenu';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
 export type { PolicyOption } from './PolicyOptionItem';

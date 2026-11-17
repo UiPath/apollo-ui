@@ -107,28 +107,49 @@ export const HIT_POLICY_GROUPS: readonly PolicyGroup[] = [
     id: 'single',
     label: 'One result',
     options: [
-      { value: 'UNIQUE', code: 'U', label: 'Unique', hint: GRID_SENTENCE_HEADER.hint },
-      { value: 'FIRST', code: 'F', label: 'First', hint: 'Stops at the first matching rule.' },
       {
+        kind: 'option',
+        value: 'UNIQUE',
+        code: 'U',
+        label: 'Unique',
+        note: { kind: 'hint', text: GRID_SENTENCE_HEADER.hint },
+      },
+      {
+        kind: 'submenu',
         value: 'COLLECT-TOTAL',
         label: 'Collect and total',
+        hint: 'Totals the matches.',
         options: [
           {
+            kind: 'option',
             value: 'COLLECT:SUM',
             code: 'C+',
             label: 'Sum',
-            disabledReason: 'Needs a number output.',
+            note: { kind: 'disabled', reason: 'Needs a number output.' },
           },
-          { value: 'COLLECT:MIN', code: 'C<', label: 'Minimum' },
-          { value: 'COLLECT:MAX', code: 'C>', label: 'Maximum' },
+          {
+            kind: 'option',
+            value: 'COLLECT:MIN',
+            code: 'C<',
+            label: 'Minimum',
+            note: { kind: 'hint', text: 'Returns the smallest match.' },
+          },
         ],
       },
     ],
   },
   {
-    id: 'multiple',
-    label: 'Several results',
-    options: [{ value: 'COLLECT', code: 'C', label: 'Collect', hint: 'Returns the matches.' }],
+    id: 'ordered',
+    label: 'In order',
+    options: [
+      {
+        kind: 'option',
+        value: 'FIRST',
+        code: 'F',
+        label: 'First',
+        note: { kind: 'hint', text: 'Stops at the first matching rule.' },
+      },
+    ],
   },
 ];
 

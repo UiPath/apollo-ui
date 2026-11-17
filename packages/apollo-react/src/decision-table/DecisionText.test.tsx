@@ -5643,9 +5643,12 @@ describe('DecisionText', () => {
       const sum = await openTotals();
       expect(sum).toHaveAttribute('aria-disabled', 'true');
       expect(sum).toHaveAccessibleDescription('Needs a number output.');
+      expect(
+        screen.getByRole('menuitem', { name: /^Collect and total/ })
+      ).toHaveAccessibleDescription('Totals the matches.');
       expect(document.activeElement).toBe(screen.getByRole('menuitemradio', { name: /^Minimum/ }));
-      await user.keyboard('{ArrowDown}{Enter}');
-      expect(onChange).toHaveBeenCalledWith('COLLECT:MAX');
+      await user.keyboard('{Enter}');
+      expect(onChange).toHaveBeenCalledWith('COLLECT:MIN');
       await user.click(await openTotals());
       expect(onChange).toHaveBeenCalledTimes(1);
     });
