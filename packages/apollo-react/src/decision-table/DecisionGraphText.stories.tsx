@@ -12,6 +12,7 @@ import {
   SINGLE_DECISION,
 } from './__fixtures__/decisionGraph.fixtures';
 import { type EditableTable, wordedRules } from './__fixtures__/editableSentences.fixtures';
+import { HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
   type StoryTable,
@@ -20,8 +21,8 @@ import {
   storyTableProps,
 } from './__fixtures__/storyTableHost';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
-import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
+import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { selectedColumnOf } from './sentenceSelection';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 
@@ -87,7 +88,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     const shown = selected?.decisionId === decisionId ? selected.selection : null;
     const onSelect = (selection: SentenceSelection | null) =>
       setSelected(selection ? { decisionId, selection } : null);
-    const { columns, header, edit, policy, onAddRule } = storyTableProps({
+    const { columns, hitPolicy, edit, onPolicyChange, onAddRule } = storyTableProps({
       state,
       onChange: (next) => setTables((current) => ({ ...current, [decisionId]: next })),
       onSelect,
@@ -95,9 +96,8 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     });
     return (
       <DecisionText
-        rules={rulesById.get(decisionId) ?? []}
-        {...columns}
-        header={header}
+        table={{ rules: rulesById.get(decisionId) ?? [], ...columns, hitPolicy }}
+        hitPolicies={HIT_POLICIES}
         ariaLabel={`Rules of ${decisionId}`}
         dataTestId={`text-${decisionId}`}
         numbered
@@ -111,7 +111,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
                   kind: 'edit',
                   selected: shown,
                   onSelect,
-                  policy,
+                  onPolicyChange,
                   onAddRule,
                   edit: {
                     ...edit,

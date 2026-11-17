@@ -10,7 +10,7 @@ import {
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
 import { installEscapeCloseRequest, pressOutside } from './__fixtures__/modalDialog';
-import { GRID_SENTENCE_HEADER } from './__fixtures__/sentences.fixtures';
+import { GRID_SENTENCE_POLICY, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
@@ -88,14 +88,20 @@ const Host = ({
   };
   return (
     <DecisionText
-      rules={wordedRules(table)}
-      {...tableColumns(table)}
-      header={GRID_SENTENCE_HEADER}
+      table={{ rules: wordedRules(table), ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
+      hitPolicies={HIT_POLICIES}
       ariaLabel="Rules"
       dataTestId="nl"
       mode={
         editable
-          ? { kind: 'edit', selected, onSelect: setSelected, edit, onAddRule: vi.fn() }
+          ? {
+              kind: 'edit',
+              selected,
+              onSelect: setSelected,
+              edit,
+              onPolicyChange: vi.fn(),
+              onAddRule: vi.fn(),
+            }
           : { kind: 'select', selected, onSelect: setSelected }
       }
     />

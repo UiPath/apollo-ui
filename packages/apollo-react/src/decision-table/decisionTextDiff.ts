@@ -1,3 +1,4 @@
+import type { HitPolicyPick } from './hitPolicyMenu';
 import type {
   SentenceBandColumn,
   SentenceCellId,
@@ -44,7 +45,7 @@ export interface DiffRemovedColumn {
 }
 
 /** What changed between two versions of the table, shown on the after-state `rules`. */
-export interface DecisionTextDiff {
+export interface DecisionTextDiff<Policy, Total> {
   /** `compact` folds runs of unchanged rules; `full` shows every rule. */
   mode: 'compact' | 'full';
   rules?: readonly DiffRuleChange[];
@@ -52,7 +53,7 @@ export interface DecisionTextDiff {
   removedRules?: readonly DiffRemovedRule[];
   columns?: readonly DiffColumnChange[];
   removedColumns?: readonly DiffRemovedColumn[];
-  hitPolicy?: { before: string; after: string };
+  hitPolicy?: { before: HitPolicyPick<Policy, Total>; after: HitPolicyPick<Policy, Total> };
 }
 
 /** The view's diff strings. */
@@ -300,7 +301,7 @@ const tokenDiffsOf = (
 /** Each rule's change and number, removed rules in place, and in compact mode each long unchanged run folded unless `expanded` holds its first rule. */
 export const diffRowsOf = (
   rules: readonly SentenceRule[],
-  diff: DecisionTextDiff,
+  diff: Pick<DecisionTextDiff<unknown, unknown>, 'mode' | 'rules' | 'values' | 'removedRules'>,
   nameOf: (columnId: string) => SentenceNameToken,
   expanded: ReadonlySet<string>
 ): DiffRows => {
@@ -398,10 +399,10 @@ export const diffRowsOf = (
 };
 
 /** The inputs and outputs with the removed ones in place, and each column's change by id. */
-export const diffColumnsOf = (
+export const diffColumnsOf = <Policy, Total>(
   inputs: readonly SentenceBandColumn[],
   outputs: readonly SentenceBandColumn[],
-  diff: DecisionTextDiff
+  diff: DecisionTextDiff<Policy, Total>
 ) => {
   const changes = new Map<string, DiffChange>(
     (diff.columns ?? []).map(({ columnId, change }) => [columnId, change])

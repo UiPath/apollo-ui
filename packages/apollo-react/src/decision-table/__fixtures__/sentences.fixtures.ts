@@ -1,8 +1,7 @@
-import type { DecisionTextProps } from '../DecisionText';
-import type { PolicyGroup } from '../PolicyPicker';
+import type { HitPolicyCatalog, HitPolicyPick } from '../hitPolicyMenu';
 import type {
+  DecisionTextTable,
   SentenceBandColumn,
-  SentenceHeader,
   SentenceLine,
   SentenceNameToken,
   SentencePart,
@@ -29,7 +28,7 @@ const line = (name: SentenceNameToken, ...parts: SentencePart[]): SentenceLine =
 });
 
 /** A view's input and output columns. */
-export type SentenceColumns = Pick<DecisionTextProps, 'inputs' | 'outputs'>;
+export type SentenceColumns = Pick<DecisionTextTable<unknown, unknown>, 'inputs' | 'outputs'>;
 
 /** No inputs and no outputs, so no bands. */
 export const NO_COLUMNS: SentenceColumns = { inputs: [], outputs: [] };
@@ -95,63 +94,70 @@ export const GRID_SENTENCE_COLUMNS: SentenceColumns = {
   outputs: columnsOf([RISK]),
 };
 
-/** The grid story's hit policy, Unique. */
-export const GRID_SENTENCE_HEADER: SentenceHeader = {
-  label: 'Unique',
-  hint: 'Exactly one rule may match. Overlaps are errors.',
-};
+/** The fixtures' hit policies, and the totals Collect takes. */
+export type FixturePolicy = 'unique' | 'first' | 'collect';
+export type FixtureTotal = 'sum' | 'min';
+export type FixturePick = HitPolicyPick<FixturePolicy, FixtureTotal>;
 
 /** The hit policies a host offers in the header, with Sum refused as for a text output. */
-export const HIT_POLICY_GROUPS: readonly PolicyGroup[] = [
+export const HIT_POLICIES: HitPolicyCatalog<FixturePolicy, FixtureTotal> = [
   {
-    id: 'single',
     label: 'One result',
-    options: [
+    entries: [
       {
-        kind: 'option',
-        value: 'UNIQUE',
+        kind: 'policy',
+        policy: 'unique',
         code: 'U',
         label: 'Unique',
-        note: { kind: 'hint', text: GRID_SENTENCE_HEADER.hint },
+        hint: 'Exactly one rule may match. Overlaps are errors.',
       },
       {
-        kind: 'submenu',
-        value: 'COLLECT-TOTAL',
+        kind: 'totals',
+        policy: 'collect',
         label: 'Collect and total',
         hint: 'Totals the matches.',
-        options: [
+        totals: [
           {
-            kind: 'option',
-            value: 'COLLECT:SUM',
+            total: 'sum',
             code: 'C+',
             label: 'Sum',
-            note: { kind: 'disabled', reason: 'Needs a number output.' },
+            hint: 'Adds the matches.',
+            offer: { kind: 'refused', reason: 'Needs a number output.' },
           },
           {
-            kind: 'option',
-            value: 'COLLECT:MIN',
+            total: 'min',
             code: 'C<',
             label: 'Minimum',
-            note: { kind: 'hint', text: 'Returns the smallest match.' },
+            hint: 'Returns the smallest match.',
+            offer: { kind: 'offered' },
           },
         ],
       },
     ],
   },
   {
-    id: 'ordered',
     label: 'In order',
-    options: [
+    entries: [
       {
-        kind: 'option',
-        value: 'FIRST',
+        kind: 'policy',
+        policy: 'first',
         code: 'F',
         label: 'First',
-        note: { kind: 'hint', text: 'Stops at the first matching rule.' },
+        hint: 'Stops at the first matching rule.',
+      },
+      {
+        kind: 'policy',
+        policy: 'collect',
+        code: 'C',
+        label: 'Collect',
+        hint: 'Returns the matches as a list.',
       },
     ],
   },
 ];
+
+/** The grid story's hit policy, Unique. */
+export const GRID_SENTENCE_POLICY: FixturePick = { kind: 'policy', policy: 'unique' };
 
 const [SCORE, score] = column('score', 'input', 'Credit Score');
 const [DEBT, debt] = column('debt', 'input', 'Debt Ratio');
@@ -228,10 +234,7 @@ export const MULTI_SENTENCE_COLUMNS: SentenceColumns = {
 };
 
 /** The Collect hit policy. */
-export const MULTI_SENTENCE_HEADER: SentenceHeader = {
-  label: 'Collect',
-  hint: 'Returns the matches as a list.',
-};
+export const MULTI_SENTENCE_POLICY: FixturePick = { kind: 'policy', policy: 'collect' };
 
 const firstRule = (): SentenceRule => {
   const [row] = MULTI_SENTENCE_RULES;

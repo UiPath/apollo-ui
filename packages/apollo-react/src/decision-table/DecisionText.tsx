@@ -1,6 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useId, useMemo, useState } from 'react';
+import { useSafeLingui } from '../i18n/useSafeLingui';
 import { AddRuleFooter } from './AddRuleFooter';
 import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
@@ -9,6 +10,12 @@ import { type DecisionTextDiff, diffColumnsOf, diffRowsOf } from './decisionText
 import type { DecisionTextEdit } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
+import {
+  type HitPolicyCatalog,
+  type HitPolicyPick,
+  policyHeaderOf,
+  policyMenuOf,
+} from './hitPolicyMenu';
 import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
@@ -17,11 +24,9 @@ import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS, DECISION_TEXT_INLINE_FRAME_CLASS } from './sentenceStyles';
 import type {
+  DecisionTextTable,
   SentenceBand,
-  SentenceBandColumn,
-  SentenceHeader,
   SentenceNameToken,
-  SentenceRule,
   SentenceSelection,
 } from './sentenceTypes';
 import { useAddRule } from './useAddRule';
@@ -41,13 +46,32 @@ import { type SentenceNavigationSource, useSentenceNavigation } from './useSente
 import { useValueEditing } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
 
-interface DecisionTextBaseProps {
-  rules: readonly SentenceRule[];
-  /** The input columns, shown in the inputs band. */
-  inputs: readonly SentenceBandColumn[];
-  /** The output columns, shown in the outputs band. */
-  outputs: readonly SentenceBandColumn[];
-  header: SentenceHeader;
+/** A click or key asks for this selection, or null on Escape. */
+type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
+
+/** How the view is used: read, select rules and cells the host keeps, edit them and the host's hit policy, or read what changed. */
+export type DecisionTextMode<Policy, Total> =
+  | { kind: 'read'; selected: SentenceSelection | null }
+  | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
+  | {
+      kind: 'edit';
+      selected: SentenceSelection | null;
+      onSelect: SelectHandler;
+      edit: DecisionTextEdit;
+      onPolicyChange: (picked: HitPolicyPick<Policy, Total>) => void;
+      onAddRule: () => void;
+    }
+  | {
+      kind: 'diff';
+      /** What changed, painted on the table's after-state rules; a new diff closes every fold, so memoize it. */
+      diff: DecisionTextDiff<Policy, Total>;
+    };
+
+export interface DecisionTextProps<Policy, Total> {
+  table: DecisionTextTable<Policy, Total>;
+  mode: DecisionTextMode<Policy, Total>;
+  /** The host's hit policies, grouped and worded, which the header and its picker show. */
+  hitPolicies: HitPolicyCatalog<Policy, Total>;
   /** Shows each rule's 1-based position before its heading. */
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
@@ -70,32 +94,6 @@ interface DecisionTextBaseProps {
   children?: React.ReactNode;
 }
 
-/** A click or key asks for this selection, or null on Escape. */
-type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
-
-/** How the view is used: read, select rules and cells the host keeps, edit them, or read what changed. */
-export type DecisionTextMode =
-  | { kind: 'read'; selected: SentenceSelection | null }
-  | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
-  | {
-      kind: 'edit';
-      selected: SentenceSelection | null;
-      onSelect: SelectHandler;
-      edit: DecisionTextEdit;
-      onAddRule: () => void;
-      /** The header's picker, showing the picked option where the label is. */
-      policy?: NonNullable<DecisionTextHeaderProps['policy']>;
-    }
-  | {
-      kind: 'diff';
-      /** What changed, painted on the after-state `rules`; a new diff closes every fold, so memoize it. */
-      diff: DecisionTextDiff;
-    };
-
-export interface DecisionTextProps extends DecisionTextBaseProps {
-  mode: DecisionTextMode;
-}
-
 const NO_FOLDS: ReadonlySet<string> = new Set();
 
 /** Each band column's name token by id, for a removed condition's line. */
@@ -112,16 +110,14 @@ const nameTokensOf = (bands: readonly SentenceBand[]) => {
     names.get(columnId) ?? { kind: 'input', columnId, text: columnId };
 };
 
-/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks. */
-export const DecisionText: React.FC<DecisionTextProps> = ({
-  rules,
-  inputs,
-  outputs,
-  header,
+/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's hit policies. */
+export const DecisionText = <Policy, Total>({
+  table,
+  mode,
+  hitPolicies,
   numbered = false,
   marks = EMPTY_MARKS,
   onCellHover,
-  mode,
   headerMark,
   onOpenDecision,
   scroll = 'self',
@@ -129,16 +125,32 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   containerProps,
   dataTestId,
   children,
-}) => {
+}: DecisionTextProps<Policy, Total>): React.JSX.Element => {
+  const { rules, inputs, outputs } = table;
   const selected = mode.kind === 'diff' ? null : mode.selected;
   const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
   const diff = mode.kind === 'diff' ? mode.diff : undefined;
   const idPrefix = useId();
+  const { _ } = useSafeLingui();
   const labels = useDecisionTextLabels();
   const hostEdit = mode.kind === 'edit' ? mode.edit : undefined;
   const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels());
   const addRule =
     mode.kind === 'edit' ? { label: labels.addRule, onAdd: mode.onAddRule } : undefined;
+  const policyHeader = policyHeaderOf(hitPolicies, table.hitPolicy);
+  const title: DecisionTextHeaderProps['title'] =
+    mode.kind === 'edit'
+      ? {
+          kind: 'picker',
+          policy: policyMenuOf(hitPolicies, table.hitPolicy, mode.onPolicyChange, _),
+        }
+      : diff?.hitPolicy
+        ? {
+            kind: 'change',
+            before: policyHeaderOf(hitPolicies, diff.hitPolicy.before).label,
+            after: policyHeaderOf(hitPolicies, diff.hitPolicy.after).label,
+          }
+        : { kind: 'label', label: policyHeader.label };
   const columns = useMemo(
     () => diff && diffColumnsOf(inputs, outputs, diff),
     [inputs, outputs, diff]
@@ -222,10 +234,9 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
     >
       <DecisionTextHeader
         ref={ruleWindow.headerRef}
-        header={header}
-        policy={mode.kind === 'edit' ? mode.policy : undefined}
+        title={title}
+        hint={policyHeader.hint}
         mark={headerMark}
-        hitPolicy={diff?.hitPolicy}
         labels={labels}
         sticky={scroll === 'self'}
         dataTestId={dataTestId}

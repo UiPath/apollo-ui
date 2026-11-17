@@ -1,14 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DIFF_COLUMNS, DIFF_HEADER, DIFF_RULES } from './__fixtures__/diffSentences.fixtures';
+import type { FixtureDiff } from './__fixtures__/diffSentences.fixtures';
+import { DIFF_COLUMNS, DIFF_POLICY, DIFF_RULES } from './__fixtures__/diffSentences.fixtures';
+import { HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
-import {
-  type DecisionTextDiff,
-  type DiffRemovedRule,
-  type DiffRow,
-  diffColumnsOf,
-  diffRowsOf,
-} from './decisionTextDiff';
+import { type DiffRemovedRule, type DiffRow, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
 import type { SentenceNameToken, SentenceRule } from './sentenceTypes';
 
 const nameOf = (columnId: string): SentenceNameToken => ({
@@ -162,9 +158,8 @@ describe('values of a removed column', () => {
   it('shows the removed output value in the card heading, not among its conditions', () => {
     render(
       <DecisionText
-        rules={DIFF_RULES}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
+        table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
+        hitPolicies={HIT_POLICIES}
         numbered
         ariaLabel="Rules"
         dataTestId="nl"
@@ -182,12 +177,11 @@ describe('values of a removed column', () => {
   });
 });
 
-const renderDiff = (diff: DecisionTextDiff, rules: readonly SentenceRule[] = DIFF_RULES) =>
+const renderDiff = (diff: FixtureDiff, rules: readonly SentenceRule[] = DIFF_RULES) =>
   render(
     <DecisionText
-      rules={rules}
-      {...DIFF_COLUMNS}
-      header={DIFF_HEADER}
+      table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
+      hitPolicies={HIT_POLICIES}
       numbered
       ariaLabel="Rules"
       dataTestId="nl"

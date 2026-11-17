@@ -14,6 +14,7 @@ import {
   tableColumns,
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
+import { GRID_SENTENCE_POLICY, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import { DecisionGraphMinimap } from './DecisionGraphMinimap';
 import { DecisionGraphText } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
@@ -374,9 +375,8 @@ describe('DecisionGraphText minimap', () => {
         rules={() => rules}
         renderBody={(id, scroll) => (
           <DecisionText
-            rules={rules}
-            {...tableColumns(TABLE)}
-            header={{ label: 'Unique', hint: '' }}
+            table={{ rules: rules, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
+            hitPolicies={HIT_POLICIES}
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
             scroll={scroll}
@@ -385,6 +385,7 @@ describe('DecisionGraphText minimap', () => {
               selected: selected?.id === id ? selected.rule : null,
               onSelect: (rule) => setSelected(rule ? { id, rule } : null),
               edit: { onCommit: vi.fn(), onClearCell: vi.fn(), onDeleteRule: vi.fn() },
+              onPolicyChange: vi.fn(),
               onAddRule: vi.fn(),
             }}
           />

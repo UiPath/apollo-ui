@@ -35,13 +35,14 @@ import {
   COUNTRY,
   channel,
   country,
+  type FixturePick,
   GRID_SENTENCE_COLUMNS,
-  GRID_SENTENCE_HEADER,
+  GRID_SENTENCE_POLICY,
   GRID_SENTENCE_RULES,
-  HIT_POLICY_GROUPS,
+  HIT_POLICIES,
   longValueListRule,
   MULTI_SENTENCE_COLUMNS,
-  MULTI_SENTENCE_HEADER,
+  MULTI_SENTENCE_POLICY,
   MULTI_SENTENCE_RULES,
   manyColumns,
   manyLinesRule,
@@ -107,7 +108,7 @@ const view = (props: ViewProps = {}) => (
     {...textPropsOf({
       rules: MULTI_SENTENCE_RULES,
       ...MULTI_SENTENCE_COLUMNS,
-      header: MULTI_SENTENCE_HEADER,
+      hitPolicy: MULTI_SENTENCE_POLICY,
       ariaLabel: 'Rules',
       dataTestId: 'nl',
       ...props,
@@ -147,7 +148,7 @@ const Selectable = ({ initial = null, onSelect, ...props }: SelectableProps) => 
   return view({
     rules: GRID_SENTENCE_RULES,
     ...GRID_SENTENCE_COLUMNS,
-    header: GRID_SENTENCE_HEADER,
+    hitPolicy: GRID_SENTENCE_POLICY,
     ...props,
     selected,
     onSelect: (next) => {
@@ -481,7 +482,7 @@ describe('DecisionText', () => {
       renderView({
         rules: GRID_SENTENCE_RULES,
         ...GRID_SENTENCE_COLUMNS,
-        header: GRID_SENTENCE_HEADER,
+        hitPolicy: GRID_SENTENCE_POLICY,
         selected,
       });
       const count = (selector: string) => document.querySelectorAll(selector).length;
@@ -588,7 +589,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: rowMarks({
           m3: { cells: { score: { matched: true }, channel: { matched: false } } },
           m1: { cells: { score: { matched: true }, decision: { matched: true } } },
@@ -850,7 +851,7 @@ describe('DecisionText', () => {
       const shared = {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       };
       const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
@@ -874,7 +875,7 @@ describe('DecisionText', () => {
       const shared = {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       };
       const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
@@ -900,7 +901,7 @@ describe('DecisionText', () => {
       const shared = {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       };
       const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
@@ -921,7 +922,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: scoreMarks,
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
@@ -936,7 +937,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: rowMarks({
           m1: {
             cells: {
@@ -956,7 +957,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: rowMarks({
           m1: {
             cells: {
@@ -987,7 +988,7 @@ describe('DecisionText', () => {
       const shared = {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
       };
       const marksWith = (country: string) =>
@@ -1020,7 +1021,7 @@ describe('DecisionText', () => {
         <Selectable
           rules={MULTI_SENTENCE_RULES}
           {...MULTI_SENTENCE_COLUMNS}
-          header={MULTI_SENTENCE_HEADER}
+          hitPolicy={MULTI_SENTENCE_POLICY}
           marks={scoreMarks}
           initial={{ kind: 'rule', rowId: 'm5' }}
         />,
@@ -1035,7 +1036,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: scoreMarks,
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
@@ -1063,7 +1064,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: scoreMarks,
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
@@ -1080,7 +1081,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: scoreMarks,
         initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
       });
@@ -1096,7 +1097,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         marks: scoreMarks,
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
@@ -1884,7 +1885,7 @@ describe('DecisionText', () => {
         return view({
           rules: GRID_SENTENCE_RULES,
           ...GRID_SENTENCE_COLUMNS,
-          header: GRID_SENTENCE_HEADER,
+          hitPolicy: GRID_SENTENCE_POLICY,
           selected,
           onSelect: setSelected,
         });
@@ -2264,7 +2265,7 @@ describe('DecisionText', () => {
         return view({
           rules: GRID_SENTENCE_RULES,
           ...GRID_SENTENCE_COLUMNS,
-          header: GRID_SENTENCE_HEADER,
+          hitPolicy: GRID_SENTENCE_POLICY,
           containerProps: { 'data-saving': String(saving) },
           selected,
           onSelect: (next) => {
@@ -2293,7 +2294,7 @@ describe('DecisionText', () => {
         return view({
           rules: GRID_SENTENCE_RULES,
           ...GRID_SENTENCE_COLUMNS,
-          header: GRID_SENTENCE_HEADER,
+          hitPolicy: GRID_SENTENCE_POLICY,
           containerProps: { 'data-saving': String(saving) },
           selected,
           onSelect: (next) => {
@@ -2728,9 +2729,12 @@ describe('DecisionText', () => {
     it('takes edit only with a controlled selection, without which no card control is tabbable', () => {
       render(
         <DecisionText
-          rules={GRID_SENTENCE_RULES}
-          {...GRID_SENTENCE_COLUMNS}
-          header={GRID_SENTENCE_HEADER}
+          table={{
+            rules: GRID_SENTENCE_RULES,
+            ...GRID_SENTENCE_COLUMNS,
+            hitPolicy: GRID_SENTENCE_POLICY,
+          }}
+          hitPolicies={HIT_POLICIES}
           ariaLabel="Rules"
           dataTestId="nl"
           // @ts-expect-error
@@ -3266,7 +3270,7 @@ describe('DecisionText', () => {
       renderEditing({
         rules,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initialEditing: { rowId: 'row-300', columnId: 'decision', index: 0 },
       });
       const input = editor();
@@ -3593,7 +3597,7 @@ describe('DecisionText', () => {
       const { onCommit } = renderEditing({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initialEditing: m2Reason,
         valueField: () => ({ allowedValues: ['"prime"', '"low score"'] }),
       });
@@ -3610,7 +3614,7 @@ describe('DecisionText', () => {
       renderEditing({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initialEditing: m2Reason,
         valueField: () => ({ allowedValues: ['', '"prime"', ' ', '"prime"', '"low score"'] }),
       });
@@ -3642,7 +3646,7 @@ describe('DecisionText', () => {
       const { onCommit } = renderEditing({
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initialEditing: m3Channel,
         valueField: () => ({
           operators: AGE_OPERATORS,
@@ -4068,7 +4072,7 @@ describe('DecisionText', () => {
         renderEditing({
           rules: MULTI_SENTENCE_RULES,
           ...MULTI_SENTENCE_COLUMNS,
-          header: MULTI_SENTENCE_HEADER,
+          hitPolicy: MULTI_SENTENCE_POLICY,
           valueField: shapedField,
           ...props,
         });
@@ -4907,7 +4911,7 @@ describe('DecisionText', () => {
       return view({
         rules: wordedRules(table),
         ...tableColumns(table),
-        header: GRID_SENTENCE_HEADER,
+        hitPolicy: GRID_SENTENCE_POLICY,
         selected,
         onSelect: setSelected,
         edit: editWith({
@@ -5469,7 +5473,7 @@ describe('DecisionText', () => {
       const rules = manySentenceRules(2000);
       const props = {
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         selected: null,
         onSelect: vi.fn(),
         edit: editWith(),
@@ -5493,7 +5497,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: manySentenceRules(2000),
         ...MULTI_SENTENCE_COLUMNS,
-        header: MULTI_SENTENCE_HEADER,
+        hitPolicy: MULTI_SENTENCE_POLICY,
         initial: { kind: 'rule', rowId: 'row-0' } satisfies SentenceSelection,
         edit: editWith(),
       });
@@ -5675,43 +5679,51 @@ describe('DecisionText', () => {
   });
 
   describe('policy', () => {
-    type Policy = NonNullable<ViewProps['policy']>;
-    const policyWith = (overrides: Partial<Policy> = {}): Policy => ({
-      value: 'FIRST',
-      groups: HIT_POLICY_GROUPS,
-      onChange: vi.fn(),
-      label: 'Hit policy: First',
-      ...overrides,
-    });
+    const FIRST: FixturePick = { kind: 'policy', policy: 'first' };
     const trigger = () => screen.getByRole('button', { name: /^Hit policy/ });
 
-    it('offers no menu from a picker the host gives no options', async () => {
-      renderView({ header: GRID_SENTENCE_HEADER, policy: policyWith({ groups: [] }) });
+    it('offers no menu from a picker the host gives no hit policies', async () => {
+      renderView({ hitPolicy: FIRST, hitPolicies: [], onPolicyChange: vi.fn() });
       const user = userEvent.setup();
       await user.click(trigger());
       expect(screen.queryByRole('menu')).toBeNull();
       expect(trigger()).toBeDisabled();
       expect(trigger()).not.toHaveAttribute('aria-haspopup');
-      expect(trigger()).toHaveTextContent('FIRST');
     });
 
-    it.each<[string, Policy | undefined, string]>([
-      ['the picked option', policyWith(), 'F·First'],
-      ['a picked submenu option', policyWith({ value: 'COLLECT:MIN' }), 'C<·Minimum'],
-      ['a value no option holds as it is', policyWith({ value: 'RULE ORDER' }), 'RULE ORDER'],
-      ['the plain label without a policy', undefined, 'Unique'],
-    ])('shows %s in place of the label, then the hint', (_, policy, label) => {
-      renderView({ header: GRID_SENTENCE_HEADER, policy });
-      expect(screen.queryByTestId('nl-policy')?.textContent).toBe(policy && label);
-      expect(screen.getByTestId('nl-header')).toHaveTextContent(
-        `${label}${GRID_SENTENCE_HEADER.hint}`
-      );
+    it.each<[string, FixturePick, boolean, string, string]>([
+      ['the picked policy', FIRST, true, 'F·First', 'Stops at the first matching rule.'],
+      [
+        'a picked total',
+        { kind: 'total', policy: 'collect', total: 'min' },
+        true,
+        'C<·Minimum',
+        'Returns the smallest match.',
+      ],
+      [
+        'nothing for a pick the host lacks',
+        { kind: 'total', policy: 'first', total: 'sum' },
+        true,
+        '',
+        '',
+      ],
+      [
+        'the plain label outside editing',
+        GRID_SENTENCE_POLICY,
+        false,
+        'Unique',
+        'Exactly one rule may match. Overlaps are errors.',
+      ],
+    ])('shows %s in place of the label, then its hint', (_, hitPolicy, editing, label, hint) => {
+      renderView({ hitPolicy, ...(editing ? { onPolicyChange: vi.fn() } : {}) });
+      expect(screen.queryByTestId('nl-policy')?.textContent).toBe(editing ? label : undefined);
+      expect(screen.getByTestId('nl-header').textContent).toBe(`${label}${hint}`);
     });
 
-    it('reports the picked option and focuses the trigger again', async () => {
+    it('reports the picked policy and focuses the trigger again', async () => {
       const user = userEvent.setup();
-      const onChange = vi.fn();
-      renderView({ policy: policyWith({ onChange }) });
+      const onPolicyChange = vi.fn();
+      renderView({ hitPolicy: FIRST, onPolicyChange });
       await user.click(trigger());
       const unique = screen.getByRole('menuitemradio', { name: /^Unique/ });
       expect(unique).toHaveAccessibleDescription(
@@ -5722,15 +5734,15 @@ describe('DecisionText', () => {
         'true'
       );
       await user.click(unique);
-      expect(onChange).toHaveBeenCalledWith('UNIQUE');
+      expect(onPolicyChange).toHaveBeenCalledWith(GRID_SENTENCE_POLICY);
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(trigger());
     });
 
-    it('picks a submenu option by keyboard, and refuses a disabled one with its reason', async () => {
+    it('picks a total by keyboard, and refuses a refused one with its reason', async () => {
       const user = userEvent.setup();
-      const onChange = vi.fn();
-      renderView({ policy: policyWith({ onChange }) });
+      const onPolicyChange = vi.fn();
+      renderView({ hitPolicy: FIRST, onPolicyChange });
       const openTotals = async () => {
         act(() => trigger().focus());
         await user.keyboard('{Enter}');
@@ -5746,14 +5758,18 @@ describe('DecisionText', () => {
       ).toHaveAccessibleDescription('Totals the matches.');
       expect(document.activeElement).toBe(screen.getByRole('menuitemradio', { name: /^Minimum/ }));
       await user.keyboard('{Enter}');
-      expect(onChange).toHaveBeenCalledWith('COLLECT:MIN');
+      expect(onPolicyChange).toHaveBeenCalledWith({
+        kind: 'total',
+        policy: 'collect',
+        total: 'min',
+      });
       await user.click(await openTotals());
-      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onPolicyChange).toHaveBeenCalledTimes(1);
     });
 
     it('ends the picker with the header mark, announced on the trigger', () => {
       renderView({
-        policy: policyWith(),
+        onPolicyChange: vi.fn(),
         headerMark: { tone: 'error', title: 'Priority needs ranked output values', glyph: true },
       });
       const badge = screen.getByTestId('nl-header').querySelector('[data-glyph]')?.parentElement;
@@ -5764,7 +5780,7 @@ describe('DecisionText', () => {
 
     it('ends the plain label with the header mark when there is no picker', () => {
       renderView({
-        header: GRID_SENTENCE_HEADER,
+        hitPolicy: GRID_SENTENCE_POLICY,
         headerMark: { tone: 'warning', title: 'No rules', glyph: true },
       });
       const header = screen.getByTestId('nl-header');
@@ -5828,9 +5844,8 @@ describe('DecisionText', () => {
     it('takes onSelect only with selected, without which no stop or link is tabbable', () => {
       render(
         <DecisionText
-          rules={linkedRules}
-          {...GRID_SENTENCE_COLUMNS}
-          header={GRID_SENTENCE_HEADER}
+          table={{ rules: linkedRules, ...GRID_SENTENCE_COLUMNS, hitPolicy: GRID_SENTENCE_POLICY }}
+          hitPolicies={HIT_POLICIES}
           ariaLabel="Rules"
           dataTestId="nl"
           onOpenDecision={vi.fn()}
