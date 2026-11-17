@@ -160,6 +160,7 @@ describe('ByoModelDialog', () => {
     await pick(user, 'Provider', 'Azure OpenAI');
     const connect = await screen.findByRole('button', { name: 'Connect' });
     expect(connect).toBeDisabled();
+    expect(screen.getByLabelText(/Endpoint/)).toBeRequired();
     await user.type(screen.getByLabelText(/Endpoint/), 'https://res.openai.azure.com');
     await user.type(screen.getByLabelText(/API key/), 'secret');
     expect(screen.getByLabelText(/API key/)).toHaveAttribute('type', 'password');
@@ -307,6 +308,7 @@ describe('ByoModelDialog', () => {
     expect(api.loadConnectionValues).toHaveBeenCalledWith('openai', SAVED);
     // The secret may stay blank, and the connection cannot move folders.
     expect(screen.getByText('Leave blank to keep the current value.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/API key/)).not.toBeRequired();
     expect(screen.getByRole('combobox', { name: 'Folder' })).toBeDisabled();
     expect(screen.getByRole('textbox', { name: 'Connection name' })).toHaveValue('My OpenAI');
 
