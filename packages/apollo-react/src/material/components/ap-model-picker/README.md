@@ -230,7 +230,7 @@ Set `isCommunity` and the "Use custom model" footer opens the **"Use your own mo
 - **Test and add.** `POST {gateway}/api/byo/product/llm-configurations/validate`, retried for up to 90 s while a connection created in the dialog is not yet visible to the gateway, then `POST {gateway}/api/byo/product/llm-configurations` in the connection's folder, under the operation group `{requestingProduct}-{requestingFeature}`.
 - **Test and save** runs the same test, then reads the configuration (`GET {gateway}/api/byo/product/llm-configurations/{id}`), replaces the edited model's entry and writes it back with `PUT`. The configuration's other models are kept as they are.
 
-Afterwards the picker refetches (self-fetch mode) or calls `onCustomModelSaved` so a host that owns `models` can refetch, and selects the saved model as soon as it appears. The footer and the edit action keep the org-admin gate of §6, and an explicit `onUseCustomModel` still wins for the footer. A row without a `byoConfigurationId` has no edit action in Community mode.
+The dialog closes as soon as the model is saved. The picker then hands `notify` a translated confirmation ("my-gpt added to your models", or "Changes to my-gpt saved" after an edit) for the host to show with its own toasts, switches to the saved model's folder if another one is shown, refetches (self-fetch mode) or calls `onCustomModelSaved` so a host that owns `models` can refetch, and selects the saved model as soon as it appears, unless the user has picked another model meanwhile. The footer and the edit action keep the org-admin gate of §6, and an explicit `onUseCustomModel` still wins for the footer. A row without a `byoConfigurationId` has no edit action in Community mode.
 
 The dialog itself is `ByoModelDialog` from `@uipath/apollo-wind`, which takes the calls as an `api` prop; `createCommunityByoApi(requestContext, options)` builds them. Hosts that render the picker in a shadow root pass `communityDialogHost`, a component that gives the dialog its styles and portal container there (it is mounted only while the dialog is open).
 
@@ -240,6 +240,7 @@ The dialog itself is `ByoModelDialog` from `@uipath/apollo-wind`, which takes th
   requestContext={requestContext}
   isCommunity={isByoOnlyAccount && flags.EnableByoModelInlineDialog}
   onCustomModelSaved={() => refetch()}
+  notify={(message, status) => showToast(message, status)}
   communityDialogHost={ModalHost}
   value={value}
   onChange={setValue}
@@ -343,6 +344,7 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `onUseCustomModel`    | `() => void`                                          | Overrides the footer CTA's default navigation to the LLM-configurations add page. Picker closes itself first.        |
 | `isCommunity`         | `boolean`                                             | The footer and the BYO rows' edit action open the inline "Use your own model" dialog (§6a) instead of the AI Trust Layer pages. Default `false`. |
 | `onCustomModelSaved`  | `(model: ByoSavedModel) => void \| Promise<void>`    | Called after the dialog added or edited a model; refetch a host-owned `models` list here. The picker then selects the model. |
+| `notify`              | `(message: string, status: ModelPickerNoticeStatus) => void` | Shows the picker's messages with the host's own toasts; today the confirmation after the dialog saved a model. Without it, nothing is shown. |
 | `communityDialogHost` | `ComponentType<{ children: ReactNode }>`             | Wraps the dialog while it is open, e.g. a shadow-root modal host that supplies its styles and portal container.      |
 | `enableFolders`       | `boolean`                                             | Turn on folder scoping — the picker fetches the user's Orchestrator folders via `requestContext`. Default `false`.   |
 | `folders`             | `readonly { id; label }[]`                            | Test/storybook override for the folder list (skips the internal fetch).                                              |
