@@ -214,6 +214,11 @@ describe('DecisionGraphText', () => {
     );
   });
 
+  it("clips an open body to its card's rounded bottom", () => {
+    render(graph({ expanded: new Set(['risk']) }));
+    expect(body('risk')).toHaveClass('overflow-clip', 'rounded-b-[9px]');
+  });
+
   it('shows what the host gives for a decision that is not a table', async () => {
     render(
       graph({

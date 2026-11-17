@@ -46,7 +46,7 @@ export const GRAPH_MARK_BUTTON_CLASS =
   'inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
 
 export const GRAPH_BODY_CLASS =
-  'flex flex-col rounded-b-[10px] bg-background-secondary future:bg-background';
+  'flex flex-col overflow-clip rounded-b-[9px] bg-background-secondary future:bg-background';
 
 export const GRAPH_NEST_CLASS = 'ms-[22px] flex flex-col gap-3 pt-3 ps-6';
 
