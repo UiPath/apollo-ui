@@ -1,7 +1,7 @@
 import type React from 'react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { DecisionGraphMinimap } from './DecisionGraphMinimap';
-import { GRAPH_TOOLBAR_CLASS } from './decisionGraphStyles';
+import { GRAPH_MINIMAP_SLOT_CLASS } from './decisionGraphStyles';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import type { MinimapItem } from './minimapRows';
 import { partsText } from './sentenceParts';
@@ -15,6 +15,8 @@ export interface DecisionGraphMinimapSlotProps {
   /** The decision the reader is on, null when none. */
   selected: string | null;
   onPick: (target: DecisionGraphTarget) => void;
+  /** Where the floating launcher ends, in px from the frame's left edge. */
+  onLauncherEnd: (px: number) => void;
   labels: DecisionGraphLabels;
   dataTestId: string;
 }
@@ -78,19 +80,31 @@ const ruleTotalOf = (nodes: readonly DecisionGraphNode[]): number =>
     0
   );
 
-/** The graph's toolbar row, holding the minimap of its decisions and rules. */
+/** The minimap of the graph's decisions and rules, floating top-left. */
 export const DecisionGraphMinimapSlot: React.FC<DecisionGraphMinimapSlotProps> = ({
   nodes,
   rules,
   selected,
   onPick,
+  onLauncherEnd,
   labels,
   dataTestId,
 }) => {
+  const slotRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const slot = slotRef.current;
+    if (!slot) return;
+    const measure = () => onLauncherEnd(slot.offsetLeft + slot.offsetWidth);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(slot);
+    return () => observer.disconnect();
+  }, [onLauncherEnd]);
   const items = useCallback(() => minimapOf(nodes, rules, labels), [nodes, rules, labels]);
   const ruleTotal = useMemo(() => ruleTotalOf(nodes), [nodes]);
   return (
-    <div className={GRAPH_TOOLBAR_CLASS}>
+    <div ref={slotRef} className={GRAPH_MINIMAP_SLOT_CLASS}>
       <DecisionGraphMinimap
         items={items}
         triggerLabel={labels.ruleCount(ruleTotal)}

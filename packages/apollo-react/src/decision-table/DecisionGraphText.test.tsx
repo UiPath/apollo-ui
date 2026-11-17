@@ -402,6 +402,20 @@ describe('DecisionGraphText', () => {
     host.remove();
   });
 
+  it('floats the minimap launcher over the scroller and keeps the cards clear of it', () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetLeft', 'get').mockReturnValue(15);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(140);
+    render(graph());
+    const slot = screen.getByTestId('graph-minimap-trigger').parentElement?.parentElement;
+    const scroller = screen.getByTestId('graph-scroller');
+    expect(slot?.className).toContain('absolute');
+    expect(slot?.parentElement).toBe(scroller.parentElement);
+    expect(scroller.firstElementChild).toHaveStyle({
+      paddingLeft: 'max(2rem, calc(167px - max(0px, (100% - 48rem) / 2)))',
+    });
+    vi.restoreAllMocks();
+  });
+
   it('has no axe violations, folded and open', async () => {
     const { container, rerender } = render(graph());
     expect(await axe(container)).toHaveNoViolations();

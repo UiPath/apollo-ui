@@ -14,6 +14,7 @@ import {
   GRAPH_NEST_CLASS,
   GRAPH_OUTPUT_HUE_CLASS,
   GRAPH_SCROLLER_CLASS,
+  graphColumnInsetOf,
 } from './decisionGraphStyles';
 import type {
   DecisionGraphDecisionNode,
@@ -163,6 +164,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   const expanded = hostExpanded ?? ownExpanded;
   const users = useMemo(() => usersOf(nodes), [nodes]);
   const [scroller, setScroller] = useState<HTMLElement | null>(null);
+  const [launcherEnd, setLauncherEnd] = useState(0);
   const cardsRef = useRef(new Map<string, HTMLElement>());
   const [pending, setPending] = useState<PendingReveal | null>(null);
   const [near, setNear] = useState<ReadonlySet<string> | null>(() =>
@@ -380,6 +382,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           onPick={(target) =>
             reveal({ ...target, mode: { kind: 'navigate', focus: true, flash: true } })
           }
+          onLauncherEnd={setLauncherEnd}
           labels={labels}
           dataTestId={`${dataTestId}-minimap`}
         />
@@ -395,7 +398,11 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
             {labels.empty}
           </p>
         ) : (
-          <div className={GRAPH_COLUMN_CLASS} onFocus={onFocus}>
+          <div
+            className={GRAPH_COLUMN_CLASS}
+            style={{ paddingLeft: graphColumnInsetOf(launcherEnd) }}
+            onFocus={onFocus}
+          >
             {nodes.map((node) => (
               <div key={node.id}>{branch(node, 0)}</div>
             ))}
