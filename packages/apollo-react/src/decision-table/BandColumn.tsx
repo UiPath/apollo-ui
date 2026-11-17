@@ -29,10 +29,10 @@ export interface BandColumnProps {
   /** The column's change in a diff. */
   change: DiffChange | undefined;
   labels: MarkBadgeProps['labels'] & Pick<DiffLabels, 'changeStatus'>;
-  /** Opens or closes the column's popover; without it the pill stays plain. */
-  onToggle: ((columnId: string) => void) | undefined;
-  /** The popover's id while it is open on this column. */
-  editorId: string | undefined;
+  /** A plain pill, or a button that opens or closes the column's popover, with the popover's id while it is open on this column. */
+  pill:
+    | { kind: 'plain' }
+    | { kind: 'button'; onToggle: (columnId: string) => void; openEditorId: string | null };
 }
 
 /** One input or output of a band: its type glyph and name, painted by its column's mark, and a button where it is editable. */
@@ -42,8 +42,7 @@ export const BandColumn: React.FC<BandColumnProps> = ({
   badgeId,
   change,
   labels,
-  onToggle,
-  editorId,
+  pill,
 }) => {
   const { tone, title } = columnMark(mark);
   const columnMarks: LineMarks | null = isLineMark(mark) ? [mark] : null;
@@ -65,7 +64,7 @@ export const BandColumn: React.FC<BandColumnProps> = ({
       {columnMarks && <MarkBadge id={badgeId} marks={columnMarks} labels={labels} />}
     </>
   );
-  if (!onToggle) {
+  if (pill.kind === 'plain') {
     return (
       <li
         className={cn(BAND_COLUMN_CLASS, CHANGED_CHIP_CLASS)}
@@ -81,9 +80,9 @@ export const BandColumn: React.FC<BandColumnProps> = ({
       <button
         type="button"
         className={cn(BAND_COLUMN_BUTTON_CLASS, CHANGED_CHIP_CLASS)}
-        aria-expanded={editorId !== undefined}
-        aria-controls={editorId}
-        onClick={() => onToggle(column.id)}
+        aria-expanded={pill.openEditorId !== null}
+        aria-controls={pill.openEditorId ?? undefined}
+        onClick={() => pill.onToggle(column.id)}
         {...chip}
       >
         {content}

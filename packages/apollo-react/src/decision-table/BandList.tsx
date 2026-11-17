@@ -10,33 +10,30 @@ export interface BandListProps {
   marks: TableMarks['columns'];
   /** Prefix of its columns' badge ids, each followed by the column's index. */
   badgeIdPrefix: string;
-  /** Each column's change by id, in a diff. */
-  changes: ReadonlyMap<string, NonNullable<BandColumnProps['change']>> | undefined;
   labels: BandColumnProps['labels'];
-  onToggleColumn: BandColumnProps['onToggle'];
-  /** The column whose popover is open, or null. */
-  openColumnId: string | null;
-  editorId: string;
+  mode: BandMode;
 }
 
+/** Plain pills; a diff's, with each column's change by id; or buttons that open the column whose popover is open, or null, under `editorId`. */
+export type BandMode =
+  | { kind: 'read' }
+  | { kind: 'diff'; changes: ReadonlyMap<string, NonNullable<BandColumnProps['change']>> }
+  | {
+      kind: 'edit';
+      onToggle: Extract<BandColumnProps['pill'], { kind: 'button' }>['onToggle'];
+      openColumnId: string | null;
+      editorId: string;
+    };
+
 /** A band's columns on one line, a tab stop while they overflow it and are no buttons, so the keyboard can scroll it. */
-export const BandList: React.FC<BandListProps> = ({
-  band,
-  marks,
-  badgeIdPrefix,
-  changes,
-  labels,
-  onToggleColumn,
-  openColumnId,
-  editorId,
-}) => {
+export const BandList: React.FC<BandListProps> = ({ band, marks, badgeIdPrefix, labels, mode }) => {
   const { ref, overflows } = useHorizontalOverflow<HTMLUListElement>();
   return (
     <ul
       ref={ref}
       className={BAND_COLUMNS_CLASS}
       aria-label={band.label}
-      tabIndex={overflows && !onToggleColumn ? 0 : undefined}
+      tabIndex={overflows && mode.kind !== 'edit' ? 0 : undefined}
     >
       {band.columns.map((column, columnIndex) => (
         <BandColumn
@@ -44,10 +41,17 @@ export const BandList: React.FC<BandListProps> = ({
           column={column}
           mark={marks.get(column.id)}
           badgeId={`${badgeIdPrefix}-${columnIndex}`}
-          change={changes?.get(column.id)}
+          change={mode.kind === 'diff' ? mode.changes.get(column.id) : undefined}
           labels={labels}
-          onToggle={onToggleColumn}
-          editorId={column.id === openColumnId ? editorId : undefined}
+          pill={
+            mode.kind === 'edit'
+              ? {
+                  kind: 'button',
+                  onToggle: mode.onToggle,
+                  openEditorId: column.id === mode.openColumnId ? mode.editorId : null,
+                }
+              : { kind: 'plain' }
+          }
         />
       ))}
     </ul>

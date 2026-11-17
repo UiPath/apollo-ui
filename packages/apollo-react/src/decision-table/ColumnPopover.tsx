@@ -246,7 +246,7 @@ export const ColumnPopover: React.FC<ColumnPopoverProps> = ({
         links={links}
         onCancel={onCancel}
         onApply={apply}
-        applyDisabled={missing || missingLabel}
+        apply={{ kind: 'fields', disabled: missing || missingLabel }}
         labels={labels}
         dataTestId={dataTestId}
       />

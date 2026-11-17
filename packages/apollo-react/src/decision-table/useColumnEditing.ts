@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { BandColumnProps } from './BandColumn';
+import type { BandMode } from './BandList';
 import type { ColumnEdit, ColumnPopoverProps } from './ColumnPopover';
 import type { EditorOverlayProps } from './EditorOverlay';
 import type { SentenceBand } from './sentenceTypes';
@@ -19,13 +19,14 @@ export interface OpenColumnEditor
   onDismiss: NonNullable<EditorOverlayProps['onPressOutside']>;
 }
 
-export interface ColumnEditing {
-  /** The column whose popover is open, or null. */
-  openId: string | null;
-  /** Opens a pill's popover, or closes it from its own pill; undefined while pills are plain. */
-  onToggle: BandColumnProps['onToggle'];
-  editor: OpenColumnEditor | undefined;
-}
+/** Plain pills, or the pills' toggle, which opens a popover or closes it from its own pill, the column whose popover is open, or null, and its editor. */
+export type ColumnEditing =
+  | { kind: 'plain' }
+  | {
+      kind: 'edit';
+      pills: Pick<Extract<BandMode, { kind: 'edit' }>, 'onToggle' | 'openColumnId'>;
+      editor: OpenColumnEditor | undefined;
+    };
 
 const pillOf = (section: HTMLElement | null, columnId: string): HTMLElement | undefined =>
   [...(section?.querySelectorAll<HTMLElement>('[data-band-id] li[data-column-id]') ?? [])]
@@ -77,11 +78,13 @@ export const useColumnEditing = ({
     };
   };
 
+  if (!column) return { kind: 'plain' };
   return {
-    openId: open ? open.id : null,
-    onToggle: column
-      ? (columnId) => setOpenId((current) => (current === columnId ? null : columnId))
-      : undefined,
-    editor: column && open ? editorOf(column, open) : undefined,
+    kind: 'edit',
+    pills: {
+      onToggle: (columnId) => setOpenId((current) => (current === columnId ? null : columnId)),
+      openColumnId: open ? open.id : null,
+    },
+    editor: open ? editorOf(column, open) : undefined,
   };
 };
