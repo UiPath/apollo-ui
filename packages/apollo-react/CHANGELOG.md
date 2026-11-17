@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v7.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.26.0...@uipath/apollo-react@7.27.0) (2026-11-17)
+
+### Features
+
+* **apollo-react:** type the text view's columns in the host's column types [ECS-2139] ([30ae09a](https://github.com/UiPath/apollo-ui/commit/30ae09a1c90fbe87b45dac9298f24e01ae168ce7))
+* **apollo-react:** word the text view's hit policy from a host catalog [ECS-2139] ([f73083c](https://github.com/UiPath/apollo-ui/commit/f73083c5b8824cc57b451bc061aeadbc6338e978))
+
 ## [@uipath/apollo-react-v7.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.25.0...@uipath/apollo-react@7.26.0) (2026-11-17)
 
 ### Features
