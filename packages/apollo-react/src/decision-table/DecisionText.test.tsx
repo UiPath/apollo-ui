@@ -47,6 +47,7 @@ import {
   NO_COLUMNS,
   valueList,
 } from './__fixtures__/sentences.fixtures';
+import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
 import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
@@ -97,18 +98,18 @@ beforeAll(() => {
 });
 afterAll(() => uninstallEscape());
 
-type ViewProps<Props extends DecisionTextProps = DecisionTextProps> = Props extends unknown
-  ? Partial<Props> & Pick<Props, 'selected' | 'onSelect' | 'edit'>
-  : never;
+type ViewProps = Partial<FlatTextProps>;
 
 const view = (props: ViewProps = {}) => (
   <DecisionText
-    rules={MULTI_SENTENCE_RULES}
-    {...MULTI_SENTENCE_COLUMNS}
-    header={MULTI_SENTENCE_HEADER}
-    ariaLabel="Rules"
-    dataTestId="nl"
-    {...props}
+    {...textPropsOf({
+      rules: MULTI_SENTENCE_RULES,
+      ...MULTI_SENTENCE_COLUMNS,
+      header: MULTI_SENTENCE_HEADER,
+      ariaLabel: 'Rules',
+      dataTestId: 'nl',
+      ...props,
+    })}
   />
 );
 const renderView = (props: ViewProps = {}) => render(view(props));
@@ -135,7 +136,7 @@ const scrollTo = (px: number) => {
   fireEvent.scroll(frame);
 };
 
-type SelectableProps = Partial<Exclude<DecisionTextProps, { diff: object }>> & {
+type SelectableProps = Omit<ViewProps, 'selected' | 'diff'> & {
   initial?: SentenceSelection | null;
 };
 
@@ -201,7 +202,7 @@ const rect = (left: number, right: number): DOMRect => ({
 });
 
 interface EditSpies {
-  onSelect: Mock<NonNullable<DecisionTextProps['onSelect']>>;
+  onSelect: Mock<NonNullable<ViewProps['onSelect']>>;
   onStartEdit: Mock<NonNullable<DecisionTextEdit['onStartEdit']>>;
   onCommit: Mock<
     (value: SentenceValueId, text: string, move: CellCommitMove, operator?: string) => void
@@ -211,8 +212,7 @@ interface EditSpies {
   onClearCell: Mock<DecisionTextEdit['onClearCell']>;
 }
 
-interface EditingHostProps
-  extends Partial<Omit<DecisionTextProps, 'selected' | 'onSelect' | 'edit' | 'diff'>> {
+interface EditingHostProps extends Omit<SelectableProps, 'initial' | 'onSelect' | 'edit'> {
   spies: EditSpies;
   initial?: SentenceSelection | null;
   initialEditing?: SentenceValueId | null;
@@ -1187,7 +1187,7 @@ describe('DecisionText', () => {
   describe('empty state', () => {
     it('keeps the header and bands and offers the add action', () => {
       const onAddRow = vi.fn();
-      renderView({ rules: [], addRule: { label: 'Add rule', onAdd: onAddRow } });
+      renderView({ rules: [], onAddRule: onAddRow });
       const empty = screen.getByTestId('nl-empty');
       expect(empty).toHaveTextContent('No rules yet');
       expect(screen.getAllByRole('button', { name: 'Add rule' })).toHaveLength(1);
@@ -1204,7 +1204,7 @@ describe('DecisionText', () => {
         ...GRID_SENTENCE_COLUMNS,
         selected: { kind: 'rule', rowId: 'r1' } satisfies SentenceSelection,
         onSelect: vi.fn(),
-        addRule: { label: 'Add rule', onAdd },
+        onAddRule: onAdd,
       };
       const { rerender } = render(view(props));
       act(() => card('r1').focus());
@@ -1216,7 +1216,7 @@ describe('DecisionText', () => {
 
     it('follows the rules with the add-rule action', () => {
       const onAdd = vi.fn();
-      renderView({ addRule: { label: 'Add rule', onAdd } });
+      renderView({ onAddRule: onAdd });
       const add = screen.getByRole('button', { name: 'Add rule' });
       const list = card('m5').closest('ul');
       expect(list?.compareDocumentPosition(add)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
@@ -1236,7 +1236,7 @@ describe('DecisionText', () => {
           rules,
           selected,
           onSelect: setSelected,
-          addRule: { label: 'Add rule', onAdd },
+          onAddRule: onAdd,
         });
       };
       render(<FirstRuleHost />);
@@ -1253,7 +1253,7 @@ describe('DecisionText', () => {
       const outside = document.body.appendChild(document.createElement('button'));
       onTestFinished(() => outside.remove());
       const onAdd = vi.fn();
-      const props = { addRule: { label: 'Add rule', onAdd }, selected: null, onSelect: vi.fn() };
+      const props = { onAddRule: onAdd, selected: null, onSelect: vi.fn() };
       const { rerender } = render(view({ ...props, rules: [] }));
       fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
       expect(onAdd).toHaveBeenCalledTimes(1);
@@ -1266,7 +1266,7 @@ describe('DecisionText', () => {
       const outside = document.body.appendChild(document.createElement('button'));
       onTestFinished(() => outside.remove());
       const props = {
-        addRule: { label: 'Add rule', onAdd: vi.fn() },
+        onAddRule: vi.fn(),
         selected: null,
         onSelect: vi.fn(),
       };
@@ -1295,7 +1295,7 @@ describe('DecisionText', () => {
           rules,
           selected: null,
           onSelect: vi.fn(),
-          addRule: { label: 'Add rule', onAdd: () => (late ? later(add) : add()) },
+          onAddRule: () => (late ? later(add) : add()),
         });
       };
       let currentRules: readonly SentenceRule[] = [];
@@ -2685,7 +2685,7 @@ describe('DecisionText', () => {
           rules,
           selected,
           onSelect: setSelected,
-          addRule: { label: 'Add rule', onAdd },
+          onAddRule: onAdd,
         });
       };
       const host = document.body.appendChild(document.createElement('div'));
@@ -2734,14 +2734,14 @@ describe('DecisionText', () => {
   describe('editing', () => {
     it('takes edit only with a controlled selection, without which no card control is tabbable', () => {
       render(
-        // @ts-expect-error
         <DecisionText
           rules={GRID_SENTENCE_RULES}
           {...GRID_SENTENCE_COLUMNS}
           header={GRID_SENTENCE_HEADER}
           ariaLabel="Rules"
           dataTestId="nl"
-          edit={editWith()}
+          // @ts-expect-error
+          mode={{ kind: 'edit', edit: editWith(), onAddRule: vi.fn() }}
         />
       );
       const controls = card('r1').querySelectorAll<HTMLElement>('button, [tabindex]');
@@ -3954,7 +3954,7 @@ describe('DecisionText', () => {
         initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r1Age,
         onOpenDecision,
-        addRule: { label: 'Add rule', onAdd },
+        onAddRule: onAdd,
       });
       fireEvent.change(editor(), { target: { value: '30' } });
       pressOutside(popover(), init);
@@ -5515,7 +5515,7 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(card('row-0'));
     });
 
-    it("tabs from the selected stop to its rule's + to ⋯ to delete and then out of the view, leaving their keys to the browser", () => {
+    it("tabs from the selected stop to its rule's + to ⋯ to delete to Add rule and then out of the view, leaving their keys to the browser", () => {
       const { onSelect } = renderSelectable({
         initial: { kind: 'cell', rowId: 'r3', columnId: 'risk' } satisfies SentenceSelection,
         edit: editWith(),
@@ -5533,11 +5533,12 @@ describe('DecisionText', () => {
             (chip.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)
       );
       const remove = within(card('r3')).getByRole('button', { name: 'Delete rule 3' });
-      expect(tabbable).toEqual([chip, add, actions('r3'), remove]);
+      const addRule = screen.getByRole('button', { name: 'Add rule' });
+      expect(tabbable).toEqual([chip, add, actions('r3'), remove, addRule]);
       expect(
         within(card('r2')).getByRole('button', { name: 'Add condition to rule 2' })
       ).toHaveAttribute('tabindex', '-1');
-      for (const action of [add, actions('r3'), remove]) {
+      for (const action of [add, actions('r3'), remove, addRule]) {
         act(() => action.focus());
         expect(press('Tab')).toBe(true);
       }
@@ -5681,7 +5682,7 @@ describe('DecisionText', () => {
   });
 
   describe('policy', () => {
-    type Policy = NonNullable<DecisionTextProps['policy']>;
+    type Policy = NonNullable<ViewProps['policy']>;
     const policyWith = (overrides: Partial<Policy> = {}): Policy => ({
       value: 'FIRST',
       groups: HIT_POLICY_GROUPS,
@@ -5833,7 +5834,6 @@ describe('DecisionText', () => {
 
     it('takes onSelect only with selected, without which no stop or link is tabbable', () => {
       render(
-        // @ts-expect-error
         <DecisionText
           rules={linkedRules}
           {...GRID_SENTENCE_COLUMNS}
@@ -5841,7 +5841,8 @@ describe('DecisionText', () => {
           ariaLabel="Rules"
           dataTestId="nl"
           onOpenDecision={vi.fn()}
-          onSelect={vi.fn()}
+          // @ts-expect-error
+          mode={{ kind: 'select', onSelect: vi.fn() }}
         />
       );
       const controls = document.querySelectorAll<HTMLElement>(

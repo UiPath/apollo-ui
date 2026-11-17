@@ -93,9 +93,11 @@ const Host = ({
       header={GRID_SENTENCE_HEADER}
       ariaLabel="Rules"
       dataTestId="nl"
-      selected={selected}
-      onSelect={setSelected}
-      edit={editable ? edit : undefined}
+      mode={
+        editable
+          ? { kind: 'edit', selected, onSelect: setSelected, edit, onAddRule: vi.fn() }
+          : { kind: 'select', selected, onSelect: setSelected }
+      }
     />
   );
 };

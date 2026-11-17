@@ -35,6 +35,7 @@ export const useDecisionTextLabels = (
     } satisfies Record<DiffChange, string>;
     return {
       emptyRules: _({ id: 'decision-text.empty_rules', message: 'No rules yet' }),
+      addRule: _({ id: 'decision-text.add_rule', message: 'Add rule' }),
       inputs: _({ id: 'decision-text.band_inputs', message: 'Inputs' }),
       outputs: _({ id: 'decision-text.band_outputs', message: 'Outputs' }),
       markStatus: (tone, message) =>

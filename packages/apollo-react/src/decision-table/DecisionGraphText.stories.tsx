@@ -87,13 +87,12 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     const shown = selected?.decisionId === decisionId ? selected.selection : null;
     const onSelect = (selection: SentenceSelection | null) =>
       setSelected(selection ? { decisionId, selection } : null);
-    const { columns, header, edit, policy, addRule } = storyTableProps({
+    const { columns, header, edit, policy, onAddRule } = storyTableProps({
       state,
       onChange: (next) => setTables((current) => ({ ...current, [decisionId]: next })),
       onSelect,
       onMoreProperties: setMoreProperties,
     });
-    const editable = mode === 'edit';
     return (
       <DecisionText
         rules={rulesById.get(decisionId) ?? []}
@@ -104,15 +103,17 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
         numbered
         scroll={scroll}
         onOpenDecision={setOpened}
-        policy={editable ? policy : undefined}
-        addRule={editable ? addRule : undefined}
-        {...(mode === 'read'
-          ? { selected: shown }
-          : {
-              selected: shown,
-              onSelect,
-              edit: editable
-                ? {
+        mode={
+          mode === 'read'
+            ? { kind: 'read', selected: shown }
+            : mode === 'edit'
+              ? {
+                  kind: 'edit',
+                  selected: shown,
+                  onSelect,
+                  policy,
+                  onAddRule,
+                  edit: {
                     ...edit,
                     editing: editing?.decisionId === decisionId ? editing.value : null,
                     onStartEdit: (value: SentenceValueId) => setEditing({ decisionId, value }),
@@ -122,9 +123,10 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
                       if (typeof refused !== 'string') setEditing(null);
                       return refused;
                     },
-                  }
-                : undefined,
-            })}
+                  },
+                }
+              : { kind: 'select', selected: shown, onSelect }
+        }
       />
     );
   };

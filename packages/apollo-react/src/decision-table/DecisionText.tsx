@@ -1,7 +1,6 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useId, useMemo, useState } from 'react';
-import type { AddRuleButtonProps } from './AddRuleButton';
 import { AddRuleFooter } from './AddRuleFooter';
 import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
@@ -53,12 +52,8 @@ interface DecisionTextBaseProps {
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
-  /** The add-rule action and its label, after the rules and in the empty state. */
-  addRule?: AddRuleButtonProps;
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
   onCellHover?: Parameters<typeof useCellHover>[0];
-  /** The header's picker, showing the picked option where the label is. */
-  policy?: DecisionTextHeaderProps['policy'];
   /** The decision's own mark, on the header line. */
   headerMark?: DecisionTextHeaderProps['mark'];
   /** Opens the decision a linked input names, from a click on it or Alt+Enter on its cell; without it inputs stay plain. */
@@ -77,38 +72,31 @@ interface DecisionTextBaseProps {
   children?: React.ReactNode;
 }
 
-/** A read-only view, which may show a selection the host keeps. */
-interface ReadOnlyDecisionText {
-  /** The selected rule or cell; one whose row is gone shows nothing selected. */
-  selected?: SentenceSelection | null;
-  onSelect?: undefined;
-  edit?: undefined;
-  diff?: undefined;
-}
+/** A click or key asks for this selection, or null on Escape. */
+type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
 
-/** A read-only view of what changed, painted on the after-state `rules`. */
-interface DiffDecisionText {
-  /** What changed; a new diff closes every fold, so memoize it. */
-  diff: DecisionTextDiff;
-  selected?: undefined;
-  onSelect?: undefined;
-  edit?: undefined;
-  addRule?: undefined;
-  policy?: undefined;
-}
+/** How the view is used: read, select rules and cells the host keeps, edit them, or read what changed. */
+export type DecisionTextMode =
+  | { kind: 'read'; selected: SentenceSelection | null }
+  | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
+  | {
+      kind: 'edit';
+      selected: SentenceSelection | null;
+      onSelect: SelectHandler;
+      edit: DecisionTextEdit;
+      onAddRule: () => void;
+      /** The header's picker, showing the picked option where the label is. */
+      policy?: NonNullable<DecisionTextHeaderProps['policy']>;
+    }
+  | {
+      kind: 'diff';
+      /** What changed, painted on the after-state `rules`; a new diff closes every fold, so memoize it. */
+      diff: DecisionTextDiff;
+    };
 
-/** A view whose selection the host controls, which selecting and editing require. */
-interface EditableDecisionText {
-  selected: SentenceSelection | null;
-  /** A click or key asks for this selection, or null on Escape. */
-  onSelect: NonNullable<SentenceNavigationSource['onSelect']>;
-  /** Editing on the cards; omit it for a read-only view. */
-  edit?: DecisionTextEdit;
-  diff?: undefined;
+export interface DecisionTextProps extends DecisionTextBaseProps {
+  mode: DecisionTextMode;
 }
-
-export type DecisionTextProps = DecisionTextBaseProps &
-  (ReadOnlyDecisionText | EditableDecisionText | DiffDecisionText);
 
 const NO_FOLDS: ReadonlySet<string> = new Set();
 
@@ -134,13 +122,8 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   header,
   numbered = false,
   marks = EMPTY_MARKS,
-  addRule,
   onCellHover,
-  selected,
-  onSelect,
-  edit: hostEdit,
-  diff,
-  policy,
+  mode,
   headerMark,
   onOpenDecision,
   labels: hostLabels,
@@ -150,9 +133,15 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
   dataTestId,
   children,
 }) => {
+  const selected = mode.kind === 'diff' ? null : mode.selected;
+  const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
+  const diff = mode.kind === 'diff' ? mode.diff : undefined;
   const idPrefix = useId();
   const labels = useDecisionTextLabels(hostLabels);
+  const hostEdit = mode.kind === 'edit' ? mode.edit : undefined;
   const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels(hostEdit?.labels));
+  const addRule =
+    mode.kind === 'edit' ? { label: labels.addRule, onAdd: mode.onAddRule } : undefined;
   const columns = useMemo(
     () => diff && diffColumnsOf(inputs, outputs, diff),
     [inputs, outputs, diff]
@@ -237,7 +226,7 @@ export const DecisionText: React.FC<DecisionTextProps> = ({
       <DecisionTextHeader
         ref={ruleWindow.headerRef}
         header={header}
-        policy={diff ? undefined : policy}
+        policy={mode.kind === 'edit' ? mode.policy : undefined}
         mark={headerMark}
         hitPolicy={diff?.hitPolicy}
         labels={labels}

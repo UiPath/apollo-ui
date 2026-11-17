@@ -12,6 +12,7 @@ import type { ValueCommit } from './valueTypes';
 /** The view's own strings, built in from the `decision-table` catalog. */
 export interface DecisionTextLabels extends RuleCardLabels, BandLabels, DiffLabels {
   emptyRules: string;
+  addRule: string;
 }
 
 /** The editing strings, built in from the `decision-table` catalog. */
