@@ -18,6 +18,7 @@ import {
   MINIMAP_ROW_CLASS,
   MINIMAP_TRIGGER_CLASS,
 } from './decisionGraphStyles';
+import { isComposing } from './gridEvents';
 import { type MinimapItem, type MinimapRow, matchRange, minimapRows } from './minimapRows';
 
 export const WINDOW_MINIMAP_FROM = 200;
@@ -142,6 +143,7 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
     onPick(item);
   };
   const onSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isComposing(event)) return;
     const moveTo = (index: number) => {
       event.preventDefault();
       const row = rows[Math.max(0, Math.min(index, rows.length - 1))];
@@ -255,6 +257,10 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
           if (picked.current) event.preventDefault();
         }}
         onEscapeKeyDown={(event) => {
+          if (isComposing(event)) {
+            event.preventDefault();
+            return;
+          }
           if (!query) return;
           event.preventDefault();
           changeQuery('');
