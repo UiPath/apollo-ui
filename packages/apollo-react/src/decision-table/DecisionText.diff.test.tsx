@@ -127,7 +127,13 @@ describe('diffRowsOf', () => {
         mode: 'full',
         rules: [{ rowId: rules[2]?.rowId ?? '', change: 'update', movedFrom: 1 }],
         values: [
-          { rowId: rules[1]?.rowId ?? '', columnId: 'risk', change: 'update', previous: '"low"' },
+          {
+            kind: 'cell',
+            rowId: rules[1]?.rowId ?? '',
+            columnId: 'risk',
+            change: 'update',
+            previous: '"low"',
+          },
         ],
       },
       nameOf,
@@ -135,7 +141,10 @@ describe('diffRowsOf', () => {
     );
     expect(ruleRow(rows.get(rules[0]?.rowId ?? ''))?.change).toBeUndefined();
     expect(ruleRow(rows.get(rules[1]?.rowId ?? ''))?.change).toBe('update');
-    expect(ruleRow(rows.get(rules[2]?.rowId ?? ''))?.movedFrom).toBe(1);
+    expect(ruleRow(rows.get(rules[2]?.rowId ?? ''))).toMatchObject({
+      change: 'update',
+      movedFrom: 1,
+    });
   });
 
   it(`keeps ${DIFF_CONTEXT_RULES} rules each side of a change and folds longer runs, numbered by the whole table`, () => {
@@ -250,7 +259,16 @@ describe('diffRowsOf value changes', () => {
       DIFF_RULES,
       {
         mode: 'full',
-        values: [{ rowId: 'r5', columnId: 'age', index: 0, change: 'update', previous: '25' }],
+        values: [
+          {
+            kind: 'value',
+            rowId: 'r5',
+            columnId: 'age',
+            index: 0,
+            change: 'update',
+            previous: '25',
+          },
+        ],
         removedRules: r5 ? [{ rule: r5, after: 'r5' }] : [],
       },
       nameOf,
@@ -266,7 +284,7 @@ describe('diffRowsOf value changes', () => {
   it('shows an added value on a cell the card does not word as a line', () => {
     const { rows } = diffRowsOf(
       DIFF_RULES,
-      { mode: 'full', values: [{ rowId: 'r5', columnId: 'region', change: 'add' }] },
+      { mode: 'full', values: [{ kind: 'cell', rowId: 'r5', columnId: 'region', change: 'add' }] },
       nameOf,
       NO_FOLDS
     );
@@ -279,10 +297,20 @@ describe('diffRowsOf value changes', () => {
 
   it('requires the old text of a deleted or updated value', () => {
     // @ts-expect-error
-    const deleted: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'delete' };
+    const deleted: DiffValueChange = {
+      kind: 'cell',
+      rowId: 'r5',
+      columnId: 'age',
+      change: 'delete',
+    };
     // @ts-expect-error
-    const updated: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'update' };
-    const added: DiffValueChange = { rowId: 'r5', columnId: 'age', change: 'add' };
+    const updated: DiffValueChange = {
+      kind: 'cell',
+      rowId: 'r5',
+      columnId: 'age',
+      change: 'update',
+    };
+    const added: DiffValueChange = { kind: 'cell', rowId: 'r5', columnId: 'age', change: 'add' };
     expect([deleted.change, updated.change, added.change]).toEqual(['delete', 'update', 'add']);
   });
 });

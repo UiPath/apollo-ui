@@ -56,7 +56,14 @@ describe('DecisionText diff edges', () => {
       {
         mode: 'full',
         values: [
-          { rowId: 'long', columnId: 'channel', index: 22, change: 'update', previous: '"old"' },
+          {
+            kind: 'value',
+            rowId: 'long',
+            columnId: 'channel',
+            index: 22,
+            change: 'update',
+            previous: '"old"',
+          },
         ],
       },
       { rules: [LONG_RULE] }
@@ -69,7 +76,7 @@ describe('DecisionText diff edges', () => {
   it('shows a value added past the cell end', () => {
     renderDiff({
       mode: 'full',
-      values: [{ rowId: 'r1', columnId: 'age', index: 5, change: 'add' }],
+      values: [{ kind: 'value', rowId: 'r1', columnId: 'age', index: 5, change: 'add' }],
     });
     const card = screen.getByTestId('nl-row-r1');
     expect(card).toHaveAttribute('data-change', 'update');
@@ -146,7 +153,14 @@ describe('DecisionText diff review edges', () => {
       {
         mode: 'full',
         values: [
-          { rowId: 'long', columnId: 'channel', index: 5000, change: 'update', previous: '"old"' },
+          {
+            kind: 'value',
+            rowId: 'long',
+            columnId: 'channel',
+            index: 5000,
+            change: 'update',
+            previous: '"old"',
+          },
         ],
       },
       { rules: [rule] }
@@ -171,7 +185,7 @@ describe('DecisionText diff review edges', () => {
     ['add', { change: 'add' as const }],
   ])('marks a valueless condition line for a cell %s', (change, value) => {
     renderDiff(
-      { mode: 'full', values: [{ rowId: 'ne', columnId: 'income', ...value }] },
+      { mode: 'full', values: [{ kind: 'cell', rowId: 'ne', columnId: 'income', ...value }] },
       { rules: [valuelessRule('ne')] }
     );
     const card = screen.getByTestId('nl-row-ne');
