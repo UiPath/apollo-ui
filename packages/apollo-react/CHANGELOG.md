@@ -1,3 +1,25 @@
+## [@uipath/apollo-react-v7.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.24.1...@uipath/apollo-react@7.25.0) (2026-11-17)
+
+### Features
+
+* **apollo-react:** add a host column-type module for DecisionText [ECS-2139] ([66122dc](https://github.com/UiPath/apollo-ui/commit/66122dcfe5a054da9d8dc505ee60aa09580dd993))
+* **apollo-react:** add a polite live region hook for DecisionText [ECS-2139] ([7bd4831](https://github.com/UiPath/apollo-ui/commit/7bd48315f5946227d08bbca55c70f044ce3d1f35))
+* **apollo-react:** browse a decision graph's rules from a minimap [ECS-2149] ([8609af3](https://github.com/UiPath/apollo-ui/commit/8609af3c9104d1604425442fa5eef687600de90a))
+* **apollo-react:** build the hit-policy menu from a host-typed catalog [ECS-2139] ([bec145e](https://github.com/UiPath/apollo-ui/commit/bec145e8fba8aedc21e272c35c265e68b37d7a1b))
+
+### Bug Fixes
+
+* **apollo-react:** float the minimap launcher top-left as designed [ECS-2149] ([c82b879](https://github.com/UiPath/apollo-ui/commit/c82b8799c07f9cd46dcec6ac95e0e41012586dcc))
+* **apollo-react:** focus a popover select's trigger when the host names no target [ECS-2139] ([562b677](https://github.com/UiPath/apollo-ui/commit/562b677bc6d7b45543934cdd6b7ad38856ff214e))
+* **apollo-react:** fold minimap search and labels with one case fold [ECS-2149] ([785a54d](https://github.com/UiPath/apollo-ui/commit/785a54d48fbaf173f2a3e6596e401d087b9ff0b5))
+* **apollo-react:** give the graph minimap its own toolbar row [ECS-2149] ([40b589c](https://github.com/UiPath/apollo-ui/commit/40b589caab97cb6828955446e1d028aec7492546))
+* **apollo-react:** keep the minimap where the reader scrolls it [ECS-2149] ([caca91e](https://github.com/UiPath/apollo-ui/commit/caca91e7d40854662094028862cc3ff35a568f30))
+* **apollo-react:** key minimap rows by decision and rule, search every condition [ECS-2149] ([611a4f1](https://github.com/UiPath/apollo-ui/commit/611a4f1cf1967c552f95322ab44077d9c92229c9))
+* **apollo-react:** key minimap rows by id so new results remeasure [ECS-2149] ([31668fc](https://github.com/UiPath/apollo-ui/commit/31668fc826a3839f7ff766c54243e7b19b7ed146))
+* **apollo-react:** land a far graph reveal in one jump [ECS-2149] ([bf6718e](https://github.com/UiPath/apollo-ui/commit/bf6718e1e8b7eef720ccf8298348fd1f3ac785b1))
+* **apollo-react:** leave minimap keys to an IME while it composes [ECS-2149] ([8b45b6b](https://github.com/UiPath/apollo-ui/commit/8b45b6b01f09021abae4b1956be36e28a3ab0681))
+* **apollo-react:** match minimap search on the original label, not its lowercase [ECS-2149] ([487270b](https://github.com/UiPath/apollo-ui/commit/487270b7c5dd4bf6bef6e8bcf8caf8c8894b1dce))
+
 ## [@uipath/apollo-react-v7.24.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.24.0...@uipath/apollo-react@7.24.1) (2026-11-17)
 
 ### Bug Fixes
