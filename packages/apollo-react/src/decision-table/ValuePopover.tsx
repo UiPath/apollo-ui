@@ -211,7 +211,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
                 onChange={changeOperator}
                 open={listOpen}
                 onOpenChange={setListOpen}
-                returnFocus={() => focusRef.current?.focus()}
+                returnFocus={() => focusRef.current}
                 container={root}
                 label={labels.operator}
                 dataTestId={`${dataTestId}-operator`}
