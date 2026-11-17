@@ -1,7 +1,6 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
-import { renderedParentOf } from './renderedTree';
 import { SENTENCE_MIN_RULE_HEIGHT_PX, sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentenceRule } from './sentenceTypes';
 import { type AxisSegment, useVirtualizedAxis } from './useVirtualizedAxis';
@@ -37,33 +36,19 @@ export type DecisionTextScroll = 'self' | { container?: HTMLElement | null };
 
 interface ScrollAncestor {
   scroller: HTMLElement;
-  path: HTMLElement[];
 }
 
 const isPageScroller = (scroller: HTMLElement): boolean =>
   scroller === scroller.ownerDocument.scrollingElement;
 
-/** The elements holding `element` where it renders, across slots and shadow roots, up to `scroller`. */
-const pathTo = (element: Element, scroller: HTMLElement): HTMLElement[] => {
-  const path: HTMLElement[] = [];
-  for (
-    let node = renderedParentOf(element);
-    node && node !== scroller;
-    node = renderedParentOf(node)
-  ) {
-    if (node instanceof HTMLElement) path.push(node);
-  }
-  return path;
-};
-
-/** The container `named`, else the page's scrolling element, and the elements on the way to it from `element`. */
+/** The container `named`, else the page's scrolling element. */
 const scrollAncestorOf = (element: Element, named: HTMLElement | null): ScrollAncestor | null => {
   const scroller = named ?? element.ownerDocument.scrollingElement;
-  return scroller instanceof HTMLElement ? { scroller, path: pathTo(element, scroller) } : null;
+  return scroller instanceof HTMLElement ? { scroller } : null;
 };
 
-/** Where `scroller`'s scroll events fire: the document for the page's scrolling element. */
-const scrollEventsOf = (scroller: HTMLElement): EventTarget =>
+/** Where `scroller`'s scrolls fire and its content shows: the document for the page's scrolling element. */
+const scrollportOf = (scroller: HTMLElement): HTMLElement | Document =>
   isPageScroller(scroller) ? scroller.ownerDocument : scroller;
 
 const pageForwarders = new WeakMap<Document, { views: number; forward: () => void }>();
@@ -185,12 +170,29 @@ export const useRuleWindow = (
     },
     [measureRef, named]
   );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the spacers change with the mounted cards and the ancestor with the named container
+  useLayoutEffect(() => {
+    const ancestor = ancestorRef.current;
+    const list = listRef.current;
+    if (!ancestor || !list || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some(({ isIntersecting }) => isIntersecting)) {
+          setListMoves((count) => count + 1);
+        }
+      },
+      { root: scrollportOf(ancestor.scroller) }
+    );
+    for (const spacer of list.querySelectorAll(':scope > li:not([data-row-id])')) {
+      observer.observe(spacer);
+    }
+    return () => observer.disconnect();
+  }, [mountedRowIds, named]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: the ancestor changes with the named container
   useLayoutEffect(() => {
     const ancestor = ancestorRef.current;
-    const section = sectionRef.current;
-    if (!ancestor || !section) return;
-    const events = scrollEventsOf(ancestor.scroller);
+    if (!ancestor) return;
+    const events = scrollportOf(ancestor.scroller);
     let last = listStart();
     const check = () => {
       const next = listStart();
@@ -202,27 +204,9 @@ export const useRuleWindow = (
       ? forwardPageScrolls(ancestor.scroller.ownerDocument)
       : null;
     events.addEventListener('scroll', check, { passive: true });
-    if (typeof ResizeObserver === 'undefined') {
-      return () => {
-        events.removeEventListener('scroll', check);
-        stopForwarding?.();
-      };
-    }
-    const observer = new ResizeObserver(check);
-    for (const element of [section, ...ancestor.path]) {
-      observer.observe(element, { box: 'border-box' });
-      for (
-        let before = element.previousElementSibling;
-        before;
-        before = before.previousElementSibling
-      ) {
-        observer.observe(before, { box: 'border-box' });
-      }
-    }
     return () => {
       events.removeEventListener('scroll', check);
       stopForwarding?.();
-      observer.disconnect();
     };
   }, [listStart, named]);
   useLayoutEffect(() => {
