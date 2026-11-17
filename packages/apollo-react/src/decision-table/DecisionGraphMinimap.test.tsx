@@ -142,6 +142,34 @@ describe('matchRange', () => {
     expect(matchRange('abc', ' ')).toBeNull();
   });
 
+  it.each([
+    ['ΚΟΣΜΟΣ', 'ΚΟΣΜΟΣ'],
+    ['ΚΟΣΜΟΣ', 'κοσμος'],
+    ['ΚΟΣΜΟΣ', 'κοσμοσ'],
+    ['κόσμος', 'ΚΌΣΜΟΣ'],
+  ])('finds the label %s by %s whichever sigma either side uses', (text, query) => {
+    expect(matchRange(text, query)).toEqual({ start: 0, end: text.length });
+  });
+
+  it('folds sharp s on both sides with the highlight on the original characters', () => {
+    expect(matchRange('STRASSE', 'straße')).toEqual({ start: 0, end: 7 });
+    expect(matchRange('straße', 'STRASSE')).toEqual({ start: 0, end: 6 });
+    expect(matchRange('Hauptstraße 5', 'strasse')).toEqual({ start: 5, end: 11 });
+  });
+
+  it.each([
+    'ΚΟΣΜΟΣ',
+    'κόσμος',
+    'STRASSE',
+    'straße',
+    'ẞ',
+    'İİ risk',
+    'İstanbul',
+    'plain',
+  ])('finds the whole label %s by itself', (label) => {
+    expect(matchRange(label, label)).toEqual({ start: 0, end: label.length });
+  });
+
   it('agrees with the row filter on every label', () => {
     const labels = ['İİ risk', 'ẞ risk', 'İstanbul', 'plain'];
     const items: MinimapItem[] = labels.map((label, i) => ({
