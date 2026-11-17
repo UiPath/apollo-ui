@@ -5,12 +5,12 @@ export const GRAPH_FRAME_CLASS =
 
 export const GRAPH_SCROLLER_CLASS = 'min-h-0 flex-1 scroll-pt-12 overflow-auto';
 
-export const GRAPH_COLUMN_CLASS =
-  'mx-auto flex w-full max-w-3xl flex-col gap-4 px-8 pt-[72px] pb-8';
+export const GRAPH_COLUMN_CLASS = 'mx-auto flex w-full max-w-3xl flex-col gap-4 px-8 py-8';
 
 export const GRAPH_EMPTY_CLASS = 'm-0 px-8 py-8 text-sm text-foreground-de-emp';
 
-export const GRAPH_MINIMAP_SLOT_CLASS = 'absolute top-3 left-3 z-10';
+export const GRAPH_TOOLBAR_CLASS =
+  'flex shrink-0 items-center border-b border-border-de-emp bg-background px-3 py-1.5';
 
 export const GRAPH_CARD_CLASS =
   'group/chapter relative flex flex-col rounded-[10px] border border-border-de-emp bg-background data-[active]:border-border';
@@ -64,9 +64,6 @@ export const GRAPH_REFERENCE_CHIP_CLASS =
 
 export const GRAPH_OUTPUT_HUE_CLASS =
   '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)]';
-
-export const MINIMAP_FLOATING_CLASS =
-  'rounded-xl border border-border-subtle bg-surface-raised p-1 text-foreground shadow-lg backdrop-blur-sm';
 
 export const MINIMAP_TRIGGER_CLASS =
   'h-8 gap-2 rounded-md px-3 text-sm font-medium text-foreground future:text-foreground hover:bg-muted data-[state=open]:bg-accent [&_svg]:size-4';

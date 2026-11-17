@@ -8,10 +8,10 @@ import {
   GRAPH_COLUMN_CLASS,
   GRAPH_EMPTY_CLASS,
   GRAPH_FRAME_CLASS,
-  GRAPH_MINIMAP_SLOT_CLASS,
   GRAPH_NEST_CLASS,
   GRAPH_OUTPUT_HUE_CLASS,
   GRAPH_SCROLLER_CLASS,
+  GRAPH_TOOLBAR_CLASS,
 } from './decisionGraphStyles';
 import type {
   DecisionGraphDecisionNode,
@@ -431,7 +431,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   return (
     <div className={cn(GRAPH_FRAME_CLASS, GRAPH_OUTPUT_HUE_CLASS)} data-testid={dataTestId}>
       {nodes.length > 0 && (
-        <div className={GRAPH_MINIMAP_SLOT_CLASS}>
+        <div className={GRAPH_TOOLBAR_CLASS}>
           <DecisionGraphMinimap
             items={minimapItems}
             triggerLabel={labels.ruleCount(ruleTotal)}
