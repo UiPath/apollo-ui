@@ -4,24 +4,10 @@ import type { DiffChange } from './decisionTextDiff';
 import type { DecisionTextEditLabels, DecisionTextLabels } from './decisionTextTypes';
 import type { GlyphTone } from './sentenceMarks';
 
-/** The defaults with each string the host gives in its place; a string left undefined keeps its default. */
-export const withLabelOverrides = <Labels extends object>(
-  defaults: Labels,
-  overrides: Partial<Labels> | undefined
-): Labels =>
-  overrides
-    ? {
-        ...defaults,
-        ...Object.fromEntries(Object.entries(overrides).filter(([, value]) => value !== undefined)),
-      }
-    : defaults;
-
-/** The view's own strings in the active locale, with the host's in place of any it gives. */
-export const useDecisionTextLabels = (
-  overrides: Partial<DecisionTextLabels> | undefined
-): DecisionTextLabels => {
+/** The view's own strings in the active locale. */
+export const useDecisionTextLabels = (): DecisionTextLabels => {
   const { _ } = useSafeLingui();
-  const defaults = useMemo((): DecisionTextLabels => {
+  return useMemo((): DecisionTextLabels => {
     const tones = {
       error: _({ id: 'decision-text.mark_error', message: 'Error' }),
       warning: _({ id: 'decision-text.mark_warning', message: 'Warning' }),
@@ -89,15 +75,12 @@ export const useDecisionTextLabels = (
         }),
     };
   }, [_]);
-  return useMemo(() => withLabelOverrides(defaults, overrides), [defaults, overrides]);
 };
 
-/** The editing strings in the active locale, with the host's in place of any it gives. */
-export const useDecisionTextEditLabels = (
-  overrides: Partial<DecisionTextEditLabels> | undefined
-): DecisionTextEditLabels => {
+/** The editing strings in the active locale. */
+export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
   const { _ } = useSafeLingui();
-  const defaults = useMemo(
+  return useMemo(
     (): DecisionTextEditLabels => ({
       addCondition: (position) =>
         _({
@@ -187,5 +170,4 @@ export const useDecisionTextEditLabels = (
     }),
     [_]
   );
-  return useMemo(() => withLabelOverrides(defaults, overrides), [defaults, overrides]);
 };

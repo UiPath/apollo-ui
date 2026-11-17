@@ -104,8 +104,6 @@ interface TableHostProps {
   marks?: TableMarks;
   headerMark?: DecisionTextProps['headerMark'];
   renderEditor?: DecisionTextEdit['renderEditor'];
-  labels?: DecisionTextProps['labels'];
-  editLabels?: DecisionTextEdit['labels'];
   frameClassName?: string;
 }
 
@@ -118,8 +116,6 @@ const TableHost = ({
   marks: fixedMarks,
   headerMark,
   renderEditor,
-  labels,
-  editLabels,
   frameClassName = 'h-[600px]',
 }: TableHostProps) => {
   const [host, setHost] = useState(() => storyTableOf(initialTable));
@@ -147,7 +143,6 @@ const TableHost = ({
     onSelect: setSelected,
     onMoreProperties: setMoreProperties,
     renderEditor,
-    editLabels,
   });
 
   return (
@@ -156,7 +151,6 @@ const TableHost = ({
         rules={rules}
         {...columns}
         header={header}
-        labels={labels}
         ariaLabel="Rules"
         dataTestId="decision-text"
         numbered
@@ -281,13 +275,6 @@ const ERRORS_MARKS: TableMarks = {
   ]),
 };
 
-const GERMAN_LABELS = { emptyRules: 'Noch keine Regeln', inputs: 'Eingaben', outputs: 'Ausgaben' };
-const GERMAN_EDIT_LABELS = {
-  cancel: 'Abbrechen',
-  apply: 'Übernehmen',
-  ruleActions: (position: number) => `Aktionen für Regel ${position}`,
-};
-
 /** The story's expression editor: a monospace input in its own shadow root, as a host's code editor would mount. */
 const ShadowExpressionEditor = ({ value, ariaLabel, onChange, onReady }: ExpressionEditorProps) => {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -328,12 +315,11 @@ interface RulesArgs {
   mode: HostMode;
   table: keyof typeof TABLES;
   validate: boolean;
-  labels: 'view' | 'host';
   editor: 'popover' | 'host';
 }
 
 export const Default: StoryObj<RulesArgs> = {
-  args: { mode: 'edit', table: 'rules', validate: false, labels: 'view', editor: 'popover' },
+  args: { mode: 'edit', table: 'rules', validate: false, editor: 'popover' },
   argTypes: {
     mode: {
       control: 'inline-radio',
@@ -342,11 +328,6 @@ export const Default: StoryObj<RulesArgs> = {
     },
     table: { control: 'inline-radio', options: Object.keys(TABLES) },
     validate: { control: 'boolean', description: 'Mark invalid values after every write.' },
-    labels: {
-      control: 'inline-radio',
-      options: ['view', 'host'],
-      description: "The view's strings, or a host's own words for some of them.",
-    },
     editor: {
       control: 'inline-radio',
       options: ['popover', 'host'],
@@ -354,14 +335,12 @@ export const Default: StoryObj<RulesArgs> = {
         "Under Edit expression: the popover's text field, or the host's editor in a shadow root.",
     },
   },
-  render: ({ mode, table, validate, labels, editor }) => (
+  render: ({ mode, table, validate, editor }) => (
     <TableHost
       key={table}
       initialTable={TABLES[table]}
       mode={mode}
       validate={validate}
-      labels={labels === 'host' ? GERMAN_LABELS : undefined}
-      editLabels={labels === 'host' ? GERMAN_EDIT_LABELS : undefined}
       renderEditor={editor === 'host' ? renderExpressionEditor : undefined}
       caption={MODE_CAPTIONS[mode]}
     />

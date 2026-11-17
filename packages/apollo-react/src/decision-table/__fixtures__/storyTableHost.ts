@@ -205,7 +205,6 @@ export interface StoryTableHost {
   onSelect: (selection: SentenceSelection | null) => void;
   onMoreProperties: (columnId: string) => void;
   renderEditor?: DecisionTextEdit['renderEditor'];
-  editLabels?: DecisionTextEdit['labels'];
 }
 
 /** A story host's props for an editable view of one table: its typed columns, header and hit-policy picker, every edit action, and Add rule. */
@@ -215,7 +214,6 @@ export const storyTableProps = ({
   onSelect,
   onMoreProperties,
   renderEditor,
-  editLabels,
 }: StoryTableHost) => {
   const { table, columnEdits, hitPolicy } = state;
   const setTable = (next: EditableTable) => onChange({ ...state, table: next });
@@ -273,7 +271,6 @@ export const storyTableProps = ({
       setTable(tableWithoutRule(table, rowId));
       onSelect(neighbourOf(table, rowId));
     },
-    labels: editLabels,
   };
   const header = headerOf(state);
   const policy: EditMode['policy'] = {

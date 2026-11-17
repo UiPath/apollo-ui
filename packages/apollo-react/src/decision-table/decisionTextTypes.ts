@@ -44,8 +44,6 @@ export interface DecisionTextEdit extends RuleMenuActions {
   column?: ColumnEdit;
   /** A condition's remove action, or Delete or Backspace on a selected value: the grid's clear, for one cell. */
   onClearCell: (cell: SentenceCellId) => void;
-  /** Strings in place of the built-in ones, any subset; mounted rules re-render when it changes, so memoize it. */
-  labels?: Partial<DecisionTextEditLabels>;
 }
 
 /** The host's edit as the view runs it, with which value is open and every string settled. */

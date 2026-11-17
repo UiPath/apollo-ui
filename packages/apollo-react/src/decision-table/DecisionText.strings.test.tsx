@@ -3,25 +3,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type I18n, setupI18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
-import { render, renderHook, screen, within } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import type React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import {
-  GRID_SENTENCE_COLUMNS,
-  GRID_SENTENCE_HEADER,
-  GRID_SENTENCE_RULES,
-} from './__fixtures__/sentences.fixtures';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
-import type {
-  DecisionTextEdit,
-  DecisionTextEditLabels,
-  DecisionTextLabels,
-} from './decisionTextTypes';
-import {
-  useDecisionTextEditLabels,
-  useDecisionTextLabels,
-  withLabelOverrides,
-} from './useDecisionTextStrings';
+import { describe, expect, it } from 'vitest';
+import type { DecisionTextEditLabels, DecisionTextLabels } from './decisionTextTypes';
+import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionTextStrings';
 
 type Calls<Labels> = {
   [K in keyof Labels as Labels[K] extends string ? never : K]-?: Labels[K] extends (
@@ -76,8 +62,8 @@ const providerFor =
 
 const builtInStrings = (i18n: I18n | null) => {
   const wrapper = providerFor(i18n);
-  const view = renderHook(() => useDecisionTextLabels(undefined), { wrapper }).result.current;
-  const edit = renderHook(() => useDecisionTextEditLabels(undefined), { wrapper }).result.current;
+  const view = renderHook(() => useDecisionTextLabels(), { wrapper }).result.current;
+  const edit = renderHook(() => useDecisionTextEditLabels(), { wrapper }).result.current;
   return [...stringsOf(view, VIEW_CALLS), ...stringsOf(edit, EDIT_CALLS)];
 };
 
@@ -111,50 +97,7 @@ describe('DecisionText strings', () => {
 
   it("takes the active locale's translation and the English for one it lacks", () => {
     const wrapper = providerFor(i18nWith('de', { 'decision-text.band_inputs': 'Eingaben' }));
-    const { result } = renderHook(() => useDecisionTextLabels(undefined), { wrapper });
+    const { result } = renderHook(() => useDecisionTextLabels(), { wrapper });
     expect([result.current.inputs, result.current.outputs]).toEqual(['Eingaben', 'Outputs']);
-  });
-
-  it('puts each defined override over its default and keeps the default for one left undefined', () => {
-    const defaults = { apply: 'Apply', cancel: 'Cancel', clear: 'Clear' };
-    expect(withLabelOverrides(defaults, { apply: 'Übernehmen', cancel: undefined })).toEqual({
-      apply: 'Übernehmen',
-      cancel: 'Cancel',
-      clear: 'Clear',
-    });
-    expect(withLabelOverrides(defaults, undefined)).toBe(defaults);
-  });
-
-  it("renders a host's partial strings, functions among them, over the view's own", () => {
-    const edit: DecisionTextEdit = {
-      onCommit: vi.fn(),
-      onClearCell: vi.fn(),
-      onDeleteRule: vi.fn(),
-      labels: { deleteRule: (position) => `Regel ${position} löschen`, addCondition: undefined },
-    };
-    const props: DecisionTextProps = {
-      rules: GRID_SENTENCE_RULES,
-      ...GRID_SENTENCE_COLUMNS,
-      header: GRID_SENTENCE_HEADER,
-      labels: { inputs: 'Eingaben' },
-      ariaLabel: 'Rules',
-      dataTestId: 'nl',
-      mode: {
-        kind: 'edit',
-        selected: { kind: 'rule', rowId: 'r2' },
-        onSelect: vi.fn(),
-        edit,
-        onAddRule: vi.fn(),
-      },
-    };
-    render(<DecisionText {...props} />);
-    const bands = screen.getByTestId('nl-bands');
-    expect(within(bands).getByText('Eingaben')).toBeInTheDocument();
-    expect(within(bands).getByText('Outputs')).toBeInTheDocument();
-    const card = screen.getByTestId('nl-row-r2');
-    expect(within(card).getByRole('button', { name: 'Regel 2 löschen' })).toBeInTheDocument();
-    expect(
-      within(card).getByRole('button', { name: 'Add condition to rule 2' })
-    ).toBeInTheDocument();
   });
 });

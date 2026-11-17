@@ -1,3 +1,5 @@
+import { setupI18n } from '@lingui/core';
+import { I18nProvider } from '@lingui/react';
 import {
   act,
   cleanup,
@@ -50,7 +52,7 @@ import {
 import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
 import type { ColumnEdit, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
+import { DecisionText } from './DecisionText';
 import type { DecisionTextEdit } from './decisionTextTypes';
 import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
@@ -379,15 +381,6 @@ describe('DecisionText', () => {
     it('shows no bands without inputs or outputs', () => {
       renderView(NO_COLUMNS);
       expect(screen.queryByTestId('nl-bands')).toBeNull();
-    });
-
-    it("captions the bands with the host's labels", () => {
-      renderView({ labels: { inputs: 'Eingaben', outputs: 'Ausgaben' } });
-      expect(
-        [...screen.getByTestId('nl-bands').querySelectorAll('[data-band-id]')].map(
-          (band) => band.firstElementChild?.textContent
-        )
-      ).toEqual(['Eingaben', 'Ausgaben']);
     });
 
     it('puts a row heading first, then its lead, then one line per condition', () => {
@@ -1745,18 +1738,6 @@ describe('DecisionText', () => {
       expect(onStartEdit.mock.calls).toEqual([[r2Age(0)]]);
     });
 
-    it('takes no cell labels from a read-only view', () => {
-      const namesWith = (labels: DecisionTextProps['labels']) => {
-        const { unmount } = renderView({ labels });
-        const names = mountedRows().map((row) => row.getAttribute('aria-label'));
-        unmount();
-        return names;
-      };
-      expect(namesWith({ cell: () => 'a cell', emptyValue: 'nothing' })).toEqual(
-        namesWith(undefined)
-      );
-    });
-
     it('names an empty value by its word, never by the dash it shows', () => {
       const edit = editWith({ editing: { rowId: 'm2', columnId: 'reason', index: 0 } });
       render(
@@ -1772,19 +1753,31 @@ describe('DecisionText', () => {
     });
 
     it('re-renders only the rules a selection leaves and enters', () => {
-      const cell = vi.fn(
-        (column: string, values: string, position: number) =>
-          `${column} ${values}, rule ${position}`
-      );
-      renderSelectable({
-        rules: manySentenceRules(2000),
-        labels: { cell },
-        initial: { kind: 'rule', rowId: 'row-0' } satisfies SentenceSelection,
+      const i18n = setupI18n({
+        locale: 'en',
+        messages: { en: { 'decision-text.cell': '{cell}, rule {position}' } },
       });
+      const translate = vi.spyOn(i18n, 't');
+      render(
+        <I18nProvider i18n={i18n}>
+          <Selectable rules={manySentenceRules(2000)} initial={{ kind: 'rule', rowId: 'row-0' }} />
+        </I18nProvider>
+      );
       act(() => card('row-0').focus());
-      cell.mockClear();
+      translate.mockClear();
       press('ArrowDown');
-      const positions = cell.mock.calls.map(([, , position]) => position);
+      const cellPosition = (descriptor: unknown): unknown[] =>
+        descriptor instanceof Object &&
+        'id' in descriptor &&
+        descriptor.id === 'decision-text.cell' &&
+        'values' in descriptor &&
+        descriptor.values instanceof Object &&
+        'position' in descriptor.values
+          ? [descriptor.values.position]
+          : [];
+      const positions = translate.mock.calls.flatMap((args: readonly unknown[]) =>
+        cellPosition(args[0])
+      );
       expect(positions).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]);
     });
 
@@ -5945,16 +5938,6 @@ describe('DecisionText', () => {
       walk('ArrowLeft', 'ArrowLeft');
       press('Enter', { altKey: true });
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
-    });
-
-    it('takes no links’ label from a view without onOpenDecision, and names a link by the host’s label over its own', () => {
-      const labels = { openDecision: (input: string) => `Go to ${input}` };
-      const { rerender } = renderView({ rules: linkedRules, labels });
-      expect(within(card('r1')).queryAllByRole('button')).toEqual([]);
-      const onOpenDecision = vi.fn();
-      rerender(view({ rules: linkedRules, labels, onOpenDecision }));
-      fireEvent.click(within(card('r1')).getByRole('button', { name: 'Go to income' }));
-      expect(onOpenDecision).toHaveBeenCalledWith('income-decision');
     });
 
     it('keeps a read-only link in the tab order, and the input plain without onOpenDecision', () => {
