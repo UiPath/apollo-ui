@@ -41,7 +41,7 @@
   "decision-text.missing_end": "Enter both ends",
   "decision-text.missing_input_expression": "This input column has no expression",
   "decision-text.missing_label": "Enter a label",
-  "decision-text.missing_output_name": "This output column has no name — every output in a multi-output table must be named",
+  "decision-text.missing_output_name": "This output column has no name",
   "decision-text.missing_value": "Enter a value",
   "decision-text.more_properties": "More properties",
   "decision-text.more_values": "{count, plural, other {+# more}}",

@@ -173,8 +173,7 @@ export const useDecisionTextEditLabels = (
       }),
       missingOutputName: _({
         id: 'decision-text.missing_output_name',
-        message:
-          'This output column has no name — every output in a multi-output table must be named',
+        message: 'This output column has no name',
       }),
       dataType: _({ id: 'decision-text.data_type', message: 'Data type' }),
       allowedValues: _({ id: 'decision-text.allowed_values', message: 'Allowed values' }),

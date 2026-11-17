@@ -86,7 +86,6 @@ export type {
   SentenceToken,
   SentenceValueId,
   SentenceValueToken,
-  SentenceValueType,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
 export type { DecisionTextScroll } from './useRuleWindow';

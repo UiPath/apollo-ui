@@ -70,7 +70,7 @@ describe('placing removed rules', () => {
       mode: 'full',
       removedColumns: [
         {
-          column: { id: 'income', name: 'income', type: 'number' },
+          column: { id: 'income', name: 'income' },
           kind: 'input',
           after: 'income',
         },
@@ -125,7 +125,7 @@ describe('values of a removed column', () => {
     mode: 'full' as const,
     removedColumns: [
       {
-        column: { id: 'fee', name: 'fee', type: 'number' as const },
+        column: { id: 'fee', name: 'fee' },
         kind: 'output' as const,
         after: 'risk',
       },
@@ -196,9 +196,7 @@ describe('a removed and an added value of one unworded column', () => {
     const keyErrors = keyErrorsOf(() =>
       renderDiff({
         mode: 'full',
-        removedColumns: [
-          { column: { id: 'fee', name: 'fee', type: 'number' }, kind: 'output', after: 'risk' },
-        ],
+        removedColumns: [{ column: { id: 'fee', name: 'fee' }, kind: 'output', after: 'risk' }],
         values: [
           { rowId: 'r5', columnId: 'fee', index: 0, change: 'delete', previous: '10' },
           { rowId: 'r5', columnId: 'fee', index: 1, change: 'add' },

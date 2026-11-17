@@ -55,7 +55,6 @@ import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type {
-  SentenceBandColumn,
   SentenceCellId,
   SentencePart,
   SentenceRule,
@@ -328,7 +327,6 @@ describe('DecisionText', () => {
           {
             id: 'score',
             name: 'Credit Score',
-            type: 'number',
             icon: <svg data-testid="type-icon" />,
           },
         ],
@@ -340,28 +338,17 @@ describe('DecisionText', () => {
       expect(column).toHaveTextContent(/^Credit Score$/);
     });
 
-    it("draws a column's glyph from its kind of value, and none for a kind the view lacks", () => {
-      const unknownType = 'toString' as unknown as SentenceBandColumn['type'];
+    it('draws no glyph for a band column without an icon', () => {
       renderView({
         inputs: [
-          { id: 'score', name: 'Credit Score', type: 'number' },
-          { id: 'start', name: 'Start', type: 'dateTime' },
-          { id: 'flag', name: 'Flag', type: unknownType },
+          { id: 'score', name: 'Credit Score', icon: <svg data-testid="score-icon" /> },
           { id: 'note', name: 'Note' },
         ],
       });
-      const glyphOf = (columnId: string) =>
-        screen
-          .getByTestId('nl-bands')
-          .querySelector(`[data-column-id="${columnId}"]`)
-          ?.querySelector('svg')
-          ?.getAttribute('class');
-      expect(['score', 'start', 'flag', 'note'].map(glyphOf)).toEqual([
-        'lucide lucide-hash',
-        'lucide lucide-calendar-clock',
-        undefined,
-        undefined,
-      ]);
+      const column = (columnId: string) =>
+        screen.getByTestId('nl-bands').querySelector(`[data-column-id="${columnId}"]`);
+      expect(column('score')?.querySelector('svg')).not.toBeNull();
+      expect(column('note')?.querySelector('svg')).toBeNull();
     });
 
     it.each([
@@ -3353,13 +3340,16 @@ describe('DecisionText', () => {
     });
 
     it.each([
-      ['its column', undefined, 'lucide lucide-hash'],
+      ['its column', undefined, 'column-icon'],
       ['the host', <svg key="host" data-testid="host-icon" />, null],
     ])('titles the popover with the glyph %s gives', (_, icon, glyph) => {
       renderEditing({
         initialEditing: r1Age,
         valueField: (cell) => ({ ...field(cell), icon }),
-        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
+        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({
+          ...column,
+          icon: <svg className="column-icon" />,
+        })),
       });
       const svg = popover().querySelector('svg');
       expect(svg?.getAttribute('class') ?? null).toBe(glyph);
@@ -4465,20 +4455,23 @@ describe('DecisionText', () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
-    it("titles a column's popover with its kind of value's glyph, and offers each type with its own", () => {
+    it("titles a column's popover with its glyph, and offers each type with its own", () => {
       renderEditing({
         column: columnEdit({
           types: [
-            { id: 'string', label: 'Text', type: 'text' },
-            { ...TYPES[0], id: 'number', label: 'Number', type: 'number' },
+            { id: 'string', label: 'Text', icon: <svg className="text-icon" /> },
+            { ...TYPES[0], id: 'number', label: 'Number' },
           ],
         }),
-        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
+        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({
+          ...column,
+          icon: <svg className="column-icon" />,
+        })),
       });
       fireEvent.click(pill('age'));
       const header = inPopover().getByText('Input · age').parentElement;
-      expect(header?.querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-hash');
-      expect(typeSelect().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-type');
+      expect(header?.querySelector('svg')?.getAttribute('class')).toBe('column-icon');
+      expect(typeSelect().querySelector('svg')?.getAttribute('class')).toBe('text-icon');
       fireEvent.click(typeSelect());
       fireEvent.click(screen.getByRole('option', { name: 'Number' }));
       expect(typeSelect().querySelector('svg')).toBe(inPopover().getByTestId('number-icon'));

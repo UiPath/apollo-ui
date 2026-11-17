@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Calendar, Hash, ToggleRight, Type } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -117,17 +118,22 @@ const ALLOWED_VALUES: Readonly<Record<string, readonly string[]>> = {
   channel: ['"web"', '"app"', '"branch"'],
 };
 
-/** The types the story's column popover offers, each with its kind of value and an example of its values. */
+/** The types the story's column popover offers, each with its glyph and an example of its values. */
 const COLUMN_TYPES: readonly ColumnTypeOption[] = [
-  { id: 'string', label: 'Text', type: 'text', allowedValuesPlaceholder: 'e.g. "web", "app"' },
+  { id: 'string', label: 'Text', icon: <Type />, allowedValuesPlaceholder: 'e.g. "web", "app"' },
   {
     id: 'number',
     label: 'Number',
-    type: 'number',
+    icon: <Hash />,
     allowedValuesPlaceholder: 'e.g. 10, 20, [30..40]',
   },
-  { id: 'boolean', label: 'Boolean', type: 'boolean', allowedValuesPlaceholder: 'e.g. true' },
-  { id: 'date', label: 'Date', type: 'date', allowedValuesPlaceholder: 'e.g. date("2026-01-01")' },
+  { id: 'boolean', label: 'Boolean', icon: <ToggleRight />, allowedValuesPlaceholder: 'e.g. true' },
+  {
+    id: 'date',
+    label: 'Date',
+    icon: <Calendar />,
+    allowedValuesPlaceholder: 'e.g. date("2026-01-01")',
+  },
 ];
 
 /** What the story host keeps of a column beyond its name, once the column popover changes it. */
@@ -138,8 +144,8 @@ const NO_COLUMN_EDITS: ColumnEdits = {};
 const columnTypeOf = (columnId: string, edits: ColumnEdits = NO_COLUMN_EDITS): string =>
   edits[columnId]?.typeRef ?? (NUMERIC_INPUTS.has(columnId) ? 'number' : 'string');
 
-const columnValueType = (columnId: string, edits?: ColumnEdits) =>
-  COLUMN_TYPES.find((type) => type.id === columnTypeOf(columnId, edits))?.type;
+const columnIcon = (columnId: string, edits?: ColumnEdits) =>
+  COLUMN_TYPES.find((type) => type.id === columnTypeOf(columnId, edits))?.icon;
 
 const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[] | undefined => {
   const text = edits[columnId]?.allowedValues;
@@ -148,11 +154,11 @@ const allowedValuesOf = (columnId: string, edits: ColumnEdits): readonly string[
   return values.length > 0 ? values : undefined;
 };
 
-/** The table's columns, each with its kind of value. */
+/** The table's columns, each with its glyph. */
 const typedColumns = (table: EditableTable, edits?: ColumnEdits) => {
   const { inputs, outputs } = tableColumns(table);
   const typed = (columns: readonly SentenceBandColumn[]) =>
-    columns.map((column) => ({ ...column, type: columnValueType(column.id, edits) }));
+    columns.map((column) => ({ ...column, icon: columnIcon(column.id, edits) }));
   return { inputs: typed(inputs), outputs: typed(outputs) };
 };
 

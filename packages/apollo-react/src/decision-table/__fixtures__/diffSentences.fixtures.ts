@@ -108,9 +108,7 @@ export const EVERY_STATE_DIFF: Omit<DecisionTextDiff, 'mode'> = {
     { columnId: 'region', change: 'add' },
     { columnId: 'channel', change: 'update' },
   ],
-  removedColumns: [
-    { column: { id: 'segment', name: 'segment', type: 'text' }, kind: 'input', after: 'income' },
-  ],
+  removedColumns: [{ column: { id: 'segment', name: 'segment' }, kind: 'input', after: 'income' }],
   hitPolicy: { before: 'First', after: 'Unique' },
 };
 
