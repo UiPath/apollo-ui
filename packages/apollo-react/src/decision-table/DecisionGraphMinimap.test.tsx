@@ -387,7 +387,7 @@ describe('DecisionGraphText minimap', () => {
         )}
         selected={selected?.id ?? null}
         onReveal={({ decisionId, rowId }) => {
-          if (rowId) setSelected({ id: decisionId, rule: { rowId } });
+          if (rowId) setSelected({ id: decisionId, rule: { kind: 'rule', rowId } });
         }}
         dataTestId="graph"
       />

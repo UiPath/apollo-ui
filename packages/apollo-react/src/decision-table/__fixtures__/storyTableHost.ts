@@ -165,7 +165,7 @@ const storyValueField = (
 const neighbourOf = (table: EditableTable, rowId: string): SentenceSelection | null => {
   const index = table.rules.findIndex((rule) => rule.rowId === rowId);
   const neighbour = table.rules[index + 1] ?? table.rules[index - 1];
-  return neighbour ? { rowId: neighbour.rowId } : null;
+  return neighbour ? { kind: 'rule', rowId: neighbour.rowId } : null;
 };
 
 /** What a story host keeps of one table: its rules and columns, what the column popover changed, and its hit policy. */
@@ -220,7 +220,7 @@ export const storyTableProps = ({
   const addRuleAt = (index: number) => {
     const [next, rowId] = tableWithRuleAt(table, index);
     setTable(next);
-    onSelect({ rowId });
+    onSelect({ kind: 'rule', rowId });
   };
   const columnName = (columnId: string) =>
     [...table.inputs, ...table.outputs].find((column) => column.id === columnId)?.name ?? columnId;
@@ -263,7 +263,7 @@ export const storyTableProps = ({
     onDuplicateRule: (rowId) => {
       const [next, copyId] = tableWithDuplicate(table, rowId);
       setTable(next);
-      onSelect({ rowId: copyId });
+      onSelect({ kind: 'rule', rowId: copyId });
     },
     onClearRule: (rowId) => setTable(tableWithClearedRule(table, rowId)),
     onMoveRule: (from, to) => setTable(tableWithMovedRule(table, from, to)),

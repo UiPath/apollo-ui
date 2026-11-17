@@ -1,13 +1,9 @@
 import type React from 'react';
 
-/** A column's name inside a sentence; `columnId` is the input's or output's id. */
-export interface SentenceNameToken {
-  kind: 'input' | 'output';
-  columnId: string;
-  text: string;
-  /** The id of the decision whose output this input is; set only on an input. */
-  producedBy?: string;
-}
+/** A column's name inside a sentence; `columnId` is the input's or output's id, and an input another decision produces names that decision. */
+export type SentenceNameToken =
+  | { kind: 'input'; columnId: string; text: string; producedBy?: string }
+  | { kind: 'output'; columnId: string; text: string };
 
 /** A cell's value inside a sentence, and its `index` among the cell's values, 0 for an outcome. */
 export interface SentenceValueToken {
@@ -88,8 +84,7 @@ export interface SentenceValueId extends SentenceCellId {
   index: number;
 }
 
-/** A rule, or one of its cells when `columnId` is set. */
-export interface SentenceSelection {
-  rowId: string;
-  columnId?: string;
-}
+/** A rule, or one of its cells. */
+export type SentenceSelection =
+  | { kind: 'rule'; rowId: string }
+  | ({ kind: 'cell' } & SentenceCellId);

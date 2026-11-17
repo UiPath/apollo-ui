@@ -482,8 +482,8 @@ describe('DecisionText', () => {
 
     it.each<[string, SentenceSelection | undefined]>([
       ['nothing', undefined],
-      ['a rule', { rowId: 'r1' }],
-      ['a cell', { rowId: 'r2', columnId: 'age' }],
+      ['a rule', { kind: 'rule', rowId: 'r1' }],
+      ['a cell', { kind: 'cell', rowId: 'r2', columnId: 'age' }],
     ])('stays read-only without onSelect with %s selected', (_, selected) => {
       renderView({
         rules: GRID_SENTENCE_RULES,
@@ -858,7 +858,7 @@ describe('DecisionText', () => {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
-        initial: { rowId: 'm5' },
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       };
       const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
       act(() => card('m5').focus());
@@ -882,7 +882,7 @@ describe('DecisionText', () => {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
-        initial: { rowId: 'm5' },
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       };
       const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
       act(() => card('m5').focus());
@@ -908,7 +908,7 @@ describe('DecisionText', () => {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
-        initial: { rowId: 'm5' },
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       };
       const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
       act(() => card('m5').focus());
@@ -930,7 +930,7 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
-        initial: { rowId: 'm5' },
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
       act(() => card('m5').focus());
       expect(tooltip()).toHaveTextContent('Unreachable');
@@ -952,7 +952,7 @@ describe('DecisionText', () => {
             },
           },
         }),
-        initial: { rowId: 'm1' },
+        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
       });
       act(() => card('m1').focus());
       expect(tooltip()).toHaveTextContent('Not a number');
@@ -972,7 +972,7 @@ describe('DecisionText', () => {
             },
           },
         }),
-        initial: { rowId: 'm1' },
+        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
       });
       const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
       const first = document.getElementById(firstId)?.closest('[data-mark-title]');
@@ -995,7 +995,7 @@ describe('DecisionText', () => {
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
-        initial: { rowId: 'm1' },
+        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
       };
       const marksWith = (country: string) =>
         rowMarks({
@@ -1029,7 +1029,7 @@ describe('DecisionText', () => {
           {...MULTI_SENTENCE_COLUMNS}
           header={MULTI_SENTENCE_HEADER}
           marks={scoreMarks}
-          initial={{ rowId: 'm5' }}
+          initial={{ kind: 'rule', rowId: 'm5' }}
         />,
         { container }
       );
@@ -1044,7 +1044,7 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
-        initial: { rowId: 'm5' },
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
       const restOffMarks = () => act(() => new Promise((resolve) => setTimeout(resolve, 400)));
       act(() => card('m5').focus());
@@ -1072,7 +1072,7 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
-        initial: { rowId: 'm5' },
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
       act(() => card('m5').focus());
       fireEvent.keyDown(card('m5'), { key: 'Escape' });
@@ -1089,7 +1089,7 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
-        initial: { rowId: 'm1' },
+        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
       });
       fireEvent.pointerOver(valueChip('m3', 'score'));
       expect(tooltip()).toHaveTextContent('Overlaps row 1');
@@ -1105,7 +1105,7 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
         marks: scoreMarks,
-        initial: { rowId: 'm5' },
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       });
       act(() => card('m5').focus());
       fireEvent.pointerOver(valueChip('m3', 'score'));
@@ -1202,14 +1202,14 @@ describe('DecisionText', () => {
       const props = {
         rules: GRID_SENTENCE_RULES,
         ...GRID_SENTENCE_COLUMNS,
-        selected: { rowId: 'r1' },
+        selected: { kind: 'rule', rowId: 'r1' } satisfies SentenceSelection,
         onSelect: vi.fn(),
         addRule: { label: 'Add rule', onAdd },
       };
       const { rerender } = render(view(props));
       act(() => card('r1').focus());
       fireEvent.click(screen.getByRole('button', { name: 'Add rule' }), { detail: 1 });
-      rerender(view({ ...props, selected: { rowId: 'r1' } }));
+      rerender(view({ ...props, selected: { kind: 'rule', rowId: 'r1' } }));
       expect(onAdd).toHaveBeenCalledTimes(1);
       expect(focusedStop()).toBe('r1');
     });
@@ -1230,7 +1230,7 @@ describe('DecisionText', () => {
         const [selected, setSelected] = useState<SentenceSelection | null>(null);
         const onAdd = () => {
           setRules(manySentenceRules(1));
-          setSelected({ rowId: 'row-0' });
+          setSelected({ kind: 'rule', rowId: 'row-0' });
         };
         return view({
           rules,
@@ -1410,8 +1410,10 @@ describe('DecisionText', () => {
       const onSelect = vi.fn();
       const { rerender } = render(view({ rules, selected: null, onSelect }));
       expect(observed).toEqual(mountedRows());
-      rerender(view({ rules, selected: { rowId: 'row-1' }, onSelect }));
-      rerender(view({ rules, selected: { rowId: 'row-1', columnId: 'decision' }, onSelect }));
+      rerender(view({ rules, selected: { kind: 'rule', rowId: 'row-1' }, onSelect }));
+      rerender(
+        view({ rules, selected: { kind: 'cell', rowId: 'row-1', columnId: 'decision' }, onSelect })
+      );
       expect(observed).toHaveLength(mountedRows().length);
       act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
       expect(mountedRows().filter((row) => !observed.includes(row))).toEqual([]);
@@ -1628,7 +1630,7 @@ describe('DecisionText', () => {
       );
       if (!first || !second) throw new Error('age values');
       fireEvent.click(second, { shiftKey: true });
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'cell', rowId: 'r2', columnId: 'age' }]]);
       expect(document.activeElement).toBe(first);
       expect([first, second].map((chip) => chip.dataset.selected)).toEqual(['true', 'true']);
       expect(valueChip('r2', 'income')).not.toHaveAttribute('data-selected');
@@ -1642,9 +1644,9 @@ describe('DecisionText', () => {
       if (!name) throw new Error('name token');
       for (const target of [name, word, number]) fireEvent.click(target);
       expect(onSelect.mock.calls).toEqual([
-        [{ rowId: 'r2' }],
-        [{ rowId: 'r1' }],
-        [{ rowId: 'r3' }],
+        [{ kind: 'rule', rowId: 'r2' }],
+        [{ kind: 'rule', rowId: 'r1' }],
+        [{ kind: 'rule', rowId: 'r3' }],
       ]);
       expect(focusedStop()).toBe('r3');
     });
@@ -1661,23 +1663,29 @@ describe('DecisionText', () => {
       const more = card('long-list').querySelector<HTMLElement>('[data-more-values]');
       if (!more) throw new Error('count');
       fireEvent.click(more);
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'long-list', columnId: 'country' }]]);
+      expect(onSelect.mock.calls).toEqual([
+        [{ kind: 'cell', rowId: 'long-list', columnId: 'country' }],
+      ]);
       expect(focusedStop()).toBe('long-list:country');
       expect(more).toHaveAttribute('data-selected', 'true');
       expect(more).not.toHaveAttribute('tabindex');
     });
 
     it("paints and tab-stops the host's selection without taking focus", () => {
-      renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      renderSelectable({ initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } });
       const stops = document.querySelectorAll('li[data-row-id][tabindex="0"], li [tabindex="0"]');
       expect([...stops]).toEqual([valueChip('r2', 'age')]);
       expect(document.activeElement).toBe(document.body);
     });
 
     it.each<[string, SentenceSelection, string | null]>([
-      ['a rule', { rowId: 'r2' }, 'r2'],
-      ['a cell its row has no token for, as its rule', { rowId: 'r3', columnId: 'income' }, 'r3'],
-      ['a row that is gone, as nothing', { rowId: 'gone' }, null],
+      ['a rule', { kind: 'rule', rowId: 'r2' }, 'r2'],
+      [
+        'a cell its row has no token for, as its rule',
+        { kind: 'cell', rowId: 'r3', columnId: 'income' },
+        'r3',
+      ],
+      ['a row that is gone, as nothing', { kind: 'rule', rowId: 'gone' }, null],
     ])('paints and tab-stops the selection of %s', (_, initial, rowId) => {
       renderSelectable({ initial });
       const rows = rowId === null ? [] : [card(rowId)];
@@ -1691,10 +1699,14 @@ describe('DecisionText', () => {
     it('follows a selection the host changes', () => {
       const onSelect = vi.fn();
       const { rerender } = render(
-        view({ rules: GRID_SENTENCE_RULES, selected: { rowId: 'r1' }, onSelect })
+        view({ rules: GRID_SENTENCE_RULES, selected: { kind: 'rule', rowId: 'r1' }, onSelect })
       );
       rerender(
-        view({ rules: GRID_SENTENCE_RULES, selected: { rowId: 'r3', columnId: 'risk' }, onSelect })
+        view({
+          rules: GRID_SENTENCE_RULES,
+          selected: { kind: 'cell', rowId: 'r3', columnId: 'risk' },
+          onSelect,
+        })
       );
       expect(card('r1')).toHaveAttribute('tabindex', '-1');
       expect(valueChip('r3', 'risk')).toHaveAttribute('tabindex', '0');
@@ -1703,7 +1715,7 @@ describe('DecisionText', () => {
     it('names each cell stop by its column, values and row, as a group that Enter and Space leave to the host', () => {
       const onKeyDown = vi.fn();
       renderSelectable({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         containerProps: { onKeyDown },
       });
       expect(valueChip('r2', 'age')).toHaveAttribute('role', 'group');
@@ -1718,7 +1730,9 @@ describe('DecisionText', () => {
     });
 
     it('names each cell stop of an editable view as a button that Enter and Space start editing', () => {
-      const { onStartEdit } = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onStartEdit } = renderEditing({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       expect(valueChip('r2', 'age')).toHaveAttribute('role', 'button');
       expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60, rule 2');
       expect(
@@ -1745,7 +1759,13 @@ describe('DecisionText', () => {
 
     it('names an empty value by its word, never by the dash it shows', () => {
       const edit = editWith({ editing: { rowId: 'm2', columnId: 'reason', index: 0 } });
-      render(view({ selected: { rowId: 'm2', columnId: 'reason' }, onSelect: vi.fn(), edit }));
+      render(
+        view({
+          selected: { kind: 'cell', rowId: 'm2', columnId: 'reason' },
+          onSelect: vi.fn(),
+          edit,
+        })
+      );
       expect(valueChip('m2', 'reason')).toHaveTextContent(EMPTY_VALUE_DASH);
       expect(valueChip('m2', 'reason')).toHaveAccessibleName('Reason empty, rule 2');
       expect(editor()).toHaveAccessibleName('Reason empty, rule 2');
@@ -1759,7 +1779,7 @@ describe('DecisionText', () => {
       renderSelectable({
         rules: manySentenceRules(2000),
         labels: { cell },
-        initial: { rowId: 'row-0' },
+        initial: { kind: 'rule', rowId: 'row-0' } satisfies SentenceSelection,
       });
       act(() => card('row-0').focus());
       cell.mockClear();
@@ -1777,8 +1797,8 @@ describe('DecisionText', () => {
     });
 
     it.each<[string, SentenceSelection, string]>([
-      ['rule', { rowId: 'r2' }, 'LI'],
-      ['cell', { rowId: 'r2', columnId: 'age' }, 'SPAN'],
+      ['rule', { kind: 'rule', rowId: 'r2' }, 'LI'],
+      ['cell', { kind: 'cell', rowId: 'r2', columnId: 'age' }, 'SPAN'],
     ])('marks the selected %s alone as current, without axe violations', async (_, initial, tag) => {
       const { container } = renderSelectable({ initial });
       const current = [...container.querySelectorAll('[aria-current]')];
@@ -1786,13 +1806,15 @@ describe('DecisionText', () => {
         current.map((element) => [element.tagName, element.getAttribute('aria-current')])
       ).toEqual([[tag, 'true']]);
       expect(current[0]).toBe(
-        initial.columnId === undefined ? card('r2') : valueChip('r2', initial.columnId)
+        initial.kind === 'rule' ? card('r2') : valueChip('r2', initial.columnId)
       );
       expect(await axe(container)).toHaveNoViolations();
     });
 
     it('has no axe violations with a cell selected', async () => {
-      const { container } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { container } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       expect(await axe(container)).toHaveNoViolations();
     });
   });
@@ -1800,8 +1822,12 @@ describe('DecisionText', () => {
   describe('keyboard', () => {
     const startAt = (initial: SentenceSelection) => {
       const rendered = renderSelectable({ initial });
-      const { columnId } = initial;
-      act(() => (columnId ? valueChip(initial.rowId, columnId) : card(initial.rowId)).focus());
+      act(() =>
+        (initial.kind === 'cell'
+          ? valueChip(initial.rowId, initial.columnId)
+          : card(initial.rowId)
+        ).focus()
+      );
       return rendered;
     };
 
@@ -1810,7 +1836,7 @@ describe('DecisionText', () => {
       ['rtl', 'ArrowLeft', 'ArrowRight'],
     ])('steps through the stops of a %s row in reading order, clamped', (direction, on, back) => {
       const { onSelect } = renderSelectable({
-        initial: { rowId: 'r1' },
+        initial: { kind: 'rule', rowId: 'r1' } satisfies SentenceSelection,
         containerProps: { style: { direction } },
       });
       act(() => card('r1').focus());
@@ -1830,7 +1856,7 @@ describe('DecisionText', () => {
     });
 
     it('keeps the column a click lands on, not the one ↓ kept before it', () => {
-      startAt({ rowId: 'r1', columnId: 'income' });
+      startAt({ kind: 'cell', rowId: 'r1', columnId: 'income' });
       expect(walk('ArrowDown', 'ArrowDown')).toEqual(['r2:income', 'r3']);
       fireEvent.click(valueChip('r1', 'age'), { detail: 1 });
       expect(focusedStop()).toBe('r1:age');
@@ -1838,7 +1864,7 @@ describe('DecisionText', () => {
     });
 
     it('starts a new run of ↑ and ↓ from a click on the rule ↓ landed on', () => {
-      startAt({ rowId: 'r1', columnId: 'income' });
+      startAt({ kind: 'cell', rowId: 'r1', columnId: 'income' });
       expect(walk('ArrowDown', 'ArrowDown')).toEqual(['r2:income', 'r3']);
       fireEvent.click(card('r3'), { detail: 1 });
       expect(focusedStop()).toBe('r3');
@@ -1846,7 +1872,7 @@ describe('DecisionText', () => {
     });
 
     it('starts a new run of ↑ and ↓ from a click on a cell and then back on the rule ↓ landed on', () => {
-      startAt({ rowId: 'r1', columnId: 'income' });
+      startAt({ kind: 'cell', rowId: 'r1', columnId: 'income' });
       expect(walk('ArrowDown', 'ArrowDown')).toEqual(['r2:income', 'r3']);
       fireEvent.click(valueChip('r3', 'age'), { detail: 1 });
       fireEvent.click(card('r3'), { detail: 1 });
@@ -1857,6 +1883,7 @@ describe('DecisionText', () => {
       let hostSelect: (selection: SentenceSelection | null) => void = () => {};
       const Host = () => {
         const [selected, setSelected] = useState<SentenceSelection | null>({
+          kind: 'cell',
           rowId: 'r1',
           columnId: 'income',
         });
@@ -1872,8 +1899,8 @@ describe('DecisionText', () => {
       render(<Host />);
       act(() => valueChip('r1', 'income').focus());
       expect(walk('ArrowDown', 'ArrowDown')).toEqual(['r2:income', 'r3']);
-      act(() => hostSelect({ rowId: 'r1' }));
-      act(() => hostSelect({ rowId: 'r3' }));
+      act(() => hostSelect({ kind: 'rule', rowId: 'r1' }));
+      act(() => hostSelect({ kind: 'rule', rowId: 'r3' }));
       act(() => card('r3').focus());
       expect(walk('ArrowUp')).toEqual(['r2']);
     });
@@ -1881,13 +1908,16 @@ describe('DecisionText', () => {
     it('starts a new run of ↑ and ↓ after Escape, from the rule a key enters on', () => {
       const [r1, r2, r3] = GRID_SENTENCE_RULES;
       if (!r1 || !r2 || !r3) throw new Error('no grid rules');
-      renderSelectable({ rules: [r3, r1, r2], initial: { rowId: 'r1', columnId: 'income' } });
+      renderSelectable({
+        rules: [r3, r1, r2],
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'income' },
+      });
       act(() => valueChip('r1', 'income').focus());
       expect(walk('ArrowUp', 'Escape', 'ArrowDown', 'ArrowDown')).toEqual(['r3', 'nl', 'r3', 'r1']);
     });
 
     it('moves a row with ↓ and ↑, keeping the column across a row without it', () => {
-      startAt({ rowId: 'r1', columnId: 'income' });
+      startAt({ kind: 'cell', rowId: 'r1', columnId: 'income' });
       expect(walk('ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowUp', 'ArrowUp')).toEqual([
         'r2:income',
         'r3',
@@ -1900,7 +1930,7 @@ describe('DecisionText', () => {
       cleanup();
       const { onSelect } = renderSelectable({
         rules: [r1, r3, r2],
-        initial: { rowId: 'r1', columnId: 'income' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'income' } satisfies SentenceSelection,
       });
       act(() => valueChip('r1', 'income').focus());
       expect(walk('ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'ArrowUp')).toEqual([
@@ -1914,14 +1944,14 @@ describe('DecisionText', () => {
     });
 
     it.each<[string, KeyboardEventInit, SentenceSelection, string]>([
-      ['ArrowDown', { metaKey: true }, { rowId: 'r1', columnId: 'age' }, 'r3:age'],
-      ['ArrowUp', { ctrlKey: true }, { rowId: 'r3', columnId: 'age' }, 'r1:age'],
-      ['End', {}, { rowId: 'r2', columnId: 'age' }, 'r2:income'],
-      ['Home', {}, { rowId: 'r2', columnId: 'age' }, 'r2'],
-      ['ArrowRight', { ctrlKey: true }, { rowId: 'r2' }, 'r2:income'],
-      ['ArrowLeft', { metaKey: true }, { rowId: 'r2', columnId: 'income' }, 'r2'],
-      ['End', { ctrlKey: true }, { rowId: 'r2', columnId: 'age' }, 'r3:age'],
-      ['Home', { metaKey: true }, { rowId: 'r2', columnId: 'age' }, 'r1'],
+      ['ArrowDown', { metaKey: true }, { kind: 'cell', rowId: 'r1', columnId: 'age' }, 'r3:age'],
+      ['ArrowUp', { ctrlKey: true }, { kind: 'cell', rowId: 'r3', columnId: 'age' }, 'r1:age'],
+      ['End', {}, { kind: 'cell', rowId: 'r2', columnId: 'age' }, 'r2:income'],
+      ['Home', {}, { kind: 'cell', rowId: 'r2', columnId: 'age' }, 'r2'],
+      ['ArrowRight', { ctrlKey: true }, { kind: 'rule', rowId: 'r2' }, 'r2:income'],
+      ['ArrowLeft', { metaKey: true }, { kind: 'cell', rowId: 'r2', columnId: 'income' }, 'r2'],
+      ['End', { ctrlKey: true }, { kind: 'cell', rowId: 'r2', columnId: 'age' }, 'r3:age'],
+      ['Home', { metaKey: true }, { kind: 'cell', rowId: 'r2', columnId: 'age' }, 'r1'],
     ])('moves with %s %o from %o to %s', (key, init, from, stop) => {
       startAt(from);
       press(key, init);
@@ -1929,7 +1959,7 @@ describe('DecisionText', () => {
     });
 
     it('leaves Tab and Shift+Tab on a stop to the browser, selecting nothing', () => {
-      const { onSelect } = startAt({ rowId: 'r3', columnId: 'risk' });
+      const { onSelect } = startAt({ kind: 'cell', rowId: 'r3', columnId: 'risk' });
       expect([
         press('Tab'),
         press('Tab', { shiftKey: true }),
@@ -1940,7 +1970,7 @@ describe('DecisionText', () => {
     });
 
     it('clears with Escape and returns focus to the view, claiming it only when something was selected', () => {
-      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      const { onSelect } = startAt({ kind: 'cell', rowId: 'r2', columnId: 'age' });
       expect(press('Escape')).toBe(false);
       expect(onSelect.mock.calls).toEqual([[null]]);
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
@@ -1954,13 +1984,17 @@ describe('DecisionText', () => {
       act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
       act(() => screen.getByTestId('nl').focus());
       expect(press('End')).toBe(false);
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'row-500' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'rule', rowId: 'row-500' }]]);
       expect(focusedStop()).toBe('row-500');
     });
 
     it.each<[string, SentenceSelection | null, string[]]>([
       ['nothing', null, ['Tab', 'Escape', 'a', 'PageDown', ' ']],
-      ['a cell', { rowId: 'r2', columnId: 'age' }, ['PageUp', 'PageDown', ' ', 'Enter', 'F2', 'a']],
+      [
+        'a cell',
+        { kind: 'cell', rowId: 'r2', columnId: 'age' },
+        ['PageUp', 'PageDown', ' ', 'Enter', 'F2', 'a'],
+      ],
     ])('leaves keys it has no move for alone with %s selected', (_, initial, keys) => {
       const { onSelect } = renderSelectable({ initial });
       act(() => screen.getByTestId('nl').focus());
@@ -2000,8 +2034,8 @@ describe('DecisionText', () => {
     };
 
     it.each<[string, SentenceSelection, string]>([
-      ['a rule', { rowId: 'r2' }, 'r2'],
-      ['a cell', { rowId: 'r2', columnId: 'age' }, 'r2:age'],
+      ['a rule', { kind: 'rule', rowId: 'r2' }, 'r2'],
+      ['a cell', { kind: 'cell', rowId: 'r2', columnId: 'age' }, 'r2:age'],
     ])('lands Tab into the view on the selected stop with %s selected, and Tab or Shift+Tab from it leaves the view', async (_, initial, stop) => {
       const { onSelect } = renderSelectable({ initial, ...NO_COLUMNS });
       const { before, after } = aroundView();
@@ -2017,7 +2051,9 @@ describe('DecisionText', () => {
 
     it('passes the band lists going into the view and stops on them going back out of it from the selected stop', async () => {
       overflowingBandLists();
-      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onSelect } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       const { before, after } = aroundView();
       const inputs = screen.getByRole('list', { name: 'Inputs' });
       const outputs = screen.getByRole('list', { name: 'Outputs' });
@@ -2030,7 +2066,9 @@ describe('DecisionText', () => {
     });
 
     it('leaves focus on the view a pointer gives it with a stop selected', () => {
-      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onSelect } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       const view = screen.getByTestId('nl');
       fireEvent.pointerDown(view);
       act(() => view.focus());
@@ -2046,7 +2084,9 @@ describe('DecisionText', () => {
       ['a mouse click', ['pointerdown', 'mousedown', 'focus', 'pointerup', 'mouseup', 'click']],
       ['a touch tap', ['pointerdown', 'pointerup', 'mousedown', 'focus', 'mouseup', 'click']],
     ] as const)('leaves focus on the view %s on its header gives it with a stop selected', (_, order) => {
-      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onSelect } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       const view = screen.getByTestId('nl');
       const header = screen.getByTestId('nl-header');
       const fire = {
@@ -2095,7 +2135,9 @@ describe('DecisionText', () => {
         },
       ],
     ])('lands Tab into the view on the selected stop after %s', async (_, gesture) => {
-      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onSelect } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       const { before } = aroundView();
       gesture(screen.getByTestId('nl'), screen.getByTestId('nl-header'));
       act(() => before.focus());
@@ -2121,7 +2163,9 @@ describe('DecisionText', () => {
         },
       ],
     ])('moves the focus a script gives the view to the selected stop after %s', (_, gesture) => {
-      const { onSelect } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onSelect } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       const { before } = aroundView();
       const view = screen.getByTestId('nl');
       gesture(view, screen.getByTestId('nl-header'), before);
@@ -2137,7 +2181,9 @@ describe('DecisionText', () => {
         add.mockRestore();
         remove.mockRestore();
       });
-      const { unmount } = renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { unmount } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       add.mockClear();
       fireEvent.pointerDown(screen.getByTestId('nl-header'));
       const waiting = add.mock.calls.filter(([type]) => type === 'keydown');
@@ -2152,7 +2198,7 @@ describe('DecisionText', () => {
     ])('moves Tab on from the view a press on its header leaves focused to the selected stop, past %s', async (_, overflowing) => {
       if (overflowing) overflowingBandLists();
       const { onSelect } = renderSelectable({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         ...(!overflowing && NO_COLUMNS),
       });
       const view = screen.getByTestId('nl');
@@ -2199,23 +2245,28 @@ describe('DecisionText', () => {
       const container = (shadow ?? host).appendChild(document.createElement('div'));
       const onSelect = vi.fn();
       const props = { rules: GRID_SENTENCE_RULES, ...GRID_SENTENCE_COLUMNS, onSelect };
-      const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }), { container });
+      const { rerender } = render(view({ ...props, selected: { kind: 'rule', rowId: 'r2' } }), {
+        container,
+      });
       const r2 = within(container).getByTestId('nl-row-r2');
       act(() => r2.focus());
       fireEvent.keyDown(r2, { key: 'ArrowRight' });
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'risk' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'cell', rowId: 'r2', columnId: 'risk' }]]);
       act(() => outside.focus());
-      rerender(view({ ...props, selected: { rowId: 'r2', columnId: 'risk' } }));
+      rerender(view({ ...props, selected: { kind: 'cell', rowId: 'r2', columnId: 'risk' } }));
       expect(root.activeElement).toBe(outside);
     });
 
     it.each([
-      ['ArrowRight', { rowId: 'r2', columnId: 'risk' }, 'r2:risk'],
-      ['ArrowDown', { rowId: 'r3' }, 'r3'],
+      ['ArrowRight', { kind: 'cell', rowId: 'r2', columnId: 'risk' }, 'r2:risk'],
+      ['ArrowDown', { kind: 'rule', rowId: 'r3' }, 'r3'],
     ])('focuses where %s moves once the host applies the select a moment later, after rendering without it', async (key, expected, stop) => {
       const onSelect = vi.fn();
       const LateHost = () => {
-        const [selected, setSelected] = useState<SentenceSelection | null>({ rowId: 'r2' });
+        const [selected, setSelected] = useState<SentenceSelection | null>({
+          kind: 'rule',
+          rowId: 'r2',
+        });
         const [saving, setSaving] = useState(false);
         return view({
           rules: GRID_SENTENCE_RULES,
@@ -2241,6 +2292,7 @@ describe('DecisionText', () => {
     it('keeps the column ↓ started from across moves the host applies a moment later, after rendering without them', async () => {
       const LateHost = () => {
         const [selected, setSelected] = useState<SentenceSelection | null>({
+          kind: 'cell',
           rowId: 'r1',
           columnId: 'income',
         });
@@ -2272,18 +2324,20 @@ describe('DecisionText', () => {
       const outside = document.body.appendChild(document.createElement('button'));
       onTestFinished(() => outside.remove());
       const props = { rules: GRID_SENTENCE_RULES, ...GRID_SENTENCE_COLUMNS, onSelect: vi.fn() };
-      const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }));
+      const { rerender } = render(view({ ...props, selected: { kind: 'rule', rowId: 'r2' } }));
       act(() => card('r2').focus());
       press('ArrowRight');
       await settleLater();
-      rerender(view({ ...props, selected: { rowId: 'r2' } }));
+      rerender(view({ ...props, selected: { kind: 'rule', rowId: 'r2' } }));
       act(() => outside.focus());
-      rerender(view({ ...props, selected: { rowId: 'r2', columnId: 'risk' } }));
+      rerender(view({ ...props, selected: { kind: 'cell', rowId: 'r2', columnId: 'risk' } }));
       expect(document.activeElement).toBe(outside);
     });
 
     it('focuses the selected stop on a move that stays put', () => {
-      const { onSelect } = renderSelectable({ initial: { rowId: 'r3', columnId: 'age' } });
+      const { onSelect } = renderSelectable({
+        initial: { kind: 'cell', rowId: 'r3', columnId: 'age' },
+      });
       act(() => screen.getByTestId('nl').focus());
       expect(press('End')).toBe(false);
       expect(focusedStop()).toBe('r3:age');
@@ -2291,26 +2345,26 @@ describe('DecisionText', () => {
     });
 
     it('tells the host to select the rule when its selected cell has no value in it', () => {
-      const initial = { rowId: 'r3', columnId: 'income' };
+      const initial: SentenceSelection = { kind: 'cell', rowId: 'r3', columnId: 'income' };
       const { onSelect, unmount } = renderSelectable({ initial });
       fireEvent.click(card('r3'));
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'rule', rowId: 'r3' }]]);
       expect(focusedStop()).toBe('r3');
       unmount();
       const home = renderSelectable({ initial });
       act(() => screen.getByTestId('nl').focus());
       press('Home');
-      expect(home.onSelect.mock.calls).toEqual([[{ rowId: 'r3' }]]);
+      expect(home.onSelect.mock.calls).toEqual([[{ kind: 'rule', rowId: 'r3' }]]);
     });
 
     it('ignores a key mid-composition', () => {
-      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      const { onSelect } = startAt({ kind: 'cell', rowId: 'r2', columnId: 'age' });
       expect(press('ArrowRight', { isComposing: true })).toBe(true);
       expect(onSelect).not.toHaveBeenCalled();
     });
 
     it('ignores a key from a text field inside a row', () => {
-      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      const { onSelect } = startAt({ kind: 'cell', rowId: 'r2', columnId: 'age' });
       const field = document.createElement('input');
       card('r2').append(field);
       act(() => field.focus());
@@ -2319,14 +2373,14 @@ describe('DecisionText', () => {
     });
 
     it('ignores a key something inside a row already claimed', () => {
-      const { onSelect } = startAt({ rowId: 'r2', columnId: 'age' });
+      const { onSelect } = startAt({ kind: 'cell', rowId: 'r2', columnId: 'age' });
       valueChip('r2', 'age').addEventListener('keydown', (event) => event.preventDefault());
       press('ArrowRight');
       expect(onSelect).not.toHaveBeenCalled();
     });
 
     it('leaves a band list its own arrows', () => {
-      const { onSelect } = renderSelectable({ initial: { rowId: 'r2' } });
+      const { onSelect } = renderSelectable({ initial: { kind: 'rule', rowId: 'r2' } });
       act(() => screen.getByRole('list', { name: 'Inputs' }).focus());
       expect([press('ArrowRight'), press('End')]).toEqual([true, true]);
       expect(onSelect).not.toHaveBeenCalled();
@@ -2339,7 +2393,7 @@ describe('DecisionText', () => {
       const onClick = vi.fn();
       const onPointerCancel = vi.fn();
       renderSelectable({
-        initial: { rowId: 'r2' },
+        initial: { kind: 'rule', rowId: 'r2' } satisfies SentenceSelection,
         containerProps: { onKeyDown, onFocus, onBlur, onClick, onPointerCancel },
       });
       act(() => card('r2').focus());
@@ -2426,22 +2480,32 @@ describe('DecisionText', () => {
     it('scrolls a rule the host selects into view, without taking focus', () => {
       const rules = manySentenceRules(2000);
       const onSelect = vi.fn();
-      const { rerender } = render(view({ rules, selected: { rowId: 'row-0' }, onSelect }));
+      const { rerender } = render(
+        view({ rules, selected: { kind: 'rule', rowId: 'row-0' }, onSelect })
+      );
       const frame = screen.getByTestId('nl');
       expect(frame.scrollTop).toBe(0);
-      rerender(view({ rules, selected: { rowId: 'row-1500' }, onSelect }));
+      rerender(view({ rules, selected: { kind: 'rule', rowId: 'row-1500' }, onSelect }));
       const offsets = sentenceRuleOffsets(rules);
       expect(frame.scrollTop).toBe((offsets[1501] ?? 0) - FALLBACK_ROW_VIEWPORT_PX);
       expect(card('row-1500')).toHaveAttribute('tabindex', '0');
       expect(document.activeElement).toBe(document.body);
-      rerender(view({ rules, selected: { rowId: 'row-1500', columnId: 'decision' }, onSelect }));
+      rerender(
+        view({
+          rules,
+          selected: { kind: 'cell', rowId: 'row-1500', columnId: 'decision' },
+          onSelect,
+        })
+      );
       act(() => scrollTo(0));
-      rerender(view({ rules, selected: { rowId: 'row-1500', columnId: 'reason' }, onSelect }));
+      rerender(
+        view({ rules, selected: { kind: 'cell', rowId: 'row-1500', columnId: 'reason' }, onSelect })
+      );
       expect(frame.scrollTop).toBe(0);
     });
 
     it('scrolls on a key to a cell its row scrolled past, and to the top of a rule taller than the view', () => {
-      renderSelectable({ initial: { rowId: 'r2', columnId: 'age' } });
+      renderSelectable({ initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } });
       const frame = screen.getByTestId('nl');
       Object.defineProperty(frame, 'clientHeight', { value: 100 });
       const chip = valueChip('r3', 'age');
@@ -2485,7 +2549,10 @@ describe('DecisionText', () => {
       'editable',
     ])('leaves a rule partly in view where it is when a click on its value selects it, %s', (mode) => {
       const rules = manySentenceRules(30);
-      const props = { rules, initial: { rowId: 'row-0' } };
+      const props = {
+        rules,
+        initial: { kind: 'rule', rowId: 'row-0' } satisfies SentenceSelection,
+      };
       if (mode === 'editable') renderEditing(props);
       else renderSelectable(props);
       const frame = screen.getByTestId('nl');
@@ -2508,6 +2575,7 @@ describe('DecisionText', () => {
       const ClearingHost = () => {
         const [rules, setRules] = useState<SentenceRule[]>(() => [manyLinesRule(10)]);
         const [selected, setSelected] = useState<SentenceSelection | null>({
+          kind: 'rule',
           rowId: 'many-lines',
         });
         return view({
@@ -2572,7 +2640,9 @@ describe('DecisionText', () => {
     it('scrolls the cell the host selects in a rule taller than the view out from under the header', () => {
       const rules = [...manySentenceRules(3), manyLinesRule(10)];
       const onSelect = vi.fn();
-      const { rerender } = render(view({ rules, selected: { rowId: 'row-0' }, onSelect }));
+      const { rerender } = render(
+        view({ rules, selected: { kind: 'rule', rowId: 'row-0' }, onSelect })
+      );
       const frame = screen.getByTestId('nl');
       Object.defineProperty(frame, 'clientHeight', { value: 100 });
       Object.defineProperty(screen.getByTestId('nl-header'), 'offsetHeight', { value: 33 });
@@ -2583,7 +2653,13 @@ describe('DecisionText', () => {
         top: chipTop - frame.scrollTop,
         bottom: chipTop + 24 - frame.scrollTop,
       }));
-      rerender(view({ rules, selected: { rowId: 'many-lines', columnId: 'decision' }, onSelect }));
+      rerender(
+        view({
+          rules,
+          selected: { kind: 'cell', rowId: 'many-lines', columnId: 'decision' },
+          onSelect,
+        })
+      );
       const { top, bottom } = chip.getBoundingClientRect();
       expect(top).toBeGreaterThanOrEqual(33);
       expect(bottom).toBeLessThanOrEqual(100);
@@ -2599,10 +2675,11 @@ describe('DecisionText', () => {
         const [selected, setSelected] = useState<SentenceSelection | null>(null);
         const onAdd = () => {
           setRules(manySentenceRules(rules.length + 1));
-          setSelected({
-            rowId: `row-${rules.length}`,
-            ...(rules.length > 3 && { columnId: 'decision' }),
-          });
+          setSelected(
+            rules.length > 3
+              ? { kind: 'cell', rowId: `row-${rules.length}`, columnId: 'decision' }
+              : { kind: 'rule', rowId: `row-${rules.length}` }
+          );
         };
         return view({
           rules,
@@ -2649,7 +2726,7 @@ describe('DecisionText', () => {
       Object.defineProperty(screen.getByTestId('nl-header'), 'offsetHeight', { value: 33 });
       const top = sentenceRuleOffsets(rules)[100] ?? 0;
       act(() => scrollTo(top - 10));
-      rerender(view({ rules, selected: { rowId: 'row-100' }, onSelect: vi.fn() }));
+      rerender(view({ rules, selected: { kind: 'rule', rowId: 'row-100' }, onSelect: vi.fn() }));
       expect(screen.getByTestId('nl').scrollTop).toBe(top - 33);
     });
   });
@@ -2675,7 +2752,7 @@ describe('DecisionText', () => {
     it('selects the cell of a clicked value, then starts editing that value', () => {
       const { onSelect, onStartEdit } = renderEditing();
       fireEvent.click(secondAge());
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'cell', rowId: 'r2', columnId: 'age' }]]);
       expect(onStartEdit.mock.calls).toEqual([[r2Age(1)]]);
       expect(onSelect.mock.invocationCallOrder[0]).toBeLessThan(
         onStartEdit.mock.invocationCallOrder[0] ?? 0
@@ -2686,14 +2763,16 @@ describe('DecisionText', () => {
       const onKeyDown = vi.fn();
       const { onSelect } = renderSelectable({ containerProps: { onKeyDown } });
       fireEvent.click(secondAge());
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'cell', rowId: 'r2', columnId: 'age' }]]);
       expect(screen.queryByTestId('nl-editor')).toBeNull();
       expect([press('Enter'), press('F2'), press('Delete')]).toEqual([true, true, true]);
       expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual(['Enter', 'F2', 'Delete']);
     });
 
     it('starts editing the first value of a selected cell on Enter, Space or F2, never on a rule or mid-composition', () => {
-      const { onStartEdit } = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onStartEdit } = renderEditing({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       act(() => valueChip('r2', 'age').focus());
       expect(press('Enter')).toBe(false);
       press('Escape');
@@ -2714,7 +2793,7 @@ describe('DecisionText', () => {
 
     it('opens one editor outside the card, seeded with the value, named by its cell and without axe violations', async () => {
       const { container } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(1),
       });
       expect(screen.getAllByTestId('nl-editor')).toHaveLength(1);
@@ -2739,7 +2818,9 @@ describe('DecisionText', () => {
         .mockImplementation(function (this: HTMLElement) {
           return this.tagName === 'DIALOG' ? 256 : 0;
         });
-      const { onStartEdit } = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      const { onStartEdit } = renderEditing({
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
+      });
       Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 400 });
       const chip = secondAge();
       vi.spyOn(chip, 'getBoundingClientRect').mockReturnValue(rect(350, 370));
@@ -2769,7 +2850,7 @@ describe('DecisionText', () => {
         .mockImplementation(function (this: HTMLElement) {
           return this.tagName === 'DIALOG' ? 256 : 0;
         });
-      renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      renderEditing({ initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } });
       Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 2000 });
       const chip = secondAge();
       vi.spyOn(chip, 'getBoundingClientRect').mockReturnValue({
@@ -2826,7 +2907,7 @@ describe('DecisionText', () => {
       onTestFinished(() => {
         for (const spy of spies) spy.mockRestore();
       });
-      renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      renderEditing({ initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } });
       Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 639 });
       const chip = secondAge();
       vi.spyOn(chip, 'getBoundingClientRect').mockReturnValue(rect(500, 540));
@@ -2837,7 +2918,7 @@ describe('DecisionText', () => {
     it('moves the open editor with its value once a web font moves it', async () => {
       const fonts = new EventTarget();
       Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
-      renderEditing({ initial: { rowId: 'r1', columnId: 'age' } });
+      renderEditing({ initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } });
       Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 800 });
       const [chip] = valueChips('r2', 'age');
       if (!chip) throw new Error('age value');
@@ -2865,7 +2946,7 @@ describe('DecisionText', () => {
       const slot = inner.appendChild(document.createElement('slot'));
       const container = panel.appendChild(document.createElement('div'));
       if (slotted) Object.defineProperty(container, 'assignedSlot', { value: slot });
-      renderEditing({ initial: { rowId: 'r1', columnId: 'age' } }, container);
+      renderEditing({ initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } }, container);
       Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 800 });
       const [chip] = valueChips('r2', 'age');
       if (!chip) throw new Error('age value');
@@ -2882,7 +2963,7 @@ describe('DecisionText', () => {
     });
 
     it('moves the open editor with its value once a mark wraps it onto the next line', () => {
-      const spies = renderEditing({ initial: { rowId: 'r1', columnId: 'age' } });
+      const spies = renderEditing({ initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } });
       Object.defineProperty(screen.getByTestId('nl'), 'clientWidth', { value: 800 });
       const [chip] = valueChips('r2', 'age');
       if (!chip) throw new Error('age value');
@@ -2906,7 +2987,7 @@ describe('DecisionText', () => {
           const top = row ? (mountedRows().indexOf(row) + 1) * 100 : 0;
           return { ...rect(0, 20), top, bottom: top + 24, y: top };
         });
-      const spies = renderEditing({ initial: { rowId: 'r2', columnId: 'age' } });
+      const spies = renderEditing({ initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } });
       fireEvent.click(secondAge());
       expect(screen.getByTestId('nl-value-editor')).toHaveStyle({ top: '224px' });
       const [first] = GRID_SENTENCE_RULES;
@@ -2918,14 +2999,14 @@ describe('DecisionText', () => {
 
     it('commits once on Enter, then selects and focuses the same cell of the next rule', () => {
       const { onCommit, onSelect } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(1),
       });
       fireEvent.change(editor(), { target: { value: '61' } });
       fireEvent.keyDown(editor(), { key: 'Enter' });
       expect(onCommit.mock.calls).toEqual([[r2Age(1), '61', 'down']]);
       expect(screen.queryByTestId('nl-editor')).toBeNull();
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3', columnId: 'age' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'cell', rowId: 'r3', columnId: 'age' }]]);
       expect(focusedStop()).toBe('r3:age');
     });
 
@@ -2946,7 +3027,7 @@ describe('DecisionText', () => {
             {view({
               rules: GRID_SENTENCE_RULES,
               ...GRID_SENTENCE_COLUMNS,
-              selected: { rowId: 'r2', columnId: 'age' },
+              selected: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
               onSelect: vi.fn(),
               edit: editWith({
                 editing,
@@ -2972,6 +3053,7 @@ describe('DecisionText', () => {
     const LateEditingHost = ({ refuse = false }: { refuse?: boolean }) => {
       const [editing, setEditing] = useState<SentenceValueId | null>(r2Age(0));
       const [selected, setSelected] = useState<SentenceSelection | null>({
+        kind: 'cell',
         rowId: 'r2',
         columnId: 'age',
       });
@@ -3015,7 +3097,7 @@ describe('DecisionText', () => {
         return view({
           rules: GRID_SENTENCE_RULES,
           ...GRID_SENTENCE_COLUMNS,
-          selected: { rowId: 'r2', columnId: 'age' },
+          selected: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
           onSelect: vi.fn(),
           edit: editWith({
             editing,
@@ -3043,7 +3125,7 @@ describe('DecisionText', () => {
         return view({
           rules: GRID_SENTENCE_RULES,
           ...GRID_SENTENCE_COLUMNS,
-          selected: { rowId: 'r2', columnId: 'age' },
+          selected: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
           onSelect,
           edit: editWith({
             editing,
@@ -3078,7 +3160,7 @@ describe('DecisionText', () => {
 
     it('cancels the edit of a rule its delete action removes, as a clear of the edited cell does', () => {
       const { onCancel } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(0),
         refuse: true,
       });
@@ -3091,7 +3173,7 @@ describe('DecisionText', () => {
       const onCancel = vi.fn();
       const props = {
         ...GRID_SENTENCE_COLUMNS,
-        selected: { rowId: 'r2', columnId: 'age' },
+        selected: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         onSelect: vi.fn(),
         edit: editWith({ editing: r2Age(0), onCancel }),
       };
@@ -3110,7 +3192,7 @@ describe('DecisionText', () => {
         return view({
           rules,
           ...GRID_SENTENCE_COLUMNS,
-          selected: { rowId: 'r2', columnId: 'age' },
+          selected: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
           onSelect: vi.fn(),
           edit: editWith({ editing, onCancel: () => setEditing(null) }),
         });
@@ -3126,7 +3208,7 @@ describe('DecisionText', () => {
 
     it('cancels on Escape back to the chip, and commits in place on a press outside, focusing the chip again', () => {
       const { onCancel, onCommit } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(1),
       });
       fireEvent.keyDown(editor(), { key: 'Escape' });
@@ -3146,7 +3228,7 @@ describe('DecisionText', () => {
 
     it('keeps the editor and its draft open on a refused commit', () => {
       const { onCommit, onSelect } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(1),
         refuse: true,
       });
@@ -3204,7 +3286,7 @@ describe('DecisionText', () => {
     it("keeps the editor's keys from the navigation and hands them to the host's handlers, as the grid's cell editor does", () => {
       const onKeyDown = vi.fn();
       const { onSelect, onClearCell, onCommit } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(1),
         containerProps: { onKeyDown },
       });
@@ -3339,7 +3421,11 @@ describe('DecisionText', () => {
       const shadow = host.attachShadow({ mode: 'open' });
       const container = shadow.appendChild(document.createElement('div'));
       renderEditing(
-        { initial: { rowId: 'r1', columnId: 'age' }, initialEditing: r1Age, valueField: field },
+        {
+          initial: { kind: 'cell', rowId: 'r1', columnId: 'age' },
+          initialEditing: r1Age,
+          valueField: field,
+        },
         container
       );
       const inShadow = within(container);
@@ -3439,7 +3525,7 @@ describe('DecisionText', () => {
 
     it('commits the picked operator with the value on Enter, and moves down as before', () => {
       const { onCommit, onSelect } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r1Age,
         valueField: field,
       });
@@ -3449,7 +3535,7 @@ describe('DecisionText', () => {
       expect(onCommit).not.toHaveBeenCalled();
       fireEvent.keyDown(editor(), { key: 'Enter' });
       expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '>']]);
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r2', columnId: 'age' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'cell', rowId: 'r2', columnId: 'age' }]]);
       expect(focusedStop()).toBe('r2:age');
     });
 
@@ -3598,7 +3684,7 @@ describe('DecisionText', () => {
 
     it('cancels from Cancel back to the chip, committing nothing', () => {
       const { onCancel, onCommit } = renderEditing({
-        initial: { rowId: 'r2', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(1),
       });
       fireEvent.change(editor(), { target: { value: '61' } });
@@ -3712,7 +3798,7 @@ describe('DecisionText', () => {
           return view({
             rules: GRID_SENTENCE_RULES,
             ...GRID_SENTENCE_COLUMNS,
-            selected: { rowId: 'r1', columnId: 'age' },
+            selected: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
             onSelect: vi.fn(),
             edit: editWith({
               editing,
@@ -3820,7 +3906,7 @@ describe('DecisionText', () => {
 
     it('applies the draft in place from Apply, with its operator', () => {
       const { onCommit } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r1Age,
         valueField: field,
       });
@@ -3865,7 +3951,7 @@ describe('DecisionText', () => {
       const onOpenDecision = vi.fn();
       const onAdd = vi.fn();
       const { onCommit, onStartEdit, onClearCell, onCancel } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r1Age,
         onOpenDecision,
         addRule: { label: 'Add rule', onAdd },
@@ -4745,7 +4831,7 @@ describe('DecisionText', () => {
       const onClearCell = vi.fn();
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
-        initial: { rowId: 'm3', columnId: 'channel' },
+        initial: { kind: 'cell', rowId: 'm3', columnId: 'channel' } satisfies SentenceSelection,
         edit: editWith({ onClearCell }),
       });
       act(() => valueChip('m3', 'channel').focus());
@@ -4765,7 +4851,7 @@ describe('DecisionText', () => {
     it('opens the inputs a rule has no condition on from +, and edits one on its pending line', () => {
       const { onSelect } = renderEditing({
         inputIds: ['age', 'income'],
-        initial: { rowId: 'r1', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
       });
       const add = button('r3', 'Add condition to rule 3');
       expect(add).toHaveAttribute('aria-haspopup', 'menu');
@@ -4788,7 +4874,7 @@ describe('DecisionText', () => {
           .map((item) => item.textContent)
       ).toEqual(['income']);
       fireEvent.click(within(menu).getByRole('menuitem', { name: 'income' }));
-      expect(onSelect.mock.calls).toEqual([[{ rowId: 'r3', columnId: 'income' }]]);
+      expect(onSelect.mock.calls).toEqual([[{ kind: 'cell', rowId: 'r3', columnId: 'income' }]]);
       const input = editor();
       expect(input).toHaveValue('');
       expect(input).toHaveAccessibleName('New income condition, rule 3');
@@ -4858,7 +4944,7 @@ describe('DecisionText', () => {
       ['its last line, a moment later', { rowId: 'r2', columnId: 'channel' }, true],
       ['its lead, a moment later', { rowId: 'r1', columnId: 'age' }, true],
     ])('keeps focus on the rule after Delete removes its condition from %s', async (_, cell, late) => {
-      render(<TableHost initial={cell} late={late} />);
+      render(<TableHost initial={{ kind: 'cell', ...cell }} late={late} />);
       act(() => valueChip(cell.rowId, cell.columnId).focus());
       press('Delete');
       await settleLater();
@@ -4871,7 +4957,7 @@ describe('DecisionText', () => {
       const host = document.body.appendChild(document.createElement('div'));
       const shadow = host.attachShadow({ mode: 'open' });
       const container = shadow.appendChild(document.createElement('div'));
-      render(<TableHost initial={{ rowId: 'r1', columnId: 'age' }} />, { container });
+      render(<TableHost initial={{ kind: 'cell', rowId: 'r1', columnId: 'age' }} />, { container });
       const row = within(container).getByTestId('nl-row-r1');
       const age = row.querySelector<HTMLElement>('[data-kind="value"][data-column-id="age"]');
       if (!age) throw new Error('no age value in r1');
@@ -4885,7 +4971,7 @@ describe('DecisionText', () => {
     it.each<[string, SentenceCellId, KeyboardEventInit, string]>([
       ['Enter to the next rule', { rowId: 'r1', columnId: 'age' }, { key: 'Enter' }, 'r2:age'],
     ])('moves by %s when committing an empty value removes its condition', (_, cell, key, stop) => {
-      render(<TableHost initial={cell} />);
+      render(<TableHost initial={{ kind: 'cell', ...cell }} />);
       act(() => valueChip(cell.rowId, cell.columnId).focus());
       press('Enter');
       fireEvent.change(editor(), { target: { value: '' } });
@@ -4897,7 +4983,7 @@ describe('DecisionText', () => {
     it.each<[string, KeyboardEventInit, string]>([
       ['Enter to the next rule', { key: 'Enter' }, 'r2:channel'],
     ])('moves by %s when committing a condition added from +', (_, key, stop) => {
-      render(<TableHost initial={{ rowId: 'r1' }} />);
+      render(<TableHost initial={{ kind: 'rule', rowId: 'r1' }} />);
       fireEvent.click(button('r1', 'Add condition to rule 1'));
       fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'channel' }));
       fireEvent.change(editor(), { target: { value: '"web"' } });
@@ -4907,7 +4993,7 @@ describe('DecisionText', () => {
     });
 
     it('keeps focus on the rule after its ✕ removes a line with lines after it', () => {
-      render(<TableHost initial={{ rowId: 'r2' }} start={FOUR_LINES} />);
+      render(<TableHost initial={{ kind: 'rule', rowId: 'r2' }} start={FOUR_LINES} />);
       const remove = button('r2', 'Remove age from rule 2');
       act(() => remove.focus());
       fireEvent.click(remove);
@@ -4919,7 +5005,7 @@ describe('DecisionText', () => {
       ['Enter', () => fireEvent.keyDown(editor(), { key: 'Enter' })],
     ])('closes the editor of the condition its ✕ removes after a refused %s commit, staying on its rule', (_, settle) => {
       const { onCancel, onClearCell, onSelect } = renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
         refuse: true,
       });
@@ -4934,7 +5020,7 @@ describe('DecisionText', () => {
 
     it('returns focus to the rule after its ✕ removes a condition whose commit was refused while focus is on the view', () => {
       renderEditing({
-        initial: { rowId: 'r1', columnId: 'age' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: { rowId: 'r1', columnId: 'age', index: 0 },
         refuse: true,
       });
@@ -4969,7 +5055,7 @@ describe('DecisionText', () => {
     it('selects a condition with no value by a click on its input', () => {
       const { onSelect } = renderSelectable({ rules: NO_VALUE_RULES });
       fireEvent.click(noValueInput());
-      expect(onSelect).toHaveBeenLastCalledWith({ rowId: 'r1', columnId: 'income' });
+      expect(onSelect).toHaveBeenLastCalledWith({ kind: 'cell', rowId: 'r1', columnId: 'income' });
     });
 
     it('edits a condition with no value by a click on its input', () => {
@@ -4979,7 +5065,10 @@ describe('DecisionText', () => {
     });
 
     it('removes a condition with no value by Delete on its input', () => {
-      const { onClearCell } = renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1' } });
+      const { onClearCell } = renderEditing({
+        rules: NO_VALUE_RULES,
+        initial: { kind: 'rule', rowId: 'r1' },
+      });
       act(() => card('r1').focus());
       walk('ArrowRight', 'ArrowRight', 'ArrowRight');
       expect(document.activeElement).toHaveAttribute('data-column-id', 'income');
@@ -4991,7 +5080,10 @@ describe('DecisionText', () => {
       ['Escape back to its input', { key: 'Escape' }, 'r1:income'],
       ['Enter down to the next rule', { key: 'Enter' }, 'r2:income'],
     ])('moves by %s from the editor of a condition with no value', (_, key, stop) => {
-      renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1', columnId: 'income' } });
+      renderEditing({
+        rules: NO_VALUE_RULES,
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'income' },
+      });
       act(() => card('r1').querySelector<HTMLElement>('[data-column-id="income"]')?.focus());
       press('Enter');
       fireEvent.keyDown(editor(), key);
@@ -4999,14 +5091,17 @@ describe('DecisionText', () => {
     });
 
     it('names the editor of a condition with no value as its cell, not as a new condition', () => {
-      renderEditing({ rules: NO_VALUE_RULES, initial: { rowId: 'r1', columnId: 'income' } });
+      renderEditing({
+        rules: NO_VALUE_RULES,
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'income' },
+      });
       act(() => card('r1').querySelector<HTMLElement>('[data-column-id="income"]')?.focus());
       press('Enter');
       expect(editor()).toHaveAccessibleName('income, rule 1');
     });
 
     it('keeps focus on the rule after its ✕ re-words it, selecting that rule first', () => {
-      render(<TableHost initial={{ rowId: 'r1', columnId: 'age' }} />);
+      render(<TableHost initial={{ kind: 'cell', rowId: 'r1', columnId: 'age' }} />);
       const remove = button('r2', 'Remove channel from rule 2');
       act(() => remove.focus());
       fireEvent.click(remove);
@@ -5066,10 +5161,13 @@ describe('DecisionText', () => {
       late,
     }: RuleChangeHostProps) => {
       const [rules, setRules] = useState<readonly SentenceRule[]>(GRID_SENTENCE_RULES);
-      const [selected, setSelected] = useState<SentenceSelection | null>({ rowId: initial });
+      const [selected, setSelected] = useState<SentenceSelection | null>({
+        kind: 'rule',
+        rowId: initial,
+      });
       const apply = (rowId: string) => {
         setRules((current) => change(current, rowId));
-        if (next) setSelected({ rowId: next });
+        if (next) setSelected({ kind: 'rule', rowId: next });
       };
       return view({
         rules,
@@ -5403,7 +5501,7 @@ describe('DecisionText', () => {
         rules: manySentenceRules(2000),
         ...MULTI_SENTENCE_COLUMNS,
         header: MULTI_SENTENCE_HEADER,
-        initial: { rowId: 'row-0' },
+        initial: { kind: 'rule', rowId: 'row-0' } satisfies SentenceSelection,
         edit: editWith(),
       });
       const trigger = card('row-2').querySelector<HTMLElement>('[data-rule-action="rule"]');
@@ -5419,7 +5517,7 @@ describe('DecisionText', () => {
 
     it("tabs from the selected stop to its rule's + to ⋯ to delete and then out of the view, leaving their keys to the browser", () => {
       const { onSelect } = renderSelectable({
-        initial: { rowId: 'r3', columnId: 'risk' },
+        initial: { kind: 'cell', rowId: 'r3', columnId: 'risk' } satisfies SentenceSelection,
         edit: editWith(),
       });
       const add = within(card('r3')).getByRole('button', { name: 'Add condition to rule 3' });
@@ -5471,13 +5569,13 @@ describe('DecisionText', () => {
         onSelect: vi.fn(),
         edit: editWith({ onDeleteRule: vi.fn() }),
       };
-      const { rerender } = render(view({ ...props, selected: { rowId: 'r2' } }));
+      const { rerender } = render(view({ ...props, selected: { kind: 'rule', rowId: 'r2' } }));
       const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
       act(() => remove.focus());
       fireEvent.click(remove);
       expect(props.edit.onDeleteRule).toHaveBeenCalledWith('r2');
       expect(document.activeElement).toBe(card('r2'));
-      rerender(view({ ...props, selected: { rowId: 'r1' } }));
+      rerender(view({ ...props, selected: { kind: 'rule', rowId: 'r1' } }));
       expect(document.activeElement).toBe(card('r2'));
     });
 
@@ -5488,13 +5586,15 @@ describe('DecisionText', () => {
         onSelect: vi.fn(),
         edit: editWith({ onClearCell: vi.fn() }),
       };
-      const { rerender } = render(view({ ...props, selected: { rowId: 'r2', columnId: 'age' } }));
+      const { rerender } = render(
+        view({ ...props, selected: { kind: 'cell', rowId: 'r2', columnId: 'age' } })
+      );
       const chip = valueChip('r2', 'age');
       act(() => chip.focus());
       press('Delete');
       expect(props.edit.onClearCell).toHaveBeenCalledWith({ rowId: 'r2', columnId: 'age' });
       expect(document.activeElement).toBe(chip);
-      rerender(view({ ...props, selected: { rowId: 'r1' } }));
+      rerender(view({ ...props, selected: { kind: 'rule', rowId: 'r1' } }));
       expect(document.activeElement).toBe(chip);
     });
 
@@ -5522,14 +5622,18 @@ describe('DecisionText', () => {
       ['r1', 'a press', () => fireEvent.pointerDown(screen.getByTestId('nl'))],
     ])('with %s selected, leaves focus where the press of a refused delete action put it, and drops its refocus at %s', (initial, _, gesture) => {
       const props = { rules: GRID_SENTENCE_RULES, onSelect: vi.fn(), edit: editWith() };
-      const { rerender } = render(view({ ...props, selected: { rowId: initial } }));
+      const { rerender } = render(view({ ...props, selected: { kind: 'rule', rowId: initial } }));
       const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
       act(() => remove.focus());
       fireEvent.click(remove);
       expect(document.activeElement).toBe(initial === 'r2' ? card('r2') : remove);
       gesture();
       rerender(
-        view({ ...props, rules: removeRule(GRID_SENTENCE_RULES, 'r2'), selected: { rowId: 'r3' } })
+        view({
+          ...props,
+          rules: removeRule(GRID_SENTENCE_RULES, 'r2'),
+          selected: { kind: 'rule', rowId: 'r3' },
+        })
       );
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
     });
@@ -5547,7 +5651,7 @@ describe('DecisionText', () => {
       render(
         view({
           rules: GRID_SENTENCE_RULES,
-          selected: { rowId: 'r2' },
+          selected: { kind: 'rule', rowId: 'r2' } satisfies SentenceSelection,
           onSelect: vi.fn(),
           edit: editWith({ onDeleteRule: () => confirm.focus() }),
         }),
@@ -5702,7 +5806,7 @@ describe('DecisionText', () => {
         rules: linkedRules,
         onOpenDecision,
         edit,
-        initial: { rowId: 'r1', columnId: 'income' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'income' } satisfies SentenceSelection,
       });
       expect(link('r1')).toHaveAttribute('tabindex', '-1');
       fireEvent.click(link('r2'));
@@ -5718,7 +5822,7 @@ describe('DecisionText', () => {
       const { container } = renderSelectable({
         rules: noValueLinkedRules,
         onOpenDecision: vi.fn(),
-        initial: { rowId: 'r2', columnId: 'income' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'income' } satisfies SentenceSelection,
       });
       const current = [...container.querySelectorAll('[aria-current]')];
       expect(current).toEqual([link('r2')]);
@@ -5753,7 +5857,7 @@ describe('DecisionText', () => {
         rules: noValueLinkedRules,
         onOpenDecision,
         ...NO_COLUMNS,
-        initial: { rowId: 'r1', columnId: 'income' },
+        initial: { kind: 'cell', rowId: 'r1', columnId: 'income' } satisfies SentenceSelection,
       });
       const user = userEvent.setup();
       await user.tab();
@@ -5774,7 +5878,7 @@ describe('DecisionText', () => {
       const { onSelect } =
         mode === 'read-only'
           ? { onSelect: vi.fn(), ...renderView(props) }
-          : renderSelectable({ ...props, edit, initial: { rowId: 'r2' } });
+          : renderSelectable({ ...props, edit, initial: { kind: 'rule', rowId: 'r2' } });
       const user = userEvent.setup();
       await user.click(link('r2'));
       expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
@@ -5785,8 +5889,8 @@ describe('DecisionText', () => {
       expect(walk('ArrowRight', 'ArrowRight')).toEqual(['r2:risk', 'r2:income']);
       expect(document.activeElement).toBe(link('r2'));
       expect(onSelect.mock.calls).toEqual([
-        [{ rowId: 'r2', columnId: 'risk' }],
-        [{ rowId: 'r2', columnId: 'income' }],
+        [{ kind: 'cell', rowId: 'r2', columnId: 'risk' }],
+        [{ kind: 'cell', rowId: 'r2', columnId: 'income' }],
       ]);
       expect(onStartEdit).not.toHaveBeenCalled();
     });
@@ -5801,7 +5905,7 @@ describe('DecisionText', () => {
         rules: noValueLinkedRules,
         onOpenDecision,
         edit: editable ? editWith({ onStartEdit }) : undefined,
-        initial: { rowId: 'r2', columnId: 'income' },
+        initial: { kind: 'cell', rowId: 'r2', columnId: 'income' } satisfies SentenceSelection,
       });
       const user = userEvent.setup();
       act(() => link('r2').focus());
@@ -5829,7 +5933,7 @@ describe('DecisionText', () => {
         ' is set',
       ] satisfies SentencePart[];
       const rules = GRID_SENTENCE_RULES.map((rule) => ({ ...rule, lead }));
-      renderSelectable({ rules, onOpenDecision, initial: { rowId: 'r1' } });
+      renderSelectable({ rules, onOpenDecision, initial: { kind: 'rule', rowId: 'r1' } });
       act(() => card('r1').focus());
       expect(walk('ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight')).toEqual([
         'r1:risk',

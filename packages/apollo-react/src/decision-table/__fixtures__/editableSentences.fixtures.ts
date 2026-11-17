@@ -10,9 +10,12 @@ import type {
 import type { RangeEnds, ValueCommit } from '../valueTypes';
 import type { SentenceColumns } from './sentences.fixtures';
 
-/** A column of the story table, and the decision that produces it when another one does. */
-type EditableColumn = Pick<SentenceBandColumn, 'id' | 'name'> &
-  Pick<SentenceNameToken, 'producedBy'>;
+/** A column of the story table. */
+type EditableColumn = Pick<SentenceBandColumn, 'id' | 'name'>;
+
+/** An input of the story table, and the decision that produces it when another one does. */
+type EditableInput = EditableColumn &
+  Pick<Extract<SentenceNameToken, { kind: 'input' }>, 'producedBy'>;
 
 /** One condition of a rule: its input, its operator words, its values, what joins them, and a range's ends. */
 interface EditableCondition {
@@ -32,21 +35,27 @@ interface EditableRule {
 
 /** A small decision table a story host edits and words back into sentences. */
 export interface EditableTable {
-  inputs: EditableColumn[];
+  inputs: EditableInput[];
   outputs: EditableColumn[];
   rules: EditableRule[];
   nextId: number;
 }
 
-const nameToken = (kind: SentenceNameToken['kind'], column: EditableColumn): SentenceNameToken => ({
-  kind,
-  columnId: column.id,
-  text: column.name,
-  producedBy: column.producedBy,
+const inputToken = (input: EditableInput): SentenceNameToken => ({
+  kind: 'input',
+  columnId: input.id,
+  text: input.name,
+  producedBy: input.producedBy,
 });
 
-const conditionParts = (input: EditableColumn, condition: EditableCondition): SentencePart[] => [
-  nameToken('input', input),
+const outputToken = (output: EditableColumn): SentenceNameToken => ({
+  kind: 'output',
+  columnId: output.id,
+  text: output.name,
+});
+
+const conditionParts = (input: EditableInput, condition: EditableCondition): SentencePart[] => [
+  inputToken(input),
   ` ${condition.operator} `,
   ...condition.values.flatMap((text, index): SentencePart[] => [
     ...(index === 0 ? [] : [condition.joiner]),
@@ -67,7 +76,7 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
     const conditions = orderedConditions(table, rule);
     const heading = table.outputs.flatMap((output, index): SentencePart[] => [
       ...(index === 0 ? [] : [' · ']),
-      nameToken('output', output),
+      outputToken(output),
       ' is ',
       { kind: 'value', columnId: output.id, index: 0, text: rule.outcomes[output.id] ?? '' },
     ]);

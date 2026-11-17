@@ -139,7 +139,7 @@ describe('DecisionText strings', () => {
       labels: { inputs: 'Eingaben' },
       ariaLabel: 'Rules',
       dataTestId: 'nl',
-      selected: { rowId: 'r2' },
+      selected: { kind: 'rule', rowId: 'r2' },
       onSelect: vi.fn(),
       edit,
     };

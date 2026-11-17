@@ -22,6 +22,7 @@ import {
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import { DecisionText } from './DecisionText';
+import { selectedColumnOf } from './sentenceSelection';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 
 interface GraphSelection {
@@ -142,7 +143,10 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
           onReveal={(target) => {
             setRevealed(target);
             if (target.rowId !== undefined) {
-              setSelected({ decisionId: target.decisionId, selection: { rowId: target.rowId } });
+              setSelected({
+                decisionId: target.decisionId,
+                selection: { kind: 'rule', rowId: target.rowId },
+              });
             }
           }}
           onOpenDecision={setOpened}
@@ -152,7 +156,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
       <p className="text-xs text-foreground-de-emp" data-testid="graph-caption">
         Selected:{' '}
         {selected
-          ? `${selected.decisionId} / ${selected.selection?.rowId ?? 'none'} / ${selected.selection?.columnId ?? 'rule'}`
+          ? `${selected.decisionId} / ${selected.selection?.rowId ?? 'none'} / ${selectedColumnOf(selected.selection) ?? 'rule'}`
           : 'none'}{' '}
         · Revealed: {revealed ? `${revealed.decisionId} / ${revealed.rowId ?? 'decision'}` : 'none'}{' '}
         · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'}

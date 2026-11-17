@@ -71,7 +71,12 @@ const SelectingHost = ({
     <DecisionGraphText
       nodes={nodes}
       renderBody={(id, scroll) =>
-        textBody(id, scroll, selected?.id === id ? { rowId: selected.rowId } : null, () => {})
+        textBody(
+          id,
+          scroll,
+          selected?.id === id ? { kind: 'rule', rowId: selected.rowId } : null,
+          () => {}
+        )
       }
       selected={selected?.id ?? null}
       onReveal={(target) => {
@@ -262,7 +267,7 @@ describe('DecisionGraphText', () => {
         <DecisionGraphText
           nodes={MARKED.nodes}
           renderBody={(id, scroll) =>
-            textBody(id, scroll, shown?.id === id ? { rowId: shown.rowId } : null)
+            textBody(id, scroll, shown?.id === id ? { kind: 'rule', rowId: shown.rowId } : null)
           }
           onReveal={(target) => {
             if (target.rowId) setShown({ id: target.decisionId, rowId: target.rowId });
@@ -347,7 +352,7 @@ describe('DecisionGraphText', () => {
               edit.onCancel?.();
             }}
             renderBody={(id, scroll) =>
-              textBody(id, scroll, { rowId: 'r1', columnId: 'age' }, () => {}, edit)
+              textBody(id, scroll, { kind: 'cell', rowId: 'r1', columnId: 'age' }, () => {}, edit)
             }
             dataTestId="graph"
           />
@@ -451,7 +456,7 @@ describe('DecisionGraphText', () => {
               ariaLabel={`Rules of ${id}`}
               dataTestId={`text-${id}`}
               scroll={scroll}
-              selected={selected?.id === id ? { rowId: selected.rowId } : null}
+              selected={selected?.id === id ? { kind: 'rule', rowId: selected.rowId } : null}
               onSelect={() => {}}
             />
           )}
