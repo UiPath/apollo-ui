@@ -326,6 +326,36 @@ describe('ByoModelDialog', () => {
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
   });
 
+  it('stops editing a connection whose settings could not be read, so a save cannot clear them', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({
+      loadConnectionValues: vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: false,
+          failure: { title: 'Could not read the connection settings' },
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          value: { authType: null, values: { url: 'https://old.example.com' } },
+        }),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await pick(user, 'Provider', 'OpenAI');
+    await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
+
+    expect(await screen.findByText('Could not read the connection settings')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save connection' })).toBeNull();
+    expect(api.connect).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Edit connection' }));
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Endpoint/)).toHaveValue('https://old.example.com')
+    );
+    expect(api.loadConnectionValues).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps loading the form when the connection changes meanwhile', async () => {
     const user = userEvent.setup();
     let finishForm: () => void = () => {};
