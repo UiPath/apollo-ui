@@ -186,7 +186,7 @@ const headerOf = ({ hitPolicy }: StoryTable) => {
     HIT_POLICY_GROUPS.flatMap((group) => group.options),
     hitPolicy
   );
-  return { label: picked?.label ?? '', hint: picked?.hint ?? '' };
+  return { label: picked?.label ?? '', hint: picked?.note.kind === 'hint' ? picked.note.text : '' };
 };
 
 /** What a graph heading shows of a story table as it stands: its hit policy and rule count. */
