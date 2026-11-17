@@ -343,4 +343,23 @@ describe('moveSegmentByDelta', () => {
     expect(w0?.x).toBe(64);
     expect(w1?.x).toBe(64);
   });
+
+  it('stubs out of both nodes when a straight edge runs against the axis', () => {
+    // Bottom-to-top, as a source below its target draws: the stubs must leave the source upwards
+    // and enter the target from below, not double back into either node.
+    const source = { x: 240, y: 400 };
+    const target = { x: 240, y: 112 };
+    const segment: Segment = {
+      id: 'seg-0',
+      start: source,
+      end: target,
+      orientation: 'vertical',
+      waypointIndexBefore: -1,
+      waypointIndexAfter: 0,
+    };
+    const result = moveSegmentByDelta([], segment, { x: -144, y: 0 }, [source, target]);
+
+    expect(result[0]!.y).toBeLessThan(source.y);
+    expect(result[result.length - 1]!.y).toBeGreaterThan(target.y);
+  });
 });
