@@ -195,13 +195,14 @@ interface ProductLlmConfiguration {
 }
 
 const SHOWN_SCREENS = new Set(['pre', 'pre-optional']);
+// Provider ids come in any case (Bedrock's `amazon.nova-canvas-v1:0`, OpenAI's `dall-e-3`).
 const NOT_CHAT: [RegExp, string][] = [
-  [/embed|rerank/, 'Embedding model'],
-  [/moderation/, 'Moderation model'],
-  [/tts|whisper|transcribe|audio/, 'Audio model'],
-  [/realtime/, 'Realtime model'],
-  [/image|sora|imagen|stability\./, 'Image or video model'],
-  [/davinci|babbage/, 'Completions only'],
+  [/embed|rerank/i, 'Embedding model'],
+  [/moderation/i, 'Moderation model'],
+  [/tts|whisper|transcribe|audio/i, 'Audio model'],
+  [/realtime/i, 'Realtime model'],
+  [/image|dall-e|sora|imagen|veo-|nova-canvas|nova-reel|flux|stability\./i, 'Image or video model'],
+  [/davinci|babbage/i, 'Completions only'],
 ];
 const NEW_CONNECTION_NOT_FOUND = 'IntegrationServiceConfigurationNotFound';
 const MASKED_SECRET = '********';
