@@ -11,7 +11,7 @@ import {
 } from '@uipath/apollo-wind';
 import { CornerDownRight, ListTree } from 'lucide-react';
 import type React from 'react';
-import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   MINIMAP_CONTENT_CLASS,
   MINIMAP_FLOATING_CLASS,
@@ -101,6 +101,7 @@ export const DecisionGraphMinimap: React.FC<DecisionGraphMinimapProps> = ({
     count: windowed ? rows.length : 0,
     getScrollElement: () => list,
     estimateSize: (index) => rowHeight(rows[index]),
+    getItemKey: useCallback((index: number) => rows[index]?.item.id ?? index, [rows]),
     initialRect: { width: 0, height: FALLBACK_LIST_PX },
     overscan: 10,
   });
