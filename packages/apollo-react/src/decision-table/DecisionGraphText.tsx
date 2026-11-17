@@ -45,13 +45,16 @@ export interface DecisionGraphTextProps {
 
 const NO_EXPANDED: ReadonlySet<string> = new Set();
 
+/** Brought into view and told to the host, or opened and flashed where it stands. */
+type RevealMode = { kind: 'navigate'; focus: boolean; flash: boolean } | { kind: 'inPlace' };
+
 interface PendingReveal extends DecisionGraphTarget {
-  /** Scrolls what is revealed into view and tells the host. */
-  byKey: boolean;
-  /** Moves focus to what is revealed. */
-  focus: boolean;
-  flash: boolean;
+  mode: RevealMode;
 }
+
+const focuses = (mode: RevealMode): boolean => mode.kind === 'navigate' && mode.focus;
+
+const flashes = (mode: RevealMode): boolean => mode.kind === 'inPlace' || mode.flash;
 
 const prefersReducedMotion = (): boolean =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -183,7 +186,8 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
     if (!expanded.has(target.decisionId)) setExpanded(new Set([...expanded, target.decisionId]));
     setPending(target);
     setRevealed(target.decisionId);
-    if (target.byKey) onReveal?.({ decisionId: target.decisionId, rowId: target.rowId });
+    if (target.mode.kind === 'navigate')
+      onReveal?.({ decisionId: target.decisionId, rowId: target.rowId });
   };
   const openOf = (decisionId: string) => onOpenDecision && (() => onOpenDecision(decisionId));
 
@@ -270,28 +274,28 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
       const card = cardsRef.current.get(pending.decisionId);
       if (!scroller || !card) return false;
       if (pending.rowId === undefined) {
-        if (pending.byKey) scrollTo(scroller, contentTopIn(card, scroller));
-        if (pending.focus) {
+        if (pending.mode.kind === 'navigate') scrollTo(scroller, contentTopIn(card, scroller));
+        if (focuses(pending.mode)) {
           card.querySelector<HTMLElement>('[data-graph-toggle]')?.focus({ preventScroll: true });
         }
-        if (pending.flash) flash(card);
+        if (flashes(pending.mode)) flash(card);
         return true;
       }
       const rule = card.querySelector<HTMLElement>(
         `li[data-row-id="${CSS.escape(pending.rowId)}"]`
       );
       if (!rule) return false;
-      if (pending.byKey) {
+      if (pending.mode.kind === 'navigate') {
         scrollTo(
           scroller,
           contentTopIn(rule, scroller) - (scroller.clientHeight - rule.offsetHeight) / 2
         );
       }
-      if (pending.focus) {
+      if (focuses(pending.mode)) {
         if (!rule.hasAttribute('tabindex')) rule.tabIndex = -1;
         rule.focus({ preventScroll: true });
       }
-      if (pending.flash) flash(rule);
+      if (flashes(pending.mode)) flash(rule);
       return true;
     };
     if (apply()) {
@@ -300,7 +304,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
     }
     const frame = requestAnimationFrame(() => {
       const card = cardsRef.current.get(pending.decisionId);
-      if (!apply() && pending.flash && card) flash(card);
+      if (!apply() && flashes(pending.mode) && card) flash(card);
       setPending(null);
     });
     return () => cancelAnimationFrame(frame);
@@ -313,7 +317,10 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           node={node}
           labels={labels}
           onReveal={() =>
-            reveal({ decisionId: node.targetId, byKey: true, focus: false, flash: false })
+            reveal({
+              decisionId: node.targetId,
+              mode: { kind: 'navigate', focus: false, flash: false },
+            })
           }
           onOpen={openOf(node.targetId)}
           dataTestId={dataTestId}
@@ -334,7 +341,11 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           labels={labels}
           onToggle={() => toggle(node.id)}
           onShowProblem={(byKey) =>
-            reveal({ decisionId: node.id, rowId: node.markRowId, byKey, focus: byKey, flash: true })
+            reveal({
+              decisionId: node.id,
+              rowId: node.markRowId,
+              mode: byKey ? { kind: 'navigate', focus: true, flash: true } : { kind: 'inPlace' },
+            })
           }
           onOpen={openOf(node.id)}
           cardRef={cardRef(node.id)}
