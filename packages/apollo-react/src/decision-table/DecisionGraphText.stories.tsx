@@ -119,7 +119,7 @@ const GraphHost = ({ graph, mode = 'select', caption }: GraphHostProps) => {
           selected={selected?.decisionId ?? null}
           onReveal={(target) => {
             setRevealed(target);
-            if (target.rowId !== undefined && mode !== 'read') {
+            if (target.rowId !== undefined) {
               setSelected({ decisionId: target.decisionId, selection: { rowId: target.rowId } });
             }
           }}
