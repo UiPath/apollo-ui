@@ -9,6 +9,7 @@ import {
   moveGroupUp,
 } from '../../../utils/GroupModificationUtils';
 import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageGroupKeys } from '../hooks/useStageGroupKeys';
 import { useStageTaskDragAccessibility } from '../hooks/useStageTaskDragAccessibility';
 import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
 import { useStageTaskSensors } from '../hooks/useStageTaskSensors';
@@ -67,6 +68,7 @@ export const StageNodeSequentialTaskGroups = ({
   const isLabelOpenable = isDragDisabled && !!onTaskClick;
   const labels = useStageNodeLabels();
 
+  const groupKeys = useStageGroupKeys(sequentialTaskGroups);
   const sequentialTaskIds = useMemo(
     () => sequentialTaskGroups.flat().map((task) => task.id),
     [sequentialTaskGroups]
@@ -229,18 +231,9 @@ export const StageNodeSequentialTaskGroups = ({
     >
       {sequentialTaskGroups.map((taskGroup, groupIndex) => {
         const isParallel = taskGroup.length > 1;
-        // Keyed by its members, not its position or its first task, so reordering inside a group or
-        // between groups keeps each row mounted instead of dropping the focus its task holds.
+        // Keyed by an identity that survives membership changes, so rows stay mounted and keep focus.
         return (
-          <Row
-            key={
-              taskGroup
-                .map((task) => task.id)
-                .sort()
-                .join('|') || `group-${groupIndex}`
-            }
-            gap={Spacing.SpacingS}
-          >
+          <Row key={groupKeys[groupIndex]} gap={Spacing.SpacingS}>
             {isParallel && <StageParallelBracket />}
             <StageTaskGroupContainer isParallel={isParallel}>
               {isParallel && (
