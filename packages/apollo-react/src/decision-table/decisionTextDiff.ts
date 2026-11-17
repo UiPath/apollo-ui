@@ -12,16 +12,16 @@ import type {
 /** A change, in the Business Rules table diff's words. */
 export type DiffChange = 'add' | 'update' | 'delete';
 
-/** An added or changed rule of `rules`; `movedFrom` is its 1-based number before, when it moved. */
-export interface DiffRuleChange {
-  rowId: SentenceRule['rowId'];
-  change: Exclude<DiffChange, 'delete'>;
-  movedFrom?: number;
-}
+/** An added or changed rule of `rules`; a changed one's `movedFrom` is its 1-based number before, when it moved. */
+export type DiffRuleChange =
+  | { rowId: SentenceRule['rowId']; change: 'add' }
+  | { rowId: SentenceRule['rowId']; change: 'update'; movedFrom?: number };
 
-/** A value's change, or its cell's without `index`; `previous` is its old text, or a condition's words after its column's name when the rule no longer words it; a removed value shows before the value now at its `index`, else after the cell's last. */
-export type DiffValueChange = SentenceCellId &
-  Partial<Pick<SentenceValueId, 'index'>> &
+/** A whole cell's change, or one value's; `previous` is its old text, or a condition's words after its column's name when the rule no longer words it; a removed value shows before the value now at its `index`, else after the cell's last. */
+export type DiffValueChange = (
+  | ({ kind: 'cell' } & SentenceCellId)
+  | ({ kind: 'value' } & SentenceValueId)
+) &
   ({ change: 'add' } | { change: 'update' | 'delete'; previous: string });
 
 /** A removed rule, shown under the rule `after` names, or first when null. */
@@ -107,14 +107,15 @@ export interface RemovedLine {
 export const removedLineKey = ({ columnId, change }: RemovedLine) => `${change}:${columnId}`;
 
 /** A rule card's change, its after-state number (null when removed), its tokens' changes, and the outputs and inputs it does not word. */
-export interface RuleDiff {
-  change: DiffChange | undefined;
-  movedFrom: number | undefined;
-  number: number | null;
+export type RuleDiff = {
   tokens: ReadonlyMap<SentenceToken, TokenDiff>;
   removedOutcomes: readonly RemovedLine[];
   removedLines: readonly RemovedLine[];
-}
+} & (
+  | { change: 'delete'; number: null }
+  | { change: 'add' | undefined; number: number }
+  | { change: 'update'; number: number; movedFrom: number | undefined }
+);
 
 /** A folded run of unchanged rules, by its first rule's id and its first and last numbers. */
 export interface DiffFold {
@@ -283,7 +284,7 @@ const tokenDiffsOf = (
     for (const value of changes) {
       const struck = struckOf(value);
       const own = value.change === 'delete' ? undefined : value.change;
-      if (value.index === undefined) {
+      if (value.kind === 'cell') {
         for (const token of cellTokens) add(token, { change: own });
         add(first, { before: struck });
         continue;
@@ -328,7 +329,6 @@ export const diffRowsOf = (
       const rule = { ...placed.item.rule, rowId: `${removedPrefix}${placed.index}` };
       const ruleDiff: RuleDiff = {
         change: 'delete',
-        movedFrom: undefined,
         number: null,
         tokens: NO_TOKENS,
         removedOutcomes: [],
@@ -340,14 +340,14 @@ export const diffRowsOf = (
     const ruleChange = ruleChanges.get(rowId);
     const rowValues = values.get(rowId) ?? NO_VALUES;
     number += 1;
-    const ruleDiff: RuleDiff = {
-      change: ruleChange?.change ?? (rowValues.size > 0 ? 'update' : undefined),
-      movedFrom: ruleChange?.movedFrom,
-      number,
-      ...(rowValues.size > 0
+    const shown =
+      rowValues.size > 0
         ? tokenDiffsOf(rule, rowValues, nameOf)
-        : { tokens: NO_TOKENS, removedOutcomes: [], removedLines: [] }),
-    };
+        : { tokens: NO_TOKENS, removedOutcomes: [], removedLines: [] };
+    const ruleDiff: RuleDiff =
+      ruleChange?.change === 'update' || (!ruleChange && rowValues.size > 0)
+        ? { ...shown, change: 'update', number, movedFrom: ruleChange?.movedFrom }
+        : { ...shown, change: ruleChange?.change, number };
     return { rule, diff: ruleDiff };
   });
   const rows = new Map<string, DiffRow>();

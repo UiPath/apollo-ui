@@ -25,8 +25,9 @@ import type { RuleMenuKind } from './sentenceTargets';
 const CHANGE_SIGNS = { add: '+', update: '~', delete: '−' } satisfies Record<DiffChange, string>;
 
 /** A changed rule's sign, or arrows when it moved. */
-const ChangeSign: React.FC<Pick<RuleDiff, 'change' | 'movedFrom'>> = ({ change, movedFrom }) => {
-  if (movedFrom !== undefined) {
+const ChangeSign: React.FC<{ diff: RuleDiff }> = ({ diff }) => {
+  const { change } = diff;
+  if (diff.change === 'update' && diff.movedFrom !== undefined) {
     return <ArrowUpDown aria-hidden className={MOVED_ICON_CLASS} strokeWidth={2.5} />;
   }
   return change ? (
@@ -115,7 +116,7 @@ export const RuleCard = memo<RuleCardProps>(
         >
           {(card.number !== null || card.changeStatus) && (
             <span className={cn(ROW_NUMBER_CLASS, diff && ROW_NUMBER_CHANGE_CLASS)}>
-              {diff && <ChangeSign change={diff.change} movedFrom={diff.movedFrom} />}
+              {diff && <ChangeSign diff={diff} />}
               {card.number}
               {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
             </span>

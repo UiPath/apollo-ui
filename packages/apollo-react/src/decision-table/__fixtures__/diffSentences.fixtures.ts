@@ -96,12 +96,32 @@ export const EVERY_STATE_DIFF: Omit<DecisionTextDiff, 'mode'> = {
     { rowId: 'r11', change: 'update' },
   ],
   values: [
-    { rowId: 'r5', columnId: 'age', index: 0, change: 'update', previous: '25' },
-    { rowId: 'r5', columnId: 'channel', index: 1, change: 'update', previous: '"app"' },
-    { rowId: 'r5', columnId: 'channel', index: 2, change: 'delete', previous: '"kiosk"' },
-    { rowId: 'r5', columnId: 'income', change: 'delete', previous: 'is greater than 40000' },
-    { rowId: 'r5', columnId: 'risk', change: 'update', previous: '"standard"' },
-    { rowId: 'r11', columnId: 'channel', change: 'add' },
+    { kind: 'value', rowId: 'r5', columnId: 'age', index: 0, change: 'update', previous: '25' },
+    {
+      kind: 'value',
+      rowId: 'r5',
+      columnId: 'channel',
+      index: 1,
+      change: 'update',
+      previous: '"app"',
+    },
+    {
+      kind: 'value',
+      rowId: 'r5',
+      columnId: 'channel',
+      index: 2,
+      change: 'delete',
+      previous: '"kiosk"',
+    },
+    {
+      kind: 'cell',
+      rowId: 'r5',
+      columnId: 'income',
+      change: 'delete',
+      previous: 'is greater than 40000',
+    },
+    { kind: 'cell', rowId: 'r5', columnId: 'risk', change: 'update', previous: '"standard"' },
+    { kind: 'cell', rowId: 'r11', columnId: 'channel', change: 'add' },
   ],
   removedRules: [{ rule: REMOVED_RULE, after: 'r12' }],
   columns: [
@@ -123,7 +143,9 @@ export const EVERYTHING_CHANGED_DIFF: Omit<DecisionTextDiff, 'mode'> = {
     })
   ),
   values: DIFF_RULES.flatMap(({ rowId }, index): DiffValueChange[] =>
-    index % 3 === 0 ? [] : [{ rowId, columnId: 'risk', change: 'update', previous: '"low"' }]
+    index % 3 === 0
+      ? []
+      : [{ kind: 'cell', rowId, columnId: 'risk', change: 'update', previous: '"low"' }]
   ),
   removedRules: [{ rule: REMOVED_RULE, after: null }],
 };
@@ -131,7 +153,9 @@ export const EVERYTHING_CHANGED_DIFF: Omit<DecisionTextDiff, 'mode'> = {
 /** A removed input, shown struck in its band where it stood. */
 export const REMOVED_COLUMN_DIFF: Omit<DecisionTextDiff, 'mode'> = {
   removedColumns: EVERY_STATE_DIFF.removedColumns,
-  values: [{ rowId: 'r4', columnId: 'segment', change: 'delete', previous: 'is "retail"' }],
+  values: [
+    { kind: 'cell', rowId: 'r4', columnId: 'segment', change: 'delete', previous: 'is "retail"' },
+  ],
 };
 
 /** Only the hit policy changed. */
@@ -164,6 +188,7 @@ export const largeDiffTable = (
       ),
       values: changed.map(
         (index): DiffValueChange => ({
+          kind: 'cell',
           rowId: `row-${index + 1}`,
           columnId: 'risk',
           change: 'update',

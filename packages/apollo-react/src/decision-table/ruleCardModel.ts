@@ -193,7 +193,7 @@ export const ruleCardModel = ({
   const changed = (token: SentenceToken) => diff?.tokens.has(token) === true;
   const changeStatus = [
     diff?.change && labels.changeStatus(diff.change),
-    diff?.movedFrom !== undefined && labels.movedFrom(diff.movedFrom),
+    diff?.change === 'update' && diff.movedFrom !== undefined && labels.movedFrom(diff.movedFrom),
   ]
     .filter(Boolean)
     .join(', ');

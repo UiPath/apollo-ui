@@ -131,8 +131,20 @@ describe('values of a removed column', () => {
       },
     ],
     values: [
-      { rowId: 'r5', columnId: 'fee', change: 'delete' as const, previous: '10' },
-      { rowId: 'r5', columnId: 'segment', change: 'delete' as const, previous: 'is "retail"' },
+      {
+        kind: 'cell' as const,
+        rowId: 'r5',
+        columnId: 'fee',
+        change: 'delete' as const,
+        previous: '10',
+      },
+      {
+        kind: 'cell' as const,
+        rowId: 'r5',
+        columnId: 'segment',
+        change: 'delete' as const,
+        previous: 'is "retail"',
+      },
     ],
   };
 
@@ -200,8 +212,15 @@ describe('a removed and an added value of one unworded column', () => {
           { column: { id: 'fee', name: 'fee', type: 'number' }, kind: 'output', after: 'risk' },
         ],
         values: [
-          { rowId: 'r5', columnId: 'fee', index: 0, change: 'delete', previous: '10' },
-          { rowId: 'r5', columnId: 'fee', index: 1, change: 'add' },
+          {
+            kind: 'value',
+            rowId: 'r5',
+            columnId: 'fee',
+            index: 0,
+            change: 'delete',
+            previous: '10',
+          },
+          { kind: 'value', rowId: 'r5', columnId: 'fee', index: 1, change: 'add' },
         ],
       })
     );
@@ -219,8 +238,15 @@ describe('a removed and an added value of one unworded column', () => {
       renderDiff({
         mode: 'full',
         values: [
-          { rowId: 'r5', columnId: 'segment', index: 0, change: 'delete', previous: 'is "retail"' },
-          { rowId: 'r5', columnId: 'segment', index: 1, change: 'add' },
+          {
+            kind: 'value',
+            rowId: 'r5',
+            columnId: 'segment',
+            index: 0,
+            change: 'delete',
+            previous: 'is "retail"',
+          },
+          { kind: 'value', rowId: 'r5', columnId: 'segment', index: 1, change: 'add' },
         ],
       })
     );
