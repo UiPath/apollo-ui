@@ -1,3 +1,19 @@
+## [@uipath/apollo-react-v7.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.23.0...@uipath/apollo-react@7.24.0) (2026-11-17)
+
+### Features
+
+* **apollo-react:** open a graph decision on double-click or Alt+Enter [ECS-2149] ([8066436](https://github.com/UiPath/apollo-ui/commit/806643696038b77862587509db092757e88c7129))
+* **apollo-react:** read a decision graph as text, one card per decision [ECS-2149] ([2b88f48](https://github.com/UiPath/apollo-ui/commit/2b88f483d1827cf8fa4ebd82b434496ea4c37653))
+
+### Bug Fixes
+
+* **apollo-react:** clip an open graph body to its card's rounded corners [ECS-2149] ([e63648d](https://github.com/UiPath/apollo-ui/commit/e63648d5423ae77839e94bcd33fb870eeda7634d))
+* **apollo-react:** focus a far revealed rule in read mode, fold IO batches in order [ECS-2149] ([147f593](https://github.com/UiPath/apollo-ui/commit/147f5931727db49c084a2a5f7d4099a7c9170504))
+* **apollo-react:** give graph story bodies every DecisionText edit action [ECS-2149] ([20e7515](https://github.com/UiPath/apollo-ui/commit/20e75151a90be3279f7d356fde87f247b5b5e557))
+* **apollo-react:** never scroll when a mark is clicked [ECS-2149] ([a9fbdc3](https://github.com/UiPath/apollo-ui/commit/a9fbdc3892393b438dc15a81fdfd9f13774dc7aa))
+* **apollo-react:** scroll from a reference link, flash a far mark target [ECS-2149] ([becdc32](https://github.com/UiPath/apollo-ui/commit/becdc322100d5ea9ea3750ac92c37b994ae62301))
+* **apollo-react:** window the graph's decision bodies to the scrollport [ECS-2149] ([3680294](https://github.com/UiPath/apollo-ui/commit/36802946086febb5f3fd50209453460273f4ec7e))
+
 ## [@uipath/apollo-react-v7.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.22.0...@uipath/apollo-react@7.23.0) (2026-11-17)
 
 ### Features
