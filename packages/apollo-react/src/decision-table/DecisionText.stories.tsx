@@ -30,7 +30,12 @@ import {
   largeDiffTable,
   REMOVED_COLUMN_DIFF,
 } from './__fixtures__/diffSentences.fixtures';
-import { HIT_POLICY_GROUPS } from './__fixtures__/sentences.fixtures';
+import {
+  HIT_POLICY_GROUPS,
+  MULTI_SENTENCE_COLUMNS,
+  MULTI_SENTENCE_HEADER,
+  manySentenceRules,
+} from './__fixtures__/sentences.fixtures';
 import type { ColumnChange, ColumnField, ColumnTypeOption } from './ColumnPopover';
 import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionTextDiff } from './decisionTextDiff';
@@ -401,33 +406,11 @@ const TableHost = ({
   );
 };
 
-const meta: Meta<typeof DecisionText> = {
+const meta: Meta = {
   title: 'Decision Text',
-  component: DecisionText,
   parameters: { layout: 'padded' },
 };
 export default meta;
-
-type Story = StoryObj<typeof DecisionText>;
-
-export const Default: Story = {
-  render: () => (
-    <TableHost
-      initialTable={EDITABLE_TABLE}
-      caption="The rules as they come: click a value, a column or a rule's ⋯ to edit."
-    />
-  ),
-};
-
-export const ReadOnly: Story = {
-  render: () => (
-    <TableHost
-      initialTable={EDITABLE_TABLE}
-      mode="select"
-      caption="Read-only: click a value or a rule to select it, arrows move, nothing edits."
-    />
-  ),
-};
 
 const ERRORS_TABLE: EditableTable = {
   ...EDITABLE_TABLE,
@@ -530,46 +513,6 @@ const GERMAN_EDIT_LABELS = {
   ruleActions: (position: number) => `Aktionen für Regel ${position}`,
 };
 
-export const PartialLabels: Story = {
-  render: () => (
-    <TableHost
-      initialTable={EDITABLE_TABLE}
-      labels={GERMAN_LABELS}
-      editLabels={GERMAN_EDIT_LABELS}
-      caption="A host's own words for some strings: the band captions, Cancel and Apply, and each rule's ⋯; the rest are the view's."
-    />
-  ),
-};
-
-export const Errors: Story = {
-  render: () => (
-    <TableHost
-      initialTable={ERRORS_TABLE}
-      marks={ERRORS_MARKS}
-      headerMark={{ tone: 'error', glyph: true, title: 'Unique: rules 2 and 3 overlap' }}
-      caption="Validation and run marks on values, rules, a column and the header; hover a glyph for its message."
-    />
-  ),
-};
-
-export const Empty: Story = {
-  render: () => (
-    <div className="grid grid-cols-2 gap-4">
-      <TableHost
-        initialTable={EMPTY_TABLE}
-        frameClassName="h-[480px]"
-        caption="Add rule adds an empty rule and selects it."
-      />
-      <TableHost
-        initialTable={EMPTY_TABLE}
-        mode="select"
-        frameClassName="h-[480px]"
-        caption="Read-only: no add action."
-      />
-    </div>
-  ),
-};
-
 /** The story's expression editor: a monospace input in its own shadow root, as a host's code editor would mount. */
 const ShadowExpressionEditor = ({ value, ariaLabel, onChange, onReady }: ExpressionEditorProps) => {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -598,60 +541,72 @@ const renderExpressionEditor = (props: ExpressionEditorProps) => (
   <ShadowExpressionEditor {...props} />
 );
 
-export const HostEditor: Story = {
-  render: () => (
+const TABLES = { rules: EDITABLE_TABLE, empty: EMPTY_TABLE } as const;
+
+const MODE_CAPTIONS: Record<HostMode, string> = {
+  read: 'Read: the rules only, nothing selects or edits.',
+  select: 'Select: click a value or a rule to select it, arrows move, nothing edits.',
+  edit: "Edit: click a value, a column or a rule's ⋯ to edit; Add rule adds an empty rule and selects it.",
+};
+
+interface RulesArgs {
+  mode: HostMode;
+  table: keyof typeof TABLES;
+  validate: boolean;
+  labels: 'view' | 'host';
+  editor: 'popover' | 'host';
+}
+
+export const Default: StoryObj<RulesArgs> = {
+  args: { mode: 'edit', table: 'rules', validate: false, labels: 'view', editor: 'popover' },
+  argTypes: {
+    mode: {
+      control: 'inline-radio',
+      options: ['read', 'select', 'edit'],
+      description: 'What the host wires: rules only, then selection, then editing.',
+    },
+    table: { control: 'inline-radio', options: Object.keys(TABLES) },
+    validate: { control: 'boolean', description: 'Mark invalid values after every write.' },
+    labels: {
+      control: 'inline-radio',
+      options: ['view', 'host'],
+      description: "The view's strings, or a host's own words for some of them.",
+    },
+    editor: {
+      control: 'inline-radio',
+      options: ['popover', 'host'],
+      description:
+        "Under Edit expression: the popover's text field, or the host's editor in a shadow root.",
+    },
+  },
+  render: ({ mode, table, validate, labels, editor }) => (
     <TableHost
-      initialTable={EDITABLE_TABLE}
-      renderEditor={renderExpressionEditor}
-      caption="renderEditor swaps the host's editor, here in a shadow root, in for the popover's own text field under Edit expression."
+      key={table}
+      initialTable={TABLES[table]}
+      mode={mode}
+      validate={validate}
+      labels={labels === 'host' ? GERMAN_LABELS : undefined}
+      editLabels={labels === 'host' ? GERMAN_EDIT_LABELS : undefined}
+      renderEditor={editor === 'host' ? renderExpressionEditor : undefined}
+      caption={MODE_CAPTIONS[mode]}
     />
   ),
 };
 
-const HOST_MODES: readonly HostMode[] = ['read', 'select', 'edit'];
-
-const MODE_LABELS: Record<HostMode, string> = {
-  read: 'Read',
-  select: 'Select',
-  edit: 'Edit',
-};
-
-const EndToEndDemo = () => {
-  const [mode, setMode] = useState<HostMode>('read');
-  return (
-    <div className="flex flex-col gap-2">
-      <fieldset className="flex items-center gap-4 text-sm text-foreground">
-        <legend className="sr-only">What the host wires</legend>
-        {HOST_MODES.map((option) => (
-          <label key={option} className="flex items-center gap-1.5">
-            <input
-              type="radio"
-              name="decision-text-mode"
-              value={option}
-              checked={mode === option}
-              onChange={() => setMode(option)}
-            />
-            {MODE_LABELS[option]}
-          </label>
-        ))}
-      </fieldset>
-      <TableHost
-        initialTable={EDITABLE_TABLE}
-        mode={mode}
-        validate
-        caption="One host wired a step at a time, Read, Select then Edit, validating after each write."
-      />
-    </div>
-  );
-};
-
-export const EndToEnd: Story = {
-  render: () => <EndToEndDemo />,
+export const Errors: StoryObj = {
+  render: () => (
+    <TableHost
+      initialTable={ERRORS_TABLE}
+      marks={ERRORS_MARKS}
+      headerMark={{ tone: 'error', glyph: true, title: 'Unique: rules 2 and 3 overlap' }}
+      caption="Validation and run marks on values, rules, a column and the header; hover a glyph for its message."
+    />
+  ),
 };
 
 const LARGE_TABLE = manyRulesTable(50_000, 10_000, 50);
 
-export const LargeTable: Story = {
+export const LargeTable: StoryObj = {
   render: () => (
     <TableHost
       initialTable={LARGE_TABLE}
@@ -659,50 +614,6 @@ export const LargeTable: Story = {
       caption={`${LARGE_TABLE.rules.length.toLocaleString('en-US')} rules over ${LARGE_TABLE.inputs.length} inputs, windowed, on the same editing stack.`}
     />
   ),
-};
-
-interface DiffHostProps {
-  rules?: readonly SentenceRule[];
-  changes: Omit<DecisionTextDiff, 'mode'>;
-  initialMode: DecisionTextDiff['mode'];
-  marks?: TableMarks;
-  caption: string;
-}
-
-const DIFF_MODES: readonly DecisionTextDiff['mode'][] = ['compact', 'full'];
-
-const DiffHost = ({ rules = DIFF_RULES, changes, initialMode, marks, caption }: DiffHostProps) => {
-  const [mode, setMode] = useState(initialMode);
-  const diff = useMemo(() => ({ mode, ...changes }), [mode, changes]);
-  return (
-    <div className="flex h-[640px] flex-col gap-2">
-      <fieldset className="flex gap-3 text-xs" data-testid="diff-mode">
-        <legend className="sr-only">Diff mode</legend>
-        {DIFF_MODES.map((option) => (
-          <label key={option} className="flex items-center gap-1">
-            <input
-              type="radio"
-              name="diff-mode"
-              checked={mode === option}
-              onChange={() => setMode(option)}
-            />
-            {option === 'compact' ? 'Compact' : 'Full'}
-          </label>
-        ))}
-      </fieldset>
-      <DecisionText
-        rules={rules}
-        {...DIFF_COLUMNS}
-        header={DIFF_HEADER}
-        numbered
-        marks={marks}
-        ariaLabel="Rules"
-        dataTestId="diff"
-        diff={diff}
-      />
-      <StoryCaption>{caption}</StoryCaption>
-    </div>
-  );
 };
 
 /** A validation warning on a changed value, so both marks show. */
@@ -713,79 +624,136 @@ const DIFF_MARKS: TableMarks = {
   columns: new Map(),
 };
 
-export const DiffEveryState: Story = {
-  render: () => (
-    <DiffHost
-      changes={EVERY_STATE_DIFF}
-      initialMode="full"
-      marks={DIFF_MARKS}
-      caption="Every change at once: rules added, changed, removed and moved; values added, changed and removed; columns added, changed and removed; the hit policy."
-    />
-  ),
-};
-
-export const DiffEveryStateCompact: Story = {
-  render: () => (
-    <DiffHost
-      changes={EVERY_STATE_DIFF}
-      initialMode="compact"
-      marks={DIFF_MARKS}
-      caption="Compact: two unchanged rules kept each side of a change, longer runs folded; open a fold to show its rules."
-    />
-  ),
-};
-
-const NO_CHANGES: Omit<DecisionTextDiff, 'mode'> = {};
-
-export const DiffNoChanges: Story = {
-  render: () => (
-    <DiffHost
-      changes={NO_CHANGES}
-      initialMode="compact"
-      caption="Nothing changed: compact folds the whole table, full shows it unpainted."
-    />
-  ),
-};
-
-export const DiffEverythingChanged: Story = {
-  render: () => (
-    <DiffHost
-      changes={EVERYTHING_CHANGED_DIFF}
-      initialMode="full"
-      caption="Every rule added or changed, and the old first rule removed: compact folds nothing."
-    />
-  ),
-};
-
-export const DiffRemovedColumn: Story = {
-  render: () => (
-    <DiffHost
-      changes={REMOVED_COLUMN_DIFF}
-      initialMode="full"
-      caption="An input removed: its pill stays struck where it stood, and rule 4's condition on it is struck in its card."
-    />
-  ),
-};
-
-export const DiffHitPolicy: Story = {
-  render: () => (
-    <DiffHost
-      changes={HIT_POLICY_DIFF}
-      initialMode="full"
-      caption="Only the hit policy changed: the header shows it before and after."
-    />
-  ),
-};
-
 const LARGE_DIFF = largeDiffTable(300);
 
-export const DiffLargeCompact: Story = {
-  render: () => (
-    <DiffHost
-      rules={LARGE_DIFF.rules}
-      changes={LARGE_DIFF.diff}
-      initialMode="compact"
-      caption="300 rules, 5 changed, compact: each shown rule keeps its number in the whole table."
-    />
-  ),
+interface DiffScenario {
+  rules?: readonly SentenceRule[];
+  changes: Omit<DecisionTextDiff, 'mode'>;
+  marks?: TableMarks;
+  caption: string;
+}
+
+const DIFF_SCENARIOS = {
+  'every state': {
+    changes: EVERY_STATE_DIFF,
+    marks: DIFF_MARKS,
+    caption:
+      'Every change at once: rules added, changed, removed and moved; values added, changed and removed; columns added, changed and removed; the hit policy.',
+  },
+  'no changes': {
+    changes: {},
+    caption: 'Nothing changed: compact folds the whole table, full shows it unpainted.',
+  },
+  'everything changed': {
+    changes: EVERYTHING_CHANGED_DIFF,
+    caption: 'Every rule added or changed, and the old first rule removed: compact folds nothing.',
+  },
+  'removed column': {
+    changes: REMOVED_COLUMN_DIFF,
+    caption:
+      "An input removed: its pill stays struck where it stood, and rule 4's condition on it is struck in its card.",
+  },
+  'hit policy': {
+    changes: HIT_POLICY_DIFF,
+    caption: 'Only the hit policy changed: the header shows it before and after.',
+  },
+  'large table': {
+    rules: LARGE_DIFF.rules,
+    changes: LARGE_DIFF.diff,
+    caption:
+      '300 rules, 5 changed: in compact, each shown rule keeps its number in the whole table.',
+  },
+} satisfies Record<string, DiffScenario>;
+
+const DIFF_MODE_CAPTIONS: Record<DecisionTextDiff['mode'], string> = {
+  compact:
+    'Compact: two unchanged rules kept each side of a change, longer runs folded; open a fold to show its rules.',
+  full: 'Full: every rule, the changed ones painted.',
+};
+
+interface DiffArgs {
+  mode: DecisionTextDiff['mode'];
+  scenario: keyof typeof DIFF_SCENARIOS;
+}
+
+const DiffHost = ({ mode, scenario }: DiffArgs) => {
+  const { rules = DIFF_RULES, changes, marks, caption }: DiffScenario = DIFF_SCENARIOS[scenario];
+  const diff = useMemo(() => ({ mode, ...changes }), [mode, changes]);
+  return (
+    <div className="flex h-[640px] flex-col gap-2">
+      <DecisionText
+        key={scenario}
+        rules={rules}
+        {...DIFF_COLUMNS}
+        header={DIFF_HEADER}
+        numbered
+        marks={marks}
+        ariaLabel="Rules"
+        dataTestId="diff"
+        diff={diff}
+      />
+      <StoryCaption>{DIFF_MODE_CAPTIONS[mode]}</StoryCaption>
+      <StoryCaption>{caption}</StoryCaption>
+    </div>
+  );
+};
+
+export const Diff: StoryObj<DiffArgs> = {
+  args: { mode: 'full', scenario: 'every state' },
+  argTypes: {
+    mode: { control: 'inline-radio', options: ['compact', 'full'] },
+    scenario: { control: 'select', options: Object.keys(DIFF_SCENARIOS) },
+  },
+  render: (args) => <DiffHost {...args} />,
+};
+
+const STACKED_RULES = manySentenceRules(300);
+const STACKED_IDS = ['first', 'second', 'third'] as const;
+
+interface ScrollingArgs {
+  scroll: 'self' | 'container';
+}
+
+const StackedHost = ({ scroll }: ScrollingArgs) => {
+  const [selected, setSelected] = useState<Record<string, SentenceSelection | null>>({});
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  return (
+    <div
+      ref={setContainer}
+      className="h-[600px] scroll-pt-4 overflow-auto border border-border-de-emp"
+      data-testid="stacked-scroller"
+    >
+      {STACKED_IDS.map((id) => (
+        <div
+          key={id}
+          className={scroll === 'self' ? 'flex h-[360px] flex-col' : 'flex flex-col'}
+          data-testid={`stacked-${id}`}
+        >
+          <DecisionText
+            rules={STACKED_RULES}
+            {...MULTI_SENTENCE_COLUMNS}
+            header={MULTI_SENTENCE_HEADER}
+            ariaLabel={`Rules of ${id}`}
+            dataTestId={`text-${id}`}
+            numbered
+            scroll={scroll === 'container' ? { container } : 'self'}
+            selected={selected[id] ?? null}
+            onSelect={(next) => setSelected((current) => ({ ...current, [id]: next }))}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export const Scrolling: StoryObj<ScrollingArgs> = {
+  args: { scroll: 'container' },
+  argTypes: {
+    scroll: {
+      control: 'inline-radio',
+      options: ['self', 'container'],
+      description: 'Each view in its own frame, or all three in the one container.',
+    },
+  },
+  render: ({ scroll }) => <StackedHost key={scroll} scroll={scroll} />,
 };
