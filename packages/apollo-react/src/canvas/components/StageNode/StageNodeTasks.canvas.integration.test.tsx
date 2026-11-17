@@ -233,6 +233,19 @@ describe('StageNode task activation in a real canvas', () => {
     expect(row).toHaveFocus();
   });
 
+  it('keeps the focused row mounted when the host adds a task to its group', async () => {
+    const user = userEvent.setup();
+    dropMock.commit = ([group = []]) => [[...group, { id: 'task-4', label: 'Task 4' }]];
+    renderStage({ ...stageWithTasks(), type: 'reorderable' });
+    const row = taskRow('task-1');
+
+    await pickUpAndDrop(user, 'task-1');
+
+    await waitFor(() => expect(screen.getByTestId('stage-task-card-task-4')).toBeInTheDocument());
+    expect(taskRow('task-1')).toBe(row);
+    expect(row).toHaveFocus();
+  });
+
   it('keeps focus on a task moved into a parallel group', async () => {
     const user = userEvent.setup();
     dropMock.initial = [[{ id: 'task-1', label: 'Task 1' }], parallelTasks[0]!.slice(1)];
