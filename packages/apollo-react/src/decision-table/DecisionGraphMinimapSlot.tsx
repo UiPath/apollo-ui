@@ -56,12 +56,12 @@ const minimapOf = (
       decisionId: node.id,
       label: node.label,
       count:
-        node.ruleCount === undefined
-          ? null
-          : {
-              meta: String(node.ruleCount),
-              ariaLabel: labels.minimapDecision(node.label, node.ruleCount),
-            },
+        node.logic.kind === 'table'
+          ? {
+              meta: String(node.logic.ruleCount),
+              ariaLabel: labels.minimapDecision(node.label, node.logic.ruleCount),
+            }
+          : null,
       children: [...ruleItems, ...node.children.map(toItem)],
     };
   };
@@ -70,13 +70,17 @@ const minimapOf = (
 
 const targetOf = (item: MinimapItem): DecisionGraphTarget =>
   item.kind === 'rule'
-    ? { decisionId: item.decisionId, rowId: item.rowId }
-    : { decisionId: item.kind === 'decision' ? item.decisionId : item.targetId };
+    ? { kind: 'rule', decisionId: item.decisionId, rowId: item.rowId }
+    : { kind: 'decision', decisionId: item.kind === 'decision' ? item.decisionId : item.targetId };
 
 const ruleTotalOf = (nodes: readonly DecisionGraphNode[]): number =>
   nodes.reduce(
     (total, node) =>
-      node.kind === 'decision' ? total + (node.ruleCount ?? 0) + ruleTotalOf(node.children) : total,
+      node.kind === 'decision'
+        ? total +
+          (node.logic.kind === 'table' ? node.logic.ruleCount : 0) +
+          ruleTotalOf(node.children)
+        : total,
     0
   );
 

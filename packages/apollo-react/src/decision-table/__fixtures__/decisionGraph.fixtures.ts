@@ -1,4 +1,8 @@
-import type { DecisionGraphDecisionNode, DecisionGraphNode } from '../decisionGraphTypes';
+import type {
+  DecisionGraphDecisionNode,
+  DecisionGraphLogic,
+  DecisionGraphNode,
+} from '../decisionGraphTypes';
 import type { Mark } from '../marks';
 import { EDITABLE_TABLE, type EditableTable } from './editableSentences.fixtures';
 
@@ -10,17 +14,22 @@ export interface GraphFixture {
   bodies: Readonly<Record<string, GraphBody>>;
 }
 
+const UNIQUE_TABLE: DecisionGraphLogic = {
+  kind: 'table',
+  hitPolicy: 'Unique',
+  ruleCount: EDITABLE_TABLE.rules.length,
+};
+
 const decision = (
   id: string,
   label: string,
   children: readonly DecisionGraphNode[] = [],
-  extra: Partial<DecisionGraphDecisionNode> = {}
+  extra: Pick<Partial<DecisionGraphDecisionNode>, 'logic' | 'mark'> = {}
 ): DecisionGraphDecisionNode => ({
   kind: 'decision',
   id,
   label,
-  hitPolicy: 'Unique',
-  ruleCount: EDITABLE_TABLE.rules.length,
+  logic: UNIQUE_TABLE,
   children,
   ...extra,
 });
@@ -79,7 +88,7 @@ export const CYCLE: GraphFixture = {
 export const NOT_A_TABLE: GraphFixture = {
   nodes: [
     decision('offer', 'Offer', [
-      decision('discount', 'Discount rate', [], { hitPolicy: undefined, ruleCount: undefined }),
+      decision('discount', 'Discount rate', [], { logic: { kind: 'other' } }),
     ]),
   ],
   bodies: {
@@ -97,8 +106,11 @@ export const MARKED: GraphFixture = {
     decision(
       'eligibility',
       'Eligibility',
-      [decision('risk', 'Risk', [], { mark: WARNING_MARK, markRowId: 'r20' })],
-      { mark: ERROR_MARK, markRowId: 'r3', ruleCount: 30 }
+      [decision('risk', 'Risk', [], { mark: { kind: 'rule', mark: WARNING_MARK, rowId: 'r20' } })],
+      {
+        mark: { kind: 'rule', mark: ERROR_MARK, rowId: 'r3' },
+        logic: { kind: 'table', hitPolicy: 'Unique', ruleCount: 30 },
+      }
     ),
   ],
   bodies: { eligibility: tableOf(30), risk: { ...tableOf(30) } },
@@ -116,7 +128,9 @@ export const largeGraph = (decisions: number, rulesEach: number): GraphFixture =
       children.push(node(child));
     }
     if (index > 0 && index % 5 === 0) children.push(reference(`${id}-uses-d1`, 'Decision 1', 'd1'));
-    return decision(id, `Decision ${index + 1}`, children, { ruleCount: rulesEach });
+    return decision(id, `Decision ${index + 1}`, children, {
+      logic: { kind: 'table', hitPolicy: 'Unique', ruleCount: rulesEach },
+    });
   };
   return { nodes: [node(0)], bodies };
 };

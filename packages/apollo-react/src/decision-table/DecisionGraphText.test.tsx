@@ -48,6 +48,11 @@ const textBody = (
   />
 );
 
+const held = (expanded: ReadonlySet<string>): DecisionGraphTextProps['expansion'] => ({
+  expanded,
+  onChange: () => {},
+});
+
 const graph = (props: Partial<DecisionGraphTextProps> = {}) => (
   <DecisionGraphText
     nodes={SHARED_DEPENDENCY.nodes}
@@ -87,7 +92,7 @@ const SelectingHost = ({
       selected={selected?.id ?? null}
       onReveal={(target) => {
         onReveal?.(target);
-        if (target.rowId) setSelected({ id: target.decisionId, rowId: target.rowId });
+        if (target.kind === 'rule') setSelected({ id: target.decisionId, rowId: target.rowId });
       }}
       dataTestId="graph"
     />
@@ -187,11 +192,11 @@ describe('DecisionGraphText', () => {
   });
 
   it('lets the host control which decisions are open', async () => {
-    const onExpandedChange = vi.fn();
-    render(graph({ expanded: new Set(['pricing']), onExpandedChange }));
+    const onChange = vi.fn();
+    render(graph({ expansion: { expanded: new Set(['pricing']), onChange } }));
     expect(body('pricing')).not.toBeNull();
     await userEvent.click(toggle('risk'));
-    expect(onExpandedChange).toHaveBeenCalledWith(new Set(['pricing', 'risk']));
+    expect(onChange).toHaveBeenCalledWith(new Set(['pricing', 'risk']));
     expect(body('risk')).toBeNull();
   });
 
@@ -206,7 +211,7 @@ describe('DecisionGraphText', () => {
     if (how === 'click') await userEvent.click(link);
     else await press(link);
     expect(body('risk')).not.toBeNull();
-    expect(onReveal).toHaveBeenCalledWith({ decisionId: 'risk', rowId: undefined });
+    expect(onReveal).toHaveBeenCalledWith({ kind: 'decision', decisionId: 'risk' });
     expect(scrollToSpy).toHaveBeenCalledTimes(1);
     expect(scrollToSpy.mock.contexts[0]).toBe(screen.getByTestId('graph-scroller'));
     expect(document.activeElement).toBe(link);
@@ -220,7 +225,7 @@ describe('DecisionGraphText', () => {
   });
 
   it('brings an open decision to the top again from its link', async () => {
-    render(graph({ expanded: new Set(['risk']) }));
+    render(graph({ expansion: held(new Set(['risk'])) }));
     await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
     expect(scrollToSpy).toHaveBeenCalledTimes(1);
   });
@@ -233,7 +238,7 @@ describe('DecisionGraphText', () => {
   });
 
   it("clips an open body to its card's rounded bottom", () => {
-    render(graph({ expanded: new Set(['risk']) }));
+    render(graph({ expansion: held(new Set(['risk'])) }));
     expect(body('risk')).toHaveClass('overflow-clip', 'rounded-b-[9px]');
   });
 
@@ -244,6 +249,9 @@ describe('DecisionGraphText', () => {
         renderBody: (id) => <p>{String(NOT_A_TABLE.bodies[id])}</p>,
       })
     );
+    expect(screen.getByTestId('graph-hit-policy-offer')).toHaveTextContent('Unique');
+    expect(screen.getByTestId('graph-rule-count-offer')).toHaveTextContent('3 rules');
+    expect(screen.queryByTestId('graph-hit-policy-discount')).toBeNull();
     expect(screen.queryByTestId('graph-rule-count-discount')).toBeEmptyDOMElement();
     await userEvent.click(toggle('discount'));
     expect(body('discount')).toHaveTextContent("isn't a decision table");
@@ -255,9 +263,36 @@ describe('DecisionGraphText', () => {
     const mark = screen.getByTestId('graph-mark-eligibility');
     expect(mark).toHaveAccessibleName('Error: Rules 1 and 3 overlap. Show it');
     await press(mark);
-    expect(onReveal).toHaveBeenCalledWith({ decisionId: 'eligibility', rowId: 'r3' });
+    expect(onReveal).toHaveBeenCalledWith({
+      kind: 'rule',
+      decisionId: 'eligibility',
+      rowId: 'r3',
+    });
     expect(document.activeElement).toBe(screen.getByTestId('text-eligibility-row-r3'));
     expect(scrollToSpy).toHaveBeenCalled();
+  });
+
+  it('opens a decision its mark names from the keyboard, focusing its heading', async () => {
+    const onReveal = vi.fn();
+    render(
+      graph({
+        nodes: [
+          {
+            kind: 'decision',
+            id: 'offer',
+            label: 'Offer',
+            logic: { kind: 'other' },
+            mark: { kind: 'decision', mark: { tone: 'warning', title: 'No logic', glyph: true } },
+            children: [],
+          },
+        ],
+        renderBody: () => null,
+        onReveal,
+      })
+    );
+    await press(screen.getByTestId('graph-mark-offer'));
+    expect(onReveal).toHaveBeenCalledWith({ kind: 'decision', decisionId: 'offer' });
+    expect(document.activeElement).toBe(toggle('offer'));
   });
 
   it('reveals a rule outside the mounted window once the host selects it', async () => {
@@ -276,7 +311,7 @@ describe('DecisionGraphText', () => {
             textBody(id, scroll, shown?.id === id ? { kind: 'rule', rowId: shown.rowId } : null)
           }
           onReveal={(target) => {
-            if (target.rowId) setShown({ id: target.decisionId, rowId: target.rowId });
+            if (target.kind === 'rule') setShown({ id: target.decisionId, rowId: target.rowId });
           }}
           dataTestId="graph"
         />
@@ -301,7 +336,6 @@ describe('DecisionGraphText', () => {
     const user = userEvent.setup();
     render(
       graph({
-        expanded: undefined,
         renderBody: () => <input aria-label="Inside" />,
       })
     );
@@ -320,7 +354,7 @@ describe('DecisionGraphText', () => {
         nodes: [SHARED_DEPENDENCY.nodes[1] ?? SHARED_DEPENDENCY.nodes[0]].flatMap((n) =>
           n ? [n] : []
         ),
-        expanded: new Set(['pricing']),
+        expansion: held(new Set(['pricing'])),
         renderBody: () => <button type="button">Inside</button>,
       })
     );
@@ -353,8 +387,7 @@ describe('DecisionGraphText', () => {
           </button>
           <DecisionGraphText
             nodes={SHARED_DEPENDENCY.nodes}
-            expanded={expanded}
-            onExpandedChange={setExpanded}
+            expansion={{ expanded, onChange: setExpanded }}
             onFold={(decisionId) => {
               onFold(decisionId);
               edit.onCancel?.();
@@ -394,7 +427,7 @@ describe('DecisionGraphText', () => {
     await act(async () =>
       root.render(
         graph({
-          expanded: new Set(['risk']),
+          expansion: held(new Set(['risk'])),
           renderBody: (id, scroll) => {
             given.push({ id, container: scroll.container });
             return textBody(id, scroll);
@@ -432,7 +465,7 @@ describe('DecisionGraphText', () => {
   it('has no axe violations, folded and open', async () => {
     const { container, rerender } = render(graph());
     expect(await axe(container)).toHaveNoViolations();
-    rerender(graph({ expanded: new Set(['eligibility', 'risk']) }));
+    rerender(graph({ expansion: held(new Set(['eligibility', 'risk'])) }));
     expect(await axe(container)).toHaveNoViolations();
   });
 
@@ -445,9 +478,12 @@ describe('DecisionGraphText', () => {
       kind: 'decision',
       id,
       label: id,
-      ruleCount: 10,
-      mark: { tone: 'error', title: 'Rules 1 and 10 overlap', glyph: true },
-      markRowId: 'r10',
+      logic: { kind: 'table', hitPolicy: 'Unique', ruleCount: 10 },
+      mark: {
+        kind: 'rule',
+        mark: { tone: 'error', title: 'Rules 1 and 10 overlap', glyph: true },
+        rowId: 'r10',
+      },
       children: [],
     }));
     const Host = () => {
@@ -455,7 +491,7 @@ describe('DecisionGraphText', () => {
       return (
         <DecisionGraphText
           nodes={nodes}
-          expanded={new Set(ids)}
+          expansion={held(new Set(ids))}
           renderBody={(id, scroll) => (
             <DecisionText
               table={{ rules: rules, ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
@@ -473,7 +509,7 @@ describe('DecisionGraphText', () => {
           )}
           selected={selected?.id ?? null}
           onReveal={(target) => {
-            if (target.rowId) setSelected({ id: target.decisionId, rowId: target.rowId });
+            if (target.kind === 'rule') setSelected({ id: target.decisionId, rowId: target.rowId });
           }}
           dataTestId="graph"
         />
@@ -491,7 +527,7 @@ describe('DecisionGraphText', () => {
 
   it('takes the last crossing of a card in one observer batch', () => {
     nearCard = (decisionId) => decisionId === 'risk';
-    render(graph({ expanded: new Set(['eligibility', 'risk']) }));
+    render(graph({ expansion: held(new Set(['eligibility', 'risk'])) }));
     const placeholder = (id: string) => body(id)?.querySelector('[data-graph-placeholder]');
     expect(placeholder('risk')).toBeNull();
     expect(placeholder('eligibility')).not.toBeNull();
@@ -530,7 +566,7 @@ describe('DecisionGraphText open', () => {
     const onStartEdit = vi.fn();
     render(
       graph({
-        expanded: new Set(['risk']),
+        expansion: held(new Set(['risk'])),
         onOpenDecision,
         renderBody: (id, scroll) =>
           textBody(id, scroll, null, () => {}, {

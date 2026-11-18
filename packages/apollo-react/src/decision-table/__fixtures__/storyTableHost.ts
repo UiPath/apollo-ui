@@ -218,11 +218,12 @@ export const storyTableOf = (table: EditableTable): StoryTable => ({
 });
 
 /** What a graph heading shows of a story table as it stands: its hit policy and rule count. */
-export const storyHeadingOf = (
-  state: StoryTable
-): Pick<DecisionGraphDecisionNode, 'hitPolicy' | 'ruleCount'> => ({
-  hitPolicy: policyHeaderOf(HIT_POLICIES, state.hitPolicy).label,
-  ruleCount: state.table.rules.length,
+export const storyHeadingOf = (state: StoryTable): Pick<DecisionGraphDecisionNode, 'logic'> => ({
+  logic: {
+    kind: 'table',
+    hitPolicy: policyHeaderOf(HIT_POLICIES, state.hitPolicy).label,
+    ruleCount: state.table.rules.length,
+  },
 });
 
 export interface StoryTableHost {

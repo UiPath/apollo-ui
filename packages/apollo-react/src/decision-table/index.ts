@@ -14,6 +14,9 @@ export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './D
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type {
   DecisionGraphDecisionNode,
+  DecisionGraphExpansion,
+  DecisionGraphLogic,
+  DecisionGraphMark,
   DecisionGraphNode,
   DecisionGraphReferenceNode,
   DecisionGraphTarget,

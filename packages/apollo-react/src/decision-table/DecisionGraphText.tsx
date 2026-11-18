@@ -18,6 +18,7 @@ import {
 } from './decisionGraphStyles';
 import type {
   DecisionGraphDecisionNode,
+  DecisionGraphExpansion,
   DecisionGraphNode,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
@@ -33,9 +34,8 @@ export interface DecisionGraphTextProps {
   renderBody: (decisionId: string, scroll: Exclude<DecisionTextScroll, 'self'>) => React.ReactNode;
   /** The view folded this decision, unmounting its body: close what the host had open in it, such as its editor. */
   onFold?: (decisionId: string) => void;
-  /** The open decisions; without it the view keeps them, all folded at first. */
-  expanded?: ReadonlySet<string>;
-  onExpandedChange?: (expanded: ReadonlySet<string>) => void;
+  /** The open decisions as the host keeps them; without it the view keeps them, all folded at first. */
+  expansion?: DecisionGraphExpansion;
   /** The decision the host's selection is in. */
   selected?: string | null;
   /** The view brought a decision or one of its rules into view from the keyboard; a host that selects the rule there has it focused. A click on a mark opens and flashes its target without scrolling or telling the host. */
@@ -53,9 +53,12 @@ const NO_EXPANDED: ReadonlySet<string> = new Set();
 /** Brought into view and told to the host, or opened and flashed where it stands. */
 type RevealMode = { kind: 'navigate'; focus: boolean; flash: boolean } | { kind: 'inPlace' };
 
-interface PendingReveal extends DecisionGraphTarget {
-  mode: RevealMode;
-}
+type PendingReveal = DecisionGraphTarget & { mode: RevealMode };
+
+const markTargetOf = ({ id, mark }: DecisionGraphDecisionNode): DecisionGraphTarget =>
+  mark?.kind === 'rule'
+    ? { kind: 'rule', decisionId: id, rowId: mark.rowId }
+    : { kind: 'decision', decisionId: id };
 
 const focuses = (mode: RevealMode): boolean => mode.kind === 'navigate' && mode.focus;
 
@@ -119,7 +122,7 @@ const ruleCountsOf = (nodes: readonly DecisionGraphNode[]): ReadonlyMap<string, 
   const counts = new Map<string, number>();
   const visit = (node: DecisionGraphNode) => {
     if (node.kind !== 'decision') return;
-    if (node.ruleCount !== undefined) counts.set(node.id, node.ruleCount);
+    if (node.logic.kind === 'table') counts.set(node.id, node.logic.ruleCount);
     for (const child of node.children) visit(child);
   };
   for (const node of nodes) visit(node);
@@ -146,8 +149,7 @@ const perRuleHeightOf = (
 export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   nodes,
   renderBody,
-  expanded: hostExpanded,
-  onExpandedChange,
+  expansion,
   onFold,
   selected = null,
   onReveal,
@@ -158,7 +160,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   const labels = useDecisionGraphLabels();
   const idPrefix = useId();
   const [ownExpanded, setOwnExpanded] = useState(NO_EXPANDED);
-  const expanded = hostExpanded ?? ownExpanded;
+  const expanded = expansion?.expanded ?? ownExpanded;
   const users = useMemo(() => usersOf(nodes), [nodes]);
   const [scroller, setScroller] = useState<HTMLElement | null>(null);
   const [launcherEnd, setLauncherEnd] = useState(0);
@@ -177,8 +179,8 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
   const ruleCounts = useMemo(() => ruleCountsOf(nodes), [nodes]);
 
   const setExpanded = (next: ReadonlySet<string>) => {
-    if (hostExpanded === undefined) setOwnExpanded(next);
-    onExpandedChange?.(next);
+    if (expansion) expansion.onChange(next);
+    else setOwnExpanded(next);
   };
   const toggle = (decisionId: string) => {
     const next = new Set(expanded);
@@ -191,8 +193,13 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
     if (!expanded.has(target.decisionId)) setExpanded(new Set([...expanded, target.decisionId]));
     setPending(target);
     setRevealed(target.decisionId);
-    if (target.mode.kind === 'navigate')
-      onReveal?.({ decisionId: target.decisionId, rowId: target.rowId });
+    if (target.mode.kind === 'navigate') {
+      onReveal?.(
+        target.kind === 'rule'
+          ? { kind: 'rule', decisionId: target.decisionId, rowId: target.rowId }
+          : { kind: 'decision', decisionId: target.decisionId }
+      );
+    }
   };
   const openOf = (decisionId: string) => onOpenDecision && (() => onOpenDecision(decisionId));
 
@@ -278,7 +285,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
     const apply = (): boolean => {
       const card = cardsRef.current.get(pending.decisionId);
       if (!scroller || !card) return false;
-      if (pending.rowId === undefined) {
+      if (pending.kind === 'decision') {
         if (pending.mode.kind === 'navigate') scrollTo(scroller, contentTopIn(card, scroller));
         if (focuses(pending.mode)) {
           card.querySelector<HTMLElement>('[data-graph-toggle]')?.focus({ preventScroll: true });
@@ -323,6 +330,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           labels={labels}
           onReveal={() =>
             reveal({
+              kind: 'decision',
               decisionId: node.targetId,
               mode: { kind: 'navigate', focus: false, flash: false },
             })
@@ -347,8 +355,7 @@ export const DecisionGraphText: React.FC<DecisionGraphTextProps> = ({
           onToggle={() => toggle(node.id)}
           onShowProblem={(byKey) =>
             reveal({
-              decisionId: node.id,
-              rowId: node.markRowId,
+              ...markTargetOf(node),
               mode: byKey ? { kind: 'navigate', focus: true, flash: true } : { kind: 'inPlace' },
             })
           }

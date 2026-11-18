@@ -145,7 +145,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
           rules={(decisionId) => rulesById.get(decisionId) ?? []}
           onReveal={(target) => {
             setRevealed(target);
-            if (target.rowId !== undefined) {
+            if (target.kind === 'rule') {
               setSelected({
                 decisionId: target.decisionId,
                 selection: { kind: 'rule', rowId: target.rowId },
@@ -161,7 +161,10 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
         {selected
           ? `${selected.decisionId} / ${selected.selection?.rowId ?? 'none'} / ${selectedColumnOf(selected.selection) ?? 'rule'}`
           : 'none'}{' '}
-        · Revealed: {revealed ? `${revealed.decisionId} / ${revealed.rowId ?? 'decision'}` : 'none'}{' '}
+        · Revealed:{' '}
+        {revealed
+          ? `${revealed.decisionId} / ${revealed.kind === 'rule' ? revealed.rowId : 'decision'}`
+          : 'none'}{' '}
         · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'}
       </p>
       <p className="text-xs text-foreground-de-emp">{caption}</p>

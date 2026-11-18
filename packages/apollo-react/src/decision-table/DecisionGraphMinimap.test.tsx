@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { vi } from 'vitest';
 import {
   largeGraph,
+  NOT_A_TABLE,
   SHARED_DEPENDENCY,
   SINGLE_DECISION,
   tableOf,
@@ -402,8 +403,9 @@ describe('DecisionGraphText minimap', () => {
           />
         )}
         selected={selected?.id ?? null}
-        onReveal={({ decisionId, rowId }) => {
-          if (rowId) setSelected({ id: decisionId, rule: { kind: 'rule', rowId } });
+        onReveal={(target) => {
+          if (target.kind === 'rule')
+            setSelected({ id: target.decisionId, rule: { kind: 'rule', rowId: target.rowId } });
         }}
         dataTestId="graph"
       />
@@ -413,6 +415,18 @@ describe('DecisionGraphText minimap', () => {
   it('counts the rules of the decisions drawn in full', () => {
     render(<Host nodes={SHARED_DEPENDENCY.nodes} />);
     expect(screen.getByTestId('graph-minimap-trigger')).toHaveTextContent('12 rules');
+  });
+
+  it('counts no rules for a decision that is not a table', async () => {
+    const user = userEvent.setup();
+    render(<Host nodes={NOT_A_TABLE.nodes} />);
+    const trigger = screen.getByTestId('graph-minimap-trigger');
+    expect(trigger).toHaveTextContent('3 rules');
+    await user.click(trigger);
+    expect(screen.getByTestId('graph-minimap-row-decision-offer')).toHaveTextContent('3');
+    expect(screen.getByTestId('graph-minimap-row-decision-discount')).toHaveTextContent(
+      /^Discount rate$/
+    );
   });
 
   it('is absent from an empty graph', () => {
@@ -475,7 +489,7 @@ describe('DecisionGraphText minimap', () => {
           kind: 'decision',
           id: decisionId,
           label: decisionId,
-          ruleCount: 1,
+          logic: { kind: 'table', hitPolicy: 'Unique', ruleCount: 1 },
           children: [],
         }))}
         rules={(decisionId) => [ruleOf(decisionId === first.decisionId ? first : second)]}
@@ -487,7 +501,7 @@ describe('DecisionGraphText minimap', () => {
     for (const { decisionId, rowId } of [second, first]) {
       await user.click(screen.getByTestId('graph-minimap-trigger'));
       await user.keyboard(`${decisionId} rule{Enter}`);
-      expect(onReveal).toHaveBeenLastCalledWith({ decisionId, rowId });
+      expect(onReveal).toHaveBeenLastCalledWith({ kind: 'rule', decisionId, rowId });
     }
   });
 
