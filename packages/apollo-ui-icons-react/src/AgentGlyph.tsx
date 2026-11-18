@@ -1,0 +1,23 @@
+// Auto-generated from product-logo/agent-glyph.svg
+import React from 'react';
+
+export interface AgentGlyphProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
+
+export const AgentGlyph = React.forwardRef<SVGSVGElement, AgentGlyphProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path fill="currentColor" d="M12.41 3.499c.35 0 .636.285.636.636V10.5a.637.637 0 0 1-.637.636H1.591a.637.637 0 0 1-.636-.636V5.25a.477.477 0 1 1 .954 0v4.931h10.182V4.453H7.478a.477.477 0 0 1 0-.954z"/>
+<path fill="currentColor" d="M7.557 6.362c.307 0 .557.25.557.557v.795a.557.557 0 0 1-1.114 0V6.92c0-.307.25-.557.557-.557m2.546-.001c.307 0 .556.25.556.557v.795a.557.557 0 1 1-1.113 0V6.92c0-.307.25-.557.557-.557M3.61 2.164a.393.393 0 0 1 .736 0l.39 1.053 1.053.39a.393.393 0 0 1 0 .738l-1.053.39-.39 1.052a.393.393 0 0 1-.737 0l-.39-1.053-1.053-.39a.393.393 0 0 1 0-.737l1.053-.39z"/>
+    </svg>
+  )
+);
+
+AgentGlyph.displayName = 'AgentGlyph';
+
+export default AgentGlyph;

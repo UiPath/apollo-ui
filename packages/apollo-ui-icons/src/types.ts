@@ -6,6 +6,7 @@ export type IconName =
   | 'AIAutoSummarize'
   | 'AIAutofix'
   | 'AICenter'
+  | 'APIWorkflowGlyph'
   | 'Academy'
   | 'AccountSwitch'
   | 'Act365'
@@ -34,6 +35,7 @@ export type IconName =
   | 'AgentDesktopLogo'
   | 'AgentDesktopLogoBg'
   | 'AgentDesktopLogoFlat'
+  | 'AgentGlyph'
   | 'AgentRun'
   | 'AgentTraceAPIWorkflowRun'
   | 'AgentTraceAPIWorkflowTool'
@@ -646,6 +648,7 @@ export type IconName =
   | 'FormattingMatches'
   | 'Freshservice'
   | 'FullscreenMaximize'
+  | 'FunctionGlyph'
   | 'Functions'
   | 'GenAI'
   | 'GenericActivityIconsDelete'
@@ -1037,6 +1040,7 @@ export type IconName =
   | 'RobotHead'
   | 'RowUpdateRowItem'
   | 'RpaAutomation'
+  | 'RpaGlyph'
   | 'RunParallelProcess'
   | 'RunProgramInVm'
   | 'RunTests'
@@ -1342,6 +1346,7 @@ export const iconNames: readonly IconName[] = [
   'AIAutoSummarize',
   'AIAutofix',
   'AICenter',
+  'APIWorkflowGlyph',
   'Academy',
   'AccountSwitch',
   'Act365',
@@ -1370,6 +1375,7 @@ export const iconNames: readonly IconName[] = [
   'AgentDesktopLogo',
   'AgentDesktopLogoBg',
   'AgentDesktopLogoFlat',
+  'AgentGlyph',
   'AgentRun',
   'AgentTraceAPIWorkflowRun',
   'AgentTraceAPIWorkflowTool',
@@ -1982,6 +1988,7 @@ export const iconNames: readonly IconName[] = [
   'FormattingMatches',
   'Freshservice',
   'FullscreenMaximize',
+  'FunctionGlyph',
   'Functions',
   'GenAI',
   'GenericActivityIconsDelete',
@@ -2373,6 +2380,7 @@ export const iconNames: readonly IconName[] = [
   'RobotHead',
   'RowUpdateRowItem',
   'RpaAutomation',
+  'RpaGlyph',
   'RunParallelProcess',
   'RunProgramInVm',
   'RunTests',
