@@ -360,6 +360,7 @@ function formatDate(iso: string): string {
   // to the raw value instead.
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
+  UiPathMls: 'UiPath',
   // A date-only value ("2026-09-01") parses as UTC midnight; formatting it
   // in a western local zone lands on the previous day and can shift the
   // month. Format those in UTC. Full timestamps keep the local zone.
