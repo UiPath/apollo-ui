@@ -1,6 +1,6 @@
 import type { i18n as I18n, Namespace, ReadCallback } from "i18next";
 import { default as i18n } from "i18next";
-import { initReactI18next } from "react-i18next";
+import { getI18n, initReactI18next } from "react-i18next";
 import { VERTEX_NAMESPACE } from "@/lib/vertex-translation";
 
 type LocaleTranslations = Record<string, string>;
@@ -81,7 +81,32 @@ export const addVertexTranslations = async (instance: I18n) => {
   return () => instance.off("languageChanged", handleLanguageChanged);
 };
 
+export const hasVertexStrings = (instance: I18n) =>
+  instance.isInitialized &&
+  instance.hasResourceBundle(
+    (instance.languages ?? []).find((language) =>
+      isSupportedLocale(language),
+    ) ?? DEFAULT_LOCALE,
+    VERTEX_NAMESPACE,
+  );
+
 export const configurei18n = async () => {
+  const registered = getI18n();
+  if (registered?.isInitializing) {
+    await new Promise<void>((resolve) => {
+      const initialized = () => {
+        registered.off("initialized", initialized);
+        resolve();
+      };
+      registered.on("initialized", initialized);
+    });
+  }
+  if (registered?.isInitialized) {
+    if (!hasVertexStrings(registered)) await addVertexTranslations(registered);
+    const language = registered.resolvedLanguage ?? registered.language;
+    if (language) document.documentElement.lang = language;
+    return;
+  }
   await i18n
     .use({
       type: "backend",
