@@ -43,7 +43,6 @@
   "decision-text.edit_expression": "Edit expression",
   "decision-text.empty_rules": "No rules yet",
   "decision-text.empty_value": "empty",
-  "decision-text.ends_out_of_order": "From must not be past To",
   "decision-text.included": "Included",
   "decision-text.input_column": "Input · {name}",
   "decision-text.input_expression": "Input expression",

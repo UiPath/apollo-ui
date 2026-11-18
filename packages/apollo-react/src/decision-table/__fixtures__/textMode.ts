@@ -2,19 +2,39 @@ import type { DecisionTextMode, DecisionTextProps } from '../DecisionText';
 import type { DecisionTextTable } from '../sentenceTypes';
 import {
   COLUMN_TYPES,
+  type FixtureOperator,
   type FixturePolicy,
   type FixtureTotal,
   type FixtureType,
   HIT_POLICIES,
 } from './sentences.fixtures';
 
-/** The view's props in the fixtures' hit policies and column types. */
-export type FixtureTextProps = DecisionTextProps<FixturePolicy, FixtureTotal, FixtureType>;
+/** The view's props in the fixtures' operators, hit policies and column types. */
+export type FixtureTextProps = DecisionTextProps<
+  FixtureOperator,
+  FixturePolicy,
+  FixtureTotal,
+  FixtureType
+>;
 
-/** The view's mode in the fixtures' hit policies and column types. */
-export type FixtureMode = DecisionTextMode<FixturePolicy, FixtureTotal, FixtureType>;
+/** The view's mode in the fixtures' operators, hit policies and column types. */
+export type FixtureMode = DecisionTextMode<
+  FixtureOperator,
+  FixturePolicy,
+  FixtureTotal,
+  FixtureType
+>;
+
+/** The view's edit in the fixtures' operators and column types. */
+export type FixtureEdit = Extract<FixtureMode, { kind: 'edit' }>['edit'];
 
 type EditMode = Extract<FixtureMode, { kind: 'edit' }>;
+
+/** A field the popover edits as an outcome. */
+export const outcomeField = (): ReturnType<FixtureEdit['valueField']> => ({
+  kind: 'outcome',
+  allowedValues: [],
+});
 
 /** A test host's mode as separate props: a diff reads what changed, an edit, Add rule or policy change edits, an onSelect selects, else the view reads. */
 export type ModeProps = Partial<
@@ -48,7 +68,12 @@ export const modeOf = ({
       kind: 'edit',
       selected,
       onSelect: onSelect ?? noop,
-      edit: edit ?? { onCommit: noop, onClearCell: noop, onDeleteRule: noop },
+      edit: edit ?? {
+        onCommit: noop,
+        onClearCell: noop,
+        onDeleteRule: noop,
+        valueField: outcomeField,
+      },
       onPolicyChange: onPolicyChange ?? noop,
       onAddRule: onAddRule ?? noop,
     };

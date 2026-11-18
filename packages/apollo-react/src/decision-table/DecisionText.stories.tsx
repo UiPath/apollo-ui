@@ -25,7 +25,6 @@ import {
   MULTI_SENTENCE_POLICY,
   manySentenceRules,
   COLUMN_TYPES,
-  type FixtureType,
 } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
@@ -33,9 +32,8 @@ import {
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
-import type { FixtureTextProps } from './__fixtures__/textMode';
+import type { FixtureEdit, FixtureTextProps } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
 import { selectedColumnOf } from './sentenceSelection';
@@ -107,7 +105,7 @@ interface TableHostProps {
   validate?: boolean;
   marks?: TableMarks;
   headerMark?: FixtureTextProps['headerMark'];
-  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
+  renderEditor?: FixtureEdit['renderEditor'];
   frameClassName?: string;
 }
 

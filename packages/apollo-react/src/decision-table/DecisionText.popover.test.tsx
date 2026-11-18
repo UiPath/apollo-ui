@@ -4,17 +4,19 @@ import { Activity, createElement, StrictMode, useEffect, useRef, useState } from
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installEscapeCloseRequest, installModalInertness } from './__fixtures__/modalDialog';
 import {
+  COLUMN_TYPES,
+  type FixtureOffer,
+  type FixtureOperator,
   HIT_POLICIES,
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_POLICY,
   MULTI_SENTENCE_RULES,
-  COLUMN_TYPES,
-  type FixtureType,
+  offerOf,
 } from './__fixtures__/sentences.fixtures';
+import type { FixtureEdit } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
-import type { ExpressionEditorProps, ValueField, ValueOperatorOption } from './valueTypes';
+import type { ExpressionEditorProps, HeldValues, ValueFieldData } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 afterEach(cleanup);
@@ -29,12 +31,26 @@ afterAll(() => {
   uninstallInertness();
 });
 
-const OPS: ValueOperatorOption[] = [
-  { id: '<', label: 'is less than' },
-  { id: '>', label: 'is greater than' },
-  { id: 'between', label: 'is between', shape: 'range' },
-  { id: 'noneOf', label: 'is none of', shape: 'list' },
+const OPS: readonly FixtureOffer[] = [
+  offerOf('<', 'single'),
+  offerOf('>', 'single'),
+  offerOf('between', 'range'),
+  offerOf('noneOf', 'list'),
 ];
+const condition = (
+  held: HeldValues<FixtureOperator>,
+  expression: string,
+  allowedValues: readonly string[] = [],
+  operators: readonly FixtureOffer[] = OPS
+): ValueFieldData<FixtureOperator> => ({
+  kind: 'condition',
+  allowedValues,
+  expression,
+  operators,
+  held,
+});
+const LESS_THAN_600 = condition({ shape: 'single', operator: '<', value: '600' }, '< 600');
+const NO_VALUE = condition({ shape: 'single', operator: '<', value: '' }, '');
 const at = (rowId: string, columnId: string, index = 0): SentenceValueId => ({
   rowId,
   columnId,
@@ -51,10 +67,10 @@ const Host = ({
   cancelsLater = false,
 }: {
   initial: SentenceValueId;
-  valueField: DecisionTextEdit<FixtureType>['valueField'];
-  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
-  onCommit: DecisionTextEdit<FixtureType>['onCommit'];
-  onCancel?: DecisionTextEdit<FixtureType>['onCancel'];
+  valueField: FixtureEdit['valueField'];
+  renderEditor?: FixtureEdit['renderEditor'];
+  onCommit: FixtureEdit['onCommit'];
+  onCancel?: FixtureEdit['onCancel'];
   refusesCancel?: boolean;
   cancelsLater?: boolean;
 }) => {
@@ -196,7 +212,7 @@ describe('DecisionText value popover settling', () => {
     render(
       <Host
         initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
+        valueField={() => LESS_THAN_600}
         renderEditor={hostEditor}
         onCommit={onCommit}
       />
@@ -213,7 +229,7 @@ describe('DecisionText value popover settling', () => {
     render(
       <Host
         initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
+        valueField={() => LESS_THAN_600}
         renderEditor={hostEditor}
         onCommit={onCommit}
       />
@@ -233,7 +249,7 @@ describe('DecisionText value popover settling', () => {
     render(
       <Host
         initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
+        valueField={() => LESS_THAN_600}
         renderEditor={hostEditor}
         onCommit={vi.fn()}
       />
@@ -268,12 +284,8 @@ describe('DecisionText value popover settling', () => {
     ],
   ])('keeps Apply off with no radio checked once %s turns into a single value with allowed values', (_, before) => {
     const onCommit = vi.fn();
-    const field = (): ValueField => ({
-      operators: OPS,
-      operator: 'noneOf',
-      values: ['"RU"', '"KP"'],
-      allowedValues: ['"CN"'],
-    });
+    const field = () =>
+      condition({ shape: 'list', operator: 'noneOf', values: ['"RU"', '"KP"'] }, '', ['"CN"']);
     render(<Host initial={at('m2', 'country')} valueField={field} onCommit={onCommit} />);
     before();
     pickOperator('is less than');
@@ -285,14 +297,15 @@ describe('DecisionText value popover settling', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it.each<[string, ValueField]>([
-    ['its text field', { operators: OPS }],
-    ['an allowed value', { operators: OPS, allowedValues: ['"CN"', '"US"'] }],
+  it.each<[string, ValueFieldData<FixtureOperator>]>([
+    ['its text field', NO_VALUE],
+    ['an allowed value', { ...NO_VALUE, allowedValues: ['"CN"', '"US"'] }],
   ])('leaves Tab and Shift+Tab to the browser from %s of a condition that cannot apply yet', (_, field) => {
     render(<Host initial={at('m3', 'country')} valueField={() => field} onCommit={vi.fn()} />);
-    const stop = field.allowedValues
-      ? popover().getAllByRole('radio')[0]
-      : screen.getByTestId('nl-editor');
+    const stop =
+      field.allowedValues.length > 0
+        ? popover().getAllByRole('radio')[0]
+        : screen.getByTestId('nl-editor');
     if (!stop) throw new Error('no field');
     expect([
       fireEvent.keyDown(stop, { key: 'Tab' }),
@@ -306,7 +319,7 @@ describe('DecisionText value popover settling', () => {
     render(
       <Host
         initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
+        valueField={() => LESS_THAN_600}
         renderEditor={hostEditor}
         onCommit={onCommit}
       />
@@ -318,22 +331,11 @@ describe('DecisionText value popover settling', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it.each<[string, ValueField]>([
-    ['an empty operator', { operators: OPS, operator: '' }],
-    ['an operator with an empty id', { operators: [{ id: '', label: 'blank' }, ...OPS] }],
-  ])('opens on %s without the empty one', (_, field) => {
-    render(<Host initial={at('m3', 'score')} valueField={() => field} onCommit={vi.fn()} />);
-    fireEvent.click(popover().getByRole('combobox', { name: 'Operator' }));
-    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(
-      OPS.map((option) => option.label)
-    );
-  });
-
   it('offers each allowed value once, checking the held one', () => {
     render(
       <Host
         initial={at('m3', 'score')}
-        valueField={() => ({ allowedValues: ['600', '600', '700'] })}
+        valueField={() => ({ ...LESS_THAN_600, allowedValues: ['600', '600', '700'] })}
         onCommit={vi.fn()}
       />
     );
@@ -341,21 +343,35 @@ describe('DecisionText value popover settling', () => {
     expect(radios.map((radio) => radio.getAttribute('aria-checked'))).toEqual(['true', 'false']);
   });
 
-  it.each<[string, ValueField, boolean]>([
-    ['a single value', { operators: OPS, operator: '<', expression: '< 600' }, false],
-    ['a range', { operators: OPS, operator: 'between', values: ['600', '700'] }, false],
-    ["the host's expression editor", { operators: OPS, operator: '<', expression: '< 600' }, true],
-    ['an outcome with allowed values', { allowedValues: ['600', '700'] }, false],
-  ])('opens the popover of %s as a modal dialog, leaving Tab and Shift+Tab to the browser', (_, field, expression) => {
+  it.each<[string, ValueFieldData<FixtureOperator>, boolean, SentenceValueId]>([
+    ['a single value', LESS_THAN_600, false, at('m3', 'score')],
+    [
+      'a range',
+      condition(
+        {
+          shape: 'range',
+          operator: 'between',
+          low: '600',
+          high: '700',
+          ends: { lowInclusive: true, highInclusive: true },
+        },
+        '[600..700]'
+      ),
+      false,
+      at('m3', 'score'),
+    ],
+    ["the host's expression editor", LESS_THAN_600, true, at('m3', 'score')],
+    [
+      'an outcome with allowed values',
+      { kind: 'outcome', allowedValues: ['0', '5000'] },
+      false,
+      at('m3', 'limit'),
+    ],
+  ])('opens the popover of %s as a modal dialog, leaving Tab and Shift+Tab to the browser', (_, field, expression, cell) => {
     const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal');
     const onCommit = vi.fn();
     render(
-      <Host
-        initial={at('m3', 'score')}
-        valueField={() => field}
-        renderEditor={hostEditor}
-        onCommit={onCommit}
-      />
+      <Host initial={cell} valueField={() => field} renderEditor={hostEditor} onCommit={onCommit} />
     );
     if (expression) fireEvent.click(popover().getByRole('button', { name: 'Edit expression' }));
     const dialog = screen.getByTestId('nl-value-editor');
@@ -371,8 +387,8 @@ describe('DecisionText value popover settling', () => {
 });
 
 describe('DecisionText expression editor contract', () => {
-  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
-  const open = (editor: DecisionTextEdit<FixtureType>['renderEditor'], onCommit = vi.fn()) => {
+  const field = () => LESS_THAN_600;
+  const open = (editor: FixtureEdit['renderEditor'], onCommit = vi.fn()) => {
     render(
       <Host
         initial={at('m3', 'score')}
@@ -556,7 +572,7 @@ describe('DecisionText value popover whose view stops rendering', () => {
     act(() => {
       for (const callback of [...observers]) callback([], {} as ResizeObserver);
     });
-  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const field = () => LESS_THAN_600;
   const dialog = () => document.querySelector('dialog');
 
   beforeEach(() => {
@@ -690,11 +706,11 @@ describe('DecisionText value popover whose view stops rendering', () => {
 });
 
 describe('DecisionText popover Shift+Tab at its start', () => {
-  const field = { operators: OPS, operator: '<', expression: '< 600' };
+  const field = LESS_THAN_600;
 
-  it.each<[string, ValueField, SentenceValueId]>([
+  it.each<[string, ValueFieldData<FixtureOperator>, SentenceValueId]>([
     ['Apply', field, at('m3', 'score')],
-    ['Cancel', { ...field, expression: '' }, at('m3', 'country')],
+    ['Cancel', NO_VALUE, at('m3', 'country')],
   ])('sends Shift+Tab from the first control to the last action, %s', async (name, valueField, value) => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
@@ -710,11 +726,11 @@ describe('DecisionText popover Shift+Tab at its start', () => {
 });
 
 describe('DecisionText popover Tab at its end', () => {
-  const field = { operators: OPS, operator: '<', expression: '< 600' };
+  const field = LESS_THAN_600;
 
-  it.each<[string, ValueField, SentenceValueId]>([
+  it.each<[string, ValueFieldData<FixtureOperator>, SentenceValueId]>([
     ['Apply', field, at('m3', 'score')],
-    ['Cancel', { ...field, expression: '' }, at('m3', 'country')],
+    ['Cancel', NO_VALUE, at('m3', 'country')],
   ])('sends Tab from the last action, %s, to the first control', async (name, valueField, value) => {
     const user = userEvent.setup({ delay: null });
     const onCommit = vi.fn();
@@ -755,11 +771,7 @@ describe('DecisionText popover Escape during composition', () => {
   ])('keeps the popover open on an Escape while text composes (%o), and cancels on the next', (composing) => {
     const onCommit = vi.fn();
     render(
-      <Host
-        initial={at('m3', 'score')}
-        valueField={() => ({ operators: OPS, operator: '<', expression: '< 600' })}
-        onCommit={onCommit}
-      />
+      <Host initial={at('m3', 'score')} valueField={() => LESS_THAN_600} onCommit={onCommit} />
     );
     const text = popover().getByRole('textbox');
     fireEvent.keyDown(text, { key: 'Escape', ...composing });
@@ -771,15 +783,9 @@ describe('DecisionText popover Escape during composition', () => {
 });
 
 describe('DecisionText popover Escape for a host that cancels later or refuses', () => {
-  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const field = () => LESS_THAN_600;
   const closeEvents = () => act(() => new Promise((resolve) => setTimeout(resolve)));
-  const editors: [
-    string,
-    DecisionTextEdit<FixtureType>['renderEditor'],
-    boolean,
-    () => HTMLElement,
-    number,
-  ][] = [
+  const editors: [string, FixtureEdit['renderEditor'], boolean, () => HTMLElement, number][] = [
     ['the value field', undefined, false, () => popover().getByRole('textbox'), 1],
     [
       'the default expression editor',
@@ -840,14 +846,9 @@ describe('DecisionText popover Escape for a host that cancels later or refuses',
 });
 
 describe('DecisionText expression editor during composition', () => {
-  const field = () => ({ operators: OPS, operator: '<', expression: '< 600' });
+  const field = () => LESS_THAN_600;
   const keys: string[] = [];
-  const editors: [
-    string,
-    DecisionTextEdit<FixtureType>['renderEditor'],
-    () => HTMLElement,
-    string[],
-  ][] = [
+  const editors: [string, FixtureEdit['renderEditor'], () => HTMLElement, string[]][] = [
     ['the default editor', undefined, () => screen.getByTestId('nl-editor-expression-editor'), []],
     [
       'a host editor',
@@ -888,5 +889,272 @@ describe('DecisionText expression editor during composition', () => {
     expect(keys).toEqual(reached);
     fireEvent.keyDown(target(), { key: 'Escape' });
     expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('DecisionText popover field kinds', () => {
+  const apply = () => fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
+
+  it.each<[string, ValueFieldData<FixtureOperator>, () => void]>([
+    [
+      'picked',
+      condition(
+        { shape: 'single', operator: '<', value: '600' },
+        '< 600',
+        [],
+        [...OPS, offerOf('isEmpty', 'valueless')]
+      ),
+      () => pickOperator('is empty'),
+    ],
+    [
+      'held',
+      condition(
+        { shape: 'valueless', operator: 'isEmpty' },
+        '',
+        [],
+        [...OPS, offerOf('isEmpty', 'valueless')]
+      ),
+      () => {},
+    ],
+  ])('shows no value field for a valueless operator %s, and commits it without a value', (_, field, before) => {
+    const onCommit = vi.fn();
+    render(<Host initial={at('m3', 'score')} valueField={() => field} onCommit={onCommit} />);
+    before();
+    expect(popover().getByRole('combobox', { name: 'Operator' })).toHaveTextContent('is empty');
+    expect(popover().queryByRole('textbox')).toBeNull();
+    expect(popover().queryByRole('radio')).toBeNull();
+    expect(popover().queryByRole('checkbox')).toBeNull();
+    apply();
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'valueless', operator: 'isEmpty' }, 'none'],
+    ]);
+  });
+
+  it("opens an expression field's text field on the field's expression, without operators, and commits the text", () => {
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={() => ({ kind: 'expression', allowedValues: [], expression: '< 600' })}
+        onCommit={onCommit}
+      />
+    );
+    const text = screen.getByTestId('nl-editor');
+    expect(text).toHaveValue('< 600');
+    expect(popover().queryByRole('combobox', { name: 'Operator' })).toBeNull();
+    fireEvent.change(text, { target: { value: '> limitFloor' } });
+    apply();
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'expression', text: '> limitFloor' }, 'none'],
+    ]);
+  });
+
+  it('opens a held operator the host leaves out of its operators as its expression', () => {
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={() => condition({ shape: 'single', operator: '!=', value: '600' }, '!= 600')}
+        onCommit={onCommit}
+      />
+    );
+    expect(popover().queryByRole('combobox', { name: 'Operator' })).toBeNull();
+    const field = popover().getByRole('textbox');
+    expect(field).toHaveValue('!= 600');
+    fireEvent.change(field, { target: { value: '!= 650' } });
+    apply();
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'expression', text: '!= 650' }, 'none'],
+    ]);
+  });
+});
+
+describe('DecisionText popover offers the host changes while it is open', () => {
+  const fieldWith = (operators: readonly FixtureOffer[]) =>
+    condition({ shape: 'single', operator: '<', value: '600' }, '< 600', [], operators);
+
+  it.each<[string, readonly FixtureOffer[]]>([
+    ['reorders', [offerOf('>', 'single'), offerOf('<', 'single'), offerOf('between', 'range')]],
+    ['drops the picked one from', [offerOf('<', 'single')]],
+  ])('commits the operator picked from the offers it opened with when the host %s its offers', (_, changed) => {
+    let operators: readonly FixtureOffer[] = [...OPS];
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={() => fieldWith(operators)}
+        onCommit={onCommit}
+      />
+    );
+    pickOperator('is greater than');
+    operators = changed;
+    fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'single', operator: '>', value: '600' }, 'none'],
+    ]);
+  });
+});
+
+describe('DecisionText popover field the host updates while it is open', () => {
+  const lessThan = (allowedValues: readonly string[] = []) =>
+    condition({ shape: 'single', operator: '<', value: '600' }, '< 600', allowedValues);
+  let changeField: (field: ValueFieldData<FixtureOperator>) => void = () => {};
+  let openNext: (value: SentenceValueId) => void = () => {};
+  const LiveHost = ({
+    initial,
+    onCommit,
+  }: {
+    initial: SentenceValueId;
+    onCommit: FixtureEdit['onCommit'];
+  }) => {
+    const [editing, setEditing] = useState<SentenceValueId | null>(initial);
+    const [field, setField] = useState(lessThan());
+    changeField = setField;
+    openNext = setEditing;
+    return (
+      <DecisionText
+        table={{
+          rules: MULTI_SENTENCE_RULES,
+          ...MULTI_SENTENCE_COLUMNS,
+          hitPolicy: MULTI_SENTENCE_POLICY,
+        }}
+        hitPolicies={HIT_POLICIES}
+        columnTypes={COLUMN_TYPES}
+        ariaLabel="Rules"
+        dataTestId="nl"
+        mode={{
+          kind: 'edit',
+          selected: null,
+          onSelect: () => {},
+          onPolicyChange: () => {},
+          onAddRule: () => {},
+          edit: {
+            editing,
+            onStartEdit: setEditing,
+            onCommit,
+            onCancel: () => setEditing(null),
+            onClearCell: () => {},
+            onDeleteRule: () => {},
+            valueField: () => field,
+          },
+        }}
+      />
+    );
+  };
+
+  it('shows allowed values the host loads while the popover is open', () => {
+    render(<LiveHost initial={at('m3', 'score')} onCommit={vi.fn()} />);
+    expect(popover().queryAllByRole('radio')).toHaveLength(0);
+    act(() => changeField(lessThan(['600', '700'])));
+    expect(popover().getAllByRole('radio')).toHaveLength(2);
+  });
+
+  it.each<[string, ValueFieldData<FixtureOperator>]>([
+    [
+      'holds an operator it did not offer at open',
+      condition(
+        { shape: 'single', operator: '!=', value: '600' },
+        '!= 600',
+        [],
+        [...OPS, offerOf('!=', 'single')]
+      ),
+    ],
+    [
+      'turns the condition into an expression',
+      { kind: 'expression', allowedValues: [], expression: '< 600' },
+    ],
+  ])('commits the picked operator when the host %s while the popover is open', (_, changed) => {
+    const onCommit = vi.fn();
+    render(<LiveHost initial={at('m3', 'score')} onCommit={onCommit} />);
+    pickOperator('is greater than');
+    act(() => changeField(changed));
+    expect(popover().getByRole('combobox', { name: 'Operator' })).toHaveTextContent(
+      'is greater than'
+    );
+    fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'single', operator: '>', value: '600' }, 'none'],
+    ]);
+  });
+
+  it("opens the next value of a cell on the host's field after a commit moves there", () => {
+    const onCommit = vi.fn(() => {
+      changeField(
+        condition(
+          { shape: 'single', operator: '>', value: '700' },
+          '> 700',
+          [],
+          [offerOf('>', 'single'), offerOf('<', 'single')]
+        )
+      );
+      openNext(at('m2', 'score', 1));
+    });
+    render(<LiveHost initial={at('m2', 'score')} onCommit={onCommit} />);
+    fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(popover().getByRole('combobox', { name: 'Operator' })).toHaveTextContent(
+      'is greater than'
+    );
+  });
+});
+
+describe('DecisionText popover for a host whose operators are new objects on every call', () => {
+  it("keeps the operator select and commits the host's operator", () => {
+    const onCommit = vi.fn();
+    const Host = () => {
+      const [, setTick] = useState(0);
+      const less = { name: '<' };
+      const more = { name: '>' };
+      return (
+        <>
+          <button
+            type="button"
+            data-testid="rerender"
+            onClick={() => setTick((tick) => tick + 1)}
+          />
+          <DecisionText
+            table={{
+              rules: MULTI_SENTENCE_RULES,
+              ...MULTI_SENTENCE_COLUMNS,
+              hitPolicy: MULTI_SENTENCE_POLICY,
+            }}
+            hitPolicies={HIT_POLICIES}
+            columnTypes={COLUMN_TYPES}
+            ariaLabel="Rules"
+            dataTestId="nl"
+            mode={{
+              kind: 'edit',
+              selected: null,
+              onSelect: () => {},
+              onPolicyChange: () => {},
+              onAddRule: () => {},
+              edit: {
+                editing: at('m3', 'score'),
+                onCommit,
+                onClearCell: () => {},
+                onDeleteRule: () => {},
+                valueField: () => ({
+                  kind: 'condition',
+                  allowedValues: [],
+                  expression: '< 600',
+                  operators: [
+                    { operator: less, label: 'is less than', shape: 'single' },
+                    { operator: more, label: 'is greater than', shape: 'single' },
+                  ],
+                  held: { shape: 'single', operator: less, value: '600' },
+                }),
+              },
+            }}
+          />
+        </>
+      );
+    };
+    render(<Host />);
+    fireEvent.click(screen.getByTestId('rerender'));
+    pickOperator('is greater than');
+    fireEvent.click(popover().getByRole('button', { name: 'Apply' }));
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'single', operator: { name: '>' }, value: '600' }, 'none'],
+    ]);
   });
 });

@@ -147,11 +147,7 @@ export const useValueEditing = ({
     if (!edit || !target || !rule) return null;
     const token = valueTokenOf(rule, target);
     const column = columnNameOf(rule, target.columnId) || bandColumnNameOf(bands, target.columnId);
-    const hostField = edit.valueField?.(target);
-    const field = {
-      ...hostField,
-      icon: hostField?.icon ?? bandColumnOf(bands, target.columnId)?.icon,
-    };
+    const field = edit.valueField(target);
     const held = hasStop(rule, target.columnId);
     const cancel = () => {
       awaitHost({ from: target, move: 'cancel', rules, refocus: true });
@@ -164,6 +160,7 @@ export const useValueEditing = ({
         ? labels.cell(column, token ? tokenText(token, labels.emptyValue) : '', row + 1)
         : edit.labels.newCondition(column, row + 1),
       column,
+      icon: bandColumnOf(bands, target.columnId)?.icon,
       field,
       adds: !held,
       onCommit: (commit, move, refocus) => {

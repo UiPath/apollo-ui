@@ -10,6 +10,9 @@ import type {
 import type { RangeEnds, ValueCommit } from '../valueTypes';
 import type { SentenceColumns } from './sentences.fixtures';
 
+/** A commit of a condition by its operator. */
+export type ConditionCommit<Op> = Exclude<ValueCommit<Op>, { kind: 'outcome' | 'expression' }>;
+
 /** A column of the story table. */
 type EditableColumn = Pick<SentenceBandColumn<unknown>, 'id' | 'name'>;
 
@@ -149,17 +152,34 @@ export const tableWithValue = (
     };
   });
 
-/** The table with a condition's committed values, operator and range ends written, the condition added when the rule has none. */
+/** A condition commit's values, and a range's ends. */
+const writtenValuesOf = (
+  commit: ConditionCommit<string>
+): Pick<EditableCondition, 'values' | 'ends'> => {
+  switch (commit.kind) {
+    case 'single':
+      return { values: [commit.value] };
+    case 'range':
+      return { values: [commit.low, commit.high], ends: commit.ends };
+    case 'list':
+      return { values: [...commit.values] };
+    case 'valueless':
+      return { values: [] };
+  }
+};
+
+/** The table with a condition's committed operator words, values and range ends written, the condition added when the rule has none. */
 export const tableWithCondition = (
   table: EditableTable,
   target: SentenceValueId,
-  { values, operator, ends }: Extract<ValueCommit, { kind: 'values' }>
+  commit: ConditionCommit<string>
 ): EditableTable =>
   mapRule(table, target.rowId, (rule) => {
+    const { values, ends } = writtenValuesOf(commit);
     const written: EditableCondition = {
       inputId: target.columnId,
-      operator: operator ?? 'is',
-      values: [...values],
+      operator: commit.operator,
+      values,
       joiner: ends ? ' and ' : ', ',
       ends,
     };

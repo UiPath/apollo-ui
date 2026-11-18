@@ -3,7 +3,7 @@ import type { DecisionGraphDecisionNode } from '../decisionGraphTypes';
 import type { DecisionTextEdit } from '../decisionTextTypes';
 import { policyHeaderOf } from '../hitPolicyMenu';
 import type { SentenceBandColumn, SentenceCellId, SentenceSelection } from '../sentenceTypes';
-import type { RangeEnds, ValueField, ValueOperatorOption } from '../valueTypes';
+import type { HeldValues, OperatorOffer, RangeEnds, ValueFieldData } from '../valueTypes';
 import {
   type EditableTable,
   isOutput,
@@ -27,7 +27,7 @@ export type HostMode = 'read' | 'select' | 'edit';
 
 export const NUMERIC_INPUTS = new Set(['age', 'income']);
 
-/** The words a one-value condition of the story switches between, each its own id. */
+/** The words a one-value condition of the story switches between, each its own operator. */
 const SINGLE_VALUE_OPERATORS = [
   'is',
   'is not',
@@ -35,19 +35,30 @@ const SINGLE_VALUE_OPERATORS = [
   'is at most',
   'is greater than',
   'is at least',
-].map((label) => ({ id: label, label }));
+] as const;
+
+/** The story's operators, each its own words. */
+type StoryOperator =
+  | (typeof SINGLE_VALUE_OPERATORS)[number]
+  | 'is between'
+  | 'is one of'
+  | 'is none of';
 
 /** The story's operators: the one-value ones, then a range and two lists. */
-const CONDITION_OPERATORS: readonly ValueOperatorOption[] = [
-  ...SINGLE_VALUE_OPERATORS,
-  { id: 'is between', label: 'is between', shape: 'range' },
-  { id: 'is one of', label: 'is one of', shape: 'list' },
-  { id: 'is none of', label: 'is none of', shape: 'list' },
+const CONDITION_OPERATORS: readonly OperatorOffer<StoryOperator>[] = [
+  ...SINGLE_VALUE_OPERATORS.map(
+    (operator): OperatorOffer<StoryOperator> => ({ operator, label: operator, shape: 'single' })
+  ),
+  { operator: 'is between', label: 'is between', shape: 'range' },
+  { operator: 'is one of', label: 'is one of', shape: 'list' },
+  { operator: 'is none of', label: 'is none of', shape: 'list' },
 ];
+
+const BOTH_INCLUDED: RangeEnds = { lowInclusive: true, highInclusive: true };
 
 /** The story's conditions as FEEL unary tests, which its expression editor edits. */
 const FEEL_TESTS: Readonly<
-  Record<string, (values: readonly string[], ends: RangeEnds | undefined) => string>
+  Record<StoryOperator, (values: readonly string[], ends: RangeEnds | undefined) => string>
 > = {
   is: (values) => values.join(', '),
   'is not': (values) => `not(${values.join(', ')})`,
@@ -131,29 +142,50 @@ const tableWithColumnName = (
   return { ...table, inputs: rename(table.inputs), outputs: rename(table.outputs) };
 };
 
-const numberOrder = (low: string, high: string) => Number(low) <= Number(high);
+/** A held condition's values in the shape of its offered operator. */
+const heldOf = (
+  { operator, shape }: OperatorOffer<StoryOperator>,
+  values: readonly string[],
+  ends: RangeEnds | undefined
+): HeldValues<StoryOperator> => {
+  const [first = '', second = ''] = values;
+  switch (shape) {
+    case 'range':
+      return { shape, operator, low: first, high: second, ends: ends ?? BOTH_INCLUDED };
+    case 'list':
+      return { shape, operator, values };
+    case 'valueless':
+      return { shape, operator };
+    default:
+      return { shape: 'single', operator, value: first };
+  }
+};
 
-/** What the story host's popover offers: the column's type glyph, a condition's operators, its values and ends, and the column's allowed values. */
+/** What the story host's popover edits: an outcome, a condition by its operator and values, or one the operators lack as its expression, with the column's allowed values. */
 const storyValueField = (
   table: EditableTable,
   edits: ColumnEdits,
   cell: SentenceCellId
-): ValueField => {
+): ValueFieldData<StoryOperator> => {
+  const allowedValues = allowedValuesOf(cell.columnId, edits) ?? [];
+  if (isOutput(table, cell.columnId)) return { kind: 'outcome', allowedValues };
   const condition = table.rules
     .find((rule) => rule.rowId === cell.rowId)
     ?.conditions.find((candidate) => candidate.inputId === cell.columnId);
-  const offered = CONDITION_OPERATORS.find((option) => option.id === condition?.operator);
-  const switchable = !isOutput(table, cell.columnId) && (condition === undefined || offered);
-  const multiple = offered?.shape !== undefined && offered.shape !== 'single';
-  const test = condition ? FEEL_TESTS[condition.operator]?.(condition.values, condition.ends) : '';
+  const offered = condition
+    ? CONDITION_OPERATORS.find((option) => option.operator === condition.operator)
+    : CONDITION_OPERATORS[0];
+  if (!offered) {
+    const expression = condition ? condition.values.join(condition.joiner) : '';
+    return { kind: 'expression', allowedValues, expression };
+  }
+  const values = condition?.values ?? [];
   return {
-    operators: switchable ? CONDITION_OPERATORS : undefined,
-    operator: condition?.operator ?? 'is',
-    allowedValues: allowedValuesOf(cell.columnId, edits),
-    values: multiple ? condition?.values : undefined,
-    ends: condition?.ends,
-    inOrder: columnTypeOf(cell.columnId, edits) === 'number' ? numberOrder : undefined,
-    expression: switchable ? test : undefined,
+    kind: 'condition',
+    allowedValues,
+    expression: FEEL_TESTS[offered.operator](values, condition?.ends),
+    operators: CONDITION_OPERATORS,
+    held: heldOf(offered, values, condition?.ends),
   };
 };
 
@@ -192,7 +224,7 @@ export interface StoryTableHost {
   onChange: (next: StoryTable) => void;
   onSelect: (selection: SentenceSelection | null) => void;
   onMoreProperties: (columnId: string) => void;
-  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
+  renderEditor?: DecisionTextEdit<StoryOperator, FixtureType>['renderEditor'];
 }
 
 /** A story host's props for an editable view of one table: its typed columns, hit policy and its change, every edit action, and Add rule. */
@@ -212,18 +244,19 @@ export const storyTableProps = ({
   };
   const columnName = (columnId: string) =>
     [...table.inputs, ...table.outputs].find((column) => column.id === columnId)?.name ?? columnId;
-  const edit: DecisionTextEdit<FixtureType> = {
+  const edit: DecisionTextEdit<StoryOperator, FixtureType> = {
     renderEditor,
     onCommit: (value, commit) => {
-      const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
+      const text =
+        commit.kind === 'expression' ? commit.text : commit.kind === 'single' ? commit.value : '-';
       if (!isOutput(table, value.columnId) && text.trim() === '') {
         return `Not saved: the ${columnName(value.columnId)} condition needs a value. Type one, press Escape, or remove the condition.`;
       }
       setTable(
         commit.kind === 'expression'
           ? tableWithExpression(table, value, commit.text)
-          : commit.operator === undefined
-            ? tableWithValue(table, value, text)
+          : commit.kind === 'outcome'
+            ? tableWithValue(table, value, commit.value)
             : tableWithCondition(table, value, commit)
       );
       return undefined;
