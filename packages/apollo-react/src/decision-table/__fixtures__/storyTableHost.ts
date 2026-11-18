@@ -19,7 +19,13 @@ import {
   tableWithRuleAt,
   tableWithValue,
 } from './editableSentences.fixtures';
-import { type FixturePick, type FixtureType, HIT_POLICIES } from './sentences.fixtures';
+import {
+  type FixturePick,
+  type FixtureRefusal,
+  type FixtureType,
+  HIT_POLICIES,
+  wordRefusal,
+} from './sentences.fixtures';
 import type { FixtureMode } from './textMode';
 
 /** How much of the view a host wires: rules only, then selection, then editing. */
@@ -224,7 +230,7 @@ export interface StoryTableHost {
   onChange: (next: StoryTable) => void;
   onSelect: (selection: SentenceSelection | null) => void;
   onMoreProperties: (columnId: string) => void;
-  renderEditor?: DecisionTextEdit<StoryOperator, FixtureType>['renderEditor'];
+  renderEditor?: DecisionTextEdit<StoryOperator, FixtureType, FixtureRefusal>['renderEditor'];
 }
 
 /** A story host's props for an editable view of one table: its typed columns, hit policy and its change, every edit action, and Add rule. */
@@ -244,13 +250,17 @@ export const storyTableProps = ({
   };
   const columnName = (columnId: string) =>
     [...table.inputs, ...table.outputs].find((column) => column.id === columnId)?.name ?? columnId;
-  const edit: DecisionTextEdit<StoryOperator, FixtureType> = {
+  const edit: DecisionTextEdit<StoryOperator, FixtureType, FixtureRefusal> = {
     renderEditor,
+    wordRefusal,
     onCommit: (value, commit) => {
       const text =
         commit.kind === 'expression' ? commit.text : commit.kind === 'single' ? commit.value : '-';
       if (!isOutput(table, value.columnId) && text.trim() === '') {
-        return `Not saved: the ${columnName(value.columnId)} condition needs a value. Type one, press Escape, or remove the condition.`;
+        return {
+          reason: 'note',
+          text: `Not saved: the ${columnName(value.columnId)} condition needs a value. Type one, press Escape, or remove the condition.`,
+        };
       }
       setTable(
         commit.kind === 'expression'

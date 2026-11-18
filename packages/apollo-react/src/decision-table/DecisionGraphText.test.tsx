@@ -16,6 +16,7 @@ import {
   GRID_SENTENCE_POLICY,
   HIT_POLICIES,
   COLUMN_TYPES,
+  wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import { type FixtureEdit, modeOf, outcomeField } from './__fixtures__/textMode';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
@@ -340,6 +341,7 @@ describe('DecisionGraphText', () => {
       onClearCell: vi.fn(),
       onDeleteRule: vi.fn(),
       valueField: outcomeField,
+      wordRefusal,
     };
     const onFold = vi.fn();
     const Host = () => {
@@ -537,6 +539,7 @@ describe('DecisionGraphText open', () => {
             onDeleteRule: () => {},
             onStartEdit,
             valueField: outcomeField,
+            wordRefusal,
           }),
       })
     );

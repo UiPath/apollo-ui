@@ -10,6 +10,7 @@ import {
   MULTI_SENTENCE_POLICY,
   MULTI_SENTENCE_RULES,
   offerOf,
+  wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import type { FixtureEdit } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
@@ -96,6 +97,7 @@ describe('DecisionText value popover across a suspended transition', () => {
                 onClearCell: () => {},
                 onDeleteRule: () => {},
                 valueField,
+                wordRefusal,
               },
             }}
           />
@@ -167,6 +169,7 @@ describe('DecisionText value popover reopened after a value with no row', () => 
               onClearCell: () => {},
               onDeleteRule: () => {},
               valueField,
+              wordRefusal,
             },
           }}
         />
@@ -233,6 +236,7 @@ describe('DecisionText value popover reopened after a value with no row', () => 
               onClearCell: () => {},
               onDeleteRule: () => {},
               valueField,
+              wordRefusal,
             },
           }}
         />

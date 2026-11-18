@@ -15,6 +15,7 @@ import {
   MULTI_SENTENCE_POLICY,
   manySentenceRules,
   COLUMN_TYPES,
+  wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import {
   type FixtureEdit,
@@ -440,6 +441,7 @@ describe('DecisionText unmount', () => {
             onClearCell: vi.fn(),
             onDeleteRule: vi.fn(),
             valueField: outcomeField,
+            wordRefusal,
           },
         })}
       </>
@@ -457,6 +459,7 @@ describe('DecisionText unmount', () => {
           onClearCell: vi.fn(),
           onDeleteRule: vi.fn(),
           valueField: outcomeField,
+          wordRefusal,
         },
       })
     );
@@ -477,6 +480,7 @@ describe('DecisionText unmount', () => {
             onClearCell: vi.fn(),
             onDeleteRule: vi.fn(),
             valueField: outcomeField,
+            wordRefusal,
           },
         })}
       </StrictMode>
@@ -554,6 +558,7 @@ const SelectingScroller = ({ editing }: { editing: boolean }) => {
           onClearCell: () => {},
           onDeleteRule: () => {},
           valueField: outcomeField,
+          wordRefusal,
         }
       : undefined,
   });

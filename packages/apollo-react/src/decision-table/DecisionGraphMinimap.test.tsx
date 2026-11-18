@@ -394,6 +394,7 @@ describe('DecisionGraphText minimap', () => {
                 onClearCell: vi.fn(),
                 onDeleteRule: vi.fn(),
                 valueField: () => ({ kind: 'outcome', allowedValues: [] }),
+                wordRefusal: () => '',
               },
               onPolicyChange: vi.fn(),
               onAddRule: vi.fn(),

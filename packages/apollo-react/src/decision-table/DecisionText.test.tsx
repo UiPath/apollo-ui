@@ -55,6 +55,7 @@ import {
   type FixtureType,
   OPERATOR_WORDS,
   offerOf,
+  wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import {
   type FixtureEdit,
@@ -342,6 +343,7 @@ const editWith = (overrides: Partial<FixtureEdit> = {}): FixtureEdit => ({
   onClearCell: vi.fn(),
   onDeleteRule: vi.fn(),
   valueField: outcomeField,
+  wordRefusal,
   ...overrides,
 });
 
@@ -4823,6 +4825,19 @@ describe('DecisionText', () => {
     const button = (rowId: string, name: string) =>
       within(card(rowId)).getByRole('button', { name });
 
+    it.each<[string, FixtureEdit['onClearCell'], string]>([
+      [
+        'announces a refused clear in its words',
+        () => ({ reason: 'not-a-value' }),
+        'Not saved: Debt Ratio cannot be empty.',
+      ],
+      ['announces nothing for an accepted clear', () => undefined, ''],
+    ])('%s', (_, onClearCell, announced) => {
+      render(view({ edit: editWith({ onClearCell }), selected: null, onSelect: vi.fn() }));
+      fireEvent.click(button('m1', 'Remove Debt Ratio from rule 1'));
+      expect(screen.getByTestId('nl-live').textContent).toBe(announced);
+    });
+
     it("clears a list line's condition from its remove action, and each of a lead's from its own", () => {
       const { onClearCell } = renderConditions();
       fireEvent.click(button('m1', 'Remove Debt Ratio from rule 1'));
@@ -5302,6 +5317,15 @@ describe('DecisionText', () => {
       expect(item).toHaveAttribute('aria-disabled', 'true');
       fireEvent.click(item);
       expect(spies.onMoveRule).not.toHaveBeenCalled();
+    });
+
+    it('announces a moved rule by its positions', () => {
+      renderMenus(ruleActionSpies());
+      fireEvent.click(actions('r2'));
+      fireEvent.click(
+        within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Move down' })
+      );
+      expect(screen.getByTestId('nl-live')).toHaveTextContent('Rule moved from position 2 to 3');
     });
 
     it.each<['onInsertRule' | 'onMoveRule', readonly string[], number]>([

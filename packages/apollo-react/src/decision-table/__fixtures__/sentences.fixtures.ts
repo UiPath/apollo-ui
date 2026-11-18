@@ -2,6 +2,7 @@ import { Hash, Type as TextGlyph } from 'lucide-react';
 import { createElement } from 'react';
 import type { ColumnTypeOption } from '../columnTypes';
 import type { HitPolicyCatalog, HitPolicyPick } from '../hitPolicyMenu';
+import type { RefusalContext } from '../hostValues';
 import type {
   DecisionTextTable,
   SentenceBandColumn,
@@ -67,6 +68,17 @@ export const offerOf = (operator: FixtureOperator, shape: FixtureOffer['shape'])
   label: OPERATOR_WORDS[operator],
   shape,
 });
+
+/** Why the fixture host refuses an edit: a value the column cannot take, or its own note. */
+export type FixtureRefusal = { reason: 'not-a-value' } | { reason: 'note'; text: string };
+
+/** The fixture host's words for a refusal. */
+export const wordRefusal = (refusal: FixtureRefusal, context: RefusalContext): string => {
+  if (refusal.reason === 'note') return refusal.text;
+  return context.action === 'commit'
+    ? `Not saved: ${context.values} is not a value ${context.column} can take.`
+    : `Not saved: ${context.column} cannot be empty.`;
+};
 
 /** No inputs and no outputs, so no bands. */
 export const NO_COLUMNS: SentenceColumns = { inputs: [], outputs: [] };

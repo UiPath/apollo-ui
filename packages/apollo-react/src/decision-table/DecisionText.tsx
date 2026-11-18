@@ -17,7 +17,7 @@ import {
   policyHeaderOf,
   policyMenuOf,
 } from './hitPolicyMenu';
-import { hostCommitOf, viewFieldOf } from './hostValues';
+import { hostCommitOf, refusedValuesOf, viewFieldOf } from './hostValues';
 import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
@@ -46,6 +46,7 @@ import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
 import { type DecisionTextScroll, useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
+import { useTextAnnouncements } from './useTextAnnouncements';
 import { useValueEditing, valueKey } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
 import type { OperatorOffer, ValueFieldData } from './valueTypes';
@@ -53,15 +54,15 @@ import type { OperatorOffer, ValueFieldData } from './valueTypes';
 /** A click or key asks for this selection, or null on Escape. */
 type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
 
-/** How the view is used: read, select rules and cells the host keeps, edit them in the host's operators, hit policies and column types, or read what changed. */
-export type DecisionTextMode<Op, Policy, Total, Type> =
+/** How the view is used: read, select rules and cells the host keeps, edit them in the host's operators, hit policies, column types and refusals, or read what changed. */
+export type DecisionTextMode<Op, Policy, Total, Type, Refusal> =
   | { kind: 'read'; selected: SentenceSelection | null }
   | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
   | {
       kind: 'edit';
       selected: SentenceSelection | null;
       onSelect: SelectHandler;
-      edit: DecisionTextEdit<Op, Type>;
+      edit: DecisionTextEdit<Op, Type, Refusal>;
       onPolicyChange: (picked: HitPolicyPick<Policy, Total>) => void;
       onAddRule: () => void;
     }
@@ -71,9 +72,9 @@ export type DecisionTextMode<Op, Policy, Total, Type> =
       diff: DecisionTextDiff<Policy, Total, Type>;
     };
 
-export interface DecisionTextProps<Op, Policy, Total, Type> {
+export interface DecisionTextProps<Op, Policy, Total, Type, Refusal> {
   table: DecisionTextTable<Policy, Total, Type>;
-  mode: DecisionTextMode<Op, Policy, Total, Type>;
+  mode: DecisionTextMode<Op, Policy, Total, Type, Refusal>;
   /** The host's hit policies, grouped and worded, which the header and its picker show. */
   hitPolicies: HitPolicyCatalog<Policy, Total>;
   /** The host's column types, worded and each told apart by `===`, which the band glyphs and the column popover's select show. */
@@ -94,7 +95,7 @@ export interface DecisionTextProps<Op, Policy, Total, Type> {
   ariaLabel: string;
   /** Spread onto the scroll container: its handlers run after the view's and its className is added to the view's; a `data-testid` here overrides `dataTestId`. */
   containerProps?: DecisionTextContainerProps;
-  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
+  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-live`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
   dataTestId: string;
   /** Overlays rendered inside the scroll container (menus, notes, dialogs). */
   children?: React.ReactNode;
@@ -128,11 +129,19 @@ interface RenderedField<Op> {
   seen: ValueFieldData<Op> | null;
 }
 
-/** The host's edit with each operator by its place in the field its editor opened on, its allowed values live. */
-const placedEditOf = <Op, Type>(
-  { onCommit, valueField: hostField, column: _column, ...rest }: DecisionTextEdit<Op, Type>,
+/** The host's edit with each operator by its place in the field its editor opened on, its allowed values live, and each refusal worded with its column's name. */
+const wordedEditOf = <Op, Type, Refusal>(
+  {
+    onCommit,
+    onClearCell,
+    wordRefusal,
+    valueField: hostField,
+    column: _column,
+    ...rest
+  }: DecisionTextEdit<Op, Type, Refusal>,
   opened: OpenField<Op> | null,
-  rendered: RenderedField<Op>
+  rendered: RenderedField<Op>,
+  columnNameOf: (columnId: string) => string
 ): CellEdit => {
   const keptField = () => (opened && opened.key === rendered.key ? opened.field : null);
   const valueField = (cell: SentenceCellId): ValueFieldData<Op> => {
@@ -151,13 +160,27 @@ const placedEditOf = <Op, Type>(
     valueField: (cell) => viewFieldOf(valueField(cell)),
     onCommit: (value, commit, move) => {
       const hostCommit = hostCommitOf(commit, offersOf(value));
-      return hostCommit && onCommit(value, hostCommit, move);
+      if (!hostCommit) return undefined;
+      const refusal = onCommit(value, hostCommit, move);
+      return refusal === undefined
+        ? undefined
+        : wordRefusal(refusal, {
+            action: 'commit',
+            column: columnNameOf(value.columnId),
+            values: refusedValuesOf(hostCommit),
+          });
+    },
+    onClearCell: (cell) => {
+      const refusal = onClearCell(cell);
+      return refusal === undefined
+        ? undefined
+        : wordRefusal(refusal, { action: 'clear', column: columnNameOf(cell.columnId) });
     },
   };
 };
 
-/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's operators, hit policies and column types. */
-export const DecisionText = <Op, Policy, Total, Type>({
+/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's operators, hit policies, column types and refusals. */
+export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   table,
   mode,
   hitPolicies,
@@ -172,7 +195,7 @@ export const DecisionText = <Op, Policy, Total, Type>({
   containerProps,
   dataTestId,
   children,
-}: DecisionTextProps<Op, Policy, Total, Type>): React.JSX.Element => {
+}: DecisionTextProps<Op, Policy, Total, Type, Refusal>): React.JSX.Element => {
   const { rules, inputs, outputs } = table;
   const selected = mode.kind === 'diff' ? null : mode.selected;
   const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
@@ -180,11 +203,15 @@ export const DecisionText = <Op, Policy, Total, Type>({
   const idPrefix = useId();
   const { _ } = useSafeLingui();
   const labels = useDecisionTextLabels();
+  const announcements = useTextAnnouncements(_, dataTestId);
+  const columnNameOf = (columnId: string): string =>
+    [...inputs, ...outputs].find((column) => column.id === columnId)?.name ?? '';
   const [openField, setOpenField] = useState<OpenField<Op> | null>(null);
   const rendered: RenderedField<Op> = { key: null, seen: null };
   const { edit, refusal } = useEditState(
-    mode.kind === 'edit' ? placedEditOf(mode.edit, openField, rendered) : undefined,
-    useDecisionTextEditLabels()
+    mode.kind === 'edit' ? wordedEditOf(mode.edit, openField, rendered, columnNameOf) : undefined,
+    useDecisionTextEditLabels(),
+    announcements
   );
   rendered.key = edit?.editing ? valueKey(edit.editing) : null;
   const addRule =
@@ -385,6 +412,7 @@ export const DecisionText = <Op, Policy, Total, Type>({
         entries={ruleMenus.entries}
         onClose={ruleMenus.onClose}
       />
+      {announcements.region}
       {children}
     </section>
   );
