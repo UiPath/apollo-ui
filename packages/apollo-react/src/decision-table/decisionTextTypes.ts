@@ -2,16 +2,23 @@ import type { BandLabels } from './bandColumns';
 import type { ColumnEdit, ColumnPopoverLabels } from './ColumnPopover';
 import type { DiffLabels } from './decisionTextDiff';
 import type { CellCommitMove } from './gridTypes';
+import type { HitPolicyLabels } from './hitPolicyMenu';
 import type { RefusalContext } from './hostValues';
 import type { RuleCardEditLabels } from './RuleCard';
 import type { RuleCardLabels } from './ruleCardModel';
 import type { RuleMenuActions, RuleMenuLabels } from './ruleMenuEntries';
 import type { SentenceCellId, SentenceValueId } from './sentenceTypes';
+import type { TextAnnouncementLabels } from './useTextAnnouncements';
 import type { ValuePopoverLabels, ValuePopoverProps } from './ValuePopover';
 import type { ValueCommit, ValueFieldData } from './valueTypes';
 
 /** The view's own strings, built in from the `decision-table` catalog. */
-export interface DecisionTextLabels extends RuleCardLabels, BandLabels, DiffLabels {
+export interface DecisionTextLabels
+  extends RuleCardLabels,
+    BandLabels,
+    DiffLabels,
+    HitPolicyLabels,
+    TextAnnouncementLabels {
   emptyRules: string;
   addRule: string;
 }

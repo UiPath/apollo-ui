@@ -1,7 +1,6 @@
 import { Braces } from 'lucide-react';
 import type React from 'react';
 import type { PopoverSelectOption } from './PopoverSelect';
-import type { Translate } from './translate';
 
 /** A column type the host offers: its id, its words, its glyph, and an example of its allowed values. */
 export interface ColumnTypeOption<Type> {
@@ -9,6 +8,12 @@ export interface ColumnTypeOption<Type> {
   label: string;
   icon: React.ReactNode;
   example: string;
+}
+
+/** The words of a column type's allowed values. */
+export interface ColumnTypeLabels {
+  /** The allowed values' placeholder from a type's example, e.g. "e.g. 1, 2". */
+  allowedValuesExample: (example: string) => string;
 }
 
 /** A type the column popover's select offers, by its place among the host's, with its allowed values' placeholder. */
@@ -19,17 +24,13 @@ export interface ColumnTypeChoice extends PopoverSelectOption {
 /** The host's types as the popover's select offers them. */
 export const columnTypeChoicesOf = <Type,>(
   types: readonly ColumnTypeOption<Type>[],
-  _: Translate
+  labels: ColumnTypeLabels
 ): ColumnTypeChoice[] =>
   types.map(({ label, icon, example }, index) => ({
     id: String(index),
     label,
     icon,
-    allowedValuesPlaceholder: _({
-      id: 'decision-text.allowed_values_example',
-      message: 'e.g. {example}',
-      values: { example },
-    }),
+    allowedValuesPlaceholder: labels.allowedValuesExample(example),
   }));
 
 /** The place of a type among the host's, or -1 when it offers none such. */

@@ -34,6 +34,8 @@ const VIEW_CALLS: Calls<DecisionTextLabels> = {
   movedFrom: [[2]],
   unchangedRules: [[1], [12]],
   showRules: [[4, 15]],
+  policyName: [['Collect · Sum']],
+  ruleMoved: [[1, 3]],
 };
 
 const EDIT_CALLS: Calls<DecisionTextEditLabels> = {
@@ -45,6 +47,7 @@ const EDIT_CALLS: Calls<DecisionTextEditLabels> = {
   newCondition: [['income', 3]],
   inputColumn: [['Score']],
   outputColumn: [['Risk']],
+  allowedValuesExample: [['1, 2']],
 };
 
 /** Every string a label table gives, each function called with its samples. */

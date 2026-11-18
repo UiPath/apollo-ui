@@ -1,7 +1,5 @@
-import { renderHook } from '@testing-library/react';
 import { Braces } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
-import { useSafeLingui } from '../i18n/useSafeLingui';
 import {
   type ColumnTypeOption,
   columnTypeChoicesOf,
@@ -18,13 +16,10 @@ const TYPES: readonly ColumnTypeOption<Kind>[] = [
 
 describe('columnTypeChoicesOf', () => {
   it("offers the host's types by place, each example as the allowed values' placeholder", () => {
-    const { _ } = renderHook(() => useSafeLingui()).result.current;
     expect(
-      columnTypeChoicesOf(TYPES, _).map(({ id, label, allowedValuesPlaceholder }) => [
-        id,
-        label,
-        allowedValuesPlaceholder,
-      ])
+      columnTypeChoicesOf(TYPES, { allowedValuesExample: (example) => `e.g. ${example}` }).map(
+        ({ id, label, allowedValuesPlaceholder }) => [id, label, allowedValuesPlaceholder]
+      )
     ).toEqual([
       ['0', 'Text', 'e.g. "a", "b"'],
       ['1', 'Count', 'e.g. 1, 2'],

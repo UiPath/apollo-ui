@@ -21,6 +21,18 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
     } satisfies Record<DiffChange, string>;
     return {
       emptyRules: _({ id: 'decision-text.empty_rules', message: 'No rules yet' }),
+      policyName: (policy) =>
+        _({
+          id: 'decision-text.hit_policy_name',
+          message: 'Hit policy: {policy}',
+          values: { policy },
+        }),
+      ruleMoved: (from, to) =>
+        _({
+          id: 'decision-text.rule_moved',
+          message: 'Rule moved from position {from} to {to}',
+          values: { from, to },
+        }),
       addRule: _({ id: 'decision-text.add_rule', message: 'Add rule' }),
       inputs: _({ id: 'decision-text.band_inputs', message: 'Inputs' }),
       outputs: _({ id: 'decision-text.band_outputs', message: 'Outputs' }),
@@ -126,6 +138,12 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
           values: { column, position },
         }),
       setValue: _({ id: 'decision-text.set_value', message: 'Set a value' }),
+      allowedValuesExample: (example) =>
+        _({
+          id: 'decision-text.allowed_values_example',
+          message: 'e.g. {example}',
+          values: { example },
+        }),
       operator: _({ id: 'decision-text.operator', message: 'Operator' }),
       notAllowed: _({ id: 'decision-text.not_allowed', message: 'Not one of the allowed values' }),
       editExpression: _({ id: 'decision-text.edit_expression', message: 'Edit expression' }),

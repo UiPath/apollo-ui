@@ -1,5 +1,40 @@
-import type { LinguiConfig } from '@lingui/conf';
+import babelExtractor from '@lingui/cli/api/extractors/babel';
+import type { ExtractorType, LinguiConfig } from '@lingui/conf';
 import { formatter } from '@lingui/format-json';
+import ts from 'typescript';
+
+const decisionTable = 'src/decision-table';
+
+const withTranslateCallsMarked = (filename: string, code: string): string => {
+  const source = ts.createSourceFile(filename, code, ts.ScriptTarget.Latest, true);
+  const starts: number[] = [];
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === '_'
+    ) {
+      const [descriptor] = node.arguments;
+      if (descriptor && ts.isObjectLiteralExpression(descriptor))
+        starts.push(descriptor.getStart(source));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return starts.reduceRight((text, at) => `${text.slice(0, at)}/*i18n*/${text.slice(at)}`, code);
+};
+
+const translateCallExtractor: ExtractorType = {
+  match: (filename) =>
+    filename.replaceAll('\\', '/').includes(`/${decisionTable}/`) && babelExtractor.match(filename),
+  extract: (filename, code, onMessageExtracted, ctx) =>
+    babelExtractor.extract(
+      filename,
+      withTranslateCallsMarked(filename, code),
+      onMessageExtracted,
+      ctx
+    ),
+};
 
 const config: LinguiConfig = {
   locales: [
@@ -45,10 +80,11 @@ const config: LinguiConfig = {
       include: ['src/canvas'],
     },
     {
-      path: 'src/decision-table/locales/{locale}',
-      include: ['src/decision-table'],
+      path: `${decisionTable}/locales/{locale}`,
+      include: [decisionTable],
     },
   ],
+  extractors: [translateCallExtractor, babelExtractor],
   format: formatter({ style: 'minimal' }),
   compileNamespace: 'ts',
 };

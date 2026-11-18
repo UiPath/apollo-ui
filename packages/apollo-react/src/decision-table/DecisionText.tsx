@@ -1,7 +1,6 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useId, useMemo, useState } from 'react';
-import { useSafeLingui } from '../i18n/useSafeLingui';
 import { AddRuleFooter } from './AddRuleFooter';
 import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
@@ -136,9 +135,8 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
   const diff = mode.kind === 'diff' ? mode.diff : undefined;
   const idPrefix = useId();
-  const { _ } = useSafeLingui();
   const labels = useDecisionTextLabels();
-  const announcements = useTextAnnouncements(_, dataTestId);
+  const announcements = useTextAnnouncements(labels, dataTestId);
   const { edit, refusal } = useHostValueEdit(
     mode.kind === 'edit' ? mode.edit : undefined,
     [...inputs, ...outputs],
@@ -152,7 +150,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     mode.kind === 'edit'
       ? {
           kind: 'picker',
-          policy: policyMenuOf(hitPolicies, table.hitPolicy, mode.onPolicyChange, _),
+          policy: policyMenuOf(hitPolicies, table.hitPolicy, mode.onPolicyChange, labels),
         }
       : diff?.hitPolicy
         ? {
