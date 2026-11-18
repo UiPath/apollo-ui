@@ -1,5 +1,27 @@
 import type { OperatorOffer, ValueCommit, ValueFieldData } from './valueTypes';
 
+/** What the view knows of a refused edit: a commit's column name and the values it refused, joined, or a clear's column name. */
+export type RefusalContext =
+  | { action: 'commit'; column: string; values: string }
+  | { action: 'clear'; column: string };
+
+/** The values a refused commit carried, as its refusal names them. */
+export const refusedValuesOf = <Op>(commit: ValueCommit<Op>): string => {
+  switch (commit.kind) {
+    case 'outcome':
+    case 'single':
+      return commit.value;
+    case 'range':
+      return [commit.low, commit.high].join(', ');
+    case 'list':
+      return commit.values.join(', ');
+    case 'valueless':
+      return '';
+    case 'expression':
+      return commit.text;
+  }
+};
+
 const offeredOf = <Op>(operators: readonly OperatorOffer<Op>[]): readonly OperatorOffer<Op>[] =>
   operators.filter(
     (offer, place) => operators.findIndex((first) => first.operator === offer.operator) === place

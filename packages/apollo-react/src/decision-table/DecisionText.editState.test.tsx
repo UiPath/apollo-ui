@@ -15,6 +15,8 @@ import {
   HIT_POLICIES,
   COLUMN_TYPES,
   type FixtureOperator,
+  type FixtureRefusal,
+  wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import { type FixtureEdit, outcomeField } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
@@ -32,7 +34,7 @@ afterAll(() => uninstallEscape());
 const r3Age: SentenceValueId = { rowId: 'r3', columnId: 'age', index: 0 };
 const NOT_A_NUMBER = 'Not saved: age needs a number.';
 
-type Answer = (commit: ValueCommit<FixtureOperator>) => string | void;
+type Answer = (commit: ValueCommit<FixtureOperator>) => FixtureRefusal | undefined;
 
 const textOf = (commit: ValueCommit<FixtureOperator>): string => {
   switch (commit.kind) {
@@ -49,7 +51,7 @@ const textOf = (commit: ValueCommit<FixtureOperator>): string => {
 /** Refuses any text that is not a number, as a host's validation would. */
 const numbersOnly: Answer = (commit) => {
   const text = textOf(commit);
-  return Number.isNaN(Number(text)) ? NOT_A_NUMBER : undefined;
+  return Number.isNaN(Number(text)) ? { reason: 'note', text: NOT_A_NUMBER } : undefined;
 };
 
 interface HostProps {
@@ -61,6 +63,8 @@ interface HostProps {
   closesOnRefusal?: boolean;
   onCommit?: FixtureEdit['onCommit'];
   valueField?: FixtureEdit['valueField'];
+  clear?: FixtureEdit['onClearCell'];
+  words?: FixtureEdit['wordRefusal'];
   editable?: boolean;
 }
 
@@ -70,6 +74,8 @@ const Host = ({
   closesOnRefusal = false,
   onCommit,
   valueField = outcomeField,
+  clear = () => undefined,
+  words = wordRefusal,
   editable = true,
   addInput,
 }: HostProps) => {
@@ -80,6 +86,7 @@ const Host = ({
   const edit: FixtureEdit = {
     ...(hostKeeps ? { editing, onStartEdit: setEditing, onCancel: () => setEditing(null) } : {}),
     valueField,
+    wordRefusal: words,
     onCommit: (value, commit, move) => {
       onCommit?.(value, commit, move);
       const refusal = answer(commit);
@@ -92,7 +99,7 @@ const Host = ({
       );
       return undefined;
     },
-    onClearCell: vi.fn(),
+    onClearCell: clear,
     onDeleteRule: vi.fn(),
     inputIds: table.inputs.map((input) => input.id),
     onAddInput:
@@ -303,13 +310,54 @@ describe('DecisionText editing state', () => {
       expect(alerts()).toEqual([]);
     });
 
+    it("words a refusal with the cell's column name and the values it refused", () => {
+      render(<Host answer={() => ({ reason: 'not-a-value' })} />);
+      openAge();
+      type('old');
+      apply();
+      expect(alerts().map((alert) => alert.textContent)).toEqual([
+        'Not saved: old is not a value age can take.',
+      ]);
+    });
+
     it('stays open without a reason for a blank refusal', () => {
-      render(<Host answer={() => ' '} />);
+      render(<Host answer={() => ({ reason: 'note', text: ' ' })} />);
       openAge();
       type('old');
       apply();
       expect(field()).toHaveValue('old');
       expect(alerts()).toEqual([]);
+    });
+  });
+
+  describe('a host that refuses a clear', () => {
+    it('keeps the open editor and shows the reason in it, announcing nothing else', () => {
+      render(<Host controlled={r3Age} clear={() => ({ reason: 'not-a-value' })} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Remove age from rule 3' }));
+      expect(dialog()).not.toBeNull();
+      expect(alerts().map((alert) => alert.textContent)).toEqual([
+        'Not saved: age cannot be empty.',
+      ]);
+      expect(screen.getByTestId('nl-live').textContent).toBe('');
+    });
+
+    it('words a refused clear apart from a refused commit of no values', () => {
+      const words = vi.fn(wordRefusal);
+      render(
+        <Host
+          answer={() => ({ reason: 'not-a-value' })}
+          clear={() => ({ reason: 'not-a-value' })}
+          words={words}
+          controlled={r3Age}
+        />
+      );
+      type('');
+      apply();
+      fireEvent.click(screen.getByRole('button', { name: 'Remove age from rule 3' }));
+      expect(words.mock.calls.map(([, context]) => context)).toEqual([
+        { action: 'commit', column: 'age', values: '' },
+        { action: 'clear', column: 'age' },
+      ]);
     });
   });
 

@@ -241,8 +241,7 @@ export const useValueEditing = ({
   const clear = (cell: SentenceCellId, refocusNow: boolean, scroll: boolean) => {
     const selection = cellSelection(cell);
     refocusRef.current = { cell: selection, text: textIn(rules, selection), scroll };
-    edit?.onClearCell(cell);
-    cancelEditOf(selection);
+    if (edit?.onClearCell(cell) === undefined) cancelEditOf(selection);
     if (refocusNow && staysOn(cell.rowId)) navigation.refocus(scroll);
   };
 

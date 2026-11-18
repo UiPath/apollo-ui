@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { DecisionTextEditLabels, CellEdit, ViewEdit } from './decisionTextTypes';
 import type { SentenceValueId } from './sentenceTypes';
 import { valueKey } from './useValueEditing';
+import type { TextAnnouncements } from './useTextAnnouncements';
 import type { CommitRefusal } from './valueTypes';
 
 /** A refusal and the editor it refused. */
@@ -18,10 +19,14 @@ export interface EditState {
 const keyOf = (value: SentenceValueId | null): string | undefined =>
   value ? valueKey(value) : undefined;
 
+/** Where the view announces a refused clear outside an open editor and a moved rule. */
+export type EditVoice = Pick<TextAnnouncements, 'announce' | 'announceMove'>;
+
 /** Which value is open, the host's when it passes `editing` and the view's own otherwise, what the host last refused of it, and the editing strings. */
 export const useEditState = (
   edit: CellEdit | undefined,
-  labels: DecisionTextEditLabels
+  labels: DecisionTextEditLabels,
+  voice: EditVoice
 ): EditState => {
   const [held, setHeld] = useState<SentenceValueId | null>(edit?.editing ?? null);
   const [refusal, setRefusal] = useState<HeldRefusal | null>(null);
@@ -36,6 +41,7 @@ export const useEditState = (
     if (!controlled) setHeld(next);
   };
   const shown = refusal && refusal.key === key && refusal.message.trim() !== '' ? refusal : null;
+  const { onMoveRule } = edit;
   return {
     edit: {
       ...edit,
@@ -59,6 +65,24 @@ export const useEditState = (
         hold(null);
         return undefined;
       },
+      onClearCell: (cell) => {
+        const answer = edit.onClearCell(cell);
+        if (answer === undefined) return undefined;
+        if (editing?.rowId === cell.rowId && editing.columnId === cell.columnId) {
+          setRefusal((last) => ({
+            key: valueKey(editing),
+            message: answer,
+            attempt: (last?.attempt ?? 0) + 1,
+          }));
+        } else voice.announce(answer);
+        return answer;
+      },
+      onMoveRule:
+        onMoveRule &&
+        ((from, to) => {
+          onMoveRule(from, to);
+          voice.announceMove(from, to);
+        }),
       onCancel: () => {
         edit.onCancel?.();
         hold(null);

@@ -80,6 +80,7 @@ export type {
   HitPolicyPick,
   HitPolicyTotal,
 } from './hitPolicyMenu';
+export type { RefusalContext } from './hostValues';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
 export type { PolicyOption } from './PolicyOptionItem';

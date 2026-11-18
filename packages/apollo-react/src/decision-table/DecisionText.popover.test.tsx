@@ -12,6 +12,7 @@ import {
   MULTI_SENTENCE_POLICY,
   MULTI_SENTENCE_RULES,
   offerOf,
+  wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import type { FixtureEdit } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
@@ -109,6 +110,7 @@ const Host = ({
           onDeleteRule: () => {},
           valueField,
           renderEditor,
+          wordRefusal,
         },
       }}
     />
@@ -1036,6 +1038,7 @@ describe('DecisionText popover field the host updates while it is open', () => {
             onClearCell: () => {},
             onDeleteRule: () => {},
             valueField: () => field,
+            wordRefusal,
           },
         }}
       />
@@ -1143,6 +1146,7 @@ describe('DecisionText popover for a host whose operators are new objects on eve
                   ],
                   held: { shape: 'single', operator: less, value: '600' },
                 }),
+                wordRefusal: () => '',
               },
             }}
           />

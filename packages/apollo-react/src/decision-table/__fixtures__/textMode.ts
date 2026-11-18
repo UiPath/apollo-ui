@@ -4,28 +4,32 @@ import {
   COLUMN_TYPES,
   type FixtureOperator,
   type FixturePolicy,
+  type FixtureRefusal,
   type FixtureTotal,
   type FixtureType,
   HIT_POLICIES,
+  wordRefusal,
 } from './sentences.fixtures';
 
-/** The view's props in the fixtures' operators, hit policies and column types. */
+/** The view's props in the fixtures' operators, hit policies, column types and refusals. */
 export type FixtureTextProps = DecisionTextProps<
   FixtureOperator,
   FixturePolicy,
   FixtureTotal,
-  FixtureType
+  FixtureType,
+  FixtureRefusal
 >;
 
-/** The view's mode in the fixtures' operators, hit policies and column types. */
+/** The view's mode in the fixtures' operators, hit policies, column types and refusals. */
 export type FixtureMode = DecisionTextMode<
   FixtureOperator,
   FixturePolicy,
   FixtureTotal,
-  FixtureType
+  FixtureType,
+  FixtureRefusal
 >;
 
-/** The view's edit in the fixtures' operators and column types. */
+/** The view's edit in the fixtures' operators, column types and refusals. */
 export type FixtureEdit = Extract<FixtureMode, { kind: 'edit' }>['edit'];
 
 type EditMode = Extract<FixtureMode, { kind: 'edit' }>;
@@ -73,6 +77,7 @@ export const modeOf = ({
         onClearCell: noop,
         onDeleteRule: noop,
         valueField: outcomeField,
+        wordRefusal,
       },
       onPolicyChange: onPolicyChange ?? noop,
       onAddRule: onAddRule ?? noop,

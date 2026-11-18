@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { hostCommitOf, viewFieldOf } from './hostValues';
-import type { OperatorOffer, ValueFieldData } from './valueTypes';
+import { hostCommitOf, refusedValuesOf, viewFieldOf } from './hostValues';
+import type { OperatorOffer, ValueCommit, ValueFieldData } from './valueTypes';
 
 type Op = 'eq' | 'in' | 'none';
 
@@ -66,5 +66,26 @@ describe('hostCommitOf', () => {
       kind: 'expression',
       text: 'x > 1',
     });
+  });
+});
+
+describe('refusedValuesOf', () => {
+  it.each<[ValueCommit<Op>, string]>([
+    [{ kind: 'single', operator: 'eq', value: '1' }, '1'],
+    [
+      {
+        kind: 'range',
+        operator: 'eq',
+        low: '1',
+        high: '2',
+        ends: { lowInclusive: true, highInclusive: false },
+      },
+      '1, 2',
+    ],
+    [{ kind: 'list', operator: 'in', values: ['a', 'b'] }, 'a, b'],
+    [{ kind: 'valueless', operator: 'none' }, ''],
+    [{ kind: 'expression', text: 'x' }, 'x'],
+  ])('joins the values of %o', (commit, values) => {
+    expect(refusedValuesOf(commit)).toBe(values);
   });
 });
