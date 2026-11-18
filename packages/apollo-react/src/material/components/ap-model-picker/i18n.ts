@@ -62,6 +62,14 @@ export const BADGE_LABELS = {
     id: 'modelPicker.badge.cost.tooltip',
     message: 'Relative cost tier for this product',
   }),
+  uipathModel: msg({
+    id: 'modelPicker.badge.uipathModel.label',
+    message: 'By UiPath',
+  }),
+  uipathModelTooltip: msg({
+    id: 'modelPicker.badge.uipathModel.tooltip',
+    message: 'A model built and trained by UiPath',
+  }),
 } as const;
 
 /* ──────────────────────────────────────────────────────────────────────
