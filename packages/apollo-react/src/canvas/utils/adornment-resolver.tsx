@@ -43,7 +43,8 @@ export function ExecutionStartPointIndicator({
           icon="zap"
           size={16}
           color="var(--color-foreground-emp)"
-          fill={filled ? 'currentColor' : undefined}
+          // lucide applies `color` to stroke only; fill needs the token too
+          fill={filled ? 'var(--color-foreground-emp)' : undefined}
         />
       </span>
     </CanvasTooltip>
