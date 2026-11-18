@@ -240,7 +240,7 @@ const DropdownMenuSeparator = React.forwardRef<
   <DropdownMenuPrimitive.Separator
     ref={ref}
     data-slot="dropdown-menu-separator"
-    className={cn('-mx-1 my-1 h-px bg-surface-overlay', className)}
+    className={cn('-mx-1 my-1 h-px bg-border-subtle', className)}
     {...props}
   />
 ));

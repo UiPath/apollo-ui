@@ -128,6 +128,7 @@ describe('DropdownMenu', () => {
       await waitFor(() => {
         expect(screen.getByTestId('separator')).toBeInTheDocument();
       });
+      expect(screen.getByTestId('separator')).toHaveClass('bg-border-subtle');
     });
 
     it('renders shortcut', async () => {
