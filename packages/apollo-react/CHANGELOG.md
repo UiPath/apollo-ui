@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.28.0...@uipath/apollo-react@7.29.0) (2026-11-18)
+
+### Features
+
+* **apollo-react:** type the graph's logic, marks, targets and expansion as unions [ECS-2139] ([d89cfa6](https://github.com/UiPath/apollo-ui/commit/d89cfa6c7738aad33174a4543e03ee934b51856f))
+
 ## [@uipath/apollo-react-v7.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.27.0...@uipath/apollo-react@7.28.0) (2026-11-18)
 
 ### Features
