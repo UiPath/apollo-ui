@@ -18,7 +18,9 @@ await i18n.use(initReactI18next).init({ /* your config */ });
 await addVertexTranslations(i18n);
 ```
 
-It loads the current language and English, and loads other languages when the app switches to them. You don't need to copy vertex keys into your own `en.json`.
+It loads the current language and English, and loads other languages when the app switches to them. You don't need to copy vertex keys into your own `en.json`. When a language already has `apollo-vertex` strings, such as your own overrides or those another copy of the package added, it adds only the missing keys and keeps the rest.
+
+In a module-federated app, each remote bundles its own copy of the package. Call `addVertexTranslations` once from each remote as well, when the remote loads, with the shared i18next instance, so a remote built on a newer version adds the strings the shell's copy doesn't have. Each call adds a listener, which the function it returns removes.
 
 The steps below cover adding localization for your app's own strings.
 
