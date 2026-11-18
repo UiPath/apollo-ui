@@ -1,14 +1,15 @@
 import { act, render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
-import { useSafeLingui } from '../i18n/useSafeLingui';
 import { type TextAnnouncements, useTextAnnouncements } from './useTextAnnouncements';
 
 const announcer = () => {
   const handle: { current: TextAnnouncements | null } = { current: null };
   const Host = () => {
-    const { _ } = useSafeLingui();
-    const announcements = useTextAnnouncements(_, 'text');
+    const announcements = useTextAnnouncements(
+      { ruleMoved: (from, to) => `Rule moved from position ${from} to ${to}` },
+      'text'
+    );
     handle.current = announcements;
     return <>{announcements.region}</>;
   };

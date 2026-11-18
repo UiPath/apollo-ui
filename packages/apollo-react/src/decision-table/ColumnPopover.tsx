@@ -1,8 +1,7 @@
 import { Input, Label } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useId, useState } from 'react';
-import { useSafeLingui } from '../i18n/useSafeLingui';
-import { type ColumnTypeOption, columnTypeChoicesOf } from './columnTypes';
+import { type ColumnTypeLabels, type ColumnTypeOption, columnTypeChoicesOf } from './columnTypes';
 import { isComposing } from './gridEvents';
 import { PopoverFooter, type PopoverFooterLabels, type PopoverFooterLink } from './PopoverFooter';
 import { PopoverHeader } from './PopoverHeader';
@@ -47,7 +46,7 @@ export interface ColumnEdit<Type> {
 }
 
 /** The popover's strings. */
-export interface ColumnPopoverLabels extends PopoverFooterLabels {
+export interface ColumnPopoverLabels extends PopoverFooterLabels, ColumnTypeLabels {
   /** The popover's title, e.g. "Input · Score". */
   inputColumn: (name: string) => string;
   outputColumn: (name: string) => string;
@@ -126,7 +125,6 @@ export const ColumnPopover = <Type,>({
   dataTestId,
 }: ColumnPopoverProps<Type>): React.JSX.Element => {
   const id = useId();
-  const { _ } = useSafeLingui();
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [draft, setDraft] = useState<ColumnDraft<Type>>({
     label: field.label,
@@ -137,7 +135,7 @@ export const ColumnPopover = <Type,>({
   const required = field.kind === 'input' || field.nameRequired;
   const missing = required && draft.binding.trim() === '';
   const missingLabel = draft.label.trim() === '';
-  const choices = columnTypeChoicesOf(types, _);
+  const choices = columnTypeChoicesOf(types, labels);
   const place = types.findIndex((option) => option.type === draft.type);
   const placeholder = choices.find((_choice, index) => index === place)?.allowedValuesPlaceholder;
   const set =

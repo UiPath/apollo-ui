@@ -1,6 +1,11 @@
 import type { PolicyOption } from './PolicyOptionItem';
 import type { PolicyPickerProps } from './PolicyPicker';
-import type { Translate } from './translate';
+
+/** The words of the hit policy picker. */
+export interface HitPolicyLabels {
+  /** The picker's accessible name from its policy's words, e.g. "Hit policy: Collect · Sum". */
+  policyName: (policy: string) => string;
+}
 
 /** The table's hit policy as the host names it: a policy, or a policy with one of its totals. */
 export type HitPolicyPick<Policy, Total> =
@@ -124,7 +129,7 @@ const policyLabelOf = <Policy, Total>(
 export const policyNameOf = <Policy, Total>(
   catalog: HitPolicyCatalog<Policy, Total>,
   pick: HitPolicyPick<Policy, Total>,
-  _: Translate
+  labels: HitPolicyLabels
 ): string => {
   const placed = placedOf(catalog, pick);
   const policy =
@@ -133,11 +138,7 @@ export const policyNameOf = <Policy, Total>(
       : pick.kind === 'total'
         ? `${policyLabelOf(catalog, pick.policy)} · ${placed.label}`
         : placed.label;
-  return _({
-    id: 'decision-text.hit_policy_name',
-    message: 'Hit policy: {policy}',
-    values: { policy },
-  });
+  return labels.policyName(policy);
 };
 
 /** The picker's menu from the host's catalog: each group in order, a policy's totals in its submenu, a refused total disabled with its reason; a repeated pick, an empty submenu or an empty group is left out. */
@@ -145,7 +146,7 @@ export const policyMenuOf = <Policy, Total>(
   catalog: HitPolicyCatalog<Policy, Total>,
   pick: HitPolicyPick<Policy, Total>,
   onChange: (picked: HitPolicyPick<Policy, Total>) => void,
-  _: Translate
+  labels: HitPolicyLabels
 ): Omit<PolicyPickerProps, 'dataTestId' | 'describedBy'> => {
   const placed = placedPicksOf(catalog);
   const byKey = new Map(placed.map((candidate) => [candidate.key, candidate]));
@@ -168,7 +169,7 @@ export const policyMenuOf = <Policy, Total>(
   };
   return {
     value: placedOf(catalog, pick)?.key ?? '',
-    label: policyNameOf(catalog, pick, _),
+    label: policyNameOf(catalog, pick, labels),
     onChange: (value) => {
       const picked = byKey.get(value);
       if (picked) onChange(picked.pick);
