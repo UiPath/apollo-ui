@@ -1,3 +1,11 @@
+## [@uipath/apollo-wind-v2.94.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.94.0...@uipath/apollo-wind@2.94.1) (2026-11-18)
+
+### Bug Fixes
+
+* **apollo-wind:** use the subtle border color for command and context menu separators ([17aafa9](https://github.com/UiPath/apollo-ui/commit/17aafa972b3d1f1844cfa9a9887d24aa9a6e54d6))
+* **apollo-wind:** use the subtle border color for the dropdown menu separator ([22cf567](https://github.com/UiPath/apollo-ui/commit/22cf56772c6df97ffdc9f4d0e1a02d0a1946d376))
+* **apollo-wind:** use the subtle border color for the select separator ([1d5d459](https://github.com/UiPath/apollo-ui/commit/1d5d459353a225d15da0bdf301a1b2b5a150440c))
+
 ## [@uipath/apollo-wind-v2.94.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.93.0...@uipath/apollo-wind@2.94.0) (2026-11-18)
 
 ### Features
