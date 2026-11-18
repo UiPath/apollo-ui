@@ -113,7 +113,10 @@ export { cn } from "@/lib/utils";
 export type { Action } from "@/lib/action";
 export { assertDateOrString } from "@/lib/asserts/assert-date-or-string";
 export { assertString } from "@/lib/asserts/assert-string";
-export { addVertexTranslations } from "@/lib/i18n";
+export {
+  addVertexTranslations,
+  readMissingPluralFormsFromOther,
+} from "@/lib/i18n";
 export {
   DAY_GROUPS,
   formatRelativeTime,

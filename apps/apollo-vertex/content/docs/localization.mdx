@@ -72,6 +72,14 @@ Use the first option that fits:
 1. **A unit of measure** (time, size, percent): format the number and unit with `Intl.NumberFormat` in `i18n.language`, and pass the result as a placeholder: `"time_range_last": "Last {{duration}}"`. If the formatted value is the whole text, render it without a key.
 2. **A count next to a heading, tab or chip label:** `"changes_tab": "Changes ({{total}})"`.
 3. **A count in other text:** a count-neutral label, noun first: `"selected_items": "Selected items: {{total}}"`. Prefer this to `(s)` endings such as `"{{total}} file(s)"`: it reads naturally in every language, without leaving translators to improvise.
+4. **A count that must read as a sentence, when 2 and 3 don't fit:** plural keys, with `_one` and `_other` only and a variable named `count`:
+
+   ```json
+   "files_selected_one": "{{count}} file selected",
+   "files_selected_other": "{{count}} files selected"
+   ```
+
+   Call `t("files_selected", { count })`. Don't add `_zero`, `_few` or `_many` keys: the TMS doesn't support them. From `@uipath/apollo-vertex` X.Y, languages with more plural forms, such as Romanian and Russian, read the other forms from `_other` instead of showing English.
 
 Never write:
 
@@ -137,7 +145,7 @@ Add this section so AI agents and contributors follow the same rules:
 - Keys are `snake_case` and name the role and place (`invoice_list_delete_button`). One key per UI context: never reuse a key because the English matches.
 - To reword English, edit the value and keep the key. When the meaning changes, use a new key.
 - Placeholders use double braces: `{{name}}`. No concatenation: never join keys or add words to translated text in code.
-- Counts: use a count-neutral label (`"Selected items: {{total}}"`) or the count in parentheses (`"Changes ({{total}})"`). Never ICU (`{count, plural, ...}`) and never `count === 1 ? ... : ...` in code.
+- Counts: use a count-neutral label (`"Selected items: {{total}}"`) or the count in parentheses (`"Changes ({{total}})"`). If a sentence needs a plural, use `_one` and `_other` keys with `{{count}}`, never other plural forms. Never ICU (`{count, plural, ...}`) and never `count === 1 ? ... : ...` in code.
 - Format dates, numbers, units and percentages with `Intl` in `i18n.language`.
 - Never filter, sort or compare using translated text.
 - Check new UI with `?pseudo=1` before opening a PR, and with `?pseudo=keys` to see which key each string uses.
