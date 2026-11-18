@@ -4,6 +4,7 @@
 export { AIAutoSummarize, default as AIAutoSummarizeIcon } from './AIAutoSummarize';
 export { AIAutofix, default as AIAutofixIcon } from './AIAutofix';
 export { AICenter, default as AICenterIcon } from './AICenter';
+export { APIWorkflowGlyph, default as APIWorkflowGlyphIcon } from './APIWorkflowGlyph';
 export { Academy, default as AcademyIcon } from './Academy';
 export { AccountSwitch, default as AccountSwitchIcon } from './AccountSwitch';
 export { Act365, default as Act365Icon } from './Act365';
@@ -32,6 +33,7 @@ export { AgentAutopilotMarker, default as AgentAutopilotMarkerIcon } from './Age
 export { AgentDesktopLogo, default as AgentDesktopLogoIcon } from './AgentDesktopLogo';
 export { AgentDesktopLogoBg, default as AgentDesktopLogoBgIcon } from './AgentDesktopLogoBg';
 export { AgentDesktopLogoFlat, default as AgentDesktopLogoFlatIcon } from './AgentDesktopLogoFlat';
+export { AgentGlyph, default as AgentGlyphIcon } from './AgentGlyph';
 export { AgentRun, default as AgentRunIcon } from './AgentRun';
 export { AgentTraceAPIWorkflowRun, default as AgentTraceAPIWorkflowRunIcon } from './AgentTraceAPIWorkflowRun';
 export { AgentTraceAPIWorkflowTool, default as AgentTraceAPIWorkflowToolIcon } from './AgentTraceAPIWorkflowTool';
@@ -644,6 +646,7 @@ export { FormattingIsMatch, default as FormattingIsMatchIcon } from './Formattin
 export { FormattingMatches, default as FormattingMatchesIcon } from './FormattingMatches';
 export { Freshservice, default as FreshserviceIcon } from './Freshservice';
 export { FullscreenMaximize, default as FullscreenMaximizeIcon } from './FullscreenMaximize';
+export { FunctionGlyph, default as FunctionGlyphIcon } from './FunctionGlyph';
 export { Functions, default as FunctionsIcon } from './Functions';
 export { GenAI, default as GenAIIcon } from './GenAI';
 export { GenericActivityIconsDelete, default as GenericActivityIconsDeleteIcon } from './GenericActivityIconsDelete';
@@ -1035,6 +1038,7 @@ export { Robot, default as RobotIcon } from './Robot';
 export { RobotHead, default as RobotHeadIcon } from './RobotHead';
 export { RowUpdateRowItem, default as RowUpdateRowItemIcon } from './RowUpdateRowItem';
 export { RpaAutomation, default as RpaAutomationIcon } from './RpaAutomation';
+export { RpaGlyph, default as RpaGlyphIcon } from './RpaGlyph';
 export { RunParallelProcess, default as RunParallelProcessIcon } from './RunParallelProcess';
 export { RunProgramInVm, default as RunProgramInVmIcon } from './RunProgramInVm';
 export { RunTests, default as RunTestsIcon } from './RunTests';

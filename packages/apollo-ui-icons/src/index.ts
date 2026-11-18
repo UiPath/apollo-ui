@@ -518,7 +518,9 @@ export { default as TableRow } from './svg/object/data-type-table/table-row.svg'
 export { default as Academy } from './svg/product-logo/academy.svg';
 export { default as ActionCenter } from './svg/product-logo/action-center.svg';
 export { default as Admin } from './svg/product-logo/admin.svg';
+export { default as AgentGlyph } from './svg/product-logo/agent-glyph.svg';
 export { default as AICenter } from './svg/product-logo/ai-center.svg';
+export { default as APIWorkflowGlyph } from './svg/product-logo/api-workflow-glyph.svg';
 export { default as Apps } from './svg/product-logo/apps.svg';
 export { default as AutomationHub } from './svg/product-logo/automation-hub.svg';
 export { default as AutomationOps } from './svg/product-logo/automation-ops.svg';
@@ -528,6 +530,7 @@ export { default as CommunicationsMining } from './svg/product-logo/communicatio
 export { default as DataService } from './svg/product-logo/data-service.svg';
 export { default as DocumentUnderstanding } from './svg/product-logo/document-understanding.svg';
 export { default as Documentation } from './svg/product-logo/documentation.svg';
+export { default as FunctionGlyph } from './svg/product-logo/function-glyph.svg';
 export { default as Home } from './svg/product-logo/home.svg';
 export { default as Insights } from './svg/product-logo/insights.svg';
 export { default as IntegrationService } from './svg/product-logo/integration-service.svg';
@@ -544,6 +547,7 @@ export { default as Marketplace } from './svg/product-logo/marketplace.svg';
 export { default as Orchestrator } from './svg/product-logo/orchestrator.svg';
 export { default as ProcessMining } from './svg/product-logo/process-mining.svg';
 export { default as Processes } from './svg/product-logo/processes.svg';
+export { default as RpaGlyph } from './svg/product-logo/rpa-glyph.svg';
 export { default as StudioIcon } from './svg/product-logo/studio-icon.svg';
 export { default as TaskMining } from './svg/product-logo/task-mining.svg';
 export { default as TestManager } from './svg/product-logo/test-manager.svg';
