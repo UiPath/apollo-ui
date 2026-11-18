@@ -1,6 +1,5 @@
 import type { i18n as I18n, Namespace, ReadCallback } from "i18next";
-import { default as i18n } from "i18next";
-import { initReactI18next } from "react-i18next";
+import { createInstance } from "i18next";
 import { VERTEX_NAMESPACE } from "@/lib/vertex-translation";
 
 type LocaleTranslations = Record<string, string>;
@@ -75,49 +74,90 @@ export const addVertexTranslations = async (instance: I18n) => {
   };
 
   instance.on("languageChanged", handleLanguageChanged);
-  await loadCurrentLanguages();
+  try {
+    await loadCurrentLanguages();
+  } catch (error) {
+    instance.off("languageChanged", handleLanguageChanged);
+    throw error;
+  }
 
   return () => instance.off("languageChanged", handleLanguageChanged);
 };
 
-export const configurei18n = async () => {
-  await i18n
-    .use({
-      type: "backend",
-      async read(
-        language: string,
-        _namespace: Namespace,
-        callback: ReadCallback,
-      ) {
-        if (!isSupportedLocale(language)) {
-          callback(new Error(`Locale not found: ${language}`), null);
-          return;
-        }
+export const hasVertexTranslations = (instance: I18n) =>
+  instance.isInitialized &&
+  [...instance.languages, DEFAULT_LOCALE]
+    .filter((language) => isSupportedLocale(language))
+    .every((language) =>
+      instance.hasResourceBundle(language, VERTEX_NAMESPACE),
+    );
 
-        const loadLocale = localeLoaders[language];
+const whenInitialized = (instance: I18n) =>
+  new Promise<void>((resolve) => {
+    if (instance.isInitialized) {
+      resolve();
+      return;
+    }
+    const handleInitialized = () => {
+      instance.off("initialized", handleInitialized);
+      resolve();
+    };
+    instance.on("initialized", handleInitialized);
+  });
 
-        try {
-          const module = await loadLocale();
-          callback(null, module.default);
-        } catch (error: unknown) {
-          callback(
-            error instanceof Error ? error : new Error(String(error)),
-            null,
-          );
-        }
-      },
-    })
-    .use(initReactI18next)
-    .init({
-      fallbackLng: DEFAULT_LOCALE,
-      lng: DEFAULT_LOCALE,
-      supportedLngs: SUPPORTED_LOCALES,
-      // Vertex components read from the `apollo-vertex` namespace. The backend
-      // serves the same locale files for every namespace.
-      ns: ["translation", VERTEX_NAMESPACE],
-      defaultNS: "translation",
-      returnNull: false,
-    });
+const vertexTranslationLoads = new WeakMap<I18n, Promise<void>>();
 
-  document.documentElement.lang = i18n.language;
+export const loadVertexTranslations = (instance: I18n) => {
+  let load = vertexTranslationLoads.get(instance);
+  if (!load) {
+    load = (async () => {
+      if (!instance.isInitialized) await whenInitialized(instance);
+      await addVertexTranslations(instance);
+    })();
+    vertexTranslationLoads.set(instance, load);
+    load.catch(() => vertexTranslationLoads.delete(instance));
+  }
+  return load;
+};
+
+let defaultInstance: I18n | undefined;
+
+/**
+ * The instance `LocaleProvider` uses when the app gives it none: English by
+ * default, serving the Vertex locale files for every namespace.
+ */
+export const getDefaultVertexI18n = (): I18n => {
+  if (defaultInstance) return defaultInstance;
+  const instance = createInstance().use({
+    type: "backend",
+    async read(
+      language: string,
+      _namespace: Namespace,
+      callback: ReadCallback,
+    ) {
+      if (!isSupportedLocale(language)) {
+        callback(new Error(`Locale not found: ${language}`), null);
+        return;
+      }
+      try {
+        const module = await localeLoaders[language]();
+        callback(null, module.default);
+      } catch (error: unknown) {
+        callback(
+          error instanceof Error ? error : new Error(String(error)),
+          null,
+        );
+      }
+    },
+  });
+  void instance.init({
+    fallbackLng: DEFAULT_LOCALE,
+    lng: DEFAULT_LOCALE,
+    supportedLngs: SUPPORTED_LOCALES,
+    ns: ["translation", VERTEX_NAMESPACE],
+    defaultNS: "translation",
+    returnNull: false,
+  });
+  defaultInstance = instance;
+  return instance;
 };

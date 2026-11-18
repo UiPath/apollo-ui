@@ -4,10 +4,11 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { Home } from "lucide-react";
 import type { ReactNode } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { getDefaultVertexI18n, loadVertexTranslations } from "@/lib/i18n";
 import { ApolloShell } from "./shell";
 import { AuthContext, type AuthContextValue } from "./shell-auth-provider";
 import { ThemeProvider } from "./shell-theme-provider";
@@ -38,8 +39,6 @@ const signedOut: AuthContextValue = {
   accessToken: null,
 };
 
-const configureI18n = () => Promise.resolve();
-
 function renderShell(
   auth: AuthContextValue,
   props: { unauthenticatedElement?: ReactNode } = {},
@@ -53,7 +52,6 @@ function renderShell(
             companyName="UiPath"
             productName="Invoices"
             navItems={[{ path: "/", label: "dashboard", icon: Home }]}
-            configureI18n={configureI18n}
             {...props}
           >
             <p>{"app content"}</p>
@@ -103,8 +101,7 @@ describe("ApolloShell auth gate", () => {
       { unauthenticatedElement: <p>{"redirecting"}</p> },
     );
 
-    // Let LocaleProvider finish configuring before asserting.
-    await Promise.resolve();
+    await act(() => loadVertexTranslations(getDefaultVertexI18n()));
     expect(screen.queryByText("redirecting")).toBeNull();
     expect(screen.queryByRole("button")).toBeNull();
   });

@@ -73,7 +73,28 @@ When one item's path is a prefix of another's, only the most specific match is h
 
 ### App translations
 
-Pass `configureI18n` to `ApolloShell` or `LocaleProvider` when the app initializes i18next itself. The shell then runs that function instead of replacing the app catalog with the Vertex one.
+The shell uses your app's i18next instance and adds the Vertex strings to it, so your app decides how its locales load. Pass it as `i18n`, or let the shell find it: an enclosing `I18nextProvider`, else the instance registered with `initReactI18next`. Without one, the shell sets up its own instance with only the Vertex strings, in English.
+
+```tsx
+const i18n = createInstance();
+i18n.use(HttpBackend).use(initReactI18next).init({ lng: 'en', fallbackLng: 'en' });
+
+<ApolloShell i18n={i18n} companyName="Your Company" productName="Your Product" navItems={navItems}>
+  <YourApp />
+</ApolloShell>
+```
+
+The shell shows its loading skeleton until the instance is initialized and has the Vertex strings. When they are already there, it renders straight away.
+
+### Languages
+
+Pass `locales` to `ApolloShell` or `LocaleProvider` to list only the languages your app supports in the profile menu. The menu also keeps the current language, so a user can always switch back to a listed one. With one locale, and the current language among them, the Language menu is hidden. A nested `LocaleProvider` without `locales` keeps the list from the one above it.
+
+```tsx
+<ApolloShell i18n={i18n} locales={['en', 'de']} {...shellProps}>
+  <YourApp />
+</ApolloShell>
+```
 
 ### Minimal header
 

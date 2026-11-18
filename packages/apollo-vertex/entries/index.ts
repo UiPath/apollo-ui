@@ -172,11 +172,7 @@ export {
   useUser,
   type User,
 } from "@/registry/shell/shell-user-provider";
-export {
-  SUPPORTED_LOCALES,
-  configurei18n,
-  type SupportedLocale,
-} from "@/lib/i18n";
+export { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/i18n";
 export {
   STORAGE_KEYS,
   TOKEN_QUERY_KEY,

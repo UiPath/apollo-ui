@@ -1,9 +1,11 @@
 "use client";
 
+import type { i18n as I18n } from "i18next";
 import type { LucideIcon } from "lucide-react";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 import { useContext } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { SupportedLocale } from "@/lib/i18n";
 import { AuthContext, useAuth } from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
@@ -49,7 +51,10 @@ export interface ApolloShellProps extends PropsWithChildren {
   navItems: ShellNavItem[];
   loginDescription?: string;
   unauthenticatedElement?: ReactNode;
-  configureI18n?: () => Promise<void>;
+  /** The app's i18next instance. The shell adds the Vertex strings to it. */
+  i18n?: I18n;
+  /** The locales the language menu offers. Defaults to every Vertex locale. */
+  locales?: readonly SupportedLocale[];
 }
 
 const ApolloShellContent: FC<ApolloShellProps> = ({
@@ -101,11 +106,13 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   navItems,
   loginDescription,
   unauthenticatedElement,
-  configureI18n,
+  i18n,
+  locales,
 }) => {
   return (
     <LocaleProvider
-      configureI18n={configureI18n}
+      i18n={i18n}
+      locales={locales}
       loadingElement={<ShellLoadingSkeleton />}
     >
       <ApolloShellContent
