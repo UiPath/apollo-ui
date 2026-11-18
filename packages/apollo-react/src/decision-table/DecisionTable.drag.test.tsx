@@ -369,6 +369,46 @@ describe('DecisionTable drag: ways it ends', () => {
     pointer('pointerup');
   });
 
+  it('blurs a focused editor as the drag starts inside a shadow root', () => {
+    const ref = createRef<GridHandle>();
+    const host = document.createElement('div');
+    document.body.append(host);
+    const shadow = host.attachShadow({ mode: 'open' });
+    const mount = document.createElement('div');
+    shadow.append(mount);
+    const { unmount } = render(
+      <DecisionTable
+        ref={ref}
+        columns={columns}
+        rowCount={3}
+        leadingColumnWidth={52}
+        onRowMove={vi.fn()}
+        renderHeaderCell={(column) => <th key={column.id}>{column.name}</th>}
+        renderRow={(rowIndex) => (
+          <tr key={rowIndex}>
+            <td data-row={rowIndex} />
+          </tr>
+        )}
+        dataTestId="table"
+        labels={{ resizeColumn: (name) => `Resize ${name}`, resetColumnWidth: 'Reset width' }}
+      />,
+      { container: mount }
+    );
+    const editor = document.createElement('input');
+    shadow.querySelector('[data-testid="table"]')?.appendChild(editor);
+    const onBlur = vi.fn();
+    editor.addEventListener('blur', onBlur);
+    editor.focus();
+    expect(shadow.activeElement).toBe(editor);
+    act(() => {
+      ref.current?.startRowDrag(0, press(0, H * 0.6));
+    });
+    expect(onBlur).toHaveBeenCalledTimes(1);
+    pointer('pointerup');
+    unmount();
+    host.remove();
+  });
+
   it('cancels the drag when the window loses focus', () => {
     const { handle, onRowMove } = setup();
     act(() => {

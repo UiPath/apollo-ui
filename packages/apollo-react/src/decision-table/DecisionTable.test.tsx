@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
+import { createRoot } from 'react-dom/client';
 import { vi } from 'vitest';
 import { BODY_ROW_HEIGHT_PX } from './constants';
 import {
@@ -537,5 +538,39 @@ describe('DecisionTable table mark', () => {
   it("shows a warning's own glyph", () => {
     renderTable({ tableMark: { tone: 'warning', title: 'Unchecked output values' } });
     expect(tableMark()!.querySelector('[data-glyph="warning"]')).not.toBeNull();
+  });
+});
+
+describe('focus recovery', () => {
+  it('returns focus to the grid when a focused control inside a shadow root unmounts', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const shadow = host.attachShadow({ mode: 'open' });
+    const mount = document.createElement('div');
+    shadow.append(mount);
+    const root = createRoot(mount);
+    const table = (withButton: boolean) => (
+      <DecisionTable
+        columns={columns}
+        rowCount={1}
+        leadingColumnWidth={52}
+        renderHeaderCell={(column) => <th key={column.id}>{column.name}</th>}
+        renderRow={(rowIndex) => (
+          <tr key={rowIndex}>
+            <td>{withButton && <button type="button" data-testid="inside" />}</td>
+          </tr>
+        )}
+        dataTestId="table"
+        labels={{ resizeColumn: (name) => `Resize ${name}`, resetColumnWidth: 'Reset width' }}
+      />
+    );
+    await act(async () => root.render(table(true)));
+    act(() => shadow.querySelector<HTMLElement>('[data-testid="inside"]')?.focus());
+    expect(shadow.activeElement?.getAttribute('data-testid')).toBe('inside');
+    await act(async () => root.render(table(false)));
+    expect(shadow.activeElement?.getAttribute('tabindex')).toBe('0');
+    expect(shadow.activeElement?.contains(shadow.querySelector('table'))).toBe(true);
+    act(() => root.unmount());
+    host.remove();
   });
 });

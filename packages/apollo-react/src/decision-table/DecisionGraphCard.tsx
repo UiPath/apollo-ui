@@ -1,7 +1,9 @@
-import { cn } from '@uipath/apollo-wind';
-import { ChevronDown, ChevronRight, CornerDownRight, Network } from 'lucide-react';
+import { cn, Input } from '@uipath/apollo-wind';
+import { ChevronDown, ChevronRight, CornerDownRight, Ellipsis, Network } from 'lucide-react';
 import type React from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
 import type { DecisionGraphDecisionNode, DecisionGraphReferenceNode } from './decisionGraphTypes';
+import { isComposing } from './gridEvents';
 import {
   GRAPH_BODY_CLASS,
   GRAPH_CARD_CLASS,
@@ -10,15 +12,44 @@ import {
   GRAPH_HEADER_CLASS,
   GRAPH_HIT_POLICY_CLASS,
   GRAPH_MARK_BUTTON_CLASS,
+  GRAPH_MENU_BUTTON_CLASS,
   GRAPH_NAME_CLASS,
   GRAPH_REFERENCE_CHIP_CLASS,
   GRAPH_REFERENCE_CLASS,
   GRAPH_RULE_COUNT_CLASS,
   GRAPH_TOGGLE_CLASS,
 } from './decisionGraphStyles';
+import { GridMenuButton, type GridMenuEntry } from './GridMenu';
 import { MarkGlyph } from './MarkGlyph';
 import { isLineMark } from './sentenceMarks';
 import type { DecisionGraphLabels } from './useDecisionGraphStrings';
+
+/** The open rename field: the host's last refusal of it, worded, and what it proposes. */
+export interface DecisionGraphRenameField {
+  /** The name the field opened with. */
+  from: string;
+  draft: string;
+  onDraft: (draft: string) => void;
+  refusal: string | null;
+  /** `byKey` when Enter committed it rather than focus leaving. */
+  onCommit: (name: string, byKey: boolean) => void;
+  /** `byKey` when Escape or Enter closed it rather than focus leaving. */
+  onCancel: (byKey: boolean) => void;
+}
+
+/** A node's own menu and keys, built from the host's actions. */
+export interface DecisionGraphNodeActions {
+  menuLabel: string;
+  entries: () => GridMenuEntry[];
+  onKeyDown: (event: React.KeyboardEvent) => void;
+  keyShortcuts: readonly string[];
+}
+
+/** A card's menu and keys, and its name field while renaming. */
+export interface DecisionGraphCardActions extends DecisionGraphNodeActions {
+  nameField: string;
+  rename: DecisionGraphRenameField | null;
+}
 
 export interface DecisionGraphCardProps {
   node: DecisionGraphDecisionNode;
@@ -36,6 +67,7 @@ export interface DecisionGraphCardProps {
   /** `byKey` when the mark was pressed from the keyboard rather than clicked. */
   onShowProblem: (byKey: boolean) => void;
   onOpen: (() => void) | undefined;
+  actions: DecisionGraphCardActions | null;
   cardRef: (element: HTMLElement | null) => void;
   dataTestId: string;
 }
@@ -53,7 +85,100 @@ const openOnKey = (event: React.KeyboardEvent, open: () => void) => {
 };
 
 const isOtherAction = (target: EventTarget): boolean =>
-  target instanceof Element && target.closest('button:not([data-graph-toggle])') !== null;
+  target instanceof Element && target.closest('button:not([data-graph-toggle]), input') !== null;
+
+const keysOf = (
+  onOpen: (() => void) | undefined,
+  actions: DecisionGraphNodeActions | null
+): string | undefined => {
+  const keys = [...(onOpen ? [OPEN_KEYS] : []), ...(actions?.keyShortcuts ?? [])];
+  return keys.length > 0 ? keys.join(' ') : undefined;
+};
+
+const onNodeKeyDown =
+  (onOpen: (() => void) | undefined, actions: DecisionGraphNodeActions | null) =>
+  (event: React.KeyboardEvent) => {
+    if (onOpen) openOnKey(event, onOpen);
+    if (!event.defaultPrevented) actions?.onKeyDown(event);
+  };
+
+const NodeMenu = ({
+  actions,
+  dataTestId,
+}: {
+  actions: DecisionGraphNodeActions;
+  dataTestId: string;
+}) => (
+  <GridMenuButton
+    label={actions.menuLabel}
+    entries={actions.entries}
+    className={GRAPH_MENU_BUTTON_CLASS}
+    dataTestId={dataTestId}
+  >
+    <Ellipsis aria-hidden className="size-4" />
+  </GridMenuButton>
+);
+
+const NameField = ({
+  field,
+  label,
+  dataTestId,
+}: {
+  field: DecisionGraphRenameField;
+  label: string;
+  dataTestId: string;
+}) => {
+  const refusalId = useId();
+  const settledRef = useRef(false);
+  useLayoutEffect(() => {
+    settledRef.current = false;
+  });
+  const commit = (byKey: boolean) => {
+    const next = field.draft.trim();
+    if (next === '' || next === field.from) field.onCancel(byKey);
+    else field.onCommit(next, byKey);
+  };
+  return (
+    <span className="flex min-w-0 flex-1 flex-col">
+      <Input
+        autoFocus
+        value={field.draft}
+        onChange={(event) => field.onDraft(event.target.value)}
+        aria-label={label}
+        aria-invalid={field.refusal !== null || undefined}
+        aria-describedby={field.refusal === null ? undefined : refusalId}
+        className="h-8"
+        onFocus={(event) => {
+          settledRef.current = false;
+          if (field.draft === field.from) event.currentTarget.select();
+        }}
+        onKeyDown={(event) => {
+          event.stopPropagation();
+          if (isComposing(event)) return;
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            settledRef.current = true;
+            commit(true);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            settledRef.current = true;
+            field.onCancel(true);
+          }
+        }}
+        onBlur={() => {
+          if (settledRef.current) return;
+          commit(false);
+        }}
+        data-testid={`${dataTestId}-input`}
+      />
+      {field.refusal !== null && (
+        <span id={refusalId} role="alert" className="text-xs text-destructive">
+          {field.refusal}
+        </span>
+      )}
+    </span>
+  );
+};
 
 /** A decision as a card: a sticky heading that folds it, then the host's body for it while open. */
 export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
@@ -68,10 +193,12 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
   onToggle,
   onShowProblem,
   onOpen,
+  actions,
   cardRef,
   dataTestId,
 }) => {
   const { logic } = node;
+  const rename = actions?.rename ?? null;
   const headingMark = node.mark?.mark;
   const mark = isLineMark(headingMark) ? headingMark : undefined;
   const Heading = HEADINGS[Math.min(depth, HEADINGS.length - 1)] ?? 'h6';
@@ -85,6 +212,7 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
         mark && GRAPH_CARD_TONE_CLASS[mark.tone]
       )}
       data-decision-id={node.id}
+      data-graph-card
       data-open={open || undefined}
       data-active={active || undefined}
       data-testid={`${dataTestId}-decision-${node.id}`}
@@ -103,15 +231,23 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
           className={GRAPH_TOGGLE_CLASS}
           aria-expanded={open}
           aria-controls={open ? bodyId : undefined}
+          aria-label={rename ? node.label : undefined}
           onClick={onToggle}
-          onKeyDown={onOpen && ((event) => openOnKey(event, onOpen))}
-          aria-keyshortcuts={onOpen && OPEN_KEYS}
+          onKeyDown={onNodeKeyDown(onOpen, actions)}
+          aria-keyshortcuts={keysOf(onOpen, actions)}
           data-graph-toggle
           data-testid={`${dataTestId}-toggle-${node.id}`}
         >
           {open ? <ChevronDown aria-hidden /> : <ChevronRight aria-hidden />}
-          <span className={GRAPH_NAME_CLASS}>{node.label}</span>
+          {!rename && <span className={GRAPH_NAME_CLASS}>{node.label}</span>}
         </button>
+        {actions && rename && (
+          <NameField
+            field={rename}
+            label={actions.nameField}
+            dataTestId={`${dataTestId}-name-${node.id}`}
+          />
+        )}
         {usedBy.length > 0 && <span className="sr-only">{labels.usedBy(usedBy.join(', '))}</span>}
         {logic.kind === 'table' && (
           <span
@@ -140,6 +276,7 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
             <MarkGlyph tone={mark.tone} className="size-3.5" />
           </button>
         )}
+        {actions && <NodeMenu actions={actions} dataTestId={`${dataTestId}-menu-${node.id}`} />}
       </Heading>
       {open && (
         <div
@@ -160,6 +297,7 @@ export interface DecisionGraphReferenceProps {
   labels: DecisionGraphLabels;
   onReveal: () => void;
   onOpen: (() => void) | undefined;
+  actions: DecisionGraphNodeActions | null;
   dataTestId: string;
 }
 
@@ -171,13 +309,20 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
   labels,
   onReveal,
   onOpen,
+  actions,
   dataTestId,
 }) => {
   const [before = '', after = ''] = labels.seeAbove(NAME_SLOT).split(NAME_SLOT);
   return (
     <div
       className={GRAPH_REFERENCE_CLASS}
-      onDoubleClick={onOpen}
+      onDoubleClick={
+        onOpen &&
+        ((event) => {
+          if (!(event.target instanceof Element && event.target.closest('[data-graph-menu]')))
+            onOpen();
+        })
+      }
       data-testid={`${dataTestId}-reference-${node.id}`}
     >
       <CornerDownRight aria-hidden className="size-3 shrink-0" />
@@ -187,8 +332,9 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
           type="button"
           className={GRAPH_REFERENCE_CHIP_CLASS}
           onClick={onReveal}
-          onKeyDown={onOpen && ((event) => openOnKey(event, onOpen))}
-          aria-keyshortcuts={onOpen && OPEN_KEYS}
+          onKeyDown={onNodeKeyDown(onOpen, actions)}
+          aria-keyshortcuts={keysOf(onOpen, actions)}
+          data-graph-reference-link={node.id}
           data-testid={`${dataTestId}-reference-link-${node.id}`}
         >
           <Network aria-hidden className="size-3" />
@@ -196,6 +342,11 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
         </button>
         {after}
       </span>
+      {actions && (
+        <span className="ms-auto" data-graph-menu>
+          <NodeMenu actions={actions} dataTestId={`${dataTestId}-reference-menu-${node.id}`} />
+        </span>
+      )}
     </div>
   );
 };

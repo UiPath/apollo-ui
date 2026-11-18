@@ -153,4 +153,105 @@ describe('DecisionGraphText stories', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(screen.getByTestId('graph-body-risk')).toHaveTextContent('Danger');
   });
+
+  describe('decision actions, from the keyboard alone', () => {
+    const headings = () =>
+      [...document.querySelectorAll<HTMLElement>('[data-graph-toggle]')].map(
+        (toggle) => toggle.textContent
+      );
+    const focusOn = (id: string) => screen.getByTestId(`graph-toggle-${id}`).focus();
+
+    it('renames a decision with F2, and refuses a name another decision has', async () => {
+      render(<Default />);
+      focusOn('net-income');
+      await userEvent.keyboard('{F2}Risk{Enter}');
+      expect(screen.getByRole('alert')).toHaveTextContent('Another decision already has this name');
+      await userEvent.keyboard('{Control>}a{/Control}Take-home pay{Enter}');
+      expect(screen.getByTestId('graph-toggle-net-income')).toHaveTextContent('Take-home pay');
+      expect(screen.getByTestId('graph-toggle-net-income')).toHaveFocus();
+    });
+
+    it('moves a decision with Alt+Shift+arrows, focus following it', async () => {
+      render(<Default />);
+      focusOn('net-income');
+      await userEvent.keyboard('{Alt>}{Shift>}{ArrowUp}{/Shift}{/Alt}');
+      expect(headings()).toEqual(['Eligibility', 'Net income', 'Risk', 'Pricing']);
+      expect(screen.getByTestId('graph-toggle-net-income')).toHaveFocus();
+      await userEvent.keyboard('{Alt>}{Shift>}{ArrowLeft}{/Shift}{/Alt}');
+      expect(headings()).toEqual(['Eligibility', 'Risk', 'Net income', 'Pricing']);
+      expect(
+        screen.getByTestId('graph-decision-net-income').closest('[class*="ms-[22px]"]')
+      ).toBeNull();
+      expect(screen.getByTestId('graph-toggle-net-income')).toHaveFocus();
+    });
+
+    it('deletes a decision with Delete and Enter on the confirm, focus moving to the next heading', async () => {
+      render(<Default />);
+      focusOn('risk');
+      await userEvent.keyboard('{Delete}');
+      await screen.findByRole('alertdialog');
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+      expect(screen.queryByTestId('graph-decision-risk')).toBeNull();
+      expect(screen.getByTestId('graph-toggle-net-income')).toHaveFocus();
+    });
+
+    it('opens the menu from Tab, then adds a required input from it', async () => {
+      render(<Default />);
+      focusOn('pricing');
+      await userEvent.tab();
+      expect(screen.getByTestId('graph-menu-pricing')).toHaveFocus();
+      await userEvent.keyboard('{Enter}');
+      await screen.findByRole('menu');
+      const item = await screen.findByRole('menuitem', { name: 'Add required input' });
+      while (document.activeElement !== item) await userEvent.keyboard('{ArrowDown}');
+      await userEvent.keyboard('{Enter}');
+      const nest = screen.getByTestId('graph-decision-new-1').parentElement?.parentElement;
+      expect(nest?.previousElementSibling).toBe(screen.getByTestId('graph-decision-pricing'));
+      expect(screen.getByTestId('graph-toggle-new-1')).toHaveTextContent('New decision 1');
+    });
+
+    it.each([
+      ['Choose inputs', 'dialog'],
+      ['Add note', 'dialog'],
+      ['Delete', 'alertdialog'],
+    ] as const)('moves focus into the dialog %s opens from the menu, and back to the heading', async (name, role) => {
+      render(<Default />);
+      focusOn('eligibility');
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+      const item = await screen.findByRole('menuitem', { name: new RegExp(`^${name}`) });
+      while (document.activeElement !== item) await userEvent.keyboard('{ArrowDown}');
+      await userEvent.keyboard('{Enter}');
+      const dialog = await screen.findByRole(role);
+      await vi.waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+      await userEvent.keyboard('{Escape}');
+      await vi.waitFor(() => expect(screen.getByTestId('graph-toggle-eligibility')).toHaveFocus());
+    });
+
+    it('shows what stands for the new logic after changing a table to a literal expression', async () => {
+      await openRisk();
+      await userEvent.click(screen.getByTestId('graph-menu-risk'));
+      await userEvent.click(
+        await screen.findByRole('menuitem', { name: 'Change logic to Literal expression' })
+      );
+      expect(screen.getByTestId('graph-body-risk')).toHaveTextContent('Literal expression');
+    });
+
+    it('lists no rules of a table changed to a literal expression in the minimap', async () => {
+      await openRisk();
+      await userEvent.click(screen.getByTestId('graph-menu-risk'));
+      await userEvent.click(
+        await screen.findByRole('menuitem', { name: 'Change logic to Literal expression' })
+      );
+      await userEvent.click(screen.getByTestId('graph-minimap-trigger'));
+      await screen.findByTestId('graph-minimap-row-decision-risk');
+      expect(document.querySelector('[data-testid^="graph-minimap-row-rule-risk-"]')).toBeNull();
+    });
+
+    it('offers no decision actions in read mode', () => {
+      render(<Default mode="read" />);
+      expect(screen.queryByTestId('graph-menu-risk')).toBeNull();
+    });
+  });
 });

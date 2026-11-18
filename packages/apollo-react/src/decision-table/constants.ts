@@ -22,6 +22,8 @@ export const DEFAULT_COLUMN_OVERSCAN = 8;
 /** Assumed viewport size before the scroll container has been measured. */
 export const FALLBACK_ROW_VIEWPORT_PX = 800;
 export const FALLBACK_COLUMN_VIEWPORT_PX = 1600;
+/** Scrolls a stop just far enough to show it, and not at all when it is already in view. */
+export const NEAREST: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest' };
 /** Distance from a viewport edge inside which a drag starts autoscrolling. */
 export const AUTOSCROLL_EDGE_PX = 32;
 /** Scroll advance per autoscroll frame. */

@@ -1,5 +1,6 @@
 import { type DependencyList, useCallback, useEffect, useRef, useState } from 'react';
 import { AUTOSCROLL_EDGE_PX, AUTOSCROLL_STEP_PX } from './constants';
+import { activeElementOf } from './gridEvents';
 import type { DragStartEvent } from './gridTypes';
 
 /**
@@ -354,7 +355,8 @@ export const useDragReorder = (options: DragReorderOptions) => {
       // commits on blur) would never blur, and the move would then change the content under the
       // coordinates that draft was written against, stranding it. Blur first, while the model
       // still matches: the commit lands on the row the user actually typed into.
-      const focused = document.activeElement;
+      const container = containerRef.current;
+      const focused = container ? activeElementOf(container) : document.activeElement;
       if (
         focused instanceof HTMLElement &&
         focused.closest("input, textarea, [contenteditable='true']")
@@ -363,7 +365,6 @@ export const useDragReorder = (options: DragReorderOptions) => {
       }
       // A drag is a pointer gesture; the text under it must not smear into a selection.
       event.preventDefault();
-      const container = containerRef.current;
       // From the press, not the move that started the drag: the copy then keeps the pointer's place on the unit.
       const pressed = event.press ?? event;
       const grab = container
