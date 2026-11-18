@@ -34,15 +34,22 @@ const isSupportedLocale = (language: string): language is SupportedLocale =>
   language in localeLoaders;
 
 const loadVertexLocale = async (instance: I18n, language: string) => {
-  if (
-    !isSupportedLocale(language) ||
-    instance.hasResourceBundle(language, VERTEX_NAMESPACE)
-  ) {
-    return false;
-  }
+  if (!isSupportedLocale(language)) return;
   const { default: translations } = await localeLoaders[language]();
-  instance.addResourceBundle(language, VERTEX_NAMESPACE, translations);
-  return true;
+  const bundle: unknown = instance.getResourceBundle(
+    language,
+    VERTEX_NAMESPACE,
+  );
+  const existing: object =
+    typeof bundle === "object" && bundle !== null ? bundle : {};
+  if (Object.keys(translations).every((key) => key in existing)) return;
+  instance.addResourceBundle(
+    language,
+    VERTEX_NAMESPACE,
+    translations,
+    true,
+    false,
+  );
 };
 
 /**
@@ -56,23 +63,15 @@ const loadVertexLocale = async (instance: I18n, language: string) => {
  */
 export const addVertexTranslations = async (instance: I18n) => {
   // `languages` is the resolved lookup order, e.g. ["de-DE", "de", "en"].
-  const loadCurrentLanguages = async () => {
-    const added = await Promise.all(
+  const loadCurrentLanguages = () =>
+    Promise.all(
       [...instance.languages, DEFAULT_LOCALE].map((language) =>
         loadVertexLocale(instance, language),
       ),
     );
-    return added.includes(true);
-  };
 
-  const handleLanguageChanged = (language: string) => {
-    void loadCurrentLanguages().then((added) => {
-      // react-i18next re-renders on `languageChanged`, not when resources are
-      // added, so switch again once the strings are in.
-      if (added && instance.language === language) {
-        return instance.changeLanguage(language);
-      }
-    });
+  const handleLanguageChanged = () => {
+    void loadCurrentLanguages();
   };
 
   instance.on("languageChanged", handleLanguageChanged);

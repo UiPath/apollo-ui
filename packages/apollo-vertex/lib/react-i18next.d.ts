@@ -41,7 +41,10 @@ declare module "react-i18next" {
     values?: Record<string, string | number | string[]>;
     components?: Record<string, ReactElement>;
   }>;
-  export function useTranslation(ns?: VertexNamespace): {
+  export function useTranslation(
+    ns?: VertexNamespace,
+    options?: { bindI18nStore?: string },
+  ): {
     t: TranslationFn;
     i18n: {
       exists: (key: string) => key is ParseKeys;
