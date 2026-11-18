@@ -15,12 +15,15 @@ import {
   MULTI_SENTENCE_POLICY,
   manySentenceRules,
   COLUMN_TYPES,
-  type FixtureType,
 } from './__fixtures__/sentences.fixtures';
-import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
+import {
+  type FixtureEdit,
+  type FlatTextProps,
+  outcomeField,
+  textPropsOf,
+} from './__fixtures__/textMode';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentenceSelection } from './sentenceTypes';
@@ -412,7 +415,7 @@ describe('DecisionText unmount', () => {
   }) => {
     const [shown, setShown] = useState(true);
     const [rules, setRules] = useState(RULES);
-    const [editing, setEditing] = useState<DecisionTextEdit<FixtureType>['editing']>(OPEN);
+    const [editing, setEditing] = useState<FixtureEdit['editing']>(OPEN);
     if (!shown) return null;
     return (
       <>
@@ -436,6 +439,7 @@ describe('DecisionText unmount', () => {
             },
             onClearCell: vi.fn(),
             onDeleteRule: vi.fn(),
+            valueField: outcomeField,
           },
         })}
       </>
@@ -452,6 +456,7 @@ describe('DecisionText unmount', () => {
           onCancel,
           onClearCell: vi.fn(),
           onDeleteRule: vi.fn(),
+          valueField: outcomeField,
         },
       })
     );
@@ -471,6 +476,7 @@ describe('DecisionText unmount', () => {
             onCancel,
             onClearCell: vi.fn(),
             onDeleteRule: vi.fn(),
+            valueField: outcomeField,
           },
         })}
       </StrictMode>
@@ -543,7 +549,12 @@ const SelectingScroller = ({ editing }: { editing: boolean }) => {
     marks: MARKS,
     headerMark: { tone: 'error', glyph: true, title: MARK_TITLES.header },
     edit: editing
-      ? { onCommit: () => undefined, onClearCell: () => {}, onDeleteRule: () => {} }
+      ? {
+          onCommit: () => undefined,
+          onClearCell: () => {},
+          onDeleteRule: () => {},
+          valueField: outcomeField,
+        }
       : undefined,
   });
 };

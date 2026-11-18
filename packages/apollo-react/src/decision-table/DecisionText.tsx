@@ -8,7 +8,7 @@ import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { type ColumnTypeOption, glyphOf } from './columnTypes';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
 import { type DecisionTextDiff, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
-import type { DecisionTextEdit } from './decisionTextTypes';
+import type { CellEdit, DecisionTextEdit } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
 import {
@@ -17,6 +17,7 @@ import {
   policyHeaderOf,
   policyMenuOf,
 } from './hitPolicyMenu';
+import { hostCommitOf, viewFieldOf } from './hostValues';
 import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
@@ -27,6 +28,7 @@ import { DECISION_TEXT_FRAME_CLASS, DECISION_TEXT_INLINE_FRAME_CLASS } from './s
 import type {
   DecisionTextTable,
   SentenceBand,
+  SentenceCellId,
   SentenceNameToken,
   SentenceSelection,
 } from './sentenceTypes';
@@ -44,21 +46,22 @@ import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
 import { type DecisionTextScroll, useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
-import { useValueEditing } from './useValueEditing';
+import { useValueEditing, valueKey } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
+import type { OperatorOffer, ValueFieldData } from './valueTypes';
 
 /** A click or key asks for this selection, or null on Escape. */
 type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
 
-/** How the view is used: read, select rules and cells the host keeps, edit them in the host's hit policies and column types, or read what changed. */
-export type DecisionTextMode<Policy, Total, Type> =
+/** How the view is used: read, select rules and cells the host keeps, edit them in the host's operators, hit policies and column types, or read what changed. */
+export type DecisionTextMode<Op, Policy, Total, Type> =
   | { kind: 'read'; selected: SentenceSelection | null }
   | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
   | {
       kind: 'edit';
       selected: SentenceSelection | null;
       onSelect: SelectHandler;
-      edit: DecisionTextEdit<Type>;
+      edit: DecisionTextEdit<Op, Type>;
       onPolicyChange: (picked: HitPolicyPick<Policy, Total>) => void;
       onAddRule: () => void;
     }
@@ -68,9 +71,9 @@ export type DecisionTextMode<Policy, Total, Type> =
       diff: DecisionTextDiff<Policy, Total, Type>;
     };
 
-export interface DecisionTextProps<Policy, Total, Type> {
+export interface DecisionTextProps<Op, Policy, Total, Type> {
   table: DecisionTextTable<Policy, Total, Type>;
-  mode: DecisionTextMode<Policy, Total, Type>;
+  mode: DecisionTextMode<Op, Policy, Total, Type>;
   /** The host's hit policies, grouped and worded, which the header and its picker show. */
   hitPolicies: HitPolicyCatalog<Policy, Total>;
   /** The host's column types, worded and each told apart by `===`, which the band glyphs and the column popover's select show. */
@@ -113,8 +116,48 @@ const nameTokensOf = (bands: readonly SentenceBand[]) => {
     names.get(columnId) ?? { kind: 'input', columnId, text: columnId };
 };
 
-/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's hit policies and column types. */
-export const DecisionText = <Policy, Total, Type>({
+/** The open value's key, and the host's field its editor opened on. */
+interface OpenField<Op> {
+  key: string;
+  field: ValueFieldData<Op>;
+}
+
+/** One render's open value key, and the host's field it read for that value before keeping one. */
+interface RenderedField<Op> {
+  key: string | null;
+  seen: ValueFieldData<Op> | null;
+}
+
+/** The host's edit with each operator by its place in the field its editor opened on, its allowed values live. */
+const placedEditOf = <Op, Type>(
+  { onCommit, valueField: hostField, column: _column, ...rest }: DecisionTextEdit<Op, Type>,
+  opened: OpenField<Op> | null,
+  rendered: RenderedField<Op>
+): CellEdit => {
+  const keptField = () => (opened && opened.key === rendered.key ? opened.field : null);
+  const valueField = (cell: SentenceCellId): ValueFieldData<Op> => {
+    const live = hostField(cell);
+    const kept = keptField();
+    if (kept) return { ...kept, allowedValues: live.allowedValues };
+    rendered.seen = live;
+    return live;
+  };
+  const offersOf = (cell: SentenceCellId): readonly OperatorOffer<Op>[] => {
+    const field = keptField() ?? hostField(cell);
+    return field.kind === 'condition' ? field.operators : [];
+  };
+  return {
+    ...rest,
+    valueField: (cell) => viewFieldOf(valueField(cell)),
+    onCommit: (value, commit, move) => {
+      const hostCommit = hostCommitOf(commit, offersOf(value));
+      return hostCommit && onCommit(value, hostCommit, move);
+    },
+  };
+};
+
+/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's operators, hit policies and column types. */
+export const DecisionText = <Op, Policy, Total, Type>({
   table,
   mode,
   hitPolicies,
@@ -129,7 +172,7 @@ export const DecisionText = <Policy, Total, Type>({
   containerProps,
   dataTestId,
   children,
-}: DecisionTextProps<Policy, Total, Type>): React.JSX.Element => {
+}: DecisionTextProps<Op, Policy, Total, Type>): React.JSX.Element => {
   const { rules, inputs, outputs } = table;
   const selected = mode.kind === 'diff' ? null : mode.selected;
   const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
@@ -137,8 +180,13 @@ export const DecisionText = <Policy, Total, Type>({
   const idPrefix = useId();
   const { _ } = useSafeLingui();
   const labels = useDecisionTextLabels();
-  const hostEdit = mode.kind === 'edit' ? mode.edit : undefined;
-  const { edit, refusal } = useEditState(hostEdit, useDecisionTextEditLabels());
+  const [openField, setOpenField] = useState<OpenField<Op> | null>(null);
+  const rendered: RenderedField<Op> = { key: null, seen: null };
+  const { edit, refusal } = useEditState(
+    mode.kind === 'edit' ? placedEditOf(mode.edit, openField, rendered) : undefined,
+    useDecisionTextEditLabels()
+  );
+  rendered.key = edit?.editing ? valueKey(edit.editing) : null;
   const addRule =
     mode.kind === 'edit' ? { label: labels.addRule, onAdd: mode.onAddRule } : undefined;
   const policyHeader = policyHeaderOf(hitPolicies, table.hitPolicy);
@@ -205,6 +253,10 @@ export const DecisionText = <Policy, Total, Type>({
     labels,
     container: ruleWindow.container,
   });
+  if (openField ? openField.key !== rendered.key : rendered.seen) {
+    const { key, seen } = rendered;
+    setOpenField(key === null || seen === null ? null : { key, field: seen });
+  }
   const sectionProps = useContainerHandlers({
     containerProps,
     hoverTo,

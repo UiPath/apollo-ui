@@ -389,7 +389,12 @@ describe('DecisionGraphText minimap', () => {
               kind: 'edit',
               selected: selected?.id === id ? selected.rule : null,
               onSelect: (rule) => setSelected(rule ? { id, rule } : null),
-              edit: { onCommit: vi.fn(), onClearCell: vi.fn(), onDeleteRule: vi.fn() },
+              edit: {
+                onCommit: vi.fn(),
+                onClearCell: vi.fn(),
+                onDeleteRule: vi.fn(),
+                valueField: () => ({ kind: 'outcome', allowedValues: [] }),
+              },
               onPolicyChange: vi.fn(),
               onAddRule: vi.fn(),
             }}

@@ -14,10 +14,10 @@ import {
   GRID_SENTENCE_POLICY,
   HIT_POLICIES,
   COLUMN_TYPES,
-  type FixtureType,
+  type FixtureOperator,
 } from './__fixtures__/sentences.fixtures';
+import { type FixtureEdit, outcomeField } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 import type { ValueCommit } from './valueTypes';
 
@@ -32,23 +32,35 @@ afterAll(() => uninstallEscape());
 const r3Age: SentenceValueId = { rowId: 'r3', columnId: 'age', index: 0 };
 const NOT_A_NUMBER = 'Not saved: age needs a number.';
 
-type Answer = (commit: ValueCommit) => string | void;
+type Answer = (commit: ValueCommit<FixtureOperator>) => string | void;
+
+const textOf = (commit: ValueCommit<FixtureOperator>): string => {
+  switch (commit.kind) {
+    case 'expression':
+      return commit.text;
+    case 'outcome':
+    case 'single':
+      return commit.value;
+    default:
+      return '';
+  }
+};
 
 /** Refuses any text that is not a number, as a host's validation would. */
 const numbersOnly: Answer = (commit) => {
-  const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
+  const text = textOf(commit);
   return Number.isNaN(Number(text)) ? NOT_A_NUMBER : undefined;
 };
 
 interface HostProps {
   answer?: Answer;
-  addInput?: DecisionTextEdit<FixtureType>['onAddInput'];
+  addInput?: FixtureEdit['onAddInput'];
   /** The host keeps `editing`, starting here; undefined leaves it to the view. */
   controlled?: SentenceValueId | null;
   /** Whether a controlled host also closes the editor on a refusal. */
   closesOnRefusal?: boolean;
-  onCommit?: DecisionTextEdit<FixtureType>['onCommit'];
-  valueField?: DecisionTextEdit<FixtureType>['valueField'];
+  onCommit?: FixtureEdit['onCommit'];
+  valueField?: FixtureEdit['valueField'];
   editable?: boolean;
 }
 
@@ -57,7 +69,7 @@ const Host = ({
   controlled,
   closesOnRefusal = false,
   onCommit,
-  valueField,
+  valueField = outcomeField,
   editable = true,
   addInput,
 }: HostProps) => {
@@ -65,7 +77,7 @@ const Host = ({
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   const [editing, setEditing] = useState(controlled ?? null);
   const hostKeeps = controlled !== undefined;
-  const edit: DecisionTextEdit<FixtureType> = {
+  const edit: FixtureEdit = {
     ...(hostKeeps ? { editing, onStartEdit: setEditing, onCancel: () => setEditing(null) } : {}),
     valueField,
     onCommit: (value, commit, move) => {
@@ -76,7 +88,7 @@ const Host = ({
       setTable((current) =>
         commit.kind === 'expression'
           ? tableWithExpression(current, value, commit.text)
-          : tableWithValue(current, value, commit.values[0] ?? '')
+          : tableWithValue(current, value, textOf(commit))
       );
       return undefined;
     },
@@ -143,7 +155,7 @@ describe('DecisionText editing state', () => {
       expect(field()).toHaveValue('60');
       type('70');
       apply();
-      expect(onCommit.mock.calls).toEqual([[r3Age, { kind: 'values', values: ['70'] }, 'none']]);
+      expect(onCommit.mock.calls).toEqual([[r3Age, { kind: 'outcome', value: '70' }, 'none']]);
       expect(dialog()).toBeNull();
       expect(chip('r3', 'age')).toHaveTextContent('70');
     });

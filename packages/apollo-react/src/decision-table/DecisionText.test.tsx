@@ -50,16 +50,25 @@ import {
   NO_COLUMNS,
   valueList,
   COLUMN_TYPES,
+  type FixtureOffer,
+  type FixtureOperator,
   type FixtureType,
+  OPERATOR_WORDS,
+  offerOf,
 } from './__fixtures__/sentences.fixtures';
-import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
+import {
+  type FixtureEdit,
+  type FlatTextProps,
+  outcomeField,
+  textPropsOf,
+} from './__fixtures__/textMode';
 import type { ColumnEdit, ColumnFieldData } from './ColumnPopover';
 import type { ColumnTypeOption } from './columnTypes';
 import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText } from './DecisionText';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
+import { valueTokenOf } from './sentenceParts';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type {
   SentenceCellId,
@@ -70,12 +79,7 @@ import type {
   SentenceValueToken,
 } from './sentenceTypes';
 import { SENTENCE_RULE_OVERSCAN } from './useRuleWindow';
-import type {
-  ExpressionEditorProps,
-  ValueCommit,
-  ValueField,
-  ValueOperatorOption,
-} from './valueTypes';
+import type { ExpressionEditorProps, HeldValues, ValueCommit, ValueFieldData } from './valueTypes';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
@@ -208,13 +212,13 @@ const rect = (left: number, right: number): DOMRect => ({
 
 interface EditSpies {
   onSelect: Mock<NonNullable<ViewProps['onSelect']>>;
-  onStartEdit: Mock<NonNullable<DecisionTextEdit<FixtureType>['onStartEdit']>>;
+  onStartEdit: Mock<NonNullable<FixtureEdit['onStartEdit']>>;
   onCommit: Mock<
-    (value: SentenceValueId, text: string, move: CellCommitMove, operator?: string) => void
+    (value: SentenceValueId, text: string, move: CellCommitMove, operator?: FixtureOperator) => void
   >;
-  onCommitValues: Mock<DecisionTextEdit<FixtureType>['onCommit']>;
-  onCancel: Mock<NonNullable<DecisionTextEdit<FixtureType>['onCancel']>>;
-  onClearCell: Mock<DecisionTextEdit<FixtureType>['onClearCell']>;
+  onCommitValues: Mock<FixtureEdit['onCommit']>;
+  onCancel: Mock<NonNullable<FixtureEdit['onCancel']>>;
+  onClearCell: Mock<FixtureEdit['onClearCell']>;
 }
 
 interface EditingHostProps extends Omit<SelectableProps, 'initial' | 'onSelect' | 'edit'> {
@@ -222,10 +226,10 @@ interface EditingHostProps extends Omit<SelectableProps, 'initial' | 'onSelect' 
   initial?: SentenceSelection | null;
   initialEditing?: SentenceValueId | null;
   refuse?: boolean;
-  renderEditor?: DecisionTextEdit<FixtureType>['renderEditor'];
-  valueField?: DecisionTextEdit<FixtureType>['valueField'];
-  column?: DecisionTextEdit<FixtureType>['column'];
-  inputIds?: DecisionTextEdit<FixtureType>['inputIds'];
+  renderEditor?: FixtureEdit['renderEditor'];
+  valueField?: FixtureEdit['valueField'];
+  column?: FixtureEdit['column'];
+  inputIds?: FixtureEdit['inputIds'];
 }
 
 const EditingHost = ({
@@ -233,7 +237,7 @@ const EditingHost = ({
   initialEditing = null,
   refuse = false,
   renderEditor,
-  valueField,
+  valueField = outcomeField,
   column,
   inputIds,
   ...props
@@ -257,8 +261,8 @@ const EditingHost = ({
         },
         onCommit: (value, commit, move) => {
           spies.onCommitValues(value, commit, move);
-          const text = commit.kind === 'expression' ? commit.text : (commit.values[0] ?? '');
-          const operator = commit.kind === 'values' ? commit.operator : undefined;
+          const text = commit.kind === 'expression' ? commit.text : (valuesOf(commit)[0] ?? '');
+          const operator = 'operator' in commit ? commit.operator : undefined;
           if (operator === undefined) spies.onCommit(value, text, move);
           else spies.onCommit(value, text, move, operator);
           if (refuse) setRefusals(refusals + 1);
@@ -297,19 +301,47 @@ const valueChipAt = (rowId: string, columnId: string, index: number) => {
 const secondAge = () => valueChipAt('r2', 'age', 1);
 const editor = () => screen.getByTestId('nl-editor') as HTMLInputElement;
 const r2Age = (index: number): SentenceValueId => ({ rowId: 'r2', columnId: 'age', index });
-const valuesOf = (commit: ValueCommit) => {
-  if (commit.kind !== 'values') throw new Error(`an expression commit, ${commit.text}`);
-  return commit.values;
+const valuesOf = (commit: ValueCommit<FixtureOperator>): readonly string[] => {
+  switch (commit.kind) {
+    case 'outcome':
+    case 'single':
+      return [commit.value];
+    case 'range':
+      return [commit.low, commit.high];
+    case 'list':
+      return commit.values;
+    case 'valueless':
+      return [];
+    case 'expression':
+      throw new Error(`an expression commit, ${commit.text}`);
+  }
 };
-const editWith = (
-  overrides: Partial<DecisionTextEdit<FixtureType>> = {}
-): DecisionTextEdit<FixtureType> => ({
+type ConditionField = Extract<ValueFieldData<FixtureOperator>, { kind: 'condition' }>;
+const conditionField = (
+  operators: readonly FixtureOffer[],
+  held: HeldValues<FixtureOperator>,
+  more: Partial<Pick<ConditionField, 'expression' | 'allowedValues'>> = {}
+): ConditionField => ({
+  kind: 'condition',
+  allowedValues: [],
+  expression: '',
+  operators,
+  held,
+  ...more,
+});
+const single = (operator: FixtureOperator, value = ''): HeldValues<FixtureOperator> => ({
+  shape: 'single',
+  operator,
+  value,
+});
+const editWith = (overrides: Partial<FixtureEdit> = {}): FixtureEdit => ({
   editing: null,
   onStartEdit: vi.fn(),
   onCommit: vi.fn(),
   onCancel: vi.fn(),
   onClearCell: vi.fn(),
   onDeleteRule: vi.fn(),
+  valueField: outcomeField,
   ...overrides,
 });
 
@@ -3313,9 +3345,9 @@ describe('DecisionText', () => {
       uninstallInertness = installModalInertness();
     });
     afterAll(() => uninstallInertness());
-    const AGE_OPERATORS = [
-      { id: '<', label: 'is less than' },
-      { id: '>', label: 'is greater than' },
+    const AGE_OFFERS: readonly FixtureOffer[] = [
+      { operator: '<', label: OPERATOR_WORDS['<'], shape: 'single' },
+      { operator: '>', label: OPERATOR_WORDS['>'], shape: 'single' },
     ];
     const RISKS = ['"high"', '"standard"', '"review"'];
     const r1Age: SentenceValueId = { rowId: 'r1', columnId: 'age', index: 0 };
@@ -3328,15 +3360,10 @@ describe('DecisionText', () => {
         { id: 'channel', name: 'channel', type: 'text' as const },
       ],
     };
-    const field = (cell: SentenceCellId): ValueField => {
-      if (cell.columnId === 'risk') return { allowedValues: RISKS };
-      if (cell.columnId === 'channel') return { operators: AGE_OPERATORS, operator: '>' };
-      return {
-        icon: <svg data-testid="type-icon" />,
-        operators: AGE_OPERATORS,
-        operator: '<',
-        expression: '< 25',
-      };
+    const field = (cell: SentenceCellId): ValueFieldData<FixtureOperator> => {
+      if (cell.columnId === 'risk') return { kind: 'outcome', allowedValues: RISKS };
+      if (cell.columnId === 'channel') return conditionField(AGE_OFFERS, single('>'));
+      return conditionField(AGE_OFFERS, single('<', '25'), { expression: '< 25' });
     };
     const popover = () => screen.getByTestId('nl-value-editor');
     const inPopover = () => within(popover());
@@ -3438,23 +3465,18 @@ describe('DecisionText', () => {
       );
     });
 
-    it.each([
-      ['its column', undefined, 'lucide lucide-hash'],
-      ['the host', <svg key="host" data-testid="host-icon" />, null],
-    ])('titles the popover with the glyph %s gives', (_, icon, glyph) => {
-      renderEditing({
-        initialEditing: r1Age,
-        valueField: (cell) => ({ ...field(cell), icon }),
-        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
-      });
-      const svg = popover().querySelector('svg');
-      expect(svg?.getAttribute('class') ?? null).toBe(glyph);
-      expect(inPopover().queryByTestId('host-icon') !== null).toBe(icon !== undefined);
+    it("titles the popover with its column's type glyph", () => {
+      renderEditing({ initialEditing: r1Risk, valueField: field });
+      expect(popover().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-type');
     });
 
     it("titles the popover with the column's type glyph and name, over the cell's operator and value", () => {
-      renderEditing({ initialEditing: r1Age, valueField: field });
-      expect(inPopover().getByTestId('type-icon')).toBeInTheDocument();
+      renderEditing({
+        initialEditing: r1Age,
+        valueField: field,
+        inputs: GRID_SENTENCE_COLUMNS.inputs.map((column) => ({ ...column, type: 'number' })),
+      });
+      expect(popover().querySelector('svg')?.getAttribute('class')).toBe('lucide lucide-hash');
       expect(inPopover().getByText('age')).toBeInTheDocument();
       expect(operatorSelect()).toHaveTextContent('is less than');
       expect(editor()).toHaveValue('25');
@@ -3496,31 +3518,13 @@ describe('DecisionText', () => {
       expect(editor()).toBeInTheDocument();
     });
 
-    it("shows an operator the host's operators lack as it is, and keeps it offered once another is picked", async () => {
-      const user = userEvent.setup();
-      const { onCommit } = renderEditing({
+    it('opens a condition whose operator the host does not offer as its expression', () => {
+      renderEditing({
         initialEditing: r1Age,
-        valueField: () => ({ operators: AGE_OPERATORS, operator: '!=' }),
+        valueField: () => conditionField(AGE_OFFERS, single('!=', '25'), { expression: '!= 25' }),
       });
-      expect(operatorSelect()).toHaveTextContent('!=');
-      await user.click(operatorSelect());
-      await user.click(screen.getByRole('option', { name: 'is greater than' }));
-      await user.click(operatorSelect());
-      await user.click(screen.getByRole('option', { name: '!=' }));
-      fireEvent.keyDown(editor(), { key: 'Enter' });
-      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', '!=']]);
-    });
-
-    it('starts a condition whose field offers operators but names none on the first of them, and commits it', () => {
-      const { onCommit } = renderEditing({
-        initialEditing: r1Age,
-        valueField: () => ({ operators: AGE_OPERATORS }),
-      });
-      const [first] = AGE_OPERATORS;
-      if (!first) throw new Error('no age operator');
-      expect(operatorSelect()).toHaveTextContent(first.label);
-      fireEvent.keyDown(editor(), { key: 'Enter' });
-      expect(onCommit.mock.calls).toEqual([[r1Age, '25', 'down', first.id]]);
+      expect(inPopover().queryByRole('combobox', { name: 'Operator' })).toBeNull();
+      expect(inPopover().getByRole('textbox')).toHaveValue('!= 25');
     });
 
     it('commits the picked operator with the value on Enter, and moves down as before', () => {
@@ -3581,7 +3585,7 @@ describe('DecisionText', () => {
     it('shows a value the column does not allow as the checked radio after the allowed ones, marked not allowed', () => {
       const { onCommit } = renderEditing({
         initialEditing: r1Risk,
-        valueField: () => ({ allowedValues: ['"standard"', '"review"'] }),
+        valueField: () => ({ kind: 'outcome', allowedValues: ['"standard"', '"review"'] }),
       });
       const high = inPopover().getByRole('radio', { name: '"high"' });
       expect(inPopover().getAllByRole('radio').indexOf(high)).toBe(2);
@@ -3602,7 +3606,7 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         hitPolicy: MULTI_SENTENCE_POLICY,
         initialEditing: m2Reason,
-        valueField: () => ({ allowedValues: ['"prime"', '"low score"'] }),
+        valueField: () => ({ kind: 'outcome', allowedValues: ['"prime"', '"low score"'] }),
       });
       const radios = inPopover().getAllByRole('radio');
       expect(radios).toHaveLength(2);
@@ -3619,7 +3623,10 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         hitPolicy: MULTI_SENTENCE_POLICY,
         initialEditing: m2Reason,
-        valueField: () => ({ allowedValues: ['', '"prime"', ' ', '"prime"', '"low score"'] }),
+        valueField: () => ({
+          kind: 'outcome',
+          allowedValues: ['', '"prime"', ' ', '"prime"', '"low score"'],
+        }),
       });
       const radios = inPopover().getAllByRole('radio');
       expect(radios.map((radio) => radio.getAttribute('value'))).toEqual([
@@ -3629,19 +3636,36 @@ describe('DecisionText', () => {
       expect(radios.filter((radio) => radio.getAttribute('aria-checked') === 'true')).toEqual([]);
     });
 
-    it("offers the host's operators without their empty or repeated ids", () => {
+    it("offers the host's operators without their repeated ones", () => {
       renderEditing({
         initialEditing: r1Age,
-        valueField: () => ({
-          operators: [{ id: '', label: 'any' }, ...AGE_OPERATORS, { id: '<', label: 'below' }],
-          operator: '<',
-        }),
+        valueField: () =>
+          conditionField(
+            [...AGE_OFFERS, { operator: '<', label: OPERATOR_WORDS['<'], shape: 'single' }],
+            single('<')
+          ),
       });
       fireEvent.click(operatorSelect());
       expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
         'is less than',
         'is greater than',
       ]);
+    });
+
+    it('returns focus to the operator once a key picks one that takes no value', async () => {
+      renderEditing({
+        initialEditing: r1Age,
+        valueField: () =>
+          conditionField([...AGE_OFFERS, offerOf('isEmpty', 'valueless')], single('<', '25')),
+      });
+      const value = inPopover().getByRole('textbox');
+      act(() => value.focus());
+      fireEvent.keyDown(value, { key: 'ArrowDown', altKey: true });
+      const option = screen.getByRole('option', { name: 'is empty' });
+      act(() => option.focus());
+      fireEvent.keyDown(option, { key: 'Enter' });
+      expect(inPopover().queryByRole('textbox')).toBeNull();
+      await waitFor(() => expect(document.activeElement).toBe(operatorSelect()));
     });
 
     it('opens the operator list from an allowed value on Alt+ArrowDown, and returns focus to it on a pick', () => {
@@ -3651,11 +3675,10 @@ describe('DecisionText', () => {
         ...MULTI_SENTENCE_COLUMNS,
         hitPolicy: MULTI_SENTENCE_POLICY,
         initialEditing: m3Channel,
-        valueField: () => ({
-          operators: AGE_OPERATORS,
-          operator: '<',
-          allowedValues: ['"web"', '"branch"'],
-        }),
+        valueField: () =>
+          conditionField(AGE_OFFERS, single('<', '"branch"'), {
+            allowedValues: ['"web"', '"branch"'],
+          }),
       });
       const branch = inPopover().getByRole('radio', { name: '"branch"' });
       expect(branch).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowDown Alt+ArrowUp');
@@ -3757,20 +3780,11 @@ describe('DecisionText', () => {
         expect(screen.getByTestId('host-editor')).toHaveValue('< 25');
         fireEvent.click(action('Apply'));
         expect(onCommitValues.mock.calls).toEqual([
-          [r1Age, { kind: 'values', values: ['25'], operator: '<' }, 'none'],
+          [r1Age, { kind: 'single', operator: '<', value: '25' }, 'none'],
         ]);
       });
 
-      it('offers no Edit expression on a condition with operators the host gives no expression for', () => {
-        renderEditing({
-          initialEditing: r1Age,
-          valueField: () => ({ operators: AGE_OPERATORS, operator: '<' }),
-          renderEditor: hostInput,
-        });
-        expect(inPopover().queryByRole('button', { name: 'Edit expression' })).toBeNull();
-      });
-
-      it('tells the host an expression commit from a values commit by its kind', () => {
+      it('tells the host an expression commit from a condition commit by its kind', () => {
         const { onCommitValues } = renderEditing({
           initialEditing: r1Age,
           valueField: field,
@@ -3784,7 +3798,7 @@ describe('DecisionText', () => {
         fireEvent.change(input, { target: { value: '< 30' } });
         fireEvent.keyDown(input, { key: 'Enter' });
         expect(onCommitValues.mock.calls.map(([, commit]) => commit)).toEqual([
-          { kind: 'values', values: ['30'], operator: '<' },
+          { kind: 'single', operator: '<', value: '30' },
           { kind: 'expression', text: '< 30' },
         ]);
       });
@@ -3848,7 +3862,7 @@ describe('DecisionText', () => {
         const user = userEvent.setup();
         const { onCommitValues } = renderEditing({
           initialEditing: r3Channel,
-          valueField: () => ({}),
+          valueField: () => conditionField(AGE_OFFERS, single('<')),
           ...CHANNEL_COLUMNS,
           renderEditor: hostInput,
         });
@@ -3866,7 +3880,7 @@ describe('DecisionText', () => {
       it('applies an expression typed for a condition added from +, though its own fields hold no value', () => {
         const { onCommitValues } = renderEditing({
           initialEditing: r3Channel,
-          valueField: () => ({}),
+          valueField: () => conditionField(AGE_OFFERS, single('<')),
           ...CHANNEL_COLUMNS,
           renderEditor: hostInput,
         });
@@ -3880,16 +3894,12 @@ describe('DecisionText', () => {
         ]);
       });
 
-      it.each<[string, ValueField, string]>([
+      it.each<[string, ValueFieldData<FixtureOperator>, string]>([
+        ['the operator the field holds', conditionField(AGE_OFFERS, single('<')), 'is less than'],
         [
-          'the first operator when the field names none',
-          { operators: AGE_OPERATORS },
-          'is less than',
-        ],
-        [
-          'an operator the host lacks, as the select shows it',
-          { operators: AGE_OPERATORS, operator: '!=' },
-          '!=',
+          'the operator it repeats first',
+          conditionField([...AGE_OFFERS, ...AGE_OFFERS], single('>')),
+          'is greater than',
         ],
       ])('words a pending line with %s', (_, pendingField, words) => {
         renderEditing({
@@ -4036,40 +4046,58 @@ describe('DecisionText', () => {
       expect(card('r3').querySelector('li[data-pending]')).toBeNull();
     });
 
-    it('words a pending line without an operator when the host offers none', () => {
-      renderEditing({ initialEditing: r3Channel, ...CHANNEL_COLUMNS });
+    it('words a pending line without an operator for a field only its expression shows', () => {
+      renderEditing({
+        initialEditing: r3Channel,
+        valueField: () => ({ kind: 'expression', allowedValues: [], expression: '' }),
+        ...CHANNEL_COLUMNS,
+      });
       expect(card('r3').querySelector('li[data-pending]')).toHaveTextContent(
         /^channel Set a value$/
       );
     });
 
     describe('ranges and lists', () => {
-      const SHAPED_OPERATORS: ValueOperatorOption[] = [
-        { id: '<', label: 'is less than' },
-        { id: 'between', label: 'is between', shape: 'range' },
-        { id: 'oneOf', label: 'is one of', shape: 'list' },
-        { id: 'noneOf', label: 'is none of', shape: 'list' },
+      const SHAPED_OFFERS: readonly FixtureOffer[] = [
+        { operator: '<', label: OPERATOR_WORDS['<'], shape: 'single' },
+        { operator: 'between', label: OPERATOR_WORDS['between'], shape: 'range' },
+        { operator: 'oneOf', label: OPERATOR_WORDS['oneOf'], shape: 'list' },
+        { operator: 'noneOf', label: OPERATOR_WORDS['noneOf'], shape: 'list' },
       ];
       const COUNTRIES = ['"US"', '"CA"', '"MX"', '"GB"', '"DE"'];
       const BOTH_INCLUDED = { lowInclusive: true, highInclusive: true };
-      const inOrder = (low: string, high: string) => Number(low) <= Number(high);
       const at = (rowId: string, columnId: string, index = 0): SentenceValueId => ({
         rowId,
         columnId,
         index,
       });
-      const shapedField = (cell: SentenceCellId): ValueField => {
-        const base = { operators: SHAPED_OPERATORS, inOrder };
+      const shapedField = (cell: SentenceCellId): ConditionField => {
         if (cell.rowId === 'm1' && cell.columnId === 'score') {
-          return { ...base, operator: 'between', values: ['700', '850'], ends: BOTH_INCLUDED };
+          return conditionField(SHAPED_OFFERS, {
+            shape: 'range',
+            operator: 'between',
+            low: '700',
+            high: '850',
+            ends: BOTH_INCLUDED,
+          });
         }
         if (cell.rowId === 'm1' && cell.columnId === 'country') {
-          return { ...base, operator: 'oneOf', values: COUNTRIES };
+          return conditionField(SHAPED_OFFERS, {
+            shape: 'list',
+            operator: 'oneOf',
+            values: COUNTRIES,
+          });
         }
         if (cell.rowId === 'm2' && cell.columnId === 'country') {
-          return { ...base, operator: 'noneOf', values: ['"RU"', '"KP"'] };
+          return conditionField(SHAPED_OFFERS, {
+            shape: 'list',
+            operator: 'noneOf',
+            values: ['"RU"', '"KP"'],
+          });
         }
-        return { ...base, operator: '<' };
+        const rule = MULTI_SENTENCE_RULES.find(({ rowId }) => rowId === cell.rowId);
+        const token = rule && valueTokenOf(rule, { ...cell, index: 0 });
+        return conditionField(SHAPED_OFFERS, single('<', token?.text ?? ''));
       };
       const renderShaped = (props: Omit<EditingHostProps, 'spies'> = {}) =>
         renderEditing({
@@ -4104,9 +4132,10 @@ describe('DecisionText', () => {
           [
             at('m1', 'score', 1),
             {
-              kind: 'values',
-              values: ['650', '850'],
+              kind: 'range',
               operator: 'between',
+              low: '650',
+              high: '850',
               ends: { lowInclusive: true, highInclusive: false },
             },
             'down',
@@ -4114,13 +4143,11 @@ describe('DecisionText', () => {
         ]);
       });
 
-      it('keeps Apply off while an end is empty or the ends are out of order, committing nothing on Enter or a blur', () => {
+      it('keeps Apply off while an end is empty, committing nothing on Enter or a blur', () => {
         const { onCommitValues } = renderShaped({ initialEditing: at('m1', 'score') });
         fireEvent.change(endField('To'), { target: { value: '' } });
         expect(action('Apply')).toBeDisabled();
         fireEvent.keyDown(endField('From'), { key: 'Enter' });
-        fireEvent.change(endField('To'), { target: { value: '600' } });
-        expect(action('Apply')).toBeDisabled();
         fireEvent.keyDown(included('To'), { key: 'Enter' });
         fireEvent.blur(endField('To'), { relatedTarget: card('m2') });
         expect(onCommitValues).not.toHaveBeenCalled();
@@ -4131,7 +4158,7 @@ describe('DecisionText', () => {
         expect(onCommitValues.mock.calls).toEqual([
           [
             at('m1', 'score'),
-            { kind: 'values', values: ['700', '700'], operator: 'between', ends: BOTH_INCLUDED },
+            { kind: 'range', operator: 'between', low: '700', high: '700', ends: BOTH_INCLUDED },
             'none',
           ],
         ]);
@@ -4152,7 +4179,7 @@ describe('DecisionText', () => {
         expect(onCommitValues.mock.calls).toEqual([
           [
             at('m3', 'score'),
-            { kind: 'values', values: ['600', '650'], operator: 'between', ends: BOTH_INCLUDED },
+            { kind: 'range', operator: 'between', low: '600', high: '650', ends: BOTH_INCLUDED },
             'down',
           ],
         ]);
@@ -4190,9 +4217,9 @@ describe('DecisionText', () => {
           [
             at('m1', 'country', 2),
             {
-              kind: 'values',
-              values: ['"US"', '"CA"', '"GB"', '"DE"', '"FR"', '"IT"'],
+              kind: 'list',
               operator: 'oneOf',
+              values: ['"US"', '"CA"', '"GB"', '"DE"', '"FR"', '"IT"'],
             },
             'down',
           ],
@@ -4228,7 +4255,7 @@ describe('DecisionText', () => {
         expect(inPopover().getByRole('radio', { name: '"KP"' })).toBeInTheDocument();
         fireEvent.click(action('Apply'));
         expect(onCommitValues.mock.calls).toEqual([
-          [at('m2', 'country', 1), { kind: 'values', values: [kept], operator: '<' }, 'none'],
+          [at('m2', 'country', 1), { kind: 'single', operator: '<', value: kept }, 'none'],
         ]);
       });
 
@@ -4251,7 +4278,7 @@ describe('DecisionText', () => {
         expect(onCommitValues.mock.calls).toEqual([
           [
             at('m2', 'country'),
-            { kind: 'values', values: ['"RU"', '"KP"', '"CN"'], operator: 'noneOf' },
+            { kind: 'list', operator: 'noneOf', values: ['"RU"', '"KP"', '"CN"'] },
             'none',
           ],
         ]);
@@ -4262,7 +4289,7 @@ describe('DecisionText', () => {
           initialEditing: at('m2', 'country'),
           valueField: (cell) => ({
             ...shapedField(cell),
-            values: ['"KP"', '"RU"'],
+            held: { shape: 'list', operator: 'noneOf', values: ['"KP"', '"RU"'] },
             allowedValues: ['"RU"', '"CN"'],
           }),
         });
@@ -4286,7 +4313,7 @@ describe('DecisionText', () => {
           initialEditing: at('m2', 'country'),
           valueField: (cell) => ({
             ...shapedField(cell),
-            values: ['"KP"', '"RU"'],
+            held: { shape: 'list', operator: 'noneOf', values: ['"KP"', '"RU"'] },
             allowedValues: ['"RU"', '"CN"'],
           }),
         });
@@ -4302,7 +4329,8 @@ describe('DecisionText', () => {
         renderShaped({
           rules: [longValueListRule(25)],
           initialEditing: at('long-list', 'country'),
-          valueField: () => ({ operators: SHAPED_OPERATORS, operator: 'oneOf', values: countries }),
+          valueField: () =>
+            conditionField(SHAPED_OFFERS, { shape: 'list', operator: 'oneOf', values: countries }),
         });
         expect(inPopover().getAllByRole('checkbox')).toHaveLength(25);
         expect(box('"Country 25"')).toBeChecked();
@@ -4318,7 +4346,7 @@ describe('DecisionText', () => {
         fireEvent.click(box('"KP"'));
         fireEvent.click(action('Apply'));
         expect(onCommitValues.mock.calls).toEqual([
-          [at('m2', 'country'), { kind: 'values', values: ['"KP"'], operator: 'noneOf' }, 'none'],
+          [at('m2', 'country'), { kind: 'list', operator: 'noneOf', values: ['"KP"'] }, 'none'],
         ]);
       });
 
@@ -4347,7 +4375,7 @@ describe('DecisionText', () => {
         expect(onCancel).toHaveBeenCalledTimes(1);
       });
 
-      it('says why Apply is off: an empty end, ends out of order, or nothing checked', async () => {
+      it('says why Apply is off: an empty end or nothing checked', async () => {
         renderShaped({ initialEditing: at('m1', 'score') });
         fireEvent.change(endField('To'), { target: { value: '' } });
         expect(action('Apply')).toBeDisabled();
@@ -4355,8 +4383,6 @@ describe('DecisionText', () => {
         expect(endField('To')).toHaveAccessibleDescription('Enter both ends');
         expect(endField('From')).toHaveAttribute('aria-invalid', 'false');
         expect(await axe(popover())).toHaveNoViolations();
-        fireEvent.change(endField('To'), { target: { value: '600' } });
-        expect(endField('To')).toHaveAccessibleDescription('From must not be past To');
         fireEvent.change(endField('To'), { target: { value: '900' } });
         expect(endField('To')).not.toHaveAccessibleDescription();
         expect(action('Apply')).toBeEnabled();
@@ -4367,32 +4393,6 @@ describe('DecisionText', () => {
         expect(action('Apply')).toBeDisabled();
         expect(box('"RU"').closest('fieldset')).toHaveAccessibleDescription('Check a value');
         expect(await axe(popover())).toHaveNoViolations();
-      });
-
-      it.each<[string, ValueField, ValueCommit]>([
-        [
-          'range',
-          {
-            operators: AGE_OPERATORS,
-            operator: 'between',
-            values: ['700', '850'],
-            ends: BOTH_INCLUDED,
-          },
-          { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
-        ],
-        [
-          'list',
-          { operators: AGE_OPERATORS, operator: 'anyOf', values: ['"US"', '"CA"'] },
-          { kind: 'values', values: ['"US"', '"CA"'], operator: 'anyOf' },
-        ],
-      ])('keeps the %s of an operator the host does not offer, applying all its values', (_, lacking, applied) => {
-        const { onCommitValues } = renderShaped({
-          initialEditing: at('m1', 'score'),
-          valueField: () => lacking,
-        });
-        expect(operatorSelect()).toHaveTextContent(lacking.operator ?? '');
-        fireEvent.click(action('Apply'));
-        expect(onCommitValues.mock.calls).toEqual([[at('m1', 'score'), applied, 'none']]);
       });
 
       it.each<[string, () => void]>([
@@ -4461,14 +4461,13 @@ describe('DecisionText', () => {
         expect(onCommitValues.mock.calls).toEqual([
           [
             at('m1', 'score', 1),
-            { kind: 'values', values: ['700', '850'], operator: 'between', ends: BOTH_INCLUDED },
+            { kind: 'range', operator: 'between', low: '700', high: '850', ends: BOTH_INCLUDED },
             'none',
           ],
         ]);
       });
     });
   });
-
   describe('column popover', () => {
     let uninstallInertness: () => void = () => {};
     beforeAll(() => {
@@ -5165,7 +5164,7 @@ describe('DecisionText', () => {
   describe('rule menu', () => {
     const actions = (rowId: string) =>
       within(card(rowId)).getByRole('button', { name: `Rule ${rowId.slice(1)} actions` });
-    const renderMenus = (overrides: Partial<DecisionTextEdit<FixtureType>> = {}) =>
+    const renderMenus = (overrides: Partial<FixtureEdit> = {}) =>
       render(
         view({
           rules: GRID_SENTENCE_RULES,
@@ -5184,7 +5183,7 @@ describe('DecisionText', () => {
       change: RuleChange;
       next?: string;
       initial?: string;
-      onDeleteRule?: DecisionTextEdit<FixtureType>['onDeleteRule'];
+      onDeleteRule?: FixtureEdit['onDeleteRule'];
       late?: boolean;
     }
     const RuleChangeHost = ({

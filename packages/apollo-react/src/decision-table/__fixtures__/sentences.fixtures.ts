@@ -11,6 +11,7 @@ import type {
   SentenceRule,
   SentenceValueToken,
 } from '../sentenceTypes';
+import type { OperatorOffer } from '../valueTypes';
 
 /** Makes a cell's value token from its text and its place among the cell's values. */
 type ValueMaker = (text: string, index?: number) => SentenceValueToken;
@@ -44,6 +45,28 @@ export const COLUMN_TYPES: readonly ColumnTypeOption<FixtureType>[] = [
   { type: 'text', label: 'Text', icon: createElement(TextGlyph), example: '"web", "app"' },
   { type: 'number', label: 'Number', icon: createElement(Hash), example: '10, 20' },
 ];
+
+/** The fixtures' operators: at least one per value shape, and one no offer lists. */
+export type FixtureOperator = '<' | '>' | '!=' | 'between' | 'oneOf' | 'noneOf' | 'isEmpty';
+export type FixtureOffer = OperatorOffer<FixtureOperator>;
+
+/** Each fixture operator's words. */
+export const OPERATOR_WORDS: Readonly<Record<FixtureOperator, string>> = {
+  '<': 'is less than',
+  '>': 'is greater than',
+  '!=': 'is not',
+  between: 'is between',
+  oneOf: 'is one of',
+  noneOf: 'is none of',
+  isEmpty: 'is empty',
+};
+
+/** An offer of an operator in its words. */
+export const offerOf = (operator: FixtureOperator, shape: FixtureOffer['shape']): FixtureOffer => ({
+  operator,
+  label: OPERATOR_WORDS[operator],
+  shape,
+});
 
 /** No inputs and no outputs, so no bands. */
 export const NO_COLUMNS: SentenceColumns = { inputs: [], outputs: [] };

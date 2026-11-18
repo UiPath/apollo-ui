@@ -127,9 +127,10 @@ export type { ValuePopoverProps } from './ValuePopover';
 export type {
   ExpressionEditorHandle,
   ExpressionEditorProps,
+  HeldValues,
+  OperatorOffer,
   RangeEnds,
   ValueCommit,
-  ValueField,
-  ValueOperatorOption,
+  ValueFieldData,
   ValueShape,
 } from './valueTypes';

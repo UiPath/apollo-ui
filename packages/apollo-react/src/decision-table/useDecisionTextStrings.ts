@@ -136,10 +136,6 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
       addValue: _({ id: 'decision-text.add_value', message: 'Add value' }),
       missingValue: _({ id: 'decision-text.missing_value', message: 'Enter a value' }),
       missingEnd: _({ id: 'decision-text.missing_end', message: 'Enter both ends' }),
-      endsOutOfOrder: _({
-        id: 'decision-text.ends_out_of_order',
-        message: 'From must not be past To',
-      }),
       noValueChecked: _({ id: 'decision-text.no_value_checked', message: 'Check a value' }),
       cancel: _({ id: 'decision-text.cancel', message: 'Cancel' }),
       apply: _({ id: 'decision-text.apply', message: 'Apply' }),

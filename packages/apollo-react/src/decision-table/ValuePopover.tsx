@@ -10,7 +10,12 @@ import { PopoverSelect } from './PopoverSelect';
 import { POPOVER_CLASS, POPOVER_ERROR_CLASS } from './sentenceStyles';
 import { type DraftProblemLabels, useShapeDraft } from './useShapeDraft';
 import { ValueFields, type ValueFieldsLabels } from './ValueFields';
-import type { CommitRefusal, ExpressionEditorProps, ValueCommit, ValueField } from './valueTypes';
+import type {
+  CommitRefusal,
+  ExpressionEditorProps,
+  ValueCommit,
+  ValueFieldData,
+} from './valueTypes';
 
 /** The popover's strings. */
 export interface ValuePopoverLabels
@@ -33,13 +38,15 @@ export interface ValuePopoverProps
   extends Pick<ExpressionEditorProps, 'target' | 'value' | 'ariaLabel'>,
     Pick<GridCellEditorContext, 'onCancel'> {
   column: string;
-  field: ValueField;
+  /** The column type's glyph, before its name. */
+  icon: React.ReactNode;
+  field: ValueFieldData<number>;
   /** Whether the condition is one the rule does not have yet, which needs a value to apply. */
   adds: boolean;
-  /** A values commit's operator is the picked one of the field's, undefined without operators; `refocus` when focus was inside the popover, so an in-place commit returns it to the value. */
-  onCommit: (commit: ValueCommit, move: CellCommitMove, refocus: boolean) => void;
-  /** The operator the select picks, before it commits. */
-  onOperatorChange: (id: string) => void;
+  /** `refocus` when focus was inside the popover, so an in-place commit returns it to the value. */
+  onCommit: (commit: ValueCommit<number>, move: CellCommitMove, refocus: boolean) => void;
+  /** The place among the host's operators of the one the select picks, before it commits. */
+  onOperatorChange: (place: number) => void;
   /** Empties an outcome; undefined for a condition or an empty outcome. */
   onClear: (() => void) | undefined;
   /** The host's expression editor, which Edit expression swaps in for the fields on the whole condition; without it the popover's own text field. */
@@ -51,17 +58,8 @@ export interface ValuePopoverProps
   dataTestId: string;
 }
 
-const sameCommit = (a: ValueCommit, b: ValueCommit): boolean => {
-  if (a.kind === 'expression') return b.kind === 'expression' && a.text === b.text;
-  if (b.kind === 'expression') return false;
-  return (
-    a.operator === b.operator &&
-    a.values.length === b.values.length &&
-    a.values.every((value, index) => value === b.values[index]) &&
-    a.ends?.lowInclusive === b.ends?.lowInclusive &&
-    a.ends?.highInclusive === b.ends?.highInclusive
-  );
-};
+const sameCommit = (a: ValueCommit<number>, b: ValueCommit<number>): boolean =>
+  JSON.stringify(a) === JSON.stringify(b);
 
 const OPERATOR_SHORTCUTS = 'Alt+ArrowDown Alt+ArrowUp';
 
@@ -97,6 +95,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       value,
       ariaLabel,
       column,
+      icon,
       field,
       adds,
       onCommit,
@@ -121,9 +120,9 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
     const draftRef = useRef(value);
     const seedRef = useRef<string | null>(null);
     const shapeDraft = useShapeDraft(field, value, adds);
-    const { operators, current, problem } = shapeDraft;
+    const { picker, current, problem } = shapeDraft;
     const [opened] = useState(current);
-    const fieldsChanged = field.expression !== undefined && !sameCommit(current, opened);
+    const fieldsChanged = field.kind !== 'outcome' && !sameCommit(current, opened);
     const expression = seed !== null;
     const holdFocus = (element: HTMLElement | null) => {
       focusRef.current = element;
@@ -132,7 +131,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       draftRef.current = next;
       setDraft(next);
     };
-    const settling = (): ValueCommit | null => {
+    const settling = (): ValueCommit<number> | null => {
       const text = draftRef.current;
       const seed = seedRef.current;
       if (seed !== null && (text !== seed || fieldsChanged)) return { kind: 'expression', text };
@@ -140,7 +139,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
     };
 
     const focusInside = (): boolean => root?.contains(activeElementOf(root)) ?? false;
-    const commit = (next: ValueCommit, move: CellCommitMove, refocus = focusInside()) => {
+    const commit = (next: ValueCommit<number>, move: CellCommitMove, refocus = focusInside()) => {
       onCommit(next, move, refocus);
     };
     const settle = (move: CellCommitMove) => {
@@ -152,14 +151,16 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
     }));
     const pick = (next: string) => {
       shapeDraft.setText(next);
-      commit({ kind: 'values', values: [next], operator: shapeDraft.picked }, 'none');
+      commit(shapeDraft.commitOf(next), 'none');
     };
     const changeOperator = (id: string) => {
-      shapeDraft.changeOperator(id);
-      onOperatorChange(id);
+      const picked = picker?.operators.find((option) => option.id === id);
+      if (!picked) return;
+      shapeDraft.changeOperator(picked.place);
+      onOperatorChange(picked.place);
     };
     const openOperators = (event: React.KeyboardEvent<HTMLElement>): boolean => {
-      if (operators.length === 0 || !event.altKey || !isListKey(event.key)) return false;
+      if (!picker || !event.altKey || !isListKey(event.key)) return false;
       event.preventDefault();
       setListOpen(true);
       return true;
@@ -178,19 +179,16 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       event.preventDefault();
       settle('down');
     };
-    const editExpression =
-      field.expression !== undefined || operators.length === 0
-        ? () => {
-            const opened = field.expression ?? shapeDraft.text;
-            seedRef.current = opened;
-            changeDraft(opened);
-            setSeed(opened);
-          }
-        : undefined;
+    const editExpression = () => {
+      const opened = field.kind === 'outcome' ? shapeDraft.text : field.expression;
+      seedRef.current = opened;
+      changeDraft(opened);
+      setSeed(opened);
+    };
 
     return (
       <div ref={setRoot} className={POPOVER_CLASS}>
-        <PopoverHeader icon={field.icon} column={column} />
+        <PopoverHeader icon={icon} column={column} />
         {expression ? (
           <ExpressionEditorFrame
             renderEditor={renderEditor}
@@ -204,10 +202,10 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
           />
         ) : (
           <>
-            {operators.length > 0 && (
+            {picker && (
               <PopoverSelect
-                value={shapeDraft.operator ?? ''}
-                options={operators}
+                value={String(picker.operator)}
+                options={picker.operators}
                 onChange={changeOperator}
                 open={listOpen}
                 onOpenChange={setListOpen}
@@ -221,14 +219,13 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
               draft={shapeDraft}
               value={value}
               index={target.index}
-              values={field.values}
               column={column}
               ariaLabel={ariaLabel}
               onPick={pick}
               onFieldsKeyDown={onFieldsKeyDown}
               onValueKeyDown={onValueKeyDown}
               focusRef={holdFocus}
-              keyShortcuts={operators.length > 0 ? OPERATOR_SHORTCUTS : undefined}
+              keyShortcuts={picker ? OPERATOR_SHORTCUTS : undefined}
               describedBy={
                 [problem && problemId, refusal && refusalId].filter(Boolean).join(' ') || undefined
               }
@@ -253,7 +250,10 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
           onApply={() => settle('none')}
           apply={
             expression
-              ? { kind: 'editor', dimmed: draft === seed && !fieldsChanged && problem !== null }
+              ? {
+                  kind: 'editor',
+                  dimmed: draft === seed && !fieldsChanged && problem !== null,
+                }
               : { kind: 'fields', disabled: problem !== null }
           }
           labels={labels}

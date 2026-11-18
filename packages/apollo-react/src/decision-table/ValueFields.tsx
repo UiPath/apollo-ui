@@ -18,7 +18,6 @@ export interface ValueFieldsProps {
   draft: ShapeDraft;
   value: string;
   index: number;
-  values: readonly string[] | undefined;
   column: string;
   ariaLabel: string;
   onPick: AllowedValueListProps['onPick'];
@@ -33,21 +32,17 @@ export interface ValueFieldsProps {
   dataTestId: string;
 }
 
-/** The range ends the draft's problem is with: an empty one, or the high end of ends out of order. */
+/** The range ends the draft's problem is with: an empty one. */
 const invalidEnds = ({ problem, text, high }: ShapeDraft): Record<RangeEnd, boolean> => {
   const missing = problem === 'missingEnd';
-  return {
-    low: missing && text.trim() === '',
-    high: (missing && high.trim() === '') || problem === 'endsOutOfOrder',
-  };
+  return { low: missing && text.trim() === '', high: missing && high.trim() === '' };
 };
 
-/** The value a condition's operator takes: a range's ends, a list's values, an allowed value or a text field. */
+/** The value a condition's operator takes: a range's ends, a list's values, an allowed value, a text field, or none. */
 export const ValueFields: React.FC<ValueFieldsProps> = ({
   draft,
   value,
   index,
-  values,
   column,
   ariaLabel,
   onPick,
@@ -66,6 +61,7 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
     choices
       ? [...new Set(options)].filter((option) => option.trim() !== '' && !allowed.has(option))
       : [];
+  if (shape === 'valueless') return null;
   if (shape === 'range') {
     return (
       <div onKeyDown={onFieldsKeyDown}>
@@ -98,7 +94,7 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
           adding={draft.adding}
           onAddingChange={draft.setAdding}
           addLabel={labels.addValue}
-          focused={values?.[index] ?? checked[0] ?? listed[0]}
+          focused={draft.heldList[index] ?? checked[0] ?? listed[0]}
           focusRef={focusRef}
           label={column}
           describedBy={describedBy}

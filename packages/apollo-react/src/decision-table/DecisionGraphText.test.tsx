@@ -16,13 +16,11 @@ import {
   GRID_SENTENCE_POLICY,
   HIT_POLICIES,
   COLUMN_TYPES,
-  type FixtureType,
 } from './__fixtures__/sentences.fixtures';
-import { modeOf } from './__fixtures__/textMode';
+import { type FixtureEdit, modeOf, outcomeField } from './__fixtures__/textMode';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
-import type { DecisionTextEdit } from './decisionTextTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 import type { DecisionTextScroll } from './useRuleWindow';
 
@@ -36,7 +34,7 @@ const textBody = (
   scroll: DecisionTextScroll,
   selected: SentenceSelection | null = null,
   onSelect?: (selection: SentenceSelection | null) => void,
-  edit?: DecisionTextEdit<FixtureType>
+  edit?: FixtureEdit
 ) => (
   <DecisionText
     table={{ rules: RULES, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
@@ -335,12 +333,13 @@ describe('DecisionGraphText', () => {
   it('tells the host which decision it folds, and not the ones the host folds', async () => {
     const onCancel = vi.fn();
     const editing: SentenceValueId = { rowId: 'r1', columnId: 'age', index: 0 };
-    const edit: DecisionTextEdit<FixtureType> = {
+    const edit: FixtureEdit = {
       editing,
       onCommit: vi.fn(),
       onCancel,
       onClearCell: vi.fn(),
       onDeleteRule: vi.fn(),
+      valueField: outcomeField,
     };
     const onFold = vi.fn();
     const Host = () => {
@@ -537,6 +536,7 @@ describe('DecisionGraphText open', () => {
             onClearCell: () => {},
             onDeleteRule: () => {},
             onStartEdit,
+            valueField: outcomeField,
           }),
       })
     );

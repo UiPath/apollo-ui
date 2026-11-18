@@ -1,0 +1,32 @@
+import type { OperatorOffer, ValueCommit, ValueFieldData } from './valueTypes';
+
+const offeredOf = <Op>(operators: readonly OperatorOffer<Op>[]): readonly OperatorOffer<Op>[] =>
+  operators.filter(
+    (offer, place) => operators.findIndex((first) => first.operator === offer.operator) === place
+  );
+
+/** The host's field with each operator by its place among the offers, repeats dropped, a held operator it does not offer opened as its expression. */
+export const viewFieldOf = <Op>(field: ValueFieldData<Op>): ValueFieldData<number> => {
+  if (field.kind !== 'condition') return field;
+  const { held } = field;
+  const operators = offeredOf(field.operators);
+  const index = operators.findIndex((offer) => offer.operator === held.operator);
+  if (index < 0) {
+    return { kind: 'expression', allowedValues: field.allowedValues, expression: field.expression };
+  }
+  return {
+    ...field,
+    operators: operators.map((offer, place) => ({ ...offer, operator: place })),
+    held: { ...held, operator: index },
+  };
+};
+
+/** A commit with its operator's place among the offers, repeats dropped, turned back into the host's operator, or undefined when no offer is there. */
+export const hostCommitOf = <Op>(
+  commit: ValueCommit<number>,
+  operators: readonly OperatorOffer<Op>[]
+): ValueCommit<Op> | undefined => {
+  if (commit.kind === 'outcome' || commit.kind === 'expression') return commit;
+  const offer = offeredOf(operators).find((_offer, place) => place === commit.operator);
+  return offer && { ...commit, operator: offer.operator };
+};
