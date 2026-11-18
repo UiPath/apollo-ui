@@ -180,7 +180,7 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
       settle('down');
     };
     const editExpression = () => {
-      const opened = field.kind === 'outcome' ? shapeDraft.text : field.expression;
+      const opened = field.kind === 'condition' ? field.expression : shapeDraft.text;
       seedRef.current = opened;
       changeDraft(opened);
       setSeed(opened);
@@ -217,7 +217,6 @@ export const ValuePopover = forwardRef<ValuePopoverHandle, ValuePopoverProps>(
             )}
             <ValueFields
               draft={shapeDraft}
-              value={value}
               index={target.index}
               column={column}
               ariaLabel={ariaLabel}

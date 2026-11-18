@@ -971,6 +971,213 @@ describe('DecisionText popover field kinds', () => {
   });
 });
 
+describe('DecisionText popover keeps what the text field holds', () => {
+  it('opens Edit expression of an expression field on what was typed, and applies it', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={() => ({ kind: 'expression', allowedValues: [], expression: '< 600' })}
+        onCommit={onCommit}
+      />
+    );
+    await user.clear(popover().getByRole('textbox'));
+    await user.type(popover().getByRole('textbox'), '> 700');
+    await user.click(popover().getByRole('button', { name: 'Edit expression' }));
+    expect(screen.getByTestId('nl-editor-expression-editor')).toHaveValue('> 700');
+    await user.click(popover().getByRole('button', { name: 'Apply' }));
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'expression', text: '> 700' }, 'none'],
+    ]);
+  });
+
+  it('opens Edit expression of an outcome on what was typed, and applies it', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'limit')}
+        valueField={() => ({ kind: 'outcome', allowedValues: [] })}
+        onCommit={onCommit}
+      />
+    );
+    await user.clear(popover().getByRole('textbox'));
+    await user.type(popover().getByRole('textbox'), '250');
+    await user.click(popover().getByRole('button', { name: 'Edit expression' }));
+    expect(screen.getByTestId('nl-editor-expression-editor')).toHaveValue('250');
+    await user.keyboard('{Enter}');
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'limit'), { kind: 'outcome', value: '250' }, 'down'],
+    ]);
+  });
+});
+
+describe('DecisionText popover offers the held value as the host holds it, not as the sentence words it', () => {
+  const radioNames = () =>
+    popover()
+      .getAllByRole('radio')
+      .map((radio) => [radio.getAttribute('value'), radio.hasAttribute('aria-describedby')]);
+
+  it('offers a held single value once, by its raw text', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m3', 'score')}
+        valueField={() =>
+          condition({ shape: 'single', operator: '<', value: '1000' }, '< 1000', ['1000', '2000'])
+        }
+        onCommit={onCommit}
+      />
+    );
+    expect(radioNames()).toEqual([
+      ['1000', false],
+      ['2000', false],
+    ]);
+    await user.click(popover().getByRole('radio', { name: '2000' }));
+    expect(onCommit.mock.calls).toEqual([
+      [at('m3', 'score'), { kind: 'single', operator: '<', value: '2000' }, 'none'],
+    ]);
+  });
+
+  it('offers the addressed raw list value, not its sentence token, once a single-value operator is picked', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <Host
+        initial={at('m1', 'country', 2)}
+        valueField={() =>
+          condition(
+            { shape: 'list', operator: 'noneOf', values: ['us', 'ca', 'mx'] },
+            'not("us", "ca", "mx")',
+            ['us', 'ca']
+          )
+        }
+        onCommit={onCommit}
+      />
+    );
+    pickOperator('is less than');
+    expect(radioNames()).toEqual([
+      ['us', false],
+      ['ca', false],
+      ['mx', true],
+    ]);
+    await user.click(popover().getByRole('radio', { name: 'mx' }));
+    expect(onCommit.mock.calls).toEqual([
+      [at('m1', 'country', 2), { kind: 'single', operator: '<', value: 'mx' }, 'none'],
+    ]);
+  });
+
+  it.each<[string, SentenceValueId, HeldValues<FixtureOperator>, string]>([
+    [
+      'a blank single value',
+      at('m3', 'score'),
+      { shape: 'single', operator: '<', value: '' },
+      'us',
+    ],
+    [
+      'a range at its blank end',
+      at('m1', 'score', 1),
+      {
+        shape: 'range',
+        operator: 'between',
+        low: 'ca',
+        high: '',
+        ends: { lowInclusive: true, highInclusive: true },
+      },
+      'ca',
+    ],
+  ])('focuses a listed value once a list operator is picked on %s', (_, cell, held, focused) => {
+    render(
+      <Host
+        initial={cell}
+        valueField={() => condition(held, '', ['us', 'ca'])}
+        onCommit={vi.fn()}
+      />
+    );
+    pickOperator('is none of');
+    expect(popover().getByRole('checkbox', { name: focused })).toHaveFocus();
+  });
+
+  it('focuses the typed value, not the held one, once a list operator is picked after typing', async () => {
+    const user = userEvent.setup();
+    render(
+      <Host initial={at('m3', 'score')} valueField={() => LESS_THAN_600} onCommit={vi.fn()} />
+    );
+    await user.clear(popover().getByRole('textbox'));
+    await user.type(popover().getByRole('textbox'), '650');
+    pickOperator('is none of');
+    expect(popover().getByRole('checkbox', { name: '650' })).toHaveFocus();
+  });
+
+  it('focuses the addressed list value it opened on, unchecked, once the list operator is picked again', () => {
+    render(
+      <Host
+        initial={at('m1', 'country', 2)}
+        valueField={() =>
+          condition({ shape: 'list', operator: 'noneOf', values: ['us', 'ca', 'mx'] }, '', [])
+        }
+        onCommit={vi.fn()}
+      />
+    );
+    fireEvent.click(popover().getByRole('checkbox', { name: 'mx' }));
+    pickOperator('is less than');
+    pickOperator('is none of');
+    expect(popover().getByRole('checkbox', { name: 'mx' })).toHaveFocus();
+  });
+
+  it.each([
+    0, 2,
+  ])('keeps the held expression of a condition opened as its expression at index %i among the radios after an arrow key', async (index) => {
+    const user = userEvent.setup();
+    render(
+      <Host
+        initial={at('m1', 'country', index)}
+        valueField={() =>
+          condition(
+            { shape: 'list', operator: 'noneOf', values: ['us', 'ca', 'mx'] },
+            'not("us", "ca", "mx")',
+            ['us', 'ca'],
+            [offerOf('<', 'single')]
+          )
+        }
+        onCommit={vi.fn()}
+      />
+    );
+    await user.keyboard('{ArrowDown}');
+    expect(radioNames()).toContainEqual(['not("us", "ca", "mx")', true]);
+  });
+
+  it('offers the addressed raw range end, not its sentence token, once a single-value operator is picked', () => {
+    render(
+      <Host
+        initial={at('m1', 'score', 1)}
+        valueField={() =>
+          condition(
+            {
+              shape: 'range',
+              operator: 'between',
+              low: '701',
+              high: '851',
+              ends: { lowInclusive: true, highInclusive: true },
+            },
+            '[701..851]',
+            ['600']
+          )
+        }
+        onCommit={vi.fn()}
+      />
+    );
+    pickOperator('is less than');
+    expect(radioNames()).toEqual([
+      ['600', false],
+      ['851', true],
+      ['701', true],
+    ]);
+  });
+});
+
 describe('DecisionText popover offers the host changes while it is open', () => {
   const fieldWith = (operators: readonly FixtureOffer[]) =>
     condition({ shape: 'single', operator: '<', value: '600' }, '< 600', [], operators);

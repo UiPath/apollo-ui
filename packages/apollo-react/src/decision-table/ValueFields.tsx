@@ -16,7 +16,6 @@ export interface ValueFieldsLabels extends RangeFieldsLabels {
 
 export interface ValueFieldsProps {
   draft: ShapeDraft;
-  value: string;
   index: number;
   column: string;
   ariaLabel: string;
@@ -41,7 +40,6 @@ const invalidEnds = ({ problem, text, high }: ShapeDraft): Record<RangeEnd, bool
 /** The value a condition's operator takes: a range's ends, a list's values, an allowed value, a text field, or none. */
 export const ValueFields: React.FC<ValueFieldsProps> = ({
   draft,
-  value,
   index,
   column,
   ariaLabel,
@@ -55,6 +53,7 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
   dataTestId,
 }) => {
   const { shape, text, allowedValues, listed, checked } = draft;
+  const held = draft.heldValueAt(index);
   const choices = allowedValues.length > 0;
   const allowed = new Set(allowedValues);
   const outsideAllowed = (options: readonly string[]): string[] =>
@@ -109,7 +108,7 @@ export const ValueFields: React.FC<ValueFieldsProps> = ({
       <div className={VALUE_POPOVER_CHOICES_CLASS} onKeyDown={onValueKeyDown}>
         <AllowedValueList
           values={allowedValues}
-          notAllowed={outsideAllowed([value, text])}
+          notAllowed={outsideAllowed(held === undefined ? [text] : [held, text])}
           notAllowedLabel={labels.notAllowed}
           draft={text}
           onChoose={draft.setText}
