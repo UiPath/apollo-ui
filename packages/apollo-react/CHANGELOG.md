@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v7.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.27.0...@uipath/apollo-react@7.28.0) (2026-11-18)
+
+### Features
+
+* **apollo-react:** edit the text view's values in the host's operators [ECS-2139] ([5d2cfb1](https://github.com/UiPath/apollo-ui/commit/5d2cfb118ad928f0e30457f21dbb8c4b1c1e2b27))
+* **apollo-react:** keep the typed text and raw held values in the value popover [ECS-2139] ([9b4e5b6](https://github.com/UiPath/apollo-ui/commit/9b4e5b641864ed084508d0637e68deb92865abc3))
+* **apollo-react:** word the text view's refusals from the host [ECS-2139] ([7bbe958](https://github.com/UiPath/apollo-ui/commit/7bbe958eb80624226dee8f21d71726fc17436e83))
+
 ## [@uipath/apollo-react-v7.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.26.0...@uipath/apollo-react@7.27.0) (2026-11-17)
 
 ### Features
