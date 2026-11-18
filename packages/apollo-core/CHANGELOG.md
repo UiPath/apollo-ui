@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.15.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.15.2...@uipath/apollo-core@5.15.3) (2026-11-18)
+
+### Bug Fixes
+
+* **apollo-core:** raise warning icon contrast in the light theme ([f072da3](https://github.com/UiPath/apollo-ui/commit/f072da31bb0a5a9f8b5be473a45d340cc31213a9)), closes [#ffb40e](https://github.com/UiPath/apollo-ui/issues/ffb40e) [#9e6100](https://github.com/UiPath/apollo-ui/issues/9e6100)
+
 ## [@uipath/apollo-core-v5.15.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.15.1...@uipath/apollo-core@5.15.2) (2026-10-19)
 
 ### Bug Fixes
