@@ -1,4 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import {
+  AgentGlyph,
+  APIWorkflowGlyph,
+  FunctionGlyph,
+  Maestro,
+  MaestroAutomateFlat,
+  MaestroBpmnFlat,
+  MaestroCaseFlat,
+  MaestroFlowFlat,
+  RpaGlyph,
+} from '../../icons';
 // Path matches the existing convention used by adjacent tests in this folder.
 import { getIcon } from './icon-registry';
 import { render } from './testing';
@@ -34,13 +45,6 @@ describe('getIcon', () => {
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute('src', 'https://example.com/icon.svg');
     expect(img).toHaveAttribute('draggable', 'false');
-  });
-
-  it('returns the CaseManagementProject icon for the registered case-management id', () => {
-    const Icon = getIcon('case-management');
-    const { container } = render(<Icon w={24} h={24} />);
-    // The registered UIPath icon renders its own SVG (id), not a Lucide fallback.
-    expect(container.querySelector('#case-management-project')).toBeInTheDocument();
   });
 
   it('returns the FileSparklesCornerIcon for the registered file-sparkles-corner id', () => {
@@ -93,6 +97,26 @@ describe('getIcon', () => {
       expect(svg?.style.height).toBe(styleHeight);
       unmount();
     }
+  });
+
+  it.each([
+    ['agent', AgentGlyph],
+    ['agentic-process', MaestroBpmnFlat],
+    ['api', APIWorkflowGlyph],
+    ['case-management', MaestroCaseFlat],
+    ['flow-project', MaestroFlowFlat],
+    ['function', FunctionGlyph],
+    ['maestro', Maestro],
+    ['maestro-automate', MaestroAutomateFlat],
+    ['maestro-bpmn', MaestroBpmnFlat],
+    ['maestro-case', MaestroCaseFlat],
+    ['maestro-flow', MaestroFlowFlat],
+    ['rpa', RpaGlyph],
+  ])('resolves %s to its product icon', (id, Expected) => {
+    const Icon = getIcon(id);
+    const { container } = render(<Icon w={20} h={20} />);
+    const { container: expected } = render(<Expected size={20} />);
+    expect(container.innerHTML).toBe(expected.innerHTML);
   });
 
   it('applies the color prop to the file-sparkles-corner stroke', () => {

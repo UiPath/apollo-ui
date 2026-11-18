@@ -9,11 +9,20 @@
 import { icons } from 'lucide-react';
 import { type ComponentType, type CSSProperties, type JSX, memo, useMemo } from 'react';
 import {
+  AgentGlyph,
+  APIWorkflowGlyph,
   ComponentBatch,
   ComponentBusinessRule,
   ComponentDecisionTable,
   ComponentDecisionTableRow,
   ComponentLiteralExpression,
+  FunctionGlyph,
+  Maestro,
+  MaestroAutomateFlat,
+  MaestroBpmnFlat,
+  MaestroCaseFlat,
+  MaestroFlowFlat,
+  RpaGlyph,
 } from '../../icons';
 import * as Icons from '../icons';
 
@@ -42,7 +51,6 @@ const sizedIcon =
  */
 const iconRegistry: Record<string, IconComponent> = {
   // UIPath icons
-  agent: ({ w, h }) => <Icons.AgentProject w={w ?? 29} h={h ?? 28} />,
   'autonomous-agent': ({ w, h }) => <Icons.AutonomousAgentIcon w={w ?? 29} h={h ?? 28} />,
   'conversational-agent': ({ w, h }) => <Icons.ConversationalAgentIcon w={w ?? 29} h={h ?? 28} />,
   'coded-agent': ({ w, h }) => <Icons.CodedAgentIcon w={w ?? 29} h={h ?? 28} />,
@@ -50,17 +58,11 @@ const iconRegistry: Record<string, IconComponent> = {
   'data-tools': ({ w, h }) => <Icons.DataAndTools w={w ?? 29} h={h ?? 28} />,
   'control-flow': ({ w, h }) => <Icons.ControlFlowIcon w={w ?? 29} h={h ?? 28} />,
   'human-task': ({ w, h }) => <Icons.WebAppProject w={w ?? 29} h={h ?? 28} />,
-  rpa: ({ w, h }) => <Icons.RpaProject w={w ?? 29} h={h ?? 28} />,
-  api: ({ w, h }) => <Icons.ApiProject w={w ?? 29} h={h ?? 28} />,
-  'agentic-process': ({ w, h }) => <Icons.BusinessProcessProject w={w ?? 29} h={h ?? 28} />,
-  'flow-project': ({ w, h }) => <Icons.FlowProject w={w ?? 29} h={h ?? 28} />,
-  'case-management': ({ w, h }) => <Icons.CaseManagementProject w={w ?? 29} h={h ?? 28} />,
   decision: ({ w, h }) => <Icons.DecisionIcon w={w ?? 24} h={h ?? 24} />,
   'layers-arrow-up-right': ({ w, h }) => <Icons.LayersArrowUpRightIcon w={w ?? 24} h={h ?? 24} />,
   switch: ({ w, h }) => <Icons.SwitchIcon w={w ?? 24} h={h ?? 24} />,
   uipath: ({ w, h }) => <Icons.UiPathIcon w={w ?? 24} h={h ?? 24} />,
   'agent-diagram': ({ w, h }) => <Icons.AgentDiagramIcon w={w ?? 24} h={h ?? 24} />,
-  function: ({ w, h }) => <Icons.FunctionProject w={w ?? 29} h={h ?? 28} />,
   mcp: ({ w, h }) => <Icons.McpIcon w={w ?? 29} h={h ?? 28} />,
   a2a: ({ w, h }) => <Icons.A2aIcon w={w ?? 29} h={h ?? 28} />,
   context: ({ w, h }) => <Icons.ContextIcon w={w ?? 29} h={h ?? 28} />,
@@ -72,6 +74,19 @@ const iconRegistry: Record<string, IconComponent> = {
   'decision-table-row': sizedIcon(ComponentDecisionTableRow),
   'literal-expression': sizedIcon(ComponentLiteralExpression),
   batch: sizedIcon(ComponentBatch),
+  // Project types and products, drawn as in Studio Web's create-project menu.
+  agent: sizedIcon(AgentGlyph),
+  'agentic-process': sizedIcon(MaestroBpmnFlat),
+  api: sizedIcon(APIWorkflowGlyph),
+  'case-management': sizedIcon(MaestroCaseFlat),
+  'flow-project': sizedIcon(MaestroFlowFlat),
+  function: sizedIcon(FunctionGlyph),
+  maestro: sizedIcon(Maestro),
+  'maestro-automate': sizedIcon(MaestroAutomateFlat),
+  'maestro-bpmn': sizedIcon(MaestroBpmnFlat),
+  'maestro-case': sizedIcon(MaestroCaseFlat),
+  'maestro-flow': sizedIcon(MaestroFlowFlat),
+  rpa: sizedIcon(RpaGlyph),
 };
 
 /**
