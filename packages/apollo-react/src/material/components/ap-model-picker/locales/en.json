@@ -3,6 +3,8 @@
   "modelPicker.badge.costBasic.label": "Basic",
   "modelPicker.badge.costPremium.label": "Premium",
   "modelPicker.badge.costStandard.label": "Standard",
+  "modelPicker.badge.uipathModel.label": "By UiPath",
+  "modelPicker.badge.uipathModel.tooltip": "A model built and trained by UiPath",
   "modelPicker.community.apiTypeHint": "The API endpoint supported by the LLM.",
   "modelPicker.community.apiTypeNone": "{provider} offers no API type that can serve this model.",
   "modelPicker.community.apiTypePlaceholder": "Select an API type",
