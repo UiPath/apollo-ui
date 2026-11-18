@@ -67,5 +67,6 @@ export {
   getSubstitutionTarget,
   groupModels,
   isTextGenerationModel,
+  isUiPathModel,
   resolveHomeGeography,
 } from './utils';
