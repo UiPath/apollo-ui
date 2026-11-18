@@ -52,6 +52,14 @@ export const GRAPH_RULE_COUNT_CLASS = cn(
 export const GRAPH_MARK_BUTTON_CLASS =
   'inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
 
+export const GRAPH_MENU_BUTTON_CLASS = cn(
+  'inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 text-foreground-de-emp hover:bg-background-hover focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-background-hover data-[state=open]:opacity-100 [@media(hover:none)]:opacity-100',
+  GRAPH_REVEAL_CLASS
+);
+
+export const GRAPH_ADD_DECISION_CLASS =
+  'flex h-10 cursor-pointer items-center gap-2 rounded-[10px] border border-dashed border-border-de-emp bg-transparent px-3 text-start text-sm text-foreground-de-emp hover:bg-background-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-4';
+
 export const GRAPH_BODY_CLASS =
   'flex flex-col overflow-clip rounded-b-[9px] bg-background-secondary future:bg-background';
 
@@ -61,7 +69,7 @@ export const GRAPH_BRANCH_CLASS =
   'relative before:absolute before:-top-3 before:-bottom-3 before:-start-6 before:border-s before:border-border last:before:bottom-auto last:before:h-[29px] after:absolute after:top-[9px] after:-start-6 after:h-4 after:w-6 after:rounded-es-lg after:border-b after:border-s after:border-border';
 
 export const GRAPH_REFERENCE_CLASS =
-  'flex h-12 items-center gap-1.5 rounded-[10px] border border-dashed border-border bg-background px-3.5 text-xs text-foreground-de-emp';
+  'group/chapter flex h-12 items-center gap-1.5 rounded-[10px] border border-dashed border-border bg-background px-3.5 text-xs text-foreground-de-emp';
 
 export const GRAPH_REFERENCE_CHIP_CLASS =
   'inline-flex h-6 cursor-pointer items-center gap-1 rounded-md border border-[color-mix(in_srgb,var(--sentence-output-hue)_35%,transparent)] bg-background px-2 align-middle text-xs font-medium text-[var(--sentence-output-hue)] hover:bg-[color-mix(in_srgb,var(--sentence-output-hue)_8%,var(--color-background))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';

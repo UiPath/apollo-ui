@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
+import { FALLBACK_ROW_VIEWPORT_PX, NEAREST } from './constants';
 import { SENTENCE_MIN_RULE_HEIGHT_PX, sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentenceRule } from './sentenceTypes';
 import { type AxisSegment, useVirtualizedAxis } from './useVirtualizedAxis';
@@ -82,8 +82,6 @@ export const contentTopIn = (element: HTMLElement, scroller: HTMLElement): numbe
   scrollportTopOf(scroller) -
   (isPageScroller(scroller) ? 0 : scroller.clientTop) +
   scroller.scrollTop;
-
-const NEAREST: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest' };
 
 export interface RuleWindow {
   listRef: React.RefObject<HTMLUListElement | null>;

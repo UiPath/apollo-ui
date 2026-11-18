@@ -9,6 +9,7 @@ import React, {
   useRef,
 } from 'react';
 import { BODY_ROW_HEIGHT_PX, MIN_COLUMN_WIDTH } from './constants';
+import { hasLostFocus } from './gridEvents';
 import {
   DRAG_PREVIEW_CLASS,
   DRAG_SOURCE_CLASS,
@@ -699,8 +700,9 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     // exactly the unmount case and focus returns to the grid.
     const focusWithinRef = useRef(false);
     useEffect(() => {
-      if (focusWithinRef.current && document.activeElement === document.body) {
-        containerRef.current?.focus();
+      const container = containerRef.current;
+      if (focusWithinRef.current && container !== null && hasLostFocus(container)) {
+        container.focus();
       }
     });
 

@@ -12,6 +12,12 @@ import {
   SINGLE_DECISION,
 } from './__fixtures__/decisionGraph.fixtures';
 import { type EditableTable, wordedRules } from './__fixtures__/editableSentences.fixtures';
+import {
+  fixtureActions,
+  graphOf,
+  nodesOf,
+  wordFixtureRefusal,
+} from './__fixtures__/graphActionsHost';
 import { HIT_POLICIES, COLUMN_TYPES } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
@@ -23,6 +29,7 @@ import {
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
+import { EditableDecisionGraphText } from './EditableDecisionGraphText';
 import { selectedColumnOf } from './sentenceSelection';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 
@@ -53,7 +60,7 @@ const headedNodes = (
 ): DecisionGraphNode[] =>
   nodes.map((node) => {
     if (node.kind === 'reference') return node;
-    const state = tables[node.id];
+    const state = node.logic.kind === 'table' ? tables[node.id] : undefined;
     return {
       ...node,
       ...(state ? storyHeadingOf(state) : {}),
@@ -74,14 +81,21 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     () => new Map(Object.entries(tables).map(([id, { table }]) => [id, wordedRules(table)])),
     [tables]
   );
-  const nodes = useMemo(() => headedNodes(graph.nodes, tables), [graph.nodes, tables]);
+  const [model, setModel] = useState(() => graphOf(graph.nodes));
+  const nodes = useMemo(() => headedNodes(nodesOf(model), tables), [model, tables]);
+  const notes = [...model.decisions.values()].reduce((count, { notes }) => count + notes.length, 0);
+
+  const isTableNow = (decisionId: string) =>
+    model.decisions.get(decisionId)?.node.logic.kind === 'table';
 
   const renderBody: DecisionGraphTextProps['renderBody'] = (decisionId, scroll) => {
-    const state = tables[decisionId];
+    const table = isTableNow(decisionId);
+    const state = table ? tables[decisionId] : undefined;
     if (!state) {
+      const body = graph.bodies[decisionId];
       return (
         <p className="m-0 px-4 py-3 text-sm text-foreground-de-emp">
-          {String(graph.bodies[decisionId] ?? '')}
+          {table ? 'Empty decision table' : typeof body === 'string' ? body : 'Literal expression'}
         </p>
       );
     }
@@ -132,29 +146,41 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     );
   };
 
+  const view: DecisionGraphTextProps = {
+    nodes,
+    renderBody,
+    onFold: (decisionId) => {
+      if (editing?.decisionId === decisionId) setEditing(null);
+    },
+    selected: selected?.decisionId ?? null,
+    rules: (decisionId) => (isTableNow(decisionId) ? (rulesById.get(decisionId) ?? []) : []),
+    onReveal: (target) => {
+      setRevealed(target);
+      if (target.kind === 'rule') {
+        setSelected({
+          decisionId: target.decisionId,
+          selection: { kind: 'rule', rowId: target.rowId },
+        });
+      }
+    },
+    onOpenDecision: setOpened,
+    dataTestId: 'graph',
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex h-[640px] flex-col border border-border-de-emp">
-        <DecisionGraphText
-          nodes={nodes}
-          renderBody={renderBody}
-          onFold={(decisionId) => {
-            if (editing?.decisionId === decisionId) setEditing(null);
-          }}
-          selected={selected?.decisionId ?? null}
-          rules={(decisionId) => rulesById.get(decisionId) ?? []}
-          onReveal={(target) => {
-            setRevealed(target);
-            if (target.kind === 'rule') {
-              setSelected({
-                decisionId: target.decisionId,
-                selection: { kind: 'rule', rowId: target.rowId },
-              });
-            }
-          }}
-          onOpenDecision={setOpened}
-          dataTestId="graph"
-        />
+        {mode === 'edit' ? (
+          <EditableDecisionGraphText
+            {...view}
+            mode={{
+              kind: 'edit',
+              edit: { actions: fixtureActions(model, setModel), wordRefusal: wordFixtureRefusal },
+            }}
+          />
+        ) : (
+          <DecisionGraphText {...view} />
+        )}
       </div>
       <p className="text-xs text-foreground-de-emp" data-testid="graph-caption">
         Selected:{' '}
@@ -165,11 +191,13 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
         {revealed
           ? `${revealed.decisionId} / ${revealed.kind === 'rule' ? revealed.rowId : 'decision'}`
           : 'none'}{' '}
-        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'}
+        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'} · Notes: {notes}
       </p>
       <p className="text-xs text-foreground-de-emp">{caption}</p>
       <p className="text-xs text-foreground-de-emp">
-        Double-click a heading, or press Alt+Enter on it, to open that decision on its own.
+        Double-click a heading, or press Alt+Enter on it, to open that decision on its own. In edit
+        mode each heading's menu renames, adds, links, moves and deletes decisions; on a heading, F2
+        renames, Delete deletes and Alt+Shift+arrows move it.
       </p>
     </div>
   );

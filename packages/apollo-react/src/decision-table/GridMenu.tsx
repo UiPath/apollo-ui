@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@uipath/apollo-wind';
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface GridMenuItem {
   label: string;
@@ -183,6 +183,46 @@ export const GridContextMenu: React.FC<GridContextMenuProps> = ({
         // Portalled in the DOM, still a React child of the grid — whose handler reads Delete and
         // Ctrl+Z as the cell selection's wherever they come from.
         onKeyDown={(event) => event.stopPropagation()}
+      >
+        {items}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export interface GridMenuButtonProps {
+  label: string;
+  dataTestId: string;
+  entries: () => GridMenuEntry[];
+  className: string;
+  children: React.ReactNode;
+}
+
+/** A button that opens its menu, built while it is open. */
+export const GridMenuButton: React.FC<GridMenuButtonProps> = ({
+  label,
+  dataTestId,
+  entries,
+  className,
+  children,
+}) => {
+  const [open, setOpen] = useState(false);
+  const { items, onCloseAutoFocus } = useGridMenuItems(open ? entries() : [], open, dataTestId);
+  return (
+    <DropdownMenu open={open} modal={false} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button type="button" aria-label={label} className={className} data-testid={dataTestId}>
+          {children}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        side="bottom"
+        aria-label={label}
+        className="min-w-52"
+        data-testid={`${dataTestId}-menu`}
+        onCloseAutoFocus={onCloseAutoFocus}
+        onDoubleClick={(event) => event.stopPropagation()}
       >
         {items}
       </DropdownMenuContent>

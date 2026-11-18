@@ -28,6 +28,16 @@ const CALLS: Omit<Calls<DecisionGraphLabels>, 'markStatus'> = {
     ['Risk', 3],
   ],
   minimapReference: [['Risk']],
+  decisionActions: [['Risk']],
+  nameField: [['Risk']],
+  changeLogicTo: [['Literal expression']],
+  stopUsingIn: [['Eligibility']],
+  moveUnder: [['Net income']],
+  moveOutOf: [['Eligibility']],
+  deleteTitle: [['Risk']],
+  inputsTitle: [['Risk']],
+  usersTitle: [['Risk']],
+  noteTitle: [['Risk']],
 };
 
 const providerFor =

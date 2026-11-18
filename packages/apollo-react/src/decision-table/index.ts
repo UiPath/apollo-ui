@@ -13,6 +13,14 @@ export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from '
 export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type {
+  DecisionGraphAction,
+  DecisionGraphEdit,
+  DecisionGraphLogicOption,
+  DecisionGraphMode,
+  DecisionGraphMove,
+  DecisionGraphPlace,
+} from './decisionGraphActionTypes';
+export type {
   DecisionGraphDecisionNode,
   DecisionGraphExpansion,
   DecisionGraphLogic,
@@ -32,6 +40,10 @@ export type {
 } from './decisionTextDiff';
 export type { DecisionTextEdit } from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
+export {
+  EditableDecisionGraphText,
+  type EditableDecisionGraphTextProps,
+} from './EditableDecisionGraphText';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
   GridContextMenu,
