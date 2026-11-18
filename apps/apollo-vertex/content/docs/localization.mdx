@@ -8,26 +8,24 @@ description: "Load the Vertex translations and add localization support to your 
 
 Vertex components ship their own translations for every supported locale. They live in the `apollo-vertex` i18next namespace, so they never mix with your app's keys, and you don't copy them into your `en.json`.
 
-Your app's own strings need their own i18next setup. Write a `configureI18n` function that initializes i18next with your catalogs and then calls `addVertexTranslations`, and pass it to `ApolloShell` or `LocaleProvider` (see [App translations](/patterns/shell#app-translations)):
+Your app's own strings need their own i18next instance. Initialize it with your catalogs and pass it to `ApolloShell` or `LocaleProvider` as `i18n`. The shell adds the Vertex translations to it (see [App translations](/patterns/shell#app-translations)):
 
 ```ts
 // src/lib/i18n.ts
-import i18n from "i18next";
+import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
-import { addVertexTranslations } from "@uipath/apollo-vertex";
 
-export const configureI18n = async () => {
-  await i18n.use(initReactI18next).init({
-    /* your config */
-    fallbackLng: "en", // required
-    interpolation: { escapeValue: false }, // required
-  });
-  await addVertexTranslations(i18n);
-};
+export const i18n = createInstance();
+
+void i18n.use(initReactI18next).init({
+  /* your config */
+  fallbackLng: "en", // required
+  interpolation: { escapeValue: false }, // required
+});
 ```
 
 ```tsx
-<ApolloShell configureI18n={configureI18n} /* ... */ />
+<ApolloShell i18n={i18n} /* ... */ />
 ```
 
 Two settings in this example are required:
@@ -35,7 +33,9 @@ Two settings in this example are required:
 - **`fallbackLng: "en"`:** a string without a translation shows in English, not as a raw key. Every new string is untranslated until the next weekly delivery, so without this setting users see keys such as `invoice_list_title`.
 - **`interpolation: { escapeValue: false }`:** React already escapes values. Without this setting, a value such as `Q3 & Q4` shows as `Q3 &amp; Q4`.
 
-Without `configureI18n`, the shell loads only the Vertex catalog and your keys don't resolve.
+Without an instance of your own, the shell sets up one with only the Vertex catalog, and your keys don't resolve.
+
+Without the shell, add the Vertex translations to your instance yourself after `init`, with `await addVertexTranslations(i18n)`.
 
 `addVertexTranslations` loads the current language and English, and loads other languages when the app switches to them. When a language already has `apollo-vertex` strings, such as your own overrides or those another copy of the package added, it adds only the missing keys and keeps the rest.
 
@@ -186,7 +186,7 @@ export const pseudo = {
 ```
 
 ```ts
-// in configureI18n
+// in src/lib/i18n.ts, before init
 if (import.meta.env.DEV) {
   const { pseudo } = await import("./pseudo");
   i18n.use(pseudo);

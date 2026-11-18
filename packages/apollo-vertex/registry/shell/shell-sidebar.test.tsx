@@ -34,7 +34,6 @@ function renderSidebar(path: string, navItems: ShellNavItem[]) {
           companyName="UiPath"
           productName="Invoices"
           navItems={navItems}
-          configureI18n={() => Promise.resolve()}
         >
           <p>{"app content"}</p>
         </ApolloShell>

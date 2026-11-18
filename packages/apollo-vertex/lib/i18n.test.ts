@@ -4,7 +4,11 @@ import { createElement } from "react";
 import { I18nextProvider } from "react-i18next";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import german from "../locales/de.json";
-import { addVertexTranslations } from "./i18n";
+import {
+  addVertexTranslations,
+  hasVertexTranslations,
+  loadVertexTranslations,
+} from "./i18n";
 import { useVertexTranslation, VERTEX_NAMESPACE } from "./vertex-translation";
 
 async function freshInstance(): Promise<I18n> {
@@ -234,5 +238,22 @@ describe("addVertexTranslations", () => {
       setTimeout(resolve, 50);
     });
     expect(changeLanguage).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("loadVertexTranslations", () => {
+  it("loads again after a failed load", async () => {
+    const instance = await freshInstance();
+    vi.spyOn(instance, "addResourceBundle").mockImplementationOnce(() => {
+      throw new Error("offline");
+    });
+
+    const off = vi.spyOn(instance, "off");
+
+    await expect(loadVertexTranslations(instance)).rejects.toThrow("offline");
+    await loadVertexTranslations(instance);
+
+    expect(hasVertexTranslations(instance)).toBe(true);
+    expect(off).toHaveBeenCalledWith("languageChanged", expect.any(Function));
   });
 });

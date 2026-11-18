@@ -4,6 +4,7 @@ import { Maximize2, Minimize2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/registry/button/button";
+import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 import {
   Dialog,
   DialogClose,
@@ -12,15 +13,25 @@ import {
   DialogTrigger,
 } from "@/registry/dialog/dialog";
 
-export function PreviewFullScreen({
-  children,
-  height = 600,
-  title,
-}: {
+interface PreviewFullScreenProps {
   children: ReactNode;
   height?: number;
   title: string;
-}) {
+}
+
+export function PreviewFullScreen(props: PreviewFullScreenProps) {
+  return (
+    <LocaleProvider>
+      <PreviewFullScreenFrame {...props} />
+    </LocaleProvider>
+  );
+}
+
+function PreviewFullScreenFrame({
+  children,
+  height = 600,
+  title,
+}: PreviewFullScreenProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
 
