@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.30.1...@uipath/apollo-react@7.31.0) (2026-11-18)
+
+### Features
+
+* **apollo-react:** act on decisions from the decision graph text view [ECS-2179] ([ebe684f](https://github.com/UiPath/apollo-ui/commit/ebe684fa4d180be51525bfb420f8119764a0f550))
+
 ## [@uipath/apollo-react-v7.30.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.30.0...@uipath/apollo-react@7.30.1) (2026-11-18)
 
 ### Bug Fixes
