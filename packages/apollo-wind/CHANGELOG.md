@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.94.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.93.0...@uipath/apollo-wind@2.94.0) (2026-11-18)
+
+### Features
+
+* **apollo-wind:** edit field rules with ConditionsEditor and RulesEditor [MST-16146] ([959f90d](https://github.com/UiPath/apollo-ui/commit/959f90daefdb390fdc2282816c6e242b606f81cf))
+
 ## [@uipath/apollo-wind-v2.93.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.92.0...@uipath/apollo-wind@2.93.0) (2026-11-13)
 
 ### Features

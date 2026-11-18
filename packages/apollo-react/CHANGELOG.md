@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.29.0...@uipath/apollo-react@7.30.0) (2026-11-18)
+
+### Features
+
+* **apollo-wind:** edit field rules with ConditionsEditor and RulesEditor [MST-16146] ([959f90d](https://github.com/UiPath/apollo-ui/commit/959f90daefdb390fdc2282816c6e242b606f81cf))
+
 ## [@uipath/apollo-react-v7.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.28.0...@uipath/apollo-react@7.29.0) (2026-11-18)
 
 ### Features
