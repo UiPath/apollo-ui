@@ -8,7 +8,7 @@ import { ColumnEditorOverlay } from './ColumnEditorOverlay';
 import { type ColumnTypeOption, glyphOf } from './columnTypes';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
 import { type DecisionTextDiff, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
-import type { CellEdit, DecisionTextEdit } from './decisionTextTypes';
+import type { DecisionTextEdit } from './decisionTextTypes';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
 import {
@@ -17,7 +17,6 @@ import {
   policyHeaderOf,
   policyMenuOf,
 } from './hitPolicyMenu';
-import { hostCommitOf, refusedValuesOf, viewFieldOf } from './hostValues';
 import { MarkTooltip } from './MarkTooltip';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
@@ -28,7 +27,6 @@ import { DECISION_TEXT_FRAME_CLASS, DECISION_TEXT_INLINE_FRAME_CLASS } from './s
 import type {
   DecisionTextTable,
   SentenceBand,
-  SentenceCellId,
   SentenceNameToken,
   SentenceSelection,
 } from './sentenceTypes';
@@ -41,15 +39,14 @@ import {
   useContainerHandlers,
 } from './useContainerHandlers';
 import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionTextStrings';
-import { useEditState } from './useEditState';
+import { useHostValueEdit } from './useHostValueEdit';
 import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
 import { type DecisionTextScroll, useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
 import { useTextAnnouncements } from './useTextAnnouncements';
-import { useValueEditing, valueKey } from './useValueEditing';
+import { useValueEditing } from './useValueEditing';
 import { ValueEditorOverlay } from './ValueEditorOverlay';
-import type { OperatorOffer, ValueFieldData } from './valueTypes';
 
 /** A click or key asks for this selection, or null on Escape. */
 type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
@@ -117,68 +114,6 @@ const nameTokensOf = (bands: readonly SentenceBand[]) => {
     names.get(columnId) ?? { kind: 'input', columnId, text: columnId };
 };
 
-/** The open value's key, and the host's field its editor opened on. */
-interface OpenField<Op> {
-  key: string;
-  field: ValueFieldData<Op>;
-}
-
-/** One render's open value key, and the host's field it read for that value before keeping one. */
-interface RenderedField<Op> {
-  key: string | null;
-  seen: ValueFieldData<Op> | null;
-}
-
-/** The host's edit with each operator by its place in the field its editor opened on, its allowed values live, and each refusal worded with its column's name. */
-const wordedEditOf = <Op, Type, Refusal>(
-  {
-    onCommit,
-    onClearCell,
-    wordRefusal,
-    valueField: hostField,
-    column: _column,
-    ...rest
-  }: DecisionTextEdit<Op, Type, Refusal>,
-  opened: OpenField<Op> | null,
-  rendered: RenderedField<Op>,
-  columnNameOf: (columnId: string) => string
-): CellEdit => {
-  const keptField = () => (opened && opened.key === rendered.key ? opened.field : null);
-  const valueField = (cell: SentenceCellId): ValueFieldData<Op> => {
-    const live = hostField(cell);
-    const kept = keptField();
-    if (kept) return { ...kept, allowedValues: live.allowedValues };
-    rendered.seen = live;
-    return live;
-  };
-  const offersOf = (cell: SentenceCellId): readonly OperatorOffer<Op>[] => {
-    const field = keptField() ?? hostField(cell);
-    return field.kind === 'condition' ? field.operators : [];
-  };
-  return {
-    ...rest,
-    valueField: (cell) => viewFieldOf(valueField(cell)),
-    onCommit: (value, commit, move) => {
-      const hostCommit = hostCommitOf(commit, offersOf(value));
-      if (!hostCommit) return undefined;
-      const refusal = onCommit(value, hostCommit, move);
-      return refusal === undefined
-        ? undefined
-        : wordRefusal(refusal, {
-            action: 'commit',
-            column: columnNameOf(value.columnId),
-            values: refusedValuesOf(hostCommit),
-          });
-    },
-    onClearCell: (cell) => {
-      const refusal = onClearCell(cell);
-      return refusal === undefined
-        ? undefined
-        : wordRefusal(refusal, { action: 'clear', column: columnNameOf(cell.columnId) });
-    },
-  };
-};
-
 /** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's operators, hit policies, column types and refusals. */
 export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   table,
@@ -204,16 +139,12 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   const { _ } = useSafeLingui();
   const labels = useDecisionTextLabels();
   const announcements = useTextAnnouncements(_, dataTestId);
-  const columnNameOf = (columnId: string): string =>
-    [...inputs, ...outputs].find((column) => column.id === columnId)?.name ?? '';
-  const [openField, setOpenField] = useState<OpenField<Op> | null>(null);
-  const rendered: RenderedField<Op> = { key: null, seen: null };
-  const { edit, refusal } = useEditState(
-    mode.kind === 'edit' ? wordedEditOf(mode.edit, openField, rendered, columnNameOf) : undefined,
+  const { edit, refusal } = useHostValueEdit(
+    mode.kind === 'edit' ? mode.edit : undefined,
+    [...inputs, ...outputs],
     useDecisionTextEditLabels(),
     announcements
   );
-  rendered.key = edit?.editing ? valueKey(edit.editing) : null;
   const addRule =
     mode.kind === 'edit' ? { label: labels.addRule, onAdd: mode.onAddRule } : undefined;
   const policyHeader = policyHeaderOf(hitPolicies, table.hitPolicy);
@@ -280,10 +211,6 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     labels,
     container: ruleWindow.container,
   });
-  if (openField ? openField.key !== rendered.key : rendered.seen) {
-    const { key, seen } = rendered;
-    setOpenField(key === null || seen === null ? null : { key, field: seen });
-  }
   const sectionProps = useContainerHandlers({
     containerProps,
     hoverTo,
