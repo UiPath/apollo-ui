@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v7.30.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.30.0...@uipath/apollo-react@7.30.1) (2026-11-18)
+
+### Bug Fixes
+
+* **apollo-react:** extract every decision-table string into the catalog [ECS-2188] ([cd0c96d](https://github.com/UiPath/apollo-ui/commit/cd0c96d6267fc62e0611ca94f2baa2f37cf7e09a))
+* **apollo-react:** keep the decision-table catalog tests cheap under coverage [ECS-2188] ([7441f9e](https://github.com/UiPath/apollo-ui/commit/7441f9e20272790e5d8e2dfb3a7e551551836b73))
+
 ## [@uipath/apollo-react-v7.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.29.0...@uipath/apollo-react@7.30.0) (2026-11-18)
 
 ### Features
