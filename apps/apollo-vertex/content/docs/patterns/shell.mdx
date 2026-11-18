@@ -73,7 +73,22 @@ When one item's path is a prefix of another's, only the most specific match is h
 
 ### App translations
 
-Pass `configureI18n` to `ApolloShell` or `LocaleProvider` when the app initializes i18next itself. The shell then runs that function instead of replacing the app catalog with the Vertex one.
+Pass `configureI18n` to `ApolloShell` or `LocaleProvider` when the app initializes i18next itself, and add the Vertex strings with `addVertexTranslations` (see [Localization](/localization)). The default setup leaves an instance that is already initialized alone, so it never replaces the app catalog. When i18next is already initialized as the shell mounts, the shell renders straight away, without its loading skeleton.
+
+### Languages
+
+Pass `locales` to `ApolloShell` or `LocaleProvider` to list only the languages the app supports in the profile menu. With one locale the Language menu is hidden. A nested `LocaleProvider` without `locales` keeps the list from the one above it. `locales` only filters the menu: the languages i18next loads are still set by the app's i18n configuration.
+
+```tsx
+<ApolloShell
+  companyName="Your Company"
+  productName="Your Product"
+  navItems={navItems}
+  locales={['en']}
+>
+  <YourApp />
+</ApolloShell>
+```
 
 ### Minimal header
 

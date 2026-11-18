@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  createContext,
   type PropsWithChildren,
   type ReactNode,
   useCallback,
@@ -13,14 +14,25 @@ import {
 import type { ResourceStore } from "i18next";
 import { getI18n, I18nContext } from "react-i18next";
 import { Spinner } from "@/components/ui/spinner";
-import { configurei18n, hasVertexStrings } from "@/lib/i18n";
+import {
+  configurei18n,
+  hasVertexStrings,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+} from "@/lib/i18n";
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import { LANGUAGE_CHANGED_EVENT } from "./shell-constants";
 
 interface LocaleProviderProps {
   loadingElement?: ReactNode;
   configureI18n?: () => Promise<void>;
+  locales?: readonly SupportedLocale[];
 }
+
+const LocalesContext =
+  createContext<readonly SupportedLocale[]>(SUPPORTED_LOCALES);
+
+export const useShellLocales = () => useContext(LocalesContext);
 
 const isNotReady = () => false;
 
@@ -86,7 +98,9 @@ export const LocaleProvider = ({
   children,
   loadingElement,
   configureI18n = configurei18n,
+  locales,
 }: PropsWithChildren<LocaleProviderProps>) => {
+  const inheritedLocales = useShellLocales();
   const hasStrings = useHasVertexStrings();
   const [isConfigured, setIsConfigured] = useState(false);
 
@@ -109,5 +123,9 @@ export const LocaleProvider = ({
       )
     );
 
-  return <LocaleProviderComponent>{children}</LocaleProviderComponent>;
+  return (
+    <LocalesContext.Provider value={locales ?? inheritedLocales}>
+      <LocaleProviderComponent>{children}</LocaleProviderComponent>
+    </LocalesContext.Provider>
+  );
 };

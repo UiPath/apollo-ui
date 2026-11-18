@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 import { useContext } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { SupportedLocale } from "@/lib/i18n";
 import { AuthContext, useAuth } from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
@@ -50,6 +51,7 @@ export interface ApolloShellProps extends PropsWithChildren {
   loginDescription?: string;
   unauthenticatedElement?: ReactNode;
   configureI18n?: () => Promise<void>;
+  locales?: readonly SupportedLocale[];
 }
 
 const ApolloShellContent: FC<ApolloShellProps> = ({
@@ -102,10 +104,12 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   loginDescription,
   unauthenticatedElement,
   configureI18n,
+  locales,
 }) => {
   return (
     <LocaleProvider
       configureI18n={configureI18n}
+      locales={locales}
       loadingElement={<ShellLoadingSkeleton />}
     >
       <ApolloShellContent

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "./shell-auth-provider";
 import { LANGUAGE_CHANGED_EVENT, LOCALE_OPTIONS } from "./shell-constants";
 import type { LanguageChangedEvent } from "./shell-constants";
+import { useShellLocales } from "./shell-locale-provider";
 import { Text } from "./shell-text";
 import { useTheme } from "./shell-theme-provider";
 
@@ -19,6 +20,10 @@ export const UserProfileMenuItems = () => {
   const { t, i18n } = useVertexTranslation();
   const { logout } = useAuth();
   const { setTheme } = useTheme();
+  const locales = useShellLocales();
+  const localeOptions = LOCALE_OPTIONS.filter(
+    (locale) => locales.includes(locale.code) || locale.code === i18n.language,
+  );
   const language = i18n.language;
 
   function setLanguage(code: SupportedLocale) {
@@ -52,23 +57,25 @@ export const UserProfileMenuItems = () => {
           </DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
-      <DropdownMenuSub>
-        <DropdownMenuSubTrigger>
-          <Globe className="w-4 h-4" />
-          <span>{t("language")}</span>
-        </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent>
-          {LOCALE_OPTIONS.map((locale) => (
-            <DropdownMenuItem
-              key={locale.code}
-              onClick={() => setLanguage(locale.code)}
-              className={cn(language === locale.code ? "bg-accent" : "")}
-            >
-              <Text value={locale.translationKey} />
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuSubContent>
-      </DropdownMenuSub>
+      {localeOptions.length > 1 && (
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Globe className="w-4 h-4" />
+            <span>{t("language")}</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {localeOptions.map((locale) => (
+              <DropdownMenuItem
+                key={locale.code}
+                onClick={() => setLanguage(locale.code)}
+                className={cn(language === locale.code ? "bg-accent" : "")}
+              >
+                <Text value={locale.translationKey} />
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+      )}
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={logout}>
         <LogOut className="w-4 h-4" />
