@@ -12,37 +12,29 @@ const sourceFiles = readdirSync(folder, { recursive: true, encoding: 'utf8' })
   .map((path) => join(folder, path))
   .filter((path) => linguiConfig.extractors?.some((extractor) => extractor.match(path)));
 
+const mayHoldMessages = /@lingui|i18n|\b_\s*\(/;
+
 const extractedFrom = async (path: string): Promise<ExtractedMessage[]> => {
+  const code = readFileSync(path, 'utf8');
   const extractor = linguiConfig.extractors?.find((candidate) => candidate.match(path));
   const found: ExtractedMessage[] = [];
-  await extractor?.extract(path, readFileSync(path, 'utf8'), (message) => found.push(message), {
-    linguiConfig,
-  });
+  if (!mayHoldMessages.test(code)) return found;
+  await extractor?.extract(path, code, (message) => found.push(message), { linguiConfig });
   return found;
 };
 
-const program = ts.createProgram(sourceFiles, {
-  jsx: ts.JsxEmit.ReactJSX,
-  module: ts.ModuleKind.ESNext,
-  moduleResolution: ts.ModuleResolutionKind.Bundler,
-  target: ts.ScriptTarget.ES2022,
-  noEmit: true,
-  skipLibCheck: true,
-  allowJs: true,
-});
-const checker = program.getTypeChecker();
+const sources = sourceFiles.map((path) =>
+  ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true)
+);
 
-const isTranslate = (type: ts.Type): boolean =>
-  type.getCallSignatures().some((signature) => {
-    const declaration = signature.getDeclaration();
-    return (
-      ts.isCallSignatureDeclaration(declaration) &&
-      declaration.getSourceFile().fileName.endsWith('i18n/useSafeLingui.ts')
-    );
-  });
-
-const translates = (callee: ts.Expression): boolean =>
-  isTranslate(checker.getTypeAtLocation(callee));
+const hooksWithDeps = new Set([
+  'useCallback',
+  'useEffect',
+  'useImperativeHandle',
+  'useInsertionEffect',
+  'useLayoutEffect',
+  'useMemo',
+]);
 
 const literalIn = (descriptor: ts.ObjectLiteralExpression, name: string): boolean =>
   descriptor.properties.some(
@@ -56,14 +48,19 @@ const literalIn = (descriptor: ts.ObjectLiteralExpression, name: string): boolea
 const readable = (call: ts.CallExpression): boolean => {
   const [descriptor] = call.arguments;
   return (
-    ts.isIdentifier(call.expression) &&
-    call.expression.text === '_' &&
     descriptor !== undefined &&
     ts.isObjectLiteralExpression(descriptor) &&
     literalIn(descriptor, 'id') &&
     literalIn(descriptor, 'message')
   );
 };
+
+const calleeName = (call: ts.CallExpression): string | undefined =>
+  ts.isIdentifier(call.expression)
+    ? call.expression.text
+    : ts.isPropertyAccessExpression(call.expression)
+      ? call.expression.name.text
+      : undefined;
 
 const declares = (name: ts.Identifier): boolean =>
   (ts.isBindingElement(name.parent) ||
@@ -74,36 +71,63 @@ const declares = (name: ts.Identifier): boolean =>
 const listsAsDependency = (name: ts.Identifier): boolean => {
   const list = name.parent;
   const call = list.parent;
-  if (!ts.isArrayLiteralExpression(list) || !ts.isCallExpression(call)) return false;
-  const signature = checker.getResolvedSignature(call);
   return (
-    signature?.getParameters().at(call.arguments.indexOf(list))?.name === 'deps' &&
-    (signature.getDeclaration()?.getSourceFile().fileName.includes('/@types/react/') ?? false)
+    ts.isArrayLiteralExpression(list) &&
+    ts.isCallExpression(call) &&
+    call.arguments.indexOf(list) === 1 &&
+    hooksWithDeps.has(calleeName(call) ?? '')
   );
 };
 
-const allowed = (name: ts.Identifier): boolean =>
-  name.text === '_' &&
-  (declares(name) ||
-    listsAsDependency(name) ||
-    (ts.isCallExpression(name.parent) && name.parent.expression === name && readable(name.parent)));
+const allowedTranslate = (name: ts.Identifier): boolean =>
+  declares(name) ||
+  listsAsDependency(name) ||
+  (ts.isCallExpression(name.parent) && name.parent.expression === name && readable(name.parent));
 
-const isValue = (name: ts.Identifier): boolean =>
-  ((checker.getSymbolAtLocation(name)?.flags ?? 0) & ts.SymbolFlags.Value) !== 0;
+const destructuresOnlyTranslate = (call: ts.CallExpression): boolean => {
+  const declaration = call.parent;
+  return (
+    ts.isVariableDeclaration(declaration) &&
+    declaration.initializer === call &&
+    ts.isObjectBindingPattern(declaration.name) &&
+    declaration.name.elements.every(
+      (element) =>
+        element.dotDotDotToken === undefined &&
+        (element.propertyName === undefined ||
+          !ts.isIdentifier(element.propertyName) ||
+          element.propertyName.text !== '_')
+    )
+  );
+};
 
-const unreadableTranslationsIn = (path: string): string[] => {
-  const source = program.getSourceFile(path);
+const allowedHook = (name: ts.Identifier): boolean =>
+  (ts.isImportSpecifier(name.parent) && name.parent.propertyName === undefined) ||
+  (ts.isCallExpression(name.parent) &&
+    name.parent.expression === name &&
+    destructuresOnlyTranslate(name.parent));
+
+const unreadableTranslationsIn = (source: ts.SourceFile): string[] => {
   const found: string[] = [];
   const visit = (node: ts.Node): void => {
-    if (ts.isIdentifier(node) && isValue(node) && translates(node) && !allowed(node)) {
-      found.push(`${path}: ${node.parent.getText(source)}`);
+    if (
+      ts.isIdentifier(node) &&
+      ((node.text === '_' && !allowedTranslate(node)) ||
+        (node.text === 'useSafeLingui' && !allowedHook(node)))
+    ) {
+      found.push(`${source.fileName}: ${node.parent.getText(source)}`);
     }
-    if (ts.isCallExpression(node) && translates(node.expression) && !readable(node)) {
-      found.push(`${path}: ${node.getText(source)}`);
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text.endsWith('i18n/useSafeLingui') &&
+      node.importClause?.namedBindings !== undefined &&
+      ts.isNamespaceImport(node.importClause.namedBindings)
+    ) {
+      found.push(`${source.fileName}: ${node.getText(source)}`);
     }
     ts.forEachChild(node, visit);
   };
-  if (source) visit(source);
+  visit(source);
   return found;
 };
 
@@ -123,6 +147,6 @@ describe('decision-table English catalog', () => {
   });
 
   it('translates only through `_` with a literal id and message the extractor can read', () => {
-    expect(sourceFiles.flatMap(unreadableTranslationsIn)).toEqual([]);
+    expect(sources.flatMap(unreadableTranslationsIn)).toEqual([]);
   });
 });
