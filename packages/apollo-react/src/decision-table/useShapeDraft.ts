@@ -90,6 +90,8 @@ export interface ShapeDraft {
   checked: readonly string[];
   /** The values of a list the condition held when it opened, else none. */
   heldList: readonly string[];
+  /** The value the host holds at a sentence index: a condition's by index, else the whole cell's. */
+  heldValueAt: (index: number) => string | undefined;
   /** The text in a list's add field, which a commit adds to the list. */
   adding: string;
   current: ValueCommit<number>;
@@ -171,6 +173,7 @@ export const useShapeDraft = (
     listed,
     checked,
     heldList: field.kind === 'condition' && field.held.shape === 'list' ? field.held.values : [],
+    heldValueAt: (index: number) => (field.kind === 'condition' ? opened[index] : opened[0]),
     adding,
     current,
     commitOf,
