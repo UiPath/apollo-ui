@@ -71,7 +71,9 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
   cardRef,
   dataTestId,
 }) => {
-  const mark = isLineMark(node.mark) ? node.mark : undefined;
+  const { logic } = node;
+  const headingMark = node.mark?.mark;
+  const mark = isLineMark(headingMark) ? headingMark : undefined;
   const Heading = HEADINGS[Math.min(depth, HEADINGS.length - 1)] ?? 'h6';
   return (
     <section
@@ -111,19 +113,19 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
           <span className={GRAPH_NAME_CLASS}>{node.label}</span>
         </button>
         {usedBy.length > 0 && <span className="sr-only">{labels.usedBy(usedBy.join(', '))}</span>}
-        {node.hitPolicy && (
+        {logic.kind === 'table' && (
           <span
             className={GRAPH_HIT_POLICY_CLASS}
             data-testid={`${dataTestId}-hit-policy-${node.id}`}
           >
-            {node.hitPolicy}
+            {logic.hitPolicy}
           </span>
         )}
         <span
-          className={cn(GRAPH_RULE_COUNT_CLASS, node.ruleCount === undefined && 'invisible')}
+          className={cn(GRAPH_RULE_COUNT_CLASS, logic.kind !== 'table' && 'invisible')}
           data-testid={`${dataTestId}-rule-count-${node.id}`}
         >
-          {node.ruleCount !== undefined && labels.ruleCount(node.ruleCount)}
+          {logic.kind === 'table' && labels.ruleCount(logic.ruleCount)}
         </span>
         {mark && (
           <button
