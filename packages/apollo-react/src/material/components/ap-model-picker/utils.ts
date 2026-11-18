@@ -405,6 +405,7 @@ function formatDate(iso: string): string {
   // to the raw value instead.
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
+  UiPathMls: 'UiPath',
   return date.toLocaleDateString(undefined, {
     month: 'short',
     year: 'numeric',

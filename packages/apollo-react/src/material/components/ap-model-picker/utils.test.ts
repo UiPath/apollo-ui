@@ -101,6 +101,11 @@ describe('groupModels (Category view ordering)', () => {
   });
 
   it('Provider view orders each vendor section Recommended → Preview → More → Deprecating', () => {
+  it('Provider view labels the UiPathMls vendor as UiPath', () => {
+    const groups = groupModels([model({ modelId: 'path-mini', vendor: 'UiPathMls' })], 'vendor');
+    expect(groups.find((g) => g.key === 'UiPathMls')?.label).toBe('UiPath');
+  });
+
     // Catalog order is deliberately scrambled; the vendor group must
     // re-rank by lifecycle while keeping catalog order within a band.
     const models = [
