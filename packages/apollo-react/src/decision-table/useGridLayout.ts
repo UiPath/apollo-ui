@@ -144,18 +144,19 @@ export const useGridLayout = ({
   // The sticky header both occupies flow space above the rows and covers the top of the viewport,
   // so the row axis uses its measured height for both offsets. Cached off a ResizeObserver rather
   // than read per call: the callers are scroll handlers, and an offsetHeight read there forces a
-  // layout pass on exactly the fling frames where a window shift just invalidated it.
+  // layout pass on exactly the fling frames where a window shift just invalidated it. Unrounded, so
+  // the last row's hover never reaches past the frame.
   const headerHeightRef = useRef(0);
   const headerObserverRef = useRef<ResizeObserver | null>(null);
   const theadRef = useCallback((element: HTMLTableSectionElement | null) => {
     headerObserverRef.current?.disconnect();
     headerObserverRef.current = null;
-    headerHeightRef.current = element?.offsetHeight ?? 0;
+    headerHeightRef.current = element?.getBoundingClientRect().height ?? 0;
     if (!element || typeof ResizeObserver === 'undefined') {
       return;
     }
     const observer = new ResizeObserver(() => {
-      headerHeightRef.current = element.offsetHeight;
+      headerHeightRef.current = element.getBoundingClientRect().height;
     });
     observer.observe(element);
     headerObserverRef.current = observer;
