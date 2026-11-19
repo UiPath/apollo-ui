@@ -93,7 +93,6 @@ export const RuleCard = memo<RuleCardProps>(
     rule,
     position,
     setSize,
-    numbered,
     mark,
     selectedColumnId,
     selectable,
@@ -110,7 +109,6 @@ export const RuleCard = memo<RuleCardProps>(
     const card = ruleCardModel({
       rule,
       position,
-      numbered,
       mark,
       selectable,
       decisionLinks,

@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FixtureDiff } from './__fixtures__/diffSentences.fixtures';
 import { DIFF_COLUMNS, DIFF_POLICY, DIFF_RULES } from './__fixtures__/diffSentences.fixtures';
-import { HIT_POLICIES, COLUMN_TYPES } from './__fixtures__/sentences.fixtures';
+import { COLUMN_TYPES, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import { DecisionText } from './DecisionText';
 import { type DiffRemovedRule, type DiffRow, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
 import type { SentenceNameToken, SentenceRule } from './sentenceTypes';
@@ -161,7 +161,6 @@ describe('values of a removed column', () => {
         table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
-        numbered
         ariaLabel="Rules"
         dataTestId="nl"
         mode={{ kind: 'diff', diff: removedFee }}
@@ -184,7 +183,6 @@ const renderDiff = (diff: FixtureDiff, rules: readonly SentenceRule[] = DIFF_RUL
       table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
       hitPolicies={HIT_POLICIES}
       columnTypes={COLUMN_TYPES}
-      numbered
       ariaLabel="Rules"
       dataTestId="nl"
       mode={{ kind: 'diff', diff }}

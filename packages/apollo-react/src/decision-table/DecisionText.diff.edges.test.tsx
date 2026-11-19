@@ -21,7 +21,6 @@ const renderDiff = (diff: FixtureDiff, props: Partial<Pick<FlatTextProps, 'rules
         rules: DIFF_RULES,
         ...DIFF_COLUMNS,
         hitPolicy: DIFF_POLICY,
-        numbered: true,
         ariaLabel: 'Rules',
         dataTestId: 'nl',
         ...props,
@@ -108,7 +107,6 @@ describe('DecisionText diff edges', () => {
         table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
-        numbered
         ariaLabel="Rules"
         dataTestId="nl"
         mode={{ kind: 'diff', diff: next }}

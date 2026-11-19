@@ -8,6 +8,7 @@ import {
   BAND_COLUMN_BUTTON_CLASS,
   BAND_COLUMN_CLASS,
   BAND_COLUMN_ITEM_CLASS,
+  BAND_COLUMN_NAME_CLASS,
   CHANGED_CHIP_CLASS,
   POPOVER_ICON_CLASS,
 } from './sentenceStyles';
@@ -60,7 +61,9 @@ export const BandColumn: React.FC<BandColumnProps> = ({
         </span>
       )}
       {change && <span className="sr-only">{labels.changeStatus(change)} </span>}
-      {column.name}
+      <span className={BAND_COLUMN_NAME_CLASS} title={column.name}>
+        {column.name}
+      </span>
       {columnMarks && <MarkBadge id={badgeId} marks={columnMarks} labels={labels} />}
     </>
   );

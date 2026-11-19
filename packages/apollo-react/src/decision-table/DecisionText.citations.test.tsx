@@ -240,7 +240,6 @@ describe('DecisionText citations', () => {
           rules: DIFF_RULES,
           ...DIFF_COLUMNS,
           hitPolicy: DIFF_POLICY,
-          numbered: true,
           ariaLabel: 'Rules',
           dataTestId: 'nl',
           diff: { ...EVERY_STATE_DIFF, mode: 'full' },

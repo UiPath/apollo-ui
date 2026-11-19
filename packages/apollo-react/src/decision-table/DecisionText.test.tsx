@@ -32,10 +32,14 @@ import {
 } from './__fixtures__/modalDialog';
 import {
   CHANNEL,
+  COLUMN_TYPES,
   COUNTRY,
   channel,
   country,
+  type FixtureOffer,
+  type FixtureOperator,
   type FixturePick,
+  type FixtureType,
   GRID_SENTENCE_COLUMNS,
   GRID_SENTENCE_POLICY,
   GRID_SENTENCE_RULES,
@@ -48,13 +52,9 @@ import {
   manyLinesRule,
   manySentenceRules,
   NO_COLUMNS,
-  valueList,
-  COLUMN_TYPES,
-  type FixtureOffer,
-  type FixtureOperator,
-  type FixtureType,
   OPERATOR_WORDS,
   offerOf,
+  valueList,
   wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import {
@@ -456,10 +456,10 @@ describe('DecisionText', () => {
 
   describe('accessibility', () => {
     it('names each row by its heading and lead, and counts it among all rules', () => {
-      renderView({ numbered: true });
+      renderView();
       const row = card('m3');
       expect(row).toHaveAccessibleName(
-        '3 Decision is "decline" · Credit Limit is 0 · Reason is "low score" when Credit Score is less than 600 and Channel is not "branch"'
+        'Decision is "decline" · Credit Limit is 0 · Reason is "low score" when Credit Score is less than 600 and Channel is not "branch"'
       );
       expect(row).toHaveAttribute('aria-posinset', '3');
       expect(row).toHaveAttribute('aria-setsize', '5');
@@ -476,14 +476,14 @@ describe('DecisionText', () => {
       );
     });
 
-    it('numbers and counts a rule deep in the list by its place among all rules', () => {
+    it('counts a rule deep in the list by its place among all rules, with no number chip', () => {
       const rules = manySentenceRules(2000);
-      renderView({ rules, numbered: true });
+      renderView({ rules });
       act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
       const row = card('row-500');
       expect(row).toHaveAttribute('aria-posinset', '501');
       expect(row).toHaveAttribute('aria-setsize', '2000');
-      expect(row.firstElementChild?.firstElementChild).toHaveTextContent(/^501$/);
+      expect(within(row).queryByText(/^501$/)).toBeNull();
     });
 
     it("adds the host's class to the view's own, keeping the view's name and tab stop", () => {
@@ -1330,7 +1330,7 @@ describe('DecisionText', () => {
       footerBounds.mockImplementation(function (this: HTMLElement) {
         if (!this.hasAttribute('data-add-rule')) return bounds.call(this);
         const listEnd = sentenceRuleOffsets(currentRules).at(-1) ?? 0;
-        const top = listEnd - (this.parentElement?.scrollTop ?? 0);
+        const top = listEnd - (this.closest('section')?.scrollTop ?? 0);
         return { ...rect(0, 400), top, bottom: top + 48 };
       });
       render(<AddingHost />);
@@ -1534,6 +1534,12 @@ describe('DecisionText', () => {
       expect(counts[1]?.nextElementSibling?.textContent).toBe(' and Age is greater than 18');
     });
 
+    it('centers its content in the reading column the graph cards share', () => {
+      renderView();
+      expect(screen.getByTestId('nl-column')).toHaveClass('mx-auto', 'w-full', 'max-w-3xl');
+      expect(screen.getByTestId('nl-header').parentElement).toBe(screen.getByTestId('nl-column'));
+    });
+
     it('keeps 50 band columns on one list, named once by its caption', () => {
       renderView({ ...manyColumns(50) });
       const inputs = screen.getByRole('list', { name: 'Inputs' });
@@ -1543,109 +1549,59 @@ describe('DecisionText', () => {
   });
 
   describe('band lists', () => {
-    const observed = new Map<Element, Set<ResizeObserverCallback>>();
-    class RecordingResizeObserver {
-      readonly #callback: ResizeObserverCallback;
-      readonly #targets = new Set<Element>();
-      constructor(callback: ResizeObserverCallback) {
-        this.#callback = callback;
-      }
-      observe(target: Element) {
-        this.#targets.add(target);
-        observed.set(target, (observed.get(target) ?? new Set()).add(this.#callback));
-      }
-      unobserve(target: Element) {
-        this.#targets.delete(target);
-        observed.get(target)?.delete(this.#callback);
-      }
-      disconnect() {
-        for (const target of this.#targets) this.unobserve(target);
-      }
-    }
-    const resize = (element: Element) =>
-      act(() => {
-        for (const callback of observed.get(element) ?? []) callback([], {} as ResizeObserver);
-      });
-    const setWidths = (element: Element, scrollWidth: number, clientWidth: number) => {
-      Object.defineProperty(element, 'scrollWidth', { configurable: true, value: scrollWidth });
-      Object.defineProperty(element, 'clientWidth', { configurable: true, value: clientWidth });
-    };
-    const inputs = () => screen.getByRole('list', { name: 'Inputs' });
-    const tabStops = async () => {
-      const user = userEvent.setup();
-      const stops: string[] = [];
-      await user.tab();
-      while (document.activeElement !== document.body && stops.length < 5) {
-        stops.push(document.activeElement?.getAttribute('aria-label') ?? '');
-        await user.tab();
-      }
-      return stops;
-    };
-
-    beforeEach(() => {
-      observed.clear();
-      vi.stubGlobal('ResizeObserver', RecordingResizeObserver);
-    });
-    afterEach(() => {
-      vi.unstubAllGlobals();
+    it('underlines every input and output name with a wave, and values only while editable', () => {
+      const waved = (kind: string) =>
+        [...document.querySelectorAll(`[data-kind="${kind}"]`)].map((token) =>
+          token.classList.contains('decoration-wavy')
+        );
+      const { unmount } = renderView({ selected: null, onSelect: vi.fn(), edit: editWith() });
+      expect(waved('input').length).toBeGreaterThan(0);
+      expect(waved('input').every(Boolean)).toBe(true);
+      expect(waved('value').some(Boolean)).toBe(true);
+      unmount();
+      renderView();
+      expect(waved('input').every(Boolean)).toBe(true);
+      expect(waved('output').every(Boolean)).toBe(true);
+      expect(waved('value').some(Boolean)).toBe(false);
     });
 
-    it('makes a band list a tab stop only while its columns overflow it', async () => {
+    it('draws band column chips 30px tall in base-size text', () => {
+      renderView();
+      const [chip] = within(screen.getByRole('list', { name: 'Inputs' })).getAllByRole('listitem');
+      expect(chip).toHaveClass('h-[30px]', 'text-base');
+    });
+
+    it('shows Add rule as a link button', () => {
+      renderView({ selected: null, onSelect: vi.fn(), edit: editWith(), onAddRule: vi.fn() });
+      expect(screen.getByRole('button', { name: 'Add rule' })).toHaveClass('w-fit', 'text-primary');
+    });
+
+    it('thickens the underline of a selected value chip', () => {
+      renderView({ selected: null, onSelect: vi.fn(), edit: editWith() });
+      expect(document.querySelector('[data-stop][data-kind="value"]')).toHaveClass(
+        'data-[selected=true]:decoration-2'
+      );
+    });
+
+    it('truncates a column name too long for the band inside its pill, keeping the full name as its title', () => {
+      const name = 'x'.repeat(300);
+      renderView({ inputs: [{ id: 'long', name, type: 'text' }], outputs: [], rules: [] });
+      const pill = within(screen.getByRole('list', { name: 'Inputs' })).getByRole('listitem');
+      expect(pill).toHaveClass('min-w-0', 'max-w-full');
+      expect(within(pill).getByTitle(name)).toHaveClass('min-w-0', 'truncate');
+    });
+
+    it('wraps 50 band columns onto as many lines as they need, with no scroll or tab stop of their own', async () => {
       renderView({ ...manyColumns(50) });
-      expect(inputs()).not.toHaveAttribute('tabindex');
-      expect(await tabStops()).toEqual(['Rules']);
-      setWidths(inputs(), 3000, 400);
-      resize(inputs());
-      expect(inputs()).toHaveAttribute('tabindex', '0');
-      expect(await tabStops()).toEqual(['Rules', 'Inputs']);
-      setWidths(inputs(), 400, 400);
-      resize(inputs());
-      expect(inputs()).not.toHaveAttribute('tabindex');
-    });
-
-    it('measures a band list again as a column resizes in it or joins it', async () => {
-      const { rerender } = renderView();
-      setWidths(inputs(), 600, 400);
-      const [first] = within(inputs()).getAllByRole('listitem');
-      if (!first) throw new Error('no column');
-      resize(first);
-      expect(inputs()).toHaveAttribute('tabindex', '0');
-      setWidths(inputs(), 400, 400);
-      const grown = [
-        ...MULTI_SENTENCE_COLUMNS.inputs,
-        { id: 'age', name: 'Age', type: 'number' as const },
-      ];
-      await act(async () => rerender(view({ inputs: grown })));
-      expect(inputs()).not.toHaveAttribute('tabindex');
-      setWidths(inputs(), 700, 400);
-      const added = within(inputs()).getAllByRole('listitem').at(-1);
-      if (!added) throw new Error('no added column');
-      resize(added);
-      expect(inputs()).toHaveAttribute('tabindex', '0');
-    });
-
-    it("drops a band list's tab stop while its columns are buttons, even as they overflow it", () => {
-      renderView({
-        ...manyColumns(50),
-        selected: null,
-        onSelect: vi.fn(),
-        edit: editWith({
-          column: {
-            field: () => ({
-              kind: 'input',
-              label: 'x',
-              expression: 'x',
-              type: 'text',
-              allowedValues: '',
-            }),
-            onCommit: vi.fn(),
-          },
-        }),
-      });
-      setWidths(inputs(), 3000, 400);
-      resize(inputs());
-      expect(within(inputs()).getAllByRole('button').length).toBeGreaterThan(0);
-      expect(inputs()).not.toHaveAttribute('tabindex');
+      const inputs = screen.getByRole('list', { name: 'Inputs' });
+      expect(inputs).toHaveClass('flex-wrap');
+      expect(inputs).not.toHaveClass('overflow-x-auto');
+      expect(inputs).not.toHaveAttribute('tabindex');
+      const user = userEvent.setup();
+      await user.tab();
+      expect(document.activeElement).toBe(screen.getByTestId('nl'));
+      await user.tab();
+      expect(document.activeElement).toBe(document.body);
     });
   });
 
@@ -1663,19 +1619,17 @@ describe('DecisionText', () => {
       expect(valueChip('r2', 'income')).not.toHaveAttribute('data-selected');
     });
 
-    it('selects the rule from a name token, an operator word or the row number', () => {
-      const { onSelect } = renderSelectable({ numbered: true });
+    it('selects the rule from a name token or an operator word', () => {
+      const { onSelect } = renderSelectable();
       const name = card('r2').querySelector('[data-kind="input"]');
       const word = within(card('r1')).getByText('when');
-      const number = within(card('r3')).getByText('3');
       if (!name) throw new Error('name token');
-      for (const target of [name, word, number]) fireEvent.click(target);
+      for (const target of [name, word]) fireEvent.click(target);
       expect(onSelect.mock.calls).toEqual([
         [{ kind: 'rule', rowId: 'r2' }],
         [{ kind: 'rule', rowId: 'r1' }],
-        [{ kind: 'rule', rowId: 'r3' }],
       ]);
-      expect(focusedStop()).toBe('r3');
+      expect(focusedStop()).toBe('r1');
     });
 
     it('selects nothing from the header or a band column', () => {
@@ -2042,14 +1996,6 @@ describe('DecisionText', () => {
       });
       return { before, after };
     };
-    const overflowingBandLists = () => {
-      const scrollWidth = vi
-        .spyOn(Element.prototype, 'scrollWidth', 'get')
-        .mockImplementation(function (this: Element) {
-          return this.matches('ul[aria-label]') ? 3000 : 0;
-        });
-      onTestFinished(() => scrollWidth.mockRestore());
-    };
     const tabs = async (count: number, shift = false) => {
       const user = userEvent.setup();
       const focused: (Element | null)[] = [];
@@ -2073,22 +2019,6 @@ describe('DecisionText', () => {
       await tabs(1, true);
       expect(focusedStop()).toBe(stop);
       expect(await tabs(1, true)).toEqual([before]);
-      expect(onSelect).not.toHaveBeenCalled();
-    });
-
-    it('passes the band lists going into the view and stops on them going back out of it from the selected stop', async () => {
-      overflowingBandLists();
-      const { onSelect } = renderSelectable({
-        initial: { kind: 'cell', rowId: 'r2', columnId: 'age' },
-      });
-      const { before, after } = aroundView();
-      const inputs = screen.getByRole('list', { name: 'Inputs' });
-      const outputs = screen.getByRole('list', { name: 'Outputs' });
-      const stop = valueChip('r2', 'age');
-      act(() => before.focus());
-      expect(await tabs(2)).toEqual([stop, after]);
-      expect(await tabs(4, true)).toEqual([stop, outputs, inputs, before]);
-      expect(await tabs(1)).toEqual([stop]);
       expect(onSelect).not.toHaveBeenCalled();
     });
 
@@ -2220,13 +2150,12 @@ describe('DecisionText', () => {
     });
 
     it.each([
-      ['band lists that overflow', true],
+      ['band lists', true],
       ['no bands', false],
-    ])('moves Tab on from the view a press on its header leaves focused to the selected stop, past %s', async (_, overflowing) => {
-      if (overflowing) overflowingBandLists();
+    ])('moves Tab on from the view a press on its header leaves focused to the selected stop, past %s', async (_, banded) => {
       const { onSelect } = renderSelectable({
         initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
-        ...(!overflowing && NO_COLUMNS),
+        ...(!banded && NO_COLUMNS),
       });
       const view = screen.getByTestId('nl');
       const header = screen.getByTestId('nl-header');
@@ -2236,17 +2165,6 @@ describe('DecisionText', () => {
       fireEvent.click(header);
       expect(document.activeElement).toBe(view);
       expect(await tabs(1)).toEqual([valueChip('r2', 'age')]);
-      expect(onSelect).not.toHaveBeenCalled();
-    });
-
-    it('lands Shift+Tab from the band lists on the view itself with nothing selected', async () => {
-      overflowingBandLists();
-      const { onSelect } = renderSelectable();
-      const { before } = aroundView();
-      const inputs = screen.getByRole('list', { name: 'Inputs' });
-      act(() => before.focus());
-      expect(await tabs(2)).toEqual([screen.getByTestId('nl'), inputs]);
-      expect(await tabs(2, true)).toEqual([screen.getByTestId('nl'), before]);
       expect(onSelect).not.toHaveBeenCalled();
     });
 

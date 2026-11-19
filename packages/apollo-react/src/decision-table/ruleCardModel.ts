@@ -140,7 +140,6 @@ export interface RuleCardBase {
   rule: SentenceRule;
   /** 1-based, as announced and as numbered. */
   position: number;
-  numbered: boolean;
   mark: RowMark | undefined;
   selectable: boolean;
   /** Whether an input another decision produces links to that decision. */
@@ -156,7 +155,7 @@ interface RuleCardModel
   extends Pick<RowMark, 'tone' | 'dim' | 'title' | 'cells'>,
     Pick<LineTextProps, 'stopOf' | 'linkOf' | 'diffOf'> {
   ariaLabel: string;
-  /** The number the card shows, or null for none. */
+  /** The number a diff's card shows, or null for none. */
   number: number | null;
   /** The diff's change as read aloud, or empty. */
   changeStatus: string;
@@ -186,7 +185,6 @@ const inputColumnIds = (parts: readonly SentencePart[]): string[] => [
 export const ruleCardModel = ({
   rule,
   position,
-  numbered,
   mark,
   selectable,
   decisionLinks,
@@ -197,7 +195,7 @@ export const ruleCardModel = ({
   const diff = mode.kind === 'diff' ? mode.diff : undefined;
   const editLabels = mode.kind === 'edit' ? mode.editLabels : undefined;
   const id = `${idPrefix}-${position}`;
-  const number = diff ? diff.number : position;
+  const number = diff ? diff.number : null;
   const changed = (token: SentenceToken) => diff?.tokens.has(token) === true;
   const changeStatus = [
     diff?.change && labels.changeStatus(diff.change),
@@ -246,11 +244,11 @@ export const ruleCardModel = ({
     dim,
     title,
     cells,
-    number: numbered ? number : null,
+    number,
     changeStatus,
     ariaLabel: [
       changeStatus,
-      numbered && number !== null ? String(number) : '',
+      number !== null ? String(number) : '',
       shownLineText(rule.heading, labels, changed),
       shownLineText(rule.lead, labels, changed),
     ]

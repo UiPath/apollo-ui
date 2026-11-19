@@ -40,16 +40,10 @@ export const sentenceRuleOffsets = (
 export type SentenceListStyle = React.CSSProperties &
   Record<`--sentence-${string}`, string | number>;
 
-const LIST_GEOMETRY: SentenceListStyle = {
+export const SENTENCE_LIST_STYLE: SentenceListStyle = {
   '--sentence-line': `${SENTENCE_LINE_HEIGHT_PX}px`,
   '--sentence-row-border': `${SENTENCE_RULE_BORDER_PX}px`,
   '--sentence-row-padding': `${SENTENCE_RULE_PADDING_PX}px`,
   '--sentence-lines-gap': `${SENTENCE_LINES_GAP_PX}px`,
   '--sentence-row-gap': `${SENTENCE_RULE_GAP_PX}px`,
 };
-
-/** The list's geometry, and the width of its rule numbers when they show. */
-export const sentenceListStyle = (numbered: boolean, ruleCount: number): SentenceListStyle =>
-  numbered
-    ? { ...LIST_GEOMETRY, '--sentence-number-digits': String(ruleCount).length }
-    : LIST_GEOMETRY;

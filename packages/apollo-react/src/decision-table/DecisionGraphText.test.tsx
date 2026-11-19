@@ -473,6 +473,7 @@ describe('DecisionGraphText', () => {
     const scroller = screen.getByTestId('graph-scroller');
     expect(slot?.className).toContain('absolute');
     expect(slot?.parentElement).toBe(scroller.parentElement);
+    expect(scroller.firstElementChild).toHaveClass('mx-auto', 'w-full', 'max-w-3xl');
     expect(scroller.firstElementChild).toHaveStyle({
       paddingLeft: 'max(2rem, calc(167px - max(0px, (100% - 48rem) / 2)))',
     });
