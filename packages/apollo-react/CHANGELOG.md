@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.35.0...@uipath/apollo-react@7.36.0) (2026-11-19)
+
+### Features
+
+* **apollo-react:** DecisionText takes undo and redo [ECS-2139] ([102085b](https://github.com/UiPath/apollo-ui/commit/102085b6004728250ff31c50273d8c5664187483))
+
+### Bug Fixes
+
+* **apollo-wind:** animate the canvas glow on a compositor-only ring [ECS-2178] ([8a66349](https://github.com/UiPath/apollo-ui/commit/8a663491752cfa12338402500e5d9c643c78eef0))
+
 ## [@uipath/apollo-react-v7.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.34.0...@uipath/apollo-react@7.35.0) (2026-11-19)
 
 ### Features

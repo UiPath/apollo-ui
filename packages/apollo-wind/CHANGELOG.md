@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.95.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.95.0...@uipath/apollo-wind@2.95.1) (2026-11-19)
+
+### Bug Fixes
+
+* **apollo-wind:** animate the canvas glow on a compositor-only ring [ECS-2178] ([8a66349](https://github.com/UiPath/apollo-ui/commit/8a663491752cfa12338402500e5d9c643c78eef0))
+
 ## [@uipath/apollo-wind-v2.95.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.94.1...@uipath/apollo-wind@2.95.0) (2026-11-19)
 
 ### Features
