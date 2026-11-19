@@ -206,6 +206,21 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
     const group = useInputGroup();
     const groupAnchor = group.anchor;
     const grouped = group.inGroup;
+    const isDisabled = disabled || group.disabled;
+
+    const handleOpenChange = React.useCallback(
+      (nextOpen: boolean) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setQuery('');
+        if (!nextOpen && open) onBlur?.();
+      },
+      [onBlur, open]
+    );
+
+    React.useEffect(() => {
+      if (isDisabled && open) handleOpenChange(false);
+    }, [isDisabled, open, handleOpenChange]);
+
     const generatedId = React.useId();
     const validationId =
       errorId ?? `${id ?? `multi-select-${generatedId.replace(/:/g, '')}`}-error`;
@@ -260,7 +275,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
     const triggerProps = {
       id,
       role: 'combobox',
-      'aria-expanded': open,
+      'aria-expanded': open && !isDisabled,
       ...validation.aria,
       // aria-label always wins over a `<label htmlFor>` association in the
       // accessible-name computation, so only set it when there's no id for a
@@ -271,7 +286,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
         : selected.length > 0
           ? `${selected.length} ${selected.length === 1 ? 'item' : 'items'} selected`
           : placeholder,
-      disabled: disabled || group.disabled,
+      disabled: isDisabled,
     } as const;
 
     const triggerContent = (
@@ -412,14 +427,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
         // In a group, this root is the group's flex item, so it takes the row's free width.
         className={cn('relative', grouped && 'min-w-0 flex-1', className)}
       >
-        <Popover
-          open={open}
-          onOpenChange={(nextOpen) => {
-            setOpen(nextOpen);
-            if (!nextOpen) setQuery('');
-            if (!nextOpen && open) onBlur?.();
-          }}
-        >
+        <Popover open={open && !isDisabled} onOpenChange={handleOpenChange}>
           <PopoverTrigger asChild>
             {grouped ? (
               <InputGroupTrigger
@@ -451,7 +459,11 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
           {groupAnchor && (
             <PopoverAnchor virtualRef={groupAnchor as React.RefObject<HTMLElement>} />
           )}
-          <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+          <PopoverContent
+            hidden={isDisabled}
+            className="w-(--radix-popover-trigger-width) p-0"
+            align="start"
+          >
             <Command filter={filterOptions}>
               <CommandInput
                 placeholder={searchPlaceholder}

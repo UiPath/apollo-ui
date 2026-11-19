@@ -199,6 +199,29 @@ describe('MultiSelect', () => {
     expect(combobox).toBeDisabled();
   });
 
+  it('closes the options when disabled after opening', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onBlur = vi.fn();
+    const props = { options: mockOptions, selected: [], onChange, onBlur };
+    const { rerender } = render(<MultiSelect {...props} />);
+    const trigger = screen.getByRole('combobox');
+
+    await user.click(trigger);
+    expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
+
+    rerender(<MultiSelect {...props} disabled />);
+    expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onBlur).toHaveBeenCalledOnce();
+
+    rerender(<MultiSelect {...props} />);
+    expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
+    await user.click(trigger);
+    expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
+  });
+
   it('accepts custom className', () => {
     const onChange = vi.fn();
     const { container } = render(
