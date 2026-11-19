@@ -1,4 +1,4 @@
-import { stopTokensOf } from './sentenceParts';
+import { hasStop } from './sentenceParts';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 
 /** The rule `rowId`. */
@@ -34,7 +34,5 @@ export const liveSelection = (
   const rule = selected && rules.find((candidate) => candidate.rowId === selected.rowId);
   if (!selected || !rule) return null;
   if (selected.kind === 'rule') return selected;
-  return stopTokensOf(rule).some((token) => token.columnId === selected.columnId)
-    ? selected
-    : ruleSelection(rule.rowId);
+  return hasStop(rule, selected.columnId) ? selected : ruleSelection(rule.rowId);
 };
