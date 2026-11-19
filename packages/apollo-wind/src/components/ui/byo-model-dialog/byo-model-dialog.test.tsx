@@ -606,6 +606,18 @@ describe('ByoModelDialog', () => {
       expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toBeInTheDocument();
     });
 
+    it('picks the only API type again after a switch to another provider', async () => {
+      const user = userEvent.setup();
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
+
+      await pick(user, 'Provider', 'OpenAI');
+      const apiType = () => screen.getByRole('combobox', { name: 'API type' });
+      await waitFor(() => expect(apiType()).toHaveTextContent('OpenAI Responses'));
+      await pick(user, 'Provider', 'Azure OpenAI');
+
+      await waitFor(() => expect(apiType()).toHaveTextContent('OpenAI Responses'));
+    });
+
     it('says when a replaced UiPath model is being retired', async () => {
       const user = userEvent.setup();
       const api = fakeApi({

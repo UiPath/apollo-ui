@@ -513,14 +513,15 @@ function DialogBody({
       ? api.apiTypes(providerId, replacing ? (replacement?.name ?? null) : null)
       : [];
   const apiTypeKey = apiTypeOptions.map((t) => t.value).join('|');
-  // A choice the options no longer hold is dropped. As in AI Trust Layer, the first option is
-  // taken for a replacement, and the only one whenever there is just one.
+  // A choice the options no longer hold is dropped, and so is one cleared by a provider switch.
+  // As in AI Trust Layer, the first option is taken for a replacement, and the only one whenever
+  // there is just one.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the options are compared by their values
   React.useEffect(() => {
     if (apiTypeOptions.some((t) => t.value === apiType)) return;
     const first = apiTypeOptions[0]?.value ?? '';
     setApiType(replacing || apiTypeOptions.length === 1 ? first : '');
-  }, [apiTypeKey, replacing]);
+  }, [apiTypeKey, replacing, apiType]);
   const apiTypeReady = apiTypeOptions.some((t) => t.value === apiType);
 
   const busy = keyLocked || test.status === 'running' || test.status === 'ok';
