@@ -104,6 +104,9 @@ const getDefaultAdornments = (
   const hasBreakpoint = typeof executionState === 'object' && executionState?.debug;
   const isExecutionStartPoint =
     typeof executionState === 'object' && executionState?.isExecutionStartPoint;
+  const isSecondaryStartPoint =
+    typeof executionState === 'object' &&
+    executionState?.executionStartPointVariant === 'secondary';
 
   const hasValidationError =
     context.validationState?.validationStatus === ValidationErrorSeverity.ERROR ||
@@ -130,7 +133,9 @@ const getDefaultAdornments = (
   return {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
     topRight: getTopRight(),
-    bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
+    bottomLeft: isExecutionStartPoint ? (
+      <ExecutionStartPointIndicator filled={!isSecondaryStartPoint} />
+    ) : undefined,
     bottomRight: undefined,
   };
 };
