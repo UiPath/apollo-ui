@@ -981,5 +981,29 @@ describe('createCommunityByoApi', () => {
         apiType: 'OpenAiResponses',
       });
     });
+
+    it('reads a saved model named like an object property as a name of its own', async () => {
+      const { client } = await loaded();
+      routes.push(
+        on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-c`, () => ({
+          body: {
+            id: 'cfg-c',
+            folderId: 'me',
+            llmConfigurations: [
+              {
+                desiredModel: 'constructor',
+                customerModel: 'gpt-5',
+                connectorType: 'OpenAi',
+                connectionId: 'conn-1',
+              },
+            ],
+          },
+        }))
+      );
+
+      const editing = await client.loadModel({ configurationId: 'cfg-c', name: 'constructor' });
+
+      expect(editing.ok && editing.value).toMatchObject({ name: 'constructor', replaces: null });
+    });
   });
 });
