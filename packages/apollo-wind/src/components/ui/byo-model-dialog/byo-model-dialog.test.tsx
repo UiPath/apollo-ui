@@ -374,7 +374,7 @@ describe('ByoModelDialog', () => {
     });
   });
 
-  it("edits a model on the provider's first connection when its own is not listed", async () => {
+  it("edits a model on the provider's first connection when its own is not listed, picking its model again", async () => {
     const api = fakeApi({
       loadModel: vi.fn(async () => ({
         ok: true as const,
@@ -397,6 +397,11 @@ describe('ByoModelDialog', () => {
       )
     );
     expect(api.listModels).toHaveBeenCalledWith('openai', SAVED);
+    // Its model is picked again on that connection, never carried over from another account.
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Your model' })).not.toHaveTextContent('gpt-4o')
+    );
+    expect(screen.getByRole('button', { name: 'Test and save' })).toBeDisabled();
   });
 
   it('edits a saved connection in place', async () => {
