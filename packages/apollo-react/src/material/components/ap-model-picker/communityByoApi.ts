@@ -780,9 +780,7 @@ export function createCommunityByoApi(
   ) => {
     const provider = byId(providerId);
     if (!provider) return fail({ title: `Unknown provider ${providerId}` });
-    const formResult = await loadForm(providerId, connection.folderId);
-    if (!formResult.ok) return formResult;
-    const form = formResult.value;
+    const { form } = provider;
 
     // The same session Connect then submits the changes through.
     const s = await session(provider, connection.folderId, connection.id);
