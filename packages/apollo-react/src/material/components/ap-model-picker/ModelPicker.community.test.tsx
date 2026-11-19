@@ -276,13 +276,15 @@ describe('<ModelPicker isCommunity>', () => {
 
   it("edits a BYO row's model in the same dialog", async () => {
     const user = userEvent.setup();
+    // The host's refresh fails, so the catalog keeps the model as it was before the edit.
     const onCustomModelSaved = vi.fn();
     const notify = vi.fn();
+    const onChange = vi.fn();
     render(
       <ModelPicker
         models={[HOSTED, ADDED]}
         value={null}
-        onChange={() => {}}
+        onChange={onChange}
         canManageByo
         isCommunity
         requestContext={CTX}
@@ -307,6 +309,11 @@ describe('<ModelPicker isCommunity>', () => {
     const keys = fetchMock.mock.calls.map(([url, init]) => `${init?.method ?? 'GET'} ${url}`);
     expect(keys).toContain(`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`);
     expect(keys).not.toContain(`POST ${GATEWAY}/api/byo/product/llm-configurations`);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    // The pre-edit entry is not selected as though it were the saved model.
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('edits a model that replaces a UiPath model in the same dialog, keeping what it replaces', async () => {
