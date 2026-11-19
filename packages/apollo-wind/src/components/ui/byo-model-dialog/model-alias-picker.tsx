@@ -184,6 +184,9 @@ export function ModelAliasPicker({
                               aria-label={labels.editCustomAlias}
                               // The row selects the alias; the pencil edits it instead.
                               onPointerDown={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+                              }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
