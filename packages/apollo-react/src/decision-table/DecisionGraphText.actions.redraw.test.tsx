@@ -39,7 +39,7 @@ const Host = ({ initial }: { initial: FixtureGraph }) => {
         onReveal: () => {},
         edit: { actions: fixtureActions(graph, setGraph), wordRefusal: wordFixtureRefusal },
       }}
-      renderBody={() => null}
+      renderBody={() => ({ kind: 'other', content: null })}
       dataTestId="graph"
     />
   );
@@ -85,7 +85,7 @@ describe('rename while the host changes the name', () => {
           onReveal: () => {},
           edit: { actions, wordRefusal: (r) => r },
         }}
-        renderBody={() => null}
+        renderBody={() => ({ kind: 'other', content: null })}
         dataTestId="graph"
       />
     );

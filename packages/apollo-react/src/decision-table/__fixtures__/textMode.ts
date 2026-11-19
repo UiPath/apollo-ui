@@ -1,3 +1,4 @@
+import type { DecisionGraphBody, DecisionGraphTextProps } from '../DecisionGraphText';
 import type { DecisionTextMode, DecisionTextProps } from '../DecisionText';
 import type { DecisionTextTable } from '../sentenceTypes';
 import {
@@ -13,6 +14,26 @@ import {
 
 /** The view's props in the fixtures' operators, hit policies, column types and refusals. */
 export type FixtureTextProps = DecisionTextProps<
+  FixtureOperator,
+  FixturePolicy,
+  FixtureTotal,
+  FixtureType,
+  FixtureRefusal
+>;
+
+/** A graph body in the fixtures' operators, hit policies, column types and refusals. */
+export type FixtureGraphBody = DecisionGraphBody<
+  FixtureOperator,
+  FixturePolicy,
+  FixtureTotal,
+  FixtureType,
+  FixtureRefusal
+>;
+
+/** The graph's props with bodies in the fixtures' vocabulary and no decision refusals or logic. */
+export type FixtureGraphProps = DecisionGraphTextProps<
+  never,
+  never,
   FixtureOperator,
   FixturePolicy,
   FixtureTotal,

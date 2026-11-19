@@ -8,7 +8,11 @@ export type { ColumnChange, ColumnEdit, ColumnFieldData } from './ColumnPopover'
 export type { SizedColumn } from './columnSizing';
 export type { ColumnTypeOption } from './columnTypes';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
-export { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
+export {
+  type DecisionGraphBody,
+  DecisionGraphText,
+  type DecisionGraphTextProps,
+} from './DecisionGraphText';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
