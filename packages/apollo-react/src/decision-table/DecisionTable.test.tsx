@@ -474,6 +474,24 @@ describe('DecisionTable row hover', () => {
     expect(overlay().style.transform).toBe(`translateY(${BODY_ROW_HEIGHT_PX}px)`);
   });
 
+  // A rounded header height pushed the last row's hover past the frame.
+  it("sits on the row's exact top under a header of fractional height", () => {
+    const rect = vi
+      .spyOn(HTMLTableSectionElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(new DOMRect(0, 0, 400, 82.6640625));
+    const offset = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(83);
+    try {
+      renderContractTable();
+
+      fireEvent.pointerOver(screen.getByTestId('row-1'), { pointerType: 'mouse' });
+
+      expect(overlay().style.transform).toBe(`translateY(${82.6640625 + BODY_ROW_HEIGHT_PX}px)`);
+    } finally {
+      rect.mockRestore();
+      offset.mockRestore();
+    }
+  });
+
   it('stays hidden during a drag, whose rows are out of their places', () => {
     const { handle } = renderContractTable();
     act(() => {
