@@ -405,10 +405,13 @@ describe('DecisionGraphText minimap', () => {
             }}
           />
         )}
-        selected={selected?.id ?? null}
-        onReveal={(target) => {
-          if (target.kind === 'rule')
-            setSelected({ id: target.decisionId, rule: { kind: 'rule', rowId: target.rowId } });
+        mode={{
+          kind: 'select',
+          selected: selected?.id ?? null,
+          onReveal: (target) => {
+            if (target.kind === 'rule')
+              setSelected({ id: target.decisionId, rule: { kind: 'rule', rowId: target.rowId } });
+          },
         }}
         dataTestId="graph"
       />
@@ -500,7 +503,7 @@ describe('DecisionGraphText minimap', () => {
         }))}
         rules={(decisionId) => [ruleOf(decisionId === first.decisionId ? first : second)]}
         renderBody={() => null}
-        onReveal={onReveal}
+        mode={{ kind: 'select', selected: null, onReveal: onReveal }}
         dataTestId="graph"
       />
     );

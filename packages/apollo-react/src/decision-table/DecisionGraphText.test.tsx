@@ -48,15 +48,18 @@ const textBody = (
   />
 );
 
-const held = (expanded: ReadonlySet<string>): DecisionGraphTextProps['expansion'] => ({
+const held = (
+  expanded: ReadonlySet<string>
+): DecisionGraphTextProps<never, never>['expansion'] => ({
   expanded,
   onChange: () => {},
 });
 
-const graph = (props: Partial<DecisionGraphTextProps> = {}) => (
+const graph = (props: Partial<DecisionGraphTextProps<never, never>> = {}) => (
   <DecisionGraphText
     nodes={SHARED_DEPENDENCY.nodes}
     renderBody={(id, scroll) => textBody(id, scroll)}
+    mode={{ kind: 'read', selected: null }}
     dataTestId="graph"
     {...props}
   />
@@ -89,10 +92,13 @@ const SelectingHost = ({
           () => {}
         )
       }
-      selected={selected?.id ?? null}
-      onReveal={(target) => {
-        onReveal?.(target);
-        if (target.kind === 'rule') setSelected({ id: target.decisionId, rowId: target.rowId });
+      mode={{
+        kind: 'select',
+        selected: selected?.id ?? null,
+        onReveal: (target) => {
+          onReveal?.(target);
+          if (target.kind === 'rule') setSelected({ id: target.decisionId, rowId: target.rowId });
+        },
       }}
       dataTestId="graph"
     />
@@ -208,7 +214,7 @@ describe('DecisionGraphText', () => {
     'keyboard',
   ] as const)('links a decision drawn elsewhere, opening it by %s and bringing it to the top without moving focus', async (how) => {
     const onReveal = vi.fn();
-    render(graph({ onReveal }));
+    render(graph({ mode: { kind: 'select', selected: null, onReveal } }));
     const link = screen.getByTestId('graph-reference-link-pricing-risk');
     expect(screen.getByTestId('graph-reference-pricing-risk')).toHaveTextContent('See Risk above');
     if (how === 'click') await userEvent.click(link);
@@ -301,7 +307,7 @@ describe('DecisionGraphText', () => {
           },
         ],
         renderBody: () => null,
-        onReveal,
+        mode: { kind: 'select', selected: null, onReveal },
       })
     );
     await press(screen.getByTestId('graph-mark-offer'));
@@ -324,8 +330,12 @@ describe('DecisionGraphText', () => {
           renderBody={(id, scroll) =>
             textBody(id, scroll, shown?.id === id ? { kind: 'rule', rowId: shown.rowId } : null)
           }
-          onReveal={(target) => {
-            if (target.kind === 'rule') setShown({ id: target.decisionId, rowId: target.rowId });
+          mode={{
+            kind: 'select',
+            selected: null,
+            onReveal: (target) => {
+              if (target.kind === 'rule') setShown({ id: target.decisionId, rowId: target.rowId });
+            },
           }}
           dataTestId="graph"
         />
@@ -401,6 +411,7 @@ describe('DecisionGraphText', () => {
           </button>
           <DecisionGraphText
             nodes={SHARED_DEPENDENCY.nodes}
+            mode={{ kind: 'read', selected: null }}
             expansion={{ expanded, onChange: setExpanded }}
             onFold={(decisionId) => {
               onFold(decisionId);
@@ -521,9 +532,13 @@ describe('DecisionGraphText', () => {
               }}
             />
           )}
-          selected={selected?.id ?? null}
-          onReveal={(target) => {
-            if (target.kind === 'rule') setSelected({ id: target.decisionId, rowId: target.rowId });
+          mode={{
+            kind: 'select',
+            selected: selected?.id ?? null,
+            onReveal: (target) => {
+              if (target.kind === 'rule')
+                setSelected({ id: target.decisionId, rowId: target.rowId });
+            },
           }}
           dataTestId="graph"
         />

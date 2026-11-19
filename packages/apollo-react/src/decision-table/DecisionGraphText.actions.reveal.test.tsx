@@ -9,7 +9,7 @@ import {
   wordFixtureRefusal,
 } from './__fixtures__/graphActionsHost';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 const other = (id: string): DecisionGraphNode => ({
   kind: 'decision',
@@ -25,10 +25,12 @@ const Host = () => {
   const [model, setModel] = useState(() => graphOf(NODES));
   const nodes = useMemo(() => nodesOf(model), [model]);
   return (
-    <EditableDecisionGraphText
+    <DecisionGraphText
       nodes={nodes}
       mode={{
         kind: 'edit',
+        selected: null,
+        onReveal: () => {},
         edit: { actions: fixtureActions(model, setModel), wordRefusal: wordFixtureRefusal },
       }}
       renderBody={() => null}

@@ -1,3 +1,5 @@
+import type { DecisionGraphTarget } from './decisionGraphTypes';
+
 /** Where a decision sits: among the top-level decisions, or among one decision's required inputs, at an index of that list. */
 export type DecisionGraphPlace =
   | { kind: 'top'; index: number }
@@ -51,10 +53,16 @@ export interface DecisionGraphEdit<Refusal, Logic> {
   wordRefusal: (refusal: Refusal) => string;
 }
 
-/** Read the graph, or act on its decisions through the host. */
+/** Read the graph, follow what the view reveals, or also act on its decisions through the host. */
 export type DecisionGraphMode<Refusal, Logic> =
-  | { kind: 'read' }
-  | { kind: 'edit'; edit: DecisionGraphEdit<Refusal, Logic> };
+  | { kind: 'read'; selected: string | null }
+  | { kind: 'select'; selected: string | null; onReveal: (target: DecisionGraphTarget) => void }
+  | {
+      kind: 'edit';
+      selected: string | null;
+      onReveal: (target: DecisionGraphTarget) => void;
+      edit: DecisionGraphEdit<Refusal, Logic>;
+    };
 
 /** The strings of the decisions' menus and dialogs. */
 export interface DecisionGraphActionLabels {

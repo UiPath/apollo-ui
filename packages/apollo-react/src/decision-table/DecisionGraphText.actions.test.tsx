@@ -6,7 +6,7 @@ import { vi } from 'vitest';
 import { SHARED_DEPENDENCY } from './__fixtures__/decisionGraph.fixtures';
 import type { DecisionGraphAction } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 type Action = DecisionGraphAction<string, string>;
 
@@ -17,9 +17,14 @@ const graph = (
   nodes: readonly DecisionGraphNode[] = NODES,
   onOpenDecision: ((decisionId: string) => void) | undefined = undefined
 ) => (
-  <EditableDecisionGraphText
+  <DecisionGraphText
     nodes={nodes}
-    mode={{ kind: 'edit', edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` } }}
+    mode={{
+      kind: 'edit',
+      selected: null,
+      onReveal: () => {},
+      edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
+    }}
     renderBody={() => null}
     onOpenDecision={onOpenDecision}
     dataTestId="graph"
@@ -52,9 +57,9 @@ beforeEach(() => {
 describe('DecisionGraphText actions', () => {
   it('shows no menu, keys or add button when read only', () => {
     render(
-      <EditableDecisionGraphText
+      <DecisionGraphText
         nodes={NODES}
-        mode={{ kind: 'read' }}
+        mode={{ kind: 'read', selected: null }}
         renderBody={() => null}
         dataTestId="graph"
       />

@@ -2,17 +2,19 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { DecisionGraphAction, DecisionGraphMode } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 type Action = DecisionGraphAction<string, string>;
 
 const editMode = (actions: readonly Action[]): DecisionGraphMode<string, string> => ({
   kind: 'edit',
+  selected: null,
+  onReveal: () => {},
   edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
 });
 
 const graph = (mode: DecisionGraphMode<string, string>, nodes: readonly DecisionGraphNode[]) => (
-  <EditableDecisionGraphText nodes={nodes} mode={mode} renderBody={() => null} dataTestId="graph" />
+  <DecisionGraphText nodes={nodes} mode={mode} renderBody={() => null} dataTestId="graph" />
 );
 
 const leaf = (id: string, label: string): DecisionGraphNode => ({

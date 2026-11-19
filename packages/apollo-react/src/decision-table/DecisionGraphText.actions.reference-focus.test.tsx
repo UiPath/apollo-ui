@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import type { DecisionGraphAction } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 type Action = DecisionGraphAction<string, string>;
 
@@ -25,9 +25,14 @@ const withReference = (present: boolean): DecisionGraphNode[] => [
 ];
 
 const graph = (actions: readonly Action[], nodes: readonly DecisionGraphNode[]) => (
-  <EditableDecisionGraphText
+  <DecisionGraphText
     nodes={nodes}
-    mode={{ kind: 'edit', edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` } }}
+    mode={{
+      kind: 'edit',
+      selected: null,
+      onReveal: () => {},
+      edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
+    }}
     renderBody={() => null}
     dataTestId="graph"
   />

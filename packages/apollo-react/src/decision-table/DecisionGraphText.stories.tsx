@@ -29,7 +29,6 @@ import {
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
 import { selectedColumnOf } from './sentenceSelection';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
 
@@ -112,7 +111,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
   const isTableNow = (decisionId: string) =>
     model.decisions.get(decisionId)?.node.logic.kind === 'table';
 
-  const renderBody: DecisionGraphTextProps['renderBody'] = (
+  const renderBody: DecisionGraphTextProps<never, never>['renderBody'] = (
     decisionId,
     scroll,
     { revealDecision }
@@ -174,41 +173,43 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     );
   };
 
-  const view: DecisionGraphTextProps = {
-    nodes,
-    renderBody,
-    onFold: (decisionId) => {
-      if (editing?.decisionId === decisionId) setEditing(null);
-    },
-    selected: selected?.decisionId ?? null,
-    rules: (decisionId) => (isTableNow(decisionId) ? (rulesById.get(decisionId) ?? []) : []),
-    onReveal: (target) => {
-      setRevealed(target);
-      if (target.kind === 'rule') {
-        setSelected({
-          decisionId: target.decisionId,
-          selection: { kind: 'rule', rowId: target.rowId },
-        });
-      }
-    },
-    onOpenDecision: setOpened,
-    dataTestId: 'graph',
+  const onReveal = (target: DecisionGraphTarget) => {
+    setRevealed(target);
+    if (target.kind === 'rule') {
+      setSelected({
+        decisionId: target.decisionId,
+        selection: { kind: 'rule', rowId: target.rowId },
+      });
+    }
   };
+  const selectedDecision = selected?.decisionId ?? null;
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex h-[640px] flex-col border border-border-de-emp">
-        {mode === 'edit' ? (
-          <EditableDecisionGraphText
-            {...view}
-            mode={{
-              kind: 'edit',
-              edit: { actions: fixtureActions(model, setModel), wordRefusal: wordFixtureRefusal },
-            }}
-          />
-        ) : (
-          <DecisionGraphText {...view} />
-        )}
+        <DecisionGraphText
+          nodes={nodes}
+          renderBody={renderBody}
+          onFold={(decisionId) => {
+            if (editing?.decisionId === decisionId) setEditing(null);
+          }}
+          rules={(decisionId) => (isTableNow(decisionId) ? (rulesById.get(decisionId) ?? []) : [])}
+          onOpenDecision={setOpened}
+          mode={
+            mode === 'edit'
+              ? {
+                  kind: 'edit',
+                  selected: selectedDecision,
+                  onReveal,
+                  edit: {
+                    actions: fixtureActions(model, setModel),
+                    wordRefusal: wordFixtureRefusal,
+                  },
+                }
+              : { kind: 'select', selected: selectedDecision, onReveal }
+          }
+          dataTestId="graph"
+        />
       </div>
       <p className="text-xs text-foreground-de-emp" data-testid="graph-caption">
         Selected:{' '}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { vi } from 'vitest';
 import type { DecisionGraphAction } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 type Action = DecisionGraphAction<string, string>;
 
@@ -13,9 +13,14 @@ const graph = (
   nodes: readonly DecisionGraphNode[],
   renderBody: (id: string) => React.ReactNode = () => null
 ) => (
-  <EditableDecisionGraphText
+  <DecisionGraphText
     nodes={nodes}
-    mode={{ kind: 'edit', edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` } }}
+    mode={{
+      kind: 'edit',
+      selected: null,
+      onReveal: () => {},
+      edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
+    }}
     renderBody={renderBody}
     dataTestId="graph"
   />
