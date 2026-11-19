@@ -101,11 +101,17 @@ export const nodeDisplayManifestSchema = z.object({
  * Runtime constraints for the node.
  *
  * - `{ include: [...] }` — available exclusively in the listed runtimes
- * - `{ exclude: [...] }` — available in all runtimes except the listed ones
+ * - `{ exclude: [...] }` — deprecated, use `include`
  */
 export const nodeRuntimeConstraintsManifestSchema = z.union([
   z.object({ include: z.array(z.string()) }),
-  z.object({ exclude: z.array(z.string()) }),
+  z.object({
+    /**
+     * @deprecated Use `include`. An excluded node is available in every runtime added later,
+     * so each new runtime forces a manifest update to opt the node back out.
+     */
+    exclude: z.array(z.string()),
+  }),
 ]);
 
 /**
