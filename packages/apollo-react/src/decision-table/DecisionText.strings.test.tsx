@@ -30,6 +30,8 @@ const VIEW_CALLS: Calls<DecisionTextLabels> = {
     ['income', '', 1],
   ],
   openDecision: [['income']],
+  openCitation: [[3]],
+  citationPage: [[3]],
   changeStatus: [['add'], ['update'], ['delete']],
   movedFrom: [[2]],
   unchangedRules: [[1], [12]],

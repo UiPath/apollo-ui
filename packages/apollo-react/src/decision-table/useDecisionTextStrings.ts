@@ -64,6 +64,14 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
           message: "Open {input}'s decision",
           values: { input },
         }),
+      openCitation: (page) =>
+        _({
+          id: 'decision-text.open_citation',
+          message: 'Open source, page {page}',
+          values: { page },
+        }),
+      citationPage: (page) =>
+        _({ id: 'decision-text.citation_page', message: 'Page {page}', values: { page } }),
       changeStatus: (change) => changes[change],
       movedFrom: (number) =>
         _({

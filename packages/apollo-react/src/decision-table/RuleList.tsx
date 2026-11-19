@@ -25,6 +25,7 @@ export interface RuleListProps {
   selectedColumnId: string | null;
   selectable: boolean;
   decisionLinks: boolean;
+  citations: RuleCardProps['citations'];
   /** Read cards; editable ones with the open menu and the condition the open editor adds; or a diff's, with each shown row's change or fold. */
   mode:
     | { kind: 'read' }
@@ -57,6 +58,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       selectedColumnId,
       selectable,
       decisionLinks,
+      citations,
       mode,
       style,
       idPrefix,
@@ -119,6 +121,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                 }
                 selectable={selectable}
                 decisionLinks={decisionLinks}
+                citations={citations}
                 {...cardModeOf(rule.rowId, row?.kind === 'rule' ? row.diff : undefined)}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}

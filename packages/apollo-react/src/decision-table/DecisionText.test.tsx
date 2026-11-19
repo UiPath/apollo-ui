@@ -2773,6 +2773,7 @@ describe('DecisionText', () => {
     it('takes edit only with a controlled selection, without which no card control is tabbable', () => {
       render(
         <DecisionText
+          citations={{ kind: 'none' }}
           table={{
             rules: GRID_SENTENCE_RULES,
             ...GRID_SENTENCE_COLUMNS,
@@ -5915,6 +5916,7 @@ describe('DecisionText', () => {
     it('takes onSelect only with selected, without which no stop or link is tabbable', () => {
       render(
         <DecisionText
+          citations={{ kind: 'none' }}
           table={{ rules: linkedRules, ...GRID_SENTENCE_COLUMNS, hitPolicy: GRID_SENTENCE_POLICY }}
           hitPolicies={HIT_POLICIES}
           columnTypes={COLUMN_TYPES}
