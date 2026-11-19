@@ -34,6 +34,7 @@ import { useCellHover } from './useCellHover';
 import { useColumnEditing } from './useColumnEditing';
 import {
   type ContainerHandlersParams,
+  type TextHistory,
   type DecisionTextContainerProps,
   useContainerHandlers,
 } from './useContainerHandlers';
@@ -54,14 +55,14 @@ type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
 export type DecisionTextMode<Op, Policy, Total, Type, Refusal> =
   | { kind: 'read'; selected: SentenceSelection | null }
   | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
-  | {
+  | (TextHistory & {
       kind: 'edit';
       selected: SentenceSelection | null;
       onSelect: SelectHandler;
       edit: DecisionTextEdit<Op, Type, Refusal>;
       onPolicyChange: (picked: HitPolicyPick<Policy, Total>) => void;
       onAddRule: () => void;
-    }
+    })
   | {
       kind: 'diff';
       /** What changed, painted on the table's after-state rules; a new diff closes every fold, so memoize it. */
@@ -220,6 +221,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     container: ruleWindow.container,
     stopTabbable: selectable && ruleWindow.selectedRow !== null,
     focusRow: setFocusedRowId,
+    history: mode.kind === 'edit' ? { onUndo: mode.onUndo, onRedo: mode.onRedo } : null,
   });
   const columnEditing = useColumnEditing({
     column: mode.kind === 'edit' ? mode.edit.column : undefined,

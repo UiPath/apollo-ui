@@ -32,6 +32,7 @@ import {
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
+import { useStoryHistory } from './__fixtures__/useStoryHistory';
 import type { FixtureEdit, FixtureTextProps } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
 import type { Mark, RowMark, TableMarks } from './marks';
@@ -120,7 +121,12 @@ const TableHost = ({
   renderEditor,
   frameClassName = 'h-[600px]',
 }: TableHostProps) => {
-  const [host, setHost] = useState(() => storyTableOf(initialTable));
+  const {
+    state: host,
+    set: setHost,
+    onUndo,
+    onRedo,
+  } = useStoryHistory(() => storyTableOf(initialTable));
   const { table } = host;
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   const [hovered, setHovered] = useState<SentenceCellId | null>(null);
@@ -141,7 +147,7 @@ const TableHost = ({
 
   const { columns, hitPolicy, edit, onPolicyChange, onAddRule } = storyTableProps({
     state: host,
-    onChange: setHost,
+    onChange: (next) => setHost(() => next),
     onSelect: setSelected,
     onMoreProperties: setMoreProperties,
     renderEditor,
@@ -163,7 +169,16 @@ const TableHost = ({
           mode === 'read'
             ? { kind: 'read', selected: null }
             : mode === 'edit'
-              ? { kind: 'edit', selected, onSelect: setSelected, edit, onPolicyChange, onAddRule }
+              ? {
+                  kind: 'edit',
+                  selected,
+                  onSelect: setSelected,
+                  edit,
+                  onPolicyChange,
+                  onAddRule,
+                  onUndo,
+                  onRedo,
+                }
               : { kind: 'select', selected, onSelect: setSelected }
         }
         onOpenDecision={setOpenedDecision}

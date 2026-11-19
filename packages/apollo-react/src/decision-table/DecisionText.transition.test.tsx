@@ -89,6 +89,8 @@ describe('DecisionText value popover across a suspended transition', () => {
               onSelect: () => {},
               onPolicyChange: () => {},
               onAddRule: () => {},
+              onUndo: () => {},
+              onRedo: () => {},
               edit: {
                 editing,
                 onStartEdit: setEditing,
@@ -161,6 +163,8 @@ describe('DecisionText value popover reopened after a value with no row', () => 
             onSelect: () => {},
             onPolicyChange: () => {},
             onAddRule: () => {},
+            onUndo: () => {},
+            onRedo: () => {},
             edit: {
               editing: state.editing,
               onStartEdit: (value) => drive(value),
@@ -229,6 +233,8 @@ describe('DecisionText value popover reopened after a value with no row', () => 
             onSelect: () => {},
             onPolicyChange: () => {},
             onAddRule: () => {},
+            onUndo: () => {},
+            onRedo: () => {},
             edit: {
               editing: state.editing,
               onStartEdit: (value) => drive(value),

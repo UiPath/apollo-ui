@@ -402,6 +402,8 @@ describe('DecisionGraphText minimap', () => {
               },
               onPolicyChange: vi.fn(),
               onAddRule: vi.fn(),
+              onUndo: () => {},
+              onRedo: () => {},
             }}
           />
         )}
