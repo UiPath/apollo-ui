@@ -1,6 +1,6 @@
 import { i18n } from '@lingui/core';
 import { Trans } from '@lingui/react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -334,6 +334,14 @@ describe('ApI18nProvider', () => {
   describe('Host locale reconciliation', () => {
     const originalLang = document.documentElement.lang;
 
+    // The lingui singleton is shared by every test: start each one with empty
+    // buckets for the tags used here, so no test sees another one's strings.
+    beforeEach(() => {
+      ['zh-tw', 'zh-TW', 'pt-br', 'pt-BR', 'ja'].forEach((locale) => {
+        i18n.loadAndActivate({ locale, messages: {} });
+      });
+    });
+
     afterEach(() => {
       document.documentElement.lang = originalLang;
     });
@@ -409,6 +417,119 @@ describe('ApI18nProvider', () => {
       );
 
       expect(i18n.locale).toBe('zh-tw');
+    });
+    it('should keep the host bucket when an explicit prop uses another spelling', () => {
+      i18n.loadAndActivate({ locale: 'zh-TW', messages: { 'host.string': '主機字串' } });
+
+      render(
+        <ApI18nProvider component="canvas" locale="zh-tw">
+          <div data-testid="host">
+            <Trans id="host.string" />
+          </div>
+          <div data-testid="canvas">
+            <Trans id="add-node-panel.search-nodes" />
+          </div>
+        </ApI18nProvider>
+      );
+
+      expect(i18n.locale).toBe('zh-TW');
+      expect(screen.getByTestId('host')).toHaveTextContent('主機字串');
+      expect(screen.getByTestId('canvas')).toHaveTextContent('搜尋節點');
+    });
+
+    it('should activate a padded locale prop without its spaces', () => {
+      i18n.loadAndActivate({ locale: 'en', messages: {} });
+
+      render(
+        <ApI18nProvider component="canvas" locale=" zh-tw ">
+          <div data-testid="canvas">
+            <Trans id="add-node-panel.search-nodes" />
+          </div>
+        </ApI18nProvider>
+      );
+
+      expect(i18n.locale).toBe('zh-tw');
+      expect(screen.getByTestId('canvas')).toHaveTextContent('搜尋節點');
+    });
+
+    it('should add its strings when the host switches language after mount', () => {
+      document.documentElement.lang = 'en';
+      i18n.loadAndActivate({ locale: 'en', messages: {} });
+      render(
+        <ApI18nProvider component="canvas">
+          <div data-testid="host">
+            <Trans id="host.string" />
+          </div>
+          <div data-testid="canvas">
+            <Trans id="add-node-panel.search-nodes" />
+          </div>
+        </ApI18nProvider>
+      );
+
+      act(() => {
+        i18n.loadAndActivate({ locale: 'zh-tw', messages: { 'host.string': '主機字串' } });
+      });
+
+      expect(i18n.locale).toBe('zh-tw');
+      expect(screen.getByTestId('host')).toHaveTextContent('主機字串');
+      expect(screen.getByTestId('canvas')).toHaveTextContent('搜尋節點');
+    });
+
+    it.each([
+      ['a stale page lang', undefined],
+      ['a stale locale prop', 'pt-BR'],
+    ])('should not pull the host back after it switches language, with %s', (_, prop) => {
+      document.documentElement.lang = 'pt-br';
+      i18n.loadAndActivate({ locale: 'pt-br', messages: { 'host.string': 'host pt-br' } });
+      const ui = () => (
+        <ApI18nProvider component="canvas" locale={prop}>
+          <div data-testid="host">
+            <Trans id="host.string" />
+          </div>
+          <div data-testid="canvas">
+            <Trans id="add-node-panel.search-nodes" />
+          </div>
+        </ApI18nProvider>
+      );
+      const { rerender } = render(ui());
+
+      act(() => {
+        i18n.loadAndActivate({ locale: 'zh-tw', messages: { 'host.string': '主機字串' } });
+      });
+      // A new element, so React re-renders the provider as a parent would.
+      rerender(ui());
+
+      expect(i18n.locale).toBe('zh-tw');
+      expect(screen.getByTestId('host')).toHaveTextContent('主機字串');
+      expect(screen.getByTestId('canvas')).toHaveTextContent('搜尋節點');
+    });
+
+    it('should settle when two providers fill the bucket after a switch', () => {
+      document.documentElement.lang = 'en';
+      i18n.loadAndActivate({ locale: 'en', messages: {} });
+      render(
+        <>
+          <ApI18nProvider component="canvas">
+            <div data-testid="canvas">
+              <Trans id="add-node-panel.search-nodes" />
+            </div>
+          </ApI18nProvider>
+          <ApI18nProvider component="chat">
+            <div />
+          </ApI18nProvider>
+        </>
+      );
+      const changes = vi.fn();
+      const unsubscribe = i18n.on('change', changes);
+
+      act(() => {
+        i18n.loadAndActivate({ locale: 'zh-tw', messages: {} });
+      });
+      unsubscribe();
+
+      expect(screen.getByTestId('canvas')).toHaveTextContent('搜尋節點');
+      // The host's switch, then one fill per provider.
+      expect(changes.mock.calls.length).toBeLessThanOrEqual(3);
     });
   });
 

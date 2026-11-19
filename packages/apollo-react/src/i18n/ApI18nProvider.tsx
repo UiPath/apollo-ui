@@ -1,4 +1,4 @@
-import { i18n } from '@lingui/core';
+import { i18n, type Messages } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
 import { type ReactNode, useCallback, useEffect } from 'react';
 
@@ -79,20 +79,46 @@ export interface ApI18nProviderProps {
  * </ApI18nProvider>
  * ```
  */
+/**
+ * Loads apollo-react's catalog into the active bucket when any of its ids is
+ * missing there. Only the active bucket can be read through lingui's public
+ * API.
+ */
+function fillActiveBucket(messages: Messages) {
+  const active = i18n.messages;
+  // `load` emits `change`, so loading only when an id is missing also ends the
+  // change listener below once the bucket is complete.
+  if (Object.keys(messages).some((id) => !Object.hasOwn(active, id))) {
+    i18n.load(i18n.locale, messages);
+  }
+}
+
 export function ApI18nProvider({ component, locale: propLocale, children }: ApI18nProviderProps) {
-  const requested = propLocale || document.documentElement.lang || 'en';
+  const ownLocale = propLocale?.trim() || undefined;
+  const requested = ownLocale || document.documentElement.lang.trim() || 'en';
   const catalog = resolveSupportedLocale(requested) ?? 'en';
 
-  // Which *spelling* of that language to activate. Hosts key their lingui
-  // catalogs by whatever tag they were handed, and lingui compares those keys
-  // byte-for-byte — so activating our canonical tag over a host sitting on
-  // `zh-tw` would point the shared singleton at a bucket the host never wrote
-  // to, and every host string would miss and fall back to its source text.
-  // Keep the owner's spelling whenever it means the same language.
-  const preferred = propLocale || i18n.locale || undefined;
-  const target = preferred && resolveSupportedLocale(preferred) === catalog ? preferred : catalog;
-
   const loadAndActivate = useCallback(() => {
+    // Which *spelling* of that language to activate. Hosts key their lingui
+    // catalogs by whatever tag they were handed, and lingui compares those keys
+    // byte-for-byte — so activating our canonical tag over a host sitting on
+    // `zh-tw` would point the shared singleton at a bucket the host never wrote
+    // to, and every host string would miss and fall back to its source text.
+    // The host's active spelling wins when it is the same language, even over
+    // an explicit prop; the prop's spelling (trimmed) is used otherwise.
+    //
+    // Decided here, when we activate (on mount, or when the requested language
+    // changes), not during render: if it followed the host's locale on every
+    // render, a host switching language would change the spelling, re-run this
+    // effect and pull the host back to a stale prop or page language.
+    const hostLocale = i18n.locale;
+    const target =
+      hostLocale && resolveSupportedLocale(hostLocale) === catalog
+        ? hostLocale
+        : ownLocale && resolveSupportedLocale(ownLocale) === catalog
+          ? ownLocale
+          : catalog;
+
     const preImportedLocales = getAllPreImportedLocales(component);
 
     if (!preImportedLocales) {
@@ -112,17 +138,33 @@ export function ApI18nProvider({ component, locale: propLocale, children }: ApI1
     });
 
     // `load` merges, so filing our catalog under the host's spelling adds our
-    // strings to its bucket without disturbing the host's own.
+    // strings to its bucket without disturbing the host's own. A copy, so the
+    // bucket never shares an object with the imported catalog.
     if (target !== catalog) {
-      i18n.load(target, preImportedLocales[catalog] ?? {});
+      i18n.load(target, { ...preImportedLocales[catalog] });
     }
 
     i18n.activate(target);
-  }, [component, catalog, target]);
+  }, [component, catalog, ownLocale]);
 
   useEffect(() => {
     loadAndActivate();
   }, [loadAndActivate]);
+
+  // The host may switch language after this provider mounts, or replace the
+  // active bucket with `loadAndActivate`. Either way our strings are missing
+  // from the bucket now active, so add them. This never activates a locale:
+  // the host stays in charge of which one is shown.
+  useEffect(() => {
+    const preImportedLocales = getAllPreImportedLocales(component);
+    if (!preImportedLocales) return;
+    return i18n.on('change', () => {
+      const active = i18n.locale;
+      const activeCatalog = active ? resolveSupportedLocale(active) : undefined;
+      const messages = activeCatalog && preImportedLocales[activeCatalog];
+      if (messages) fillActiveBucket(messages);
+    });
+  }, [component]);
 
   return <I18nProvider i18n={i18n}>{children}</I18nProvider>;
 }
