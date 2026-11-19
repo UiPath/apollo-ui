@@ -186,7 +186,7 @@ function DialogBody({
   const [name, setName] = React.useState('');
   // A name of the user's own, or the UiPath model the model replaces, whose name it then takes.
   const [useAs, setUseAs] = React.useState<'own' | 'replacement'>('replacement');
-  const [dismissedFailure, setDismissedFailure] = React.useState<ByoFailure | null>(null);
+  const [dismissedFailures, setDismissedFailures] = React.useState<ByoFailure[]>([]);
   const [replaces, setReplaces] = React.useState('');
   const [apiType, setApiType] = React.useState('');
   const [test, setTest] = React.useState<Attempt<ByoSavedModel>>({ status: 'idle' });
@@ -678,7 +678,7 @@ function DialogBody({
       connect.status === 'error' ? connect.failure : null,
       test.status === 'error' ? test.failure : null,
       modelsState.status === 'error' ? (modelsState.failure ?? null) : null,
-    ].find((f) => f && f !== dismissedFailure) ?? null;
+    ].find((f) => f && !dismissedFailures.includes(f)) ?? null;
 
   let aliasHint = { text: labels.nameHint, tone: 'text-foreground-muted' };
   if (replacing && replacement?.retiresOn) {
@@ -1021,7 +1021,7 @@ function DialogBody({
           <FailureAlert
             failure={failure}
             labels={labels}
-            onDismiss={() => setDismissedFailure(failure)}
+            onDismiss={() => setDismissedFailures((prev) => [...prev, failure])}
           />
         </div>
       )}
