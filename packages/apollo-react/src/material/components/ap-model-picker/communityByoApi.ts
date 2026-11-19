@@ -1,4 +1,5 @@
 import type {
+  ByoApiType,
   ByoConnection,
   ByoConnectionForm,
   ByoConnectionValues,
@@ -9,6 +10,7 @@ import type {
   ByoModelDialogApi,
   ByoModelToEdit,
   ByoProviderModel,
+  ByoReplaceableModel,
   ByoResult,
   ByoSavedModel,
 } from '@uipath/apollo-wind';
@@ -31,14 +33,24 @@ import { buildGatewayUrl, type PlatformRequestContext, resolveToken } from './us
  *      answers at once.
  *   4. `GET connections_/api/v1/Sessions/{id}` until the connection exists.
  *   5. `PATCH Connections/{id}/rename` names it.
- * The form is read from the connector definition
- * (`elements_/v3/element/elements/{key}`), with the session form as fallback.
- * Steps 2, 3 and the definition are Udon routes IS has not published; see
+ * Each provider's form is declared here, not read from IS: IS's form schema is
+ * what its own page understands, with no contract behind it, and it differs by
+ * connector. What the dialog relies on is the connector's config keys, which IS
+ * cannot rename without breaking every connection already saved.
+ * Steps 2 and 3 are Udon routes IS has not published; see
  * Confluence "BYOM for DLG: creating connections inline" (LLM-4518).
  *
  * Test and save runs the gateway's `llm-configurations/validate`, then saves
  * the configuration: `POST llm-configurations` for a new model,
- * `PUT llm-configurations/{id}` for an edited one.
+ * `PUT llm-configurations/{id}` for an edited one. It saves what AI Trust
+ * Layer's own form saves: a `SelfServe` entry with its API type, whose
+ * `defaultModel` is its own name.
+ *
+ * Which UiPath models can be replaced and through which API types follow AI
+ * Trust Layer's form too, from the same gateway reads: the feature's models and
+ * probes (`byom/products`), the models each connector serves
+ * (`byom/vendors/llms`) and each model's API types
+ * (`byom/vendors/llms/api-flavors`).
  */
 
 export interface CommunityByoProvider {
@@ -48,15 +60,68 @@ export interface CommunityByoProvider {
   connector: string;
   /** The gateway's `connectorType`. */
   connectorType: string;
-  /** The design's wording over IS's field labels, keyed by IS field key. */
-  overlay?: Record<
-    string,
-    { label?: string; placeholder?: string; hint?: string; primary?: boolean }
-  >;
-  authLabels?: Record<string, string>;
+  /** The connection form, keyed by the connector's config keys. */
+  form: ByoConnectionForm;
   /** Values the gateway needs that the form never asks for, worked out from the others. */
   derive?: (values: Record<string, string>) => Record<string, string>;
 }
+
+type FieldSpec = Partial<Omit<ByoFormField, 'key' | 'label'>>;
+
+/** A field: a required free-text field unless `spec` says otherwise. */
+const field = (key: string, label: string, spec: FieldSpec = {}): ByoFormField => ({
+  key,
+  label,
+  secret: false,
+  required: true,
+  advanced: false,
+  group: null,
+  defaultValue: '',
+  placeholder: '',
+  hint: '',
+  ...spec,
+});
+
+const secret = (key: string, label: string, spec: FieldSpec = {}) =>
+  field(key, label, { secret: true, ...spec });
+
+/** An optional field under "More settings". */
+const advanced = (key: string, label: string, spec: FieldSpec = {}) =>
+  field(key, label, { required: false, advanced: true, ...spec });
+
+const singleAuth = (...fields: ByoFormField[]): ByoConnectionForm => ({
+  authTypes: [],
+  defaultAuthType: null,
+  fields,
+});
+
+// The commercial regions the connector offers. The gateway calls
+// bedrock-runtime.{region}.amazonaws.com, which the China, GovCloud and ISO regions are not.
+const AWS_REGIONS: [string, string][] = [
+  ['us-east-1', 'US East (N. Virginia)'],
+  ['us-east-2', 'US East (Ohio)'],
+  ['us-west-1', 'US West (N. California)'],
+  ['us-west-2', 'US West (Oregon)'],
+  ['ca-central-1', 'Canada (Central)'],
+  ['sa-east-1', 'South America (Sao Paulo)'],
+  ['eu-central-1', 'EU (Frankfurt)'],
+  ['eu-north-1', 'EU (Stockholm)'],
+  ['eu-south-1', 'EU (Milan)'],
+  ['eu-west-1', 'EU (Ireland)'],
+  ['eu-west-2', 'EU (London)'],
+  ['eu-west-3', 'EU (Paris)'],
+  ['me-south-1', 'Middle East (Bahrain)'],
+  ['af-south-1', 'Africa (Cape Town)'],
+  ['ap-east-1', 'Asia Pacific (Hong Kong)'],
+  ['ap-south-1', 'Asia Pacific (Mumbai)'],
+  ['ap-northeast-1', 'Asia Pacific (Tokyo)'],
+  ['ap-northeast-2', 'Asia Pacific (Seoul)'],
+  ['ap-northeast-3', 'Asia Pacific (Osaka)'],
+  ['ap-southeast-1', 'Asia Pacific (Singapore)'],
+  ['ap-southeast-2', 'Asia Pacific (Sydney)'],
+];
+
+const IAM_ROLE_PLACEHOLDER = 'arn:aws:iam::123456789012:role/my-role';
 
 export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
   {
@@ -64,19 +129,36 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
     name: 'OpenAI',
     connector: 'uipath-openai-openai',
     connectorType: 'OpenAi',
-    overlay: { Authorization: { placeholder: 'sk-…' } },
+    form: singleAuth(
+      secret('Authorization', 'API key', {
+        placeholder: 'sk-…',
+        hint: 'Find it in the OpenAI dashboard, under API keys.',
+      })
+    ),
   },
   {
     id: 'azure-openai',
     name: 'Azure OpenAI',
     connector: 'uipath-microsoft-azureopenai',
     connectorType: 'AzureOpenAi',
-    overlay: {
-      url: { label: 'Endpoint', placeholder: 'https://<resource>.openai.azure.com', primary: true },
-    },
-    authLabels: {
-      customApiKey: 'API key',
-      oauth2ClientCredentials: 'Client credentials (Entra app)',
+    form: {
+      authTypes: [
+        { value: 'customApiKey', label: 'API key' },
+        { value: 'oauth2ClientCredentials', label: 'Client credentials (Entra app)' },
+      ],
+      defaultAuthType: 'customApiKey',
+      fields: [
+        // IS takes the connection without it, but the gateway calls the resource it names.
+        field('url', 'Endpoint', { placeholder: 'https://<resource>.openai.azure.com' }),
+        secret('api-key', 'API key', {
+          group: 'customApiKey',
+          hint: "Find it in the Azure portal, on the resource's Keys and Endpoint page.",
+        }),
+        field('oauth.api.key', 'Client ID', { group: 'oauth2ClientCredentials' }),
+        secret('oauth.api.secret', 'Client secret', { group: 'oauth2ClientCredentials' }),
+        field('tenantID', 'Tenant ID', { group: 'oauth2ClientCredentials' }),
+        advanced('api-version', 'API version', { defaultValue: '2023-10-01-preview' }),
+      ],
     },
     // IS connects without `subdomain`, but the gateway's Azure client builds
     // https://{subdomain}.openai.azure.com/ from it alone.
@@ -89,37 +171,91 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
       }
     },
   },
+  // AI Trust Layer reaches Bedrock through the Amazon Web Services connector, never `uipath-aws-bedrock`.
+  // Its third authentication type, a UiPath-managed cross-account role, needs onboarding by support.
   {
     id: 'bedrock',
     name: 'Amazon Bedrock',
-    connector: 'uipath-aws-bedrock',
-    connectorType: 'AwsBedrock',
-    overlay: { 'aws.region': { label: 'Region' } },
+    connector: 'uipath-amazon-webservices',
+    connectorType: 'AmazonWebServices',
+    form: {
+      authTypes: [
+        { value: 'accessKey', label: 'Access key' },
+        { value: 'assumeRole', label: 'Assume role' },
+      ],
+      defaultAuthType: 'accessKey',
+      fields: [
+        // The gateway calls Bedrock in the connection's region.
+        field('aws.region', 'Region', {
+          placeholder: 'Select a region',
+          options: AWS_REGIONS.map(([value, label]) => ({ value, label: `${label} · ${value}` })),
+        }),
+        field('aws.api.key', 'Access key ID', { group: 'accessKey' }),
+        secret('aws.api.secret', 'Secret access key', { group: 'accessKey' }),
+        advanced('aws.temporary.session.token', 'Session token', {
+          secret: true,
+          group: 'accessKey',
+          hint: 'Only for temporary credentials.',
+        }),
+        field('assume.role.aws.api.key', 'Access key ID', { group: 'assumeRole' }),
+        secret('assume.role.aws.api.secret', 'Secret access key', { group: 'assumeRole' }),
+        field('assume.role.aws.iam.role', 'IAM role ARN', {
+          group: 'assumeRole',
+          placeholder: IAM_ROLE_PLACEHOLDER,
+          hint: 'The role these credentials assume to call Bedrock.',
+        }),
+        advanced('assume.role.aws.temporary.session.token', 'Session token', {
+          secret: true,
+          group: 'assumeRole',
+          hint: 'Only for temporary credentials.',
+        }),
+      ],
+    },
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic',
+    connector: 'uipath-anthropic-claude',
+    connectorType: 'Anthropic',
+    form: singleAuth(secret('x-api-key', 'API key', { placeholder: 'sk-ant-…' })),
   },
   {
     id: 'vertex',
     name: 'Google Vertex',
     connector: 'uipath-google-vertex',
     connectorType: 'GoogleVertex',
-    overlay: { region: { label: 'Location' } },
+    form: singleAuth(
+      field('project.id', 'Project ID'),
+      field('region', 'Location', { defaultValue: 'us-central1' }),
+      secret('service.account.key', 'Service account key', {
+        hint: "The service account's JSON key.",
+      })
+    ),
   },
   {
     id: 'nvidia-nim',
     name: 'Nvidia NIM',
     connector: 'uipath-nvidia-nim',
     connectorType: 'NvidiaNim',
-    overlay: { url: { label: 'Base URL' }, apikey: { label: 'API key' } },
+    form: singleAuth(
+      field('url', 'Base URL', { defaultValue: 'https://integrate.api.nvidia.com' }),
+      secret('apikey', 'API key'),
+      field('api_version', 'API version', { defaultValue: 'v1' })
+    ),
   },
   {
     id: 'openai-compatible',
     name: 'OpenAI-compatible',
     connector: 'uipath-openai-openaiv1compliant',
     connectorType: 'OpenAiV1Compatible',
-    // The connector appends /v1 itself.
-    overlay: {
-      url: { label: 'Base URL', placeholder: 'https://api.example.com', primary: true },
-      apikey: { label: 'API key' },
-    },
+    form: singleAuth(
+      // The connector appends /v1 itself.
+      field('url', 'Base URL', {
+        placeholder: 'https://api.example.com',
+        hint: 'Without /v1: the connector adds it.',
+      }),
+      secret('apikey', 'API key')
+    ),
   },
 ];
 
@@ -142,18 +278,10 @@ interface CallResult {
   data: unknown;
 }
 
+/** A field of the session's form; Connect sends back the defaults it carries. */
 interface IsConfigEntry {
   key: string;
-  name?: string;
-  type?: string;
-  required?: boolean;
   defaultValue?: string | null;
-  hintText?: string;
-  displayOrder?: number;
-  configScreenType?: string;
-  hideFromConsole?: boolean;
-  groupBy?: string;
-  options?: { value: string; displayValue?: string; description?: string }[];
 }
 
 interface IsSession {
@@ -190,11 +318,66 @@ interface LlmConfigurationEntry {
 interface ProductLlmConfiguration {
   id: string;
   folderId: string;
+  product?: string;
+  operationGroupName?: string;
   llmConfigurations: LlmConfigurationEntry[];
   [field: string]: unknown;
 }
 
-const SHOWN_SCREENS = new Set(['pre', 'pre-optional']);
+interface FeatureProbe {
+  apiFlavor?: string;
+}
+
+/** A UiPath model of a BYO feature, as `byom/products` returns it. */
+interface FeatureModel {
+  model: string;
+  usageEndDate?: string;
+  probes?: FeatureProbe[] | null;
+}
+
+/** A BYO feature (operation group), as `byom/products` returns it. */
+interface FeatureConfiguration {
+  modelsConfigurationOption?: string;
+  models?: FeatureModel[];
+  probes?: FeatureProbe[] | null;
+}
+
+/** What the context read about the feature, which `apiTypes` and the saves answer from. */
+interface FeatureRules {
+  feature: FeatureConfiguration;
+  /** UiPath model → the connector types that serve it, grouped as AI Trust Layer groups them. */
+  connectorTypesByModel: Record<string, string[]>;
+  /** UiPath model → the API types a BYO connection may use in its place. */
+  apiTypesByModel: Record<string, string[] | null>;
+}
+
+const flavorsOf = (probes?: FeatureProbe[] | null) => [
+  ...new Set((probes ?? []).flatMap((p) => (p.apiFlavor ? [p.apiFlavor] : []))),
+];
+
+/** A retirement date worth showing: AI Trust Layer reads `N/A` as none. */
+const retirementOf = (model: FeatureModel) =>
+  model.usageEndDate && model.usageEndDate !== 'N/A' ? model.usageEndDate : undefined;
+
+/** AI Trust Layer's model → connector types map, from the connector → models one. */
+function connectorTypesByModelOf(data: unknown): Record<string, string[]> {
+  const byModel: Record<string, string[]> = {};
+  for (const [connectorType, models] of Object.entries((data ?? {}) as Record<string, unknown>)) {
+    if (!Array.isArray(models)) continue;
+    let group = [connectorType];
+    if (BEDROCK_CONNECTORS.includes(connectorType)) group = BEDROCK_CONNECTORS;
+    else if (OPENAI_CONNECTORS.includes(connectorType)) group = OPENAI_CONNECTORS;
+    for (const model of models) byModel[String(model)] = group;
+  }
+  return byModel;
+}
+
+/** Connector types that carry `apiType`, custom connectors aside. */
+const connectorsCarrying = (apiType: string) =>
+  Object.entries(CONNECTOR_API_TYPES).flatMap(([type, apiTypes]) =>
+    apiTypes.includes(apiType) ? [type] : []
+  );
+
 // Provider ids come in any case (Bedrock's `amazon.nova-canvas-v1:0`, OpenAI's `dall-e-3`).
 const NOT_CHAT: [RegExp, string][] = [
   [/embed|rerank/i, 'Embedding model'],
@@ -204,6 +387,32 @@ const NOT_CHAT: [RegExp, string][] = [
   [/image|dall-e|sora|imagen|veo-|nova-canvas|nova-reel|flux|stability\./i, 'Image or video model'],
   [/davinci|babbage/i, 'Completions only'],
 ];
+const OPENAI_API_TYPES = ['OpenAiChatCompletions', 'OpenAiResponses', 'OpenAiEmbeddings'];
+/** The API types each connector carries, as AI Trust Layer lists them. */
+const CONNECTOR_API_TYPES: Record<string, string[]> = {
+  OpenAi: OPENAI_API_TYPES,
+  AzureOpenAi: OPENAI_API_TYPES,
+  AwsBedrock: [],
+  AmazonWebServices: ['AwsBedrockInvoke', 'AwsBedrockConverse'],
+  GoogleVertex: ['GeminiGenerateContent', 'GeminiEmbeddings'],
+  OpenAiV1Compatible: OPENAI_API_TYPES,
+  NvidiaNim: OPENAI_API_TYPES,
+  Anthropic: ['AnthropicMessages'],
+};
+const API_TYPE_LABELS: Record<string, string> = {
+  OpenAiChatCompletions: 'OpenAI Chat Completions',
+  OpenAiResponses: 'OpenAI Responses',
+  OpenAiEmbeddings: 'OpenAI Embeddings',
+  GeminiGenerateContent: 'Gemini Generate Content',
+  GeminiEmbeddings: 'Gemini Embeddings',
+  AwsBedrockInvoke: 'AWS Bedrock Invoke',
+  AwsBedrockConverse: 'AWS Bedrock Converse',
+  AnthropicMessages: 'Anthropic Messages',
+};
+const CHAT_COMPLETIONS = 'OpenAiChatCompletions';
+const OPENAI_CONNECTORS = ['AzureOpenAi', 'OpenAi', 'OpenAiV1Compatible'];
+const BEDROCK_CONNECTORS = ['AwsBedrock', 'AmazonWebServices'];
+const ADD_OWN_MODELS = 'AnyModelWithOwnAdditions';
 const NEW_CONNECTION_NOT_FOUND = 'IntegrationServiceConfigurationNotFound';
 const MASKED_SECRET = '********';
 const SESSION_POLLS = 20;
@@ -218,14 +427,6 @@ const asList = (data: unknown): Record<string, unknown>[] => {
     if (Array.isArray(d.PageItems)) return d.PageItems;
   }
   return [];
-};
-
-// The connector's hints are HTML. The parser reads their text without running anything in them.
-const plainText = (html?: string) => {
-  if (!html) return '';
-  const withBreaks = html.replace(/<br\s*\/?>/gi, ' ');
-  const text = new DOMParser().parseFromString(withBreaks, 'text/html').body.textContent ?? '';
-  return text.replace(/\s+/g, ' ').trim();
 };
 
 const failure = (result: CallResult, title: string): ByoFailure => {
@@ -279,10 +480,11 @@ export function createCommunityByoApi(
   const tenantUrl = (path: string) => `${base}/${ctx.tenantName}/${path}`;
 
   const byId = (id: string) => providers.find((p) => p.id === id);
-  const formCache = new Map<string, ByoConnectionForm>();
   const createdAt = new Map<string, number>();
   // A failed connect leaves its session open; a retry reuses it.
   let openSession: IsSession | null = null;
+  // Read by `loadContext`; `apiTypes` and the saves answer from it.
+  let rules: FeatureRules | null = null;
 
   /**
    * Makes a gateway call about a connection, repeating it while a connection created in
@@ -384,52 +586,68 @@ export function createCommunityByoApi(
   const configurationUrl = (configurationId: string) =>
     buildGatewayUrl(ctx, `api/byo/product/llm-configurations/${configurationId}`);
 
-  function toForm(provider: CommunityByoProvider, entries: IsConfigEntry[]): ByoConnectionForm {
-    const overlay = provider.overlay ?? {};
-    // A single authentication type is kept too, so the fields grouped under it are shown;
-    // the dialog offers a choice only when there are several.
-    const auth = entries.find((c) => c.key === 'authentication.type' && c.options?.length);
-    const authTypes = (auth?.options ?? []).map((o) => ({
-      value: o.value,
-      label: provider.authLabels?.[o.value] || o.displayValue || o.description || o.value,
-    }));
-    const fields: ByoFormField[] = entries
-      .filter((c) => SHOWN_SCREENS.has(c.configScreenType ?? '') && !c.hideFromConsole)
-      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
-      .map((c) => {
-        const o = overlay[c.key] ?? {};
-        const optional = c.configScreenType === 'pre-optional';
-        return {
-          key: c.key,
-          label: o.label ?? c.name ?? c.key,
-          secret: c.type === 'PASSWORD',
-          required: !optional && Boolean(c.required),
-          advanced: optional && !o.primary,
-          // Without authentication types, a field's group could never be chosen, so none applies.
-          group: (auth && c.groupBy) || null,
-          defaultValue: c.defaultValue ?? '',
-          placeholder: o.placeholder ?? '',
-          hint: o.hint ?? plainText(c.hintText),
-        };
-      });
-    const first = authTypes[0];
-    return {
-      authTypes,
-      defaultAuthType: first ? auth?.defaultValue || first.value : null,
-      fields,
-    };
-  }
-
   const loadContext = async (): Promise<ByoResult<ByoDialogContext>> => {
-    const [folders, connections] = await Promise.all([
-      call(
-        'GET',
-        tenantUrl('orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0')
-      ),
-      call('GET', tenantUrl('connections_/api/v1/Connections?allFolders=true&folderDefaults=true')),
-    ]);
+    const [folders, connections, products, vendorModels, modelApiTypes, configurations] =
+      await Promise.all([
+        call(
+          'GET',
+          tenantUrl(
+            'orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0'
+          )
+        ),
+        call(
+          'GET',
+          tenantUrl('connections_/api/v1/Connections?allFolders=true&folderDefaults=true')
+        ),
+        call('GET', buildGatewayUrl(ctx, 'api/byom/products')),
+        call('GET', buildGatewayUrl(ctx, 'api/byom/vendors/llms')),
+        call('GET', buildGatewayUrl(ctx, 'api/byom/vendors/llms/api-flavors')),
+        call('GET', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations')),
+      ]);
     if (!folders.ok) return fail(failure(folders, 'Could not list your folders'));
     if (!connections.ok) return fail(failure(connections, 'Could not list your connections'));
+    const notRead = 'Could not read which models you can bring';
+    for (const r of [products, vendorModels, modelApiTypes, configurations]) {
+      if (!r.ok) return fail(failure(r, notRead));
+    }
+
+    const feature = (
+      products.data as Record<string, Record<string, FeatureConfiguration>> | null
+    )?.[product]?.[operationGroupName];
+    if (!feature) {
+      return fail({
+        title: 'This feature does not take models of your own',
+        detail: `No BYO configuration for ${product} / ${operationGroupName}.`,
+      });
+    }
+    // Every model of such a feature is configured at once, which only AI Trust Layer offers.
+    if (feature.modelsConfigurationOption === 'AllModels') {
+      return fail({ title: 'This feature’s models are configured together in AI Trust Layer' });
+    }
+    rules = {
+      feature,
+      connectorTypesByModel: connectorTypesByModelOf(vendorModels.data),
+      apiTypesByModel: (modelApiTypes.data ?? {}) as Record<string, string[] | null>,
+    };
+    // A UiPath model is replaced at most once per feature, as AI Trust Layer allows.
+    const configured = new Set(
+      asList(configurations.data)
+        .filter((c) => c.product === product && c.operationGroupName === operationGroupName)
+        .flatMap((c) =>
+          asList((c as { llmConfigurations?: unknown }).llmConfigurations ?? []).flatMap((e) =>
+            typeof e.desiredModel === 'string' ? [e.desiredModel] : []
+          )
+        )
+    );
+    const replaceableModels: ByoReplaceableModel[] = (feature.models ?? [])
+      .map((m) => ({
+        name: m.model,
+        retiresOn: retirementOf(m),
+        replaced: configured.has(m.model),
+      }))
+      // As in AI Trust Layer, models being retired come last.
+      .sort((a, b) => Number(Boolean(a.retiresOn)) - Number(Boolean(b.retiresOn)));
+
     const rows = asList(folders.data)
       .filter((f) => f.IsSelectable !== false)
       .map((f) => ({
@@ -458,8 +676,68 @@ export function createCommunityByoApi(
       connections: saved,
       folders: rows.map((r) => r.folder),
       defaultFolderId: rows[0]?.folder.id ?? null,
-      takenModelNames: options.takenModelNames(),
+      takenModelNames: [...new Set([...options.takenModelNames(), ...configured])],
+      replaceableModels,
+      allowsNewNames: feature.modelsConfigurationOption === ADD_OWN_MODELS,
+      reservedModelNames: Object.keys(rules.connectorTypesByModel),
     });
+  };
+
+  /**
+   * AI Trust Layer's API type list: the probes the gateway tests the model with, narrowed to
+   * what a replaced UiPath model supports, then to what the provider's connector carries.
+   */
+  const apiTypes: ByoModelDialogApi['apiTypes'] = (providerId, replaces) => {
+    const provider = byId(providerId);
+    if (!provider || !rules) return [];
+    const { feature, connectorTypesByModel, apiTypesByModel } = rules;
+    const addsOwn = feature.modelsConfigurationOption === ADD_OWN_MODELS;
+    const featureModel = replaces ? feature.models?.find((m) => m.model === replaces) : undefined;
+    // The model's own probes, else the feature's when it takes models of the user's own.
+    const probes = featureModel?.probes ?? (addsOwn ? feature.probes : undefined);
+
+    // What a replaced UiPath model supports, plus Chat Completions, which AI Trust Layer always
+    // offers; a name of the user's own has no such list.
+    let supported: string[] | undefined;
+    const modelApiTypes = replaces ? apiTypesByModel[replaces] : null;
+    if (modelApiTypes) {
+      const featureFlavors = flavorsOf(feature.probes);
+      const withConnector = new Set(modelApiTypes.filter((t) => connectorsCarrying(t).length));
+      withConnector.add(CHAT_COMPLETIONS);
+      supported = [...withConnector].filter(
+        (t) => featureFlavors.length === 0 || featureFlavors.includes(t)
+      );
+    }
+
+    let candidates: string[];
+    if (probes?.length) {
+      const probeFlavors = flavorsOf(probes);
+      candidates = supported?.length
+        ? probeFlavors.filter((t) => supported.includes(t))
+        : probeFlavors;
+    } else {
+      candidates = supported?.length ? supported : Object.keys(API_TYPE_LABELS);
+    }
+
+    const servedBy = replaces ? connectorTypesByModel[replaces] : undefined;
+    const carried = CONNECTOR_API_TYPES[provider.connectorType] ?? [];
+    const shown = candidates.filter((t) => {
+      if (!carried.includes(t)) return false;
+      // Without own additions, a replaced model is served only by its own vendor's connectors.
+      if (replaces && !addsOwn && !servedBy?.includes(provider.connectorType)) return false;
+      // Chat Completions for a model no OpenAI connector serves needs a custom AI gateway
+      // connector, which the dialog does not offer.
+      if (
+        t === CHAT_COMPLETIONS &&
+        servedBy &&
+        !servedBy.some((c) => OPENAI_CONNECTORS.includes(c))
+      )
+        return false;
+      return true;
+    });
+    // AI Trust Layer lists Chat Completions last.
+    shown.sort((a, b) => Number(a === CHAT_COMPLETIONS) - Number(b === CHAT_COMPLETIONS));
+    return shown.map((value): ByoApiType => ({ value, label: API_TYPE_LABELS[value] ?? value }));
   };
 
   const loadModel: ByoModelDialogApi['loadModel'] = async ({ configurationId, name }) => {
@@ -476,40 +754,24 @@ export function createCommunityByoApi(
         detail: JSON.stringify(saved, null, 2),
       });
     }
+    const savedName = entry.desiredModel ?? name;
+    // As in AI Trust Layer, a model under a UiPath model's name replaces that model.
+    const replaces = rules && savedName in rules.connectorTypesByModel ? savedName : null;
     return ok<ByoModelToEdit>({
       configurationId,
       providerId: provider.id,
       connectionId: entry.connectionId,
       modelId: entry.customerModel ?? '',
-      name: entry.desiredModel ?? name,
+      name: savedName,
+      replaces,
+      apiType: entry.apiFlavor ?? null,
     });
   };
 
-  const loadForm = async (providerId: string, folderId: string | null) => {
+  const loadForm: ByoModelDialogApi['loadForm'] = async (providerId) => {
     const provider = byId(providerId);
     if (!provider) return fail<ByoConnectionForm>({ title: `Unknown provider ${providerId}` });
-    const cached = formCache.get(provider.connector);
-    if (cached) return ok(cached);
-    let entries: IsConfigEntry[] | undefined;
-    const definition = await call(
-      'GET',
-      tenantUrl(`elements_/v3/element/elements/${provider.connector}`)
-    );
-    if (definition.ok) {
-      entries = (definition.data as { configuration?: IsConfigEntry[] })?.configuration;
-    } else {
-      if (!folderId)
-        return fail<ByoConnectionForm>(failure(definition, 'Could not read the connector form'));
-      const s = await session(provider, folderId);
-      if (!s.ok) return s;
-      const f = await sessionForm(s.value.id, folderId);
-      if (!f.ok) return fail<ByoConnectionForm>(failure(f, 'Could not read the connector form'));
-      entries = (f.data as { elementMetadata?: { configuration?: IsConfigEntry[] } })
-        ?.elementMetadata?.configuration;
-    }
-    const form = toForm(provider, entries ?? []);
-    formCache.set(provider.connector, form);
-    return ok(form);
+    return ok(provider.form);
   };
 
   const loadConnectionValues: ByoModelDialogApi['loadConnectionValues'] = async (
@@ -669,6 +931,7 @@ export function createCommunityByoApi(
         body: {
           product,
           connectorType: provider.connectorType,
+          configurationType: 'SelfServe',
           connectionId: connection.id,
           organizationId: ctx.organizationId,
           tenantId: ctx.tenantId,
@@ -714,16 +977,15 @@ export function createCommunityByoApi(
       });
     }
 
-    // Fields this dialog does not edit (configuration type, API flavor, …) are kept, apart from
-    // an API flavor chosen for another provider and the old model's field mappings.
+    // Fields this dialog does not edit are kept, apart from the old model's field mappings.
+    // A model that keeps its name keeps the model it stands in for, as AI Trust Layer keeps it.
+    const keepsName = edited.desiredModel === entry.desiredModel;
     const updated: LlmConfigurationEntry = {
       ...edited,
       ...entry,
+      defaultModel: keepsName ? (edited.defaultModel ?? entry.defaultModel) : entry.defaultModel,
       customFieldMappings: entry.customFieldMappings ?? null,
     };
-    const providerChanged =
-      edited.connectorType?.toLowerCase() !== entry.connectorType?.toLowerCase();
-    if (providerChanged) updated.apiFlavor = null;
     const llmConfigurations = configuration.llmConfigurations.map((other) =>
       other === edited ? updated : other
     );
@@ -742,6 +1004,7 @@ export function createCommunityByoApi(
     connection,
     modelId,
     name,
+    apiType,
     editing,
   }) => {
     const provider = byId(providerId);
@@ -749,13 +1012,17 @@ export function createCommunityByoApi(
     if (!ctx.organizationId || !ctx.tenantId) {
       return fail({ title: 'The picker needs organizationId and tenantId to add a model.' });
     }
-    // The model's entry, as both a new and an edited configuration hold it.
+    // The model's entry, as both a new and an edited configuration hold it, and as AI Trust
+    // Layer's own form saves it.
     const llmConfiguration = (customFieldMappings?: Record<string, string>) => {
       const entry: LlmConfigurationEntry = {
         desiredModel: name,
+        defaultModel: name,
         customerModel: modelId,
         connectorType: provider.connectorType,
         connectionId: connection.id,
+        apiFlavor: apiType,
+        configurationType: 'SelfServe',
         organizationId: ctx.organizationId,
         tenantId: ctx.tenantId,
       };
@@ -773,13 +1040,23 @@ export function createCommunityByoApi(
       llmConfigurations: [llmConfiguration(customFieldMappings)],
     });
 
+    // The gateway picks the probes to test with by mode, as AI Trust Layer sets it: a model
+    // under one of the feature's UiPath model names replaces it, any other name adds a model.
+    // Before the context is read there is no feature to tell, and the gateway works the mode
+    // out the same way when the header is missing.
+    const headers: Record<string, string> = { 'X-UiPath-LLMGateway-AllowFull4xxResponse': 'true' };
+    const feature = rules?.feature;
+    if (feature) {
+      const featureModelNamed = feature.models?.some((m) => m.model === name) ?? false;
+      headers['X-UiPath-LlmGateway-ByoConfigMode'] =
+        feature.modelsConfigurationOption === ADD_OWN_MODELS && !featureModelNamed
+          ? 'add'
+          : 'replace';
+    }
     const { result: validation, startedAt } = await whileNewConnectionInvisible(connection.id, () =>
       call('POST', buildGatewayUrl(ctx, 'api/byo/product/llm-configurations/validate'), {
         body: newConfiguration(),
-        headers: {
-          'X-UiPath-LlmGateway-ByoConfigMode': 'add',
-          'X-UiPath-LLMGateway-AllowFull4xxResponse': 'true',
-        },
+        headers,
       })
     );
     const latencyMs = Date.now() - startedAt;
@@ -838,6 +1115,7 @@ export function createCommunityByoApi(
     loadConnectionValues,
     connect,
     listModels,
+    apiTypes,
     testAndSave,
   };
 }
