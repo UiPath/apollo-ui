@@ -708,6 +708,49 @@ describe('createCommunityByoApi', () => {
     expect(result.value.takenModelNames).toEqual(['gpt-4o', 'gpt-5-2025-08-07', 'my-claude']);
   });
 
+  it('reads every page of folders before keeping the saved connections in them', async () => {
+    const page = (skip: number, size: number) =>
+      Array.from({ length: size }, (_, i) => ({
+        Key: `f${skip + i}`,
+        DisplayName: `F${skip + i}`,
+        FolderType: 'Standard',
+      }));
+    routes.push(
+      on(
+        'GET',
+        `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`,
+        () => ({ body: { Count: 501, PageItems: page(0, 500) } })
+      ),
+      on(
+        'GET',
+        `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=500`,
+        () => ({ body: { Count: 501, PageItems: page(500, 1) } })
+      ),
+      on(
+        'GET',
+        `${TENANT}/connections_/api/v1/Connections?allFolders=true&folderDefaults=true`,
+        () => ({
+          body: [
+            {
+              id: 'c1',
+              name: 'Late OpenAI',
+              connector: { key: 'uipath-openai-openai' },
+              folder: { key: 'f500' },
+            },
+          ],
+        })
+      )
+    );
+    routeGatewayRules();
+
+    const result = await api().loadContext();
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.folders).toHaveLength(501);
+    expect(result.value.connections.map((c) => c.id)).toEqual(['c1']);
+  });
+
   it('refuses when the only folder is the personal workspace', async () => {
     routes.push(
       on(

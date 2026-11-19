@@ -409,6 +409,8 @@ const SESSION_POLLS = 20;
 const SESSION_POLL_MS = 1500;
 const RETRY_MS = 5000;
 
+const FOLDER_PAGE = 500;
+
 const asList = (data: unknown): Record<string, unknown>[] => {
   if (Array.isArray(data)) return data;
   if (data && typeof data === 'object') {
@@ -527,6 +529,26 @@ export function createCommunityByoApi(
     return { ok: res.ok, status: res.status, statusText: res.statusText, data };
   }
 
+  /** Every folder the user can see, read page by page. */
+  async function listFolders(): Promise<CallResult> {
+    const items: Record<string, unknown>[] = [];
+    for (;;) {
+      const page = await call(
+        'GET',
+        tenantUrl(
+          `orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=${FOLDER_PAGE}&skip=${items.length}`
+        )
+      );
+      if (!page.ok) return page;
+      const batch = asList(page.data);
+      items.push(...batch);
+      const count = Number((page.data as { Count?: unknown } | null)?.Count ?? 0);
+      if (batch.length < FOLDER_PAGE || items.length >= count) {
+        return { ...page, data: { PageItems: items } };
+      }
+    }
+  }
+
   /** A provisioning session for a new connection, or for editing the saved connection `connectionId`. */
   async function session(
     provider: CommunityByoProvider,
@@ -579,12 +601,7 @@ export function createCommunityByoApi(
   const loadContext = async (): Promise<ByoResult<ByoDialogContext>> => {
     const [folders, connections, products, vendorModels, modelApiTypes, configurations] =
       await Promise.all([
-        call(
-          'GET',
-          tenantUrl(
-            'orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0'
-          )
-        ),
+        listFolders(),
         call(
           'GET',
           tenantUrl('connections_/api/v1/Connections?allFolders=true&folderDefaults=true')
