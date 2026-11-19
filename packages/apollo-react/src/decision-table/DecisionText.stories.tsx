@@ -162,7 +162,6 @@ const TableHost = ({
   return (
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
       <DecisionText
-        citations={{ kind: 'none' }}
         table={{ rules, ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -522,7 +521,6 @@ const DiffHost = ({ mode, scenario }: DiffArgs) => {
   return (
     <div className="flex h-[640px] flex-col gap-2">
       <DecisionText
-        citations={{ kind: 'none' }}
         key={scenario}
         table={{ rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
@@ -571,7 +569,6 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
           data-testid={`stacked-${id}`}
         >
           <DecisionText
-            citations={{ kind: 'none' }}
             table={{
               rules: STACKED_RULES,
               ...MULTI_SENTENCE_COLUMNS,

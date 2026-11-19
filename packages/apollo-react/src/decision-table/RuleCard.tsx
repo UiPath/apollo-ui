@@ -16,18 +16,18 @@ import {
 import { StopLabels } from './StopLabels';
 import {
   CHANGE_SIGN_CLASS,
+  CITED_LINE_CLASS,
+  CITED_LINES_CLASS,
   HEADING_ACTIONS_SPACE_CLASS,
   LINES_CLASS,
   MOVED_ICON_CLASS,
+  REVEALED_ACTION_CLASS,
   ROW_CHANGE_CLASS,
   ROW_NUMBER_CHANGE_CLASS,
   ROW_NUMBER_CLASS,
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
-  CITED_LINE_CLASS,
-  CITED_LINES_CLASS,
   RULE_CITATIONS_CLASS,
-  REVEALED_ACTION_CLASS,
 } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
 import type { DecisionTextCitations } from './sentenceTypes';
@@ -136,9 +136,10 @@ export const RuleCard = memo<RuleCardProps>(
         <div className={RULE_CITATIONS_CLASS}>
           <CitationButtons
             citations={cited}
+            owner={{ kind: 'rule', position: diff?.number ?? position }}
             onOpen={citations.onOpenCitation}
             selected={rowSelected}
-            tabIndex={rowSelected || !selectable ? 0 : -1}
+            tabIndex={rowSelected && selectable ? 0 : -1}
             className={cn(!rowSelected && REVEALED_ACTION_CLASS)}
             labels={labels}
             dataTestId={`${dataTestId}-citation-${rule.rowId}`}

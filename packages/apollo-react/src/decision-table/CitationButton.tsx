@@ -4,16 +4,25 @@ import type React from 'react';
 import { CITATION_BUTTON_CLASS } from './sentenceStyles';
 import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 
+/** What a citation is the source of: a rule by its 1-based position, a named decision, or the table's own decision. */
+export type CitationOwner =
+  | { kind: 'rule'; position: number }
+  | { kind: 'decision'; name: string }
+  | { kind: 'table' };
+
 /** A citation's strings. */
 export interface CitationLabels {
-  /** A citation's action, e.g. "Open source, page 3". */
-  openCitation: (page: number) => string;
+  /** A citation's action, e.g. "Open source 2 of rule 4, page 3"; numbered only among its owner's citations on the same page. */
+  openCitation: (owner: CitationOwner, page: number, index: number | null) => string;
   /** A shown citation's page, e.g. "Page 3". */
   citationPage: (page: number) => string;
 }
 
 export interface CitationButtonProps {
   citation: SentenceCitation;
+  owner: CitationOwner;
+  /** Its 1-based place among its owner's citations on the same page, or null when it is the only one there. */
+  index: number | null;
   onOpen: OpenCitation;
   /** Its decision or rule is selected, so its page shows. */
   selected: boolean;
@@ -28,6 +37,8 @@ export interface CitationButtonProps {
 /** An open-document button for where a decision or rule was read from; its page shows once selected. */
 export const CitationButton: React.FC<CitationButtonProps> = ({
   citation,
+  owner,
+  index,
   onOpen,
   selected,
   tabIndex,
@@ -39,7 +50,7 @@ export const CitationButton: React.FC<CitationButtonProps> = ({
     variant="ghost"
     size="3xs"
     tabIndex={tabIndex}
-    aria-label={labels.openCitation(citation.page)}
+    aria-label={labels.openCitation(owner, citation.page, index)}
     className={cn(CITATION_BUTTON_CLASS, className)}
     data-rule-action="citation"
     data-testid={dataTestId}
@@ -50,10 +61,19 @@ export const CitationButton: React.FC<CitationButtonProps> = ({
   </Button>
 );
 
-export interface CitationButtonsProps extends Omit<CitationButtonProps, 'citation' | 'dataTestId'> {
+export interface CitationButtonsProps
+  extends Omit<CitationButtonProps, 'citation' | 'index' | 'dataTestId'> {
   citations: readonly SentenceCitation[];
   dataTestId: string;
 }
+
+const indexOf = (citations: readonly SentenceCitation[], at: number): number | null => {
+  const page = citations[at]?.page;
+  const shared = citations.filter((citation) => citation.page === page).length;
+  return shared > 1
+    ? citations.slice(0, at + 1).filter((citation) => citation.page === page).length
+    : null;
+};
 
 /** One citation button per source, the first keeping the given test id. */
 export const CitationButtons: React.FC<CitationButtonsProps> = ({
@@ -65,6 +85,7 @@ export const CitationButtons: React.FC<CitationButtonsProps> = ({
     <CitationButton
       key={`${citation.kind}-${citation.page}-${index}`}
       citation={citation}
+      index={indexOf(citations, index)}
       dataTestId={index === 0 ? dataTestId : `${dataTestId}-${index}`}
       {...props}
     />

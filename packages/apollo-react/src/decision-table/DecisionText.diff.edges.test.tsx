@@ -105,7 +105,6 @@ describe('DecisionText diff edges', () => {
     };
     rerender(
       <DecisionText
-        citations={{ kind: 'none' }}
         table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -134,7 +133,6 @@ describe('DecisionText diff review edges', () => {
   it('shows no hit-policy picker on a diff', () => {
     render(
       <DecisionText
-        citations={{ kind: 'none' }}
         table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}

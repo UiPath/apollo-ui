@@ -11,7 +11,6 @@ type Action = DecisionGraphAction<string, string>;
 
 const graph = (actions: readonly Action[], nodes: readonly DecisionGraphNode[]) => (
   <DecisionGraphText
-    citations={{ kind: 'none' }}
     nodes={nodes}
     mode={{
       kind: 'edit',
