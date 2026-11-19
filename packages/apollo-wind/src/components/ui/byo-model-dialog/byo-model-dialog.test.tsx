@@ -308,6 +308,31 @@ describe('ByoModelDialog', () => {
     expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
   });
 
+  it('shows a newer failure after an older one was dismissed', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({
+      loadConnectionValues: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'Could not read the connection settings' },
+      })),
+      testAndSave: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'The test call failed: MISSING_TOOL_CALL' },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await start(user, 'OpenAI');
+    await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
+    await screen.findByText('Could not read the connection settings');
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
+    await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
+    expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
+  });
+
   it('edits a saved model, keeping its own name', async () => {
     const user = userEvent.setup();
     const api = fakeApi();
@@ -665,6 +690,29 @@ describe('ByoModelDialog', () => {
       await waitFor(() =>
         expect(api.testAndSave).toHaveBeenCalledWith(
           expect.objectContaining({ name: 'mine', replaces: null, apiType: 'OpenAiResponses' })
+        )
+      );
+    });
+
+    it('takes the first API type of the new choice when the model alias changes', async () => {
+      const user = userEvent.setup();
+      const CHAT_ONLY = [{ value: 'OpenAiChatCompletions', label: 'OpenAI Chat Completions' }];
+      const api = withReplaceable({
+        apiTypes: vi.fn((_: string, replaces: string | null) =>
+          replaces === 'gpt-4.1' ? CHAT_ONLY : [...TWO_TYPES]
+        ),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await pick(user, 'Model alias', 'gpt-4.1');
+      await pick(user, 'Provider', 'OpenAI');
+      await pick(user, 'Model alias', 'gpt-4o-2024-05-13Deprecated');
+      await connectAndPickModel(user, 'OpenAI', 'gpt-5.1');
+      await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({ replaces: 'gpt-4o-2024-05-13', apiType: 'OpenAiResponses' })
         )
       );
     });

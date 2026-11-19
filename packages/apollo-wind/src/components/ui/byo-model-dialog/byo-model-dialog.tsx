@@ -541,9 +541,10 @@ function DialogBody({
   // while it is still offered.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the options are compared by their values
   React.useEffect(() => {
-    if (apiTypeOptions.some((t) => t.value === apiType)) return;
-    setApiType(apiTypeOptions[0]?.value ?? '');
-  }, [apiTypeKey, apiType]);
+    if (modelToEdit && apiTypeOptions.some((t) => t.value === apiType)) return;
+    const first = apiTypeOptions[0]?.value ?? '';
+    if (apiType !== first) setApiType(first);
+  }, [apiTypeKey, apiType, modelToEdit]);
   const apiTypeReady = apiTypeOptions.some((t) => t.value === apiType);
 
   const busy = keyLocked || test.status === 'running' || test.status === 'ok';
@@ -671,12 +672,13 @@ function DialogBody({
     return labels.connectedIn(folderLabel(connectOutcome.connection.folderId));
   })();
 
-  let failure: ByoFailure | null = null;
-  if (connect.status === 'error') failure = connect.failure;
-  else if (test.status === 'error') failure = test.failure;
-  else if (modelsState.status === 'error') failure = modelsState.failure ?? null;
-  // A dismissed failure stays hidden until another one takes its place.
-  if (failure === dismissedFailure) failure = null;
+  // A dismissed failure stays hidden, and does not hide one that came after it.
+  const failure =
+    [
+      connect.status === 'error' ? connect.failure : null,
+      test.status === 'error' ? test.failure : null,
+      modelsState.status === 'error' ? (modelsState.failure ?? null) : null,
+    ].find((f) => f && f !== dismissedFailure) ?? null;
 
   let aliasHint = { text: labels.nameHint, tone: 'text-foreground-muted' };
   if (replacing && replacement?.retiresOn) {
