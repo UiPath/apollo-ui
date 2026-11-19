@@ -151,7 +151,19 @@ export function ModelAliasPicker({
               <CommandEmpty>{labels.aliasNoMatch(query)}</CommandEmpty>
               {/* First, as in AI Trust Layer, so a long list does not hide it. */}
               {allowsCustom && (
-                <CommandGroup>
+                <CommandGroup heading={labels.useOwnName}>
+                  {custom !== null && customShown && (
+                    <CommandItem
+                      value={`custom:${custom}`}
+                      onSelect={() => choose({ kind: 'custom', name: custom })}
+                      className="gap-2 py-1.5"
+                    >
+                      <Selected on />
+                      <span className="min-w-0 truncate font-mono text-xs text-foreground">
+                        {custom}
+                      </span>
+                    </CommandItem>
+                  )}
                   <CommandItem
                     value="custom:add"
                     onSelect={() => {
@@ -185,20 +197,6 @@ export function ModelAliasPicker({
                       )}
                     </CommandItem>
                   ))}
-                </CommandGroup>
-              )}
-              {custom !== null && customShown && (
-                <CommandGroup heading={labels.useOwnName}>
-                  <CommandItem
-                    value={`custom:${custom}`}
-                    onSelect={() => choose({ kind: 'custom', name: custom })}
-                    className="gap-2 py-1.5"
-                  >
-                    <Selected on />
-                    <span className="min-w-0 truncate font-mono text-xs text-foreground">
-                      {custom}
-                    </span>
-                  </CommandItem>
                 </CommandGroup>
               )}
             </CommandList>

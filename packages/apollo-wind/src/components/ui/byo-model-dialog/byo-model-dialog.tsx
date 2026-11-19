@@ -262,7 +262,12 @@ function DialogBody({
     defaultFolder: string
   ) => {
     const gen = generation.current;
-    const savedConnection = loaded.connections.find((c) => c.id === model.connectionId) ?? null;
+    // A connection the dialog does not list, such as one in a personal workspace, gives way to
+    // the provider's first saved one.
+    const savedConnection =
+      loaded.connections.find((c) => c.id === model.connectionId) ??
+      loaded.connections.find((c) => c.providerId === model.providerId) ??
+      null;
     const savedProvider = loaded.providers.find((p) => p.id === model.providerId);
     setModelToEdit(model);
     setProviderId(model.providerId);
