@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.32.0...@uipath/apollo-react@7.33.0) (2026-11-19)
+
+### Features
+
+* **apollo-react:** draw project types with Studio Web's product icons [MST-17191] ([0d2fdaa](https://github.com/UiPath/apollo-ui/commit/0d2fdaab48ab7a79b659507549e6c8b0cc7d2838))
+
+### Bug Fixes
+
+* **apollo-react:** keep the decision table's last-row hover inside the table ([0efd4a3](https://github.com/UiPath/apollo-ui/commit/0efd4a3c6cf743f2213ff588dc53422a36671e51))
+
 ## [@uipath/apollo-react-v7.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.31.1...@uipath/apollo-react@7.32.0) (2026-11-19)
 
 ### Features
