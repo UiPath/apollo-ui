@@ -143,9 +143,12 @@ class CardObserver {
 }
 
 let scrollToSpy: ReturnType<typeof vi.fn>;
+let scrollIntoViewSpy: Mock<Element['scrollIntoView']>;
 beforeEach(() => {
   scrollToSpy = vi.fn();
   HTMLElement.prototype.scrollTo = scrollToSpy as unknown as HTMLElement['scrollTo'];
+  scrollIntoViewSpy = vi.fn<Element['scrollIntoView']>();
+  Element.prototype.scrollIntoView = scrollIntoViewSpy;
   nearCard = () => true;
   cardObservers = [];
   vi.stubGlobal('IntersectionObserver', CardObserver);
@@ -212,8 +215,9 @@ describe('DecisionGraphText', () => {
     else await press(link);
     expect(body('risk')).not.toBeNull();
     expect(onReveal).toHaveBeenCalledWith({ kind: 'decision', decisionId: 'risk' });
-    expect(scrollToSpy).toHaveBeenCalledTimes(1);
-    expect(scrollToSpy.mock.contexts[0]).toBe(screen.getByTestId('graph-scroller'));
+    expect(scrollToSpy.mock.calls).toEqual([[{ top: 0, left: -12 }]]);
+    expect(scrollToSpy.mock.contexts).toEqual([screen.getByTestId('graph-scroller')]);
+    expect(scrollIntoViewSpy).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(link);
   });
 
@@ -228,6 +232,15 @@ describe('DecisionGraphText', () => {
     render(graph({ expansion: held(new Set(['risk'])) }));
     await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
     expect(scrollToSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('brings the card top, not its sticky heading, to the top of an open decision the reader is partway through', async () => {
+    render(graph({ expansion: held(new Set(['risk'])) }));
+    vi.spyOn(screen.getByTestId('graph-decision-risk'), 'getBoundingClientRect').mockReturnValue(
+      DOMRect.fromRect({ x: 0, y: -400, width: 900, height: 1500 })
+    );
+    await userEvent.click(screen.getByTestId('graph-reference-link-pricing-risk'));
+    expect(scrollToSpy.mock.calls).toEqual([[{ top: -400, left: -12 }]]);
   });
 
   it('ends a cycle in a link back to its start', () => {
@@ -269,7 +282,8 @@ describe('DecisionGraphText', () => {
       rowId: 'r3',
     });
     expect(document.activeElement).toBe(screen.getByTestId('text-eligibility-row-r3'));
-    expect(scrollToSpy).toHaveBeenCalled();
+    expect(scrollToSpy.mock.contexts).toEqual([screen.getByTestId('graph-scroller')]);
+    expect(scrollIntoViewSpy).not.toHaveBeenCalled();
   });
 
   it('opens a decision its mark names from the keyboard, focusing its heading', async () => {
@@ -443,7 +457,7 @@ describe('DecisionGraphText', () => {
       '[data-testid="graph-reference-link-pricing-risk"]'
     );
     await act(async () => link?.click());
-    expect(scrollToSpy.mock.contexts[0]).toBe(scroller);
+    expect(scrollToSpy.mock.contexts).toEqual([scroller]);
     act(() => root.unmount());
     host.remove();
   });
@@ -635,12 +649,6 @@ describe('DecisionGraphText open', () => {
 });
 
 describe('DecisionGraphText mark clicks', () => {
-  let scrollIntoViewSpy: Mock<Element['scrollIntoView']>;
-  beforeEach(() => {
-    scrollIntoViewSpy = vi.fn<Element['scrollIntoView']>();
-    Element.prototype.scrollIntoView = scrollIntoViewSpy;
-  });
-
   const scrolled = () => {
     const scroller = screen.getByTestId('graph-scroller');
     scroller.scrollTop = 240;
@@ -685,9 +693,9 @@ describe('DecisionGraphText mark clicks', () => {
     render(<SelectingHost />);
     const mark = screen.getByTestId('graph-mark-eligibility');
     await userEvent.click(mark);
-    expect(scrollToSpy).not.toHaveBeenCalled();
+    expect(scrollIntoViewSpy).not.toHaveBeenCalled();
     await press(mark);
-    expect(scrollToSpy).toHaveBeenCalled();
+    expect(scrollIntoViewSpy).toHaveBeenCalled();
     expect(document.activeElement).toBe(screen.getByTestId('text-eligibility-row-r3'));
   });
 });

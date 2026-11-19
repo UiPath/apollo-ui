@@ -49,6 +49,36 @@ describe('DecisionGraphText stories', () => {
     expect(caption()).toHaveTextContent('Revealed: none');
   });
 
+  it.each([
+    'shared dependency',
+    'single decision',
+    'cycle',
+    'not a table',
+  ] as const)('reveals a drawn decision from every link in the %s graph', async (graph) => {
+    const links = async () => {
+      const folded = () =>
+        screen
+          .queryAllByRole('button', { expanded: false })
+          .find((toggle) => toggle.hasAttribute('data-graph-toggle'));
+      for (let toggle = folded(); toggle; toggle = folded()) await userEvent.click(toggle);
+      return screen.queryAllByRole('button', { name: /^Open .+'s decision$/ });
+    };
+    const { unmount } = render(<Default graph={graph} />);
+    const count = (await links()).length;
+    unmount();
+    for (let index = 0; index < count; index += 1) {
+      const { unmount: next } = render(<Default graph={graph} />);
+      const link = (await links())[index];
+      if (!link) throw new Error(`No link ${index}`);
+      await userEvent.click(link);
+      const revealed = /Revealed: (\S+) \/ decision/.exec(caption().textContent ?? '')?.[1];
+      expect(revealed).toBeDefined();
+      expect(screen.getByTestId(`graph-decision-${revealed}`)).toBeInTheDocument();
+      next();
+    }
+    expect(count > 0).toBe(graph === 'shared dependency');
+  });
+
   it('opens a decision on Alt+Enter on its heading', async () => {
     render(<Default />);
     screen.getByTestId('graph-toggle-pricing').focus();
@@ -194,6 +224,28 @@ describe('DecisionGraphText stories', () => {
       await userEvent.keyboard('{Enter}');
       expect(screen.queryByTestId('graph-decision-risk')).toBeNull();
       expect(screen.getByTestId('graph-toggle-net-income')).toHaveFocus();
+    });
+
+    it('drops the links to a decision once it is deleted', async () => {
+      const links = async () => {
+        const folded = () =>
+          screen
+            .queryAllByRole('button', { expanded: false })
+            .find((toggle) => toggle.hasAttribute('data-graph-toggle'));
+        for (let toggle = folded(); toggle; toggle = folded()) await userEvent.click(toggle);
+        return screen
+          .queryAllByRole('button', { name: /^Open .+'s decision$/ })
+          .map((link) => link.getAttribute('aria-label') ?? link.textContent);
+      };
+      render(<Default />);
+      expect(await links()).toContain("Open income's decision");
+      focusOn('net-income');
+      await userEvent.keyboard('{Delete}');
+      await screen.findByRole('alertdialog');
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+      expect(screen.queryByTestId('graph-decision-net-income')).toBeNull();
+      expect(await links()).not.toContain("Open income's decision");
     });
 
     it('opens the menu from Tab, then adds a required input from it', async () => {

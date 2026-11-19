@@ -130,6 +130,67 @@ describe('DecisionText scroll', () => {
     expect(screen.getByTestId('nl-row-row-300')).toBeInTheDocument();
   });
 
+  it('keeps the rule holding focus mounted as the ancestor scrolls it away', () => {
+    render(scroller({}));
+    const outer = screen.getByTestId('scroller');
+    const row = screen.getByTestId('nl-row-row-0');
+    const list = row.parentElement;
+    const stop = row.querySelector<HTMLElement>('[tabindex]');
+    if (!list || !stop) throw new Error('no rule list');
+    vi.spyOn(list, 'getBoundingClientRect').mockImplementation(
+      () => new DOMRect(0, -outer.scrollTop, 100, 100)
+    );
+    act(() => stop.focus());
+    act(() => {
+      outer.scrollTop = sentenceRuleOffsets(RULES)[300] ?? 0;
+      fireEvent.scroll(outer);
+    });
+    expect(screen.getByTestId('nl-row-row-0')).toBe(row);
+    expect(document.activeElement).toBe(stop);
+    expect(screen.getByTestId('nl-row-row-300')).toBeInTheDocument();
+    act(() => stop.blur());
+    expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
+  });
+
+  it('keeps a clicked decision link mounted and focused while a distant rule is selected', async () => {
+    const linked = RULES.map((rule) =>
+      rule.rowId === 'row-0'
+        ? {
+            ...rule,
+            lines: rule.lines.map((line) => ({
+              ...line,
+              parts: line.parts.map((part) =>
+                typeof part !== 'string' && part.kind === 'input' && part.columnId === 'channel'
+                  ? { ...part, producedBy: 'channel-decision' }
+                  : part
+              ),
+            })),
+          }
+        : rule
+    );
+    const onOpenDecision = vi.fn();
+    render(
+      scroller({ rules: linked, onOpenDecision, selected: { kind: 'rule', rowId: 'row-350' } })
+    );
+    const outer = screen.getByTestId('scroller');
+    const row = screen.getByTestId('nl-row-row-0');
+    const list = row.parentElement;
+    const link = screen.getByRole('button', { name: "Open Channel's decision" });
+    if (!list) throw new Error('no rule list');
+    vi.spyOn(list, 'getBoundingClientRect').mockImplementation(
+      () => new DOMRect(0, -outer.scrollTop, 100, 100)
+    );
+    await userEvent.click(link);
+    act(() => {
+      outer.scrollTop = sentenceRuleOffsets(RULES)[300] ?? 0;
+      fireEvent.scroll(outer);
+    });
+    expect(onOpenDecision).toHaveBeenCalledWith('channel-decision', false);
+    expect(link).toBeInTheDocument();
+    expect(document.activeElement).toBe(link);
+    expect(screen.getByTestId('nl-row-row-350')).toBeInTheDocument();
+  });
+
   it('scrolls the document to a rule the host selects when nothing else scrolls', () => {
     const { rerender } = render(text({ scroll: {} }));
     const page = document.documentElement;

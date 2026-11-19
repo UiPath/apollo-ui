@@ -11,6 +11,7 @@ import type { DecisionGraphMode } from './decisionGraphActionTypes';
 import {
   childPositionsOf,
   type DecisionGraphPosition,
+  decisionsOf,
   topPositionsOf,
   usersOf,
 } from './decisionGraphPositions';
@@ -19,6 +20,7 @@ import {
   GRAPH_BRANCH_CLASS,
   GRAPH_COLUMN_CLASS,
   GRAPH_EMPTY_CLASS,
+  GRAPH_MINIMAP_GAP_PX,
   GRAPH_FRAME_CLASS,
   GRAPH_NEST_CLASS,
   GRAPH_OUTPUT_HUE_CLASS,
@@ -26,17 +28,18 @@ import {
   graphColumnInsetOf,
 } from './decisionGraphStyles';
 import type {
+  DecisionGraphBodyContext,
   DecisionGraphDecisionNode,
   DecisionGraphExpansion,
   DecisionGraphNode,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
+import { revealIn } from './revealIn';
 import { SENTENCE_MIN_RULE_HEIGHT_PX } from './sentenceRuleHeights';
-import type { ContainerHandlersParams } from './useContainerHandlers';
 import { useDecisionGraphActions } from './useDecisionGraphActions';
 import { useDecisionGraphLabels } from './useDecisionGraphStrings';
 import { useDecisionTextLabels } from './useDecisionTextStrings';
-import { contentTopIn, type DecisionTextScroll } from './useRuleWindow';
+import type { DecisionTextScroll } from './useRuleWindow';
 import { useTextAnnouncements } from './useTextAnnouncements';
 
 export interface DecisionGraphViewProps<Refusal, Logic> {
@@ -44,8 +47,12 @@ export interface DecisionGraphViewProps<Refusal, Logic> {
   nodes: readonly DecisionGraphNode[];
   /** Read only, or the host's actions on the decisions: each shows in the cards' menus and keys only when listed. */
   mode: DecisionGraphMode<Refusal, Logic>;
-  /** The body of an open decision: its `DecisionText` given `scroll`, the graph's own scroll container, or whatever stands for logic that is not a table. */
-  renderBody: (decisionId: string, scroll: Exclude<DecisionTextScroll, 'self'>) => React.ReactNode;
+  /** The body of an open decision: its `DecisionText` given `scroll`, the graph's own scroll container, or whatever stands for logic that is not a table; `context.revealDecision` takes a link to another decision there in place. */
+  renderBody: (
+    decisionId: string,
+    scroll: Exclude<DecisionTextScroll, 'self'>,
+    context: DecisionGraphBodyContext
+  ) => React.ReactNode;
   /** The view folded this decision, unmounting its body: close what the host had open in it, such as its editor. */
   onFold?: (decisionId: string) => void;
   /** The open decisions as the host keeps them; without it the view keeps them, all folded at first. */
@@ -55,7 +62,7 @@ export interface DecisionGraphViewProps<Refusal, Logic> {
   /** The view brought a decision or one of its rules into view from the keyboard; a host that selects the rule there has it focused. A click on a mark opens and flashes its target without scrolling or telling the host. */
   onReveal?: (target: DecisionGraphTarget) => void;
   /** Opens a decision on its own, from a double-click on its heading or Alt+Enter on its toggle; a reference opens the decision it repeats. */
-  onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
+  onOpenDecision?: (decisionId: string) => void;
   /** A table's rules as its body words them, which the minimap lists and searches by outputs and conditions; read only while it is open, and without it the minimap lists decisions alone. */
   rules?: DecisionGraphMinimapSlotProps['rules'];
   /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-menu-{id}`, `-reference-menu-{id}`, `-name-{id}-input`, `-add-decision`, `-delete-dialog`, `-links-dialog`, `-note-dialog`, `-live`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-decision-{id}`, `-row-rule-{id}-{rowId}`, `-row-reference-{id}`, `-no-match`). */
@@ -91,8 +98,6 @@ const flash = (element: HTMLElement) => {
     { duration: 1400, easing: 'ease-out' }
   );
 };
-
-const scrollTo = (scroller: HTMLElement, top: number) => scroller.scrollTo?.({ top });
 
 const NEAR_MARGIN = '100% 0px';
 
@@ -166,6 +171,7 @@ export const DecisionGraphView = <Refusal, Logic>({
   const [ownExpanded, setOwnExpanded] = useState(NO_EXPANDED);
   const expanded = expansion?.expanded ?? ownExpanded;
   const users = useMemo(() => usersOf(nodes), [nodes]);
+  const drawn = useMemo(() => new Set(decisionsOf(nodes).map(({ id }) => id)), [nodes]);
   const [scroller, setScroller] = useState<HTMLElement | null>(null);
   const [launcherEnd, setLauncherEnd] = useState(0);
   const cardsRef = useRef(new Map<string, HTMLElement>());
@@ -204,6 +210,19 @@ export const DecisionGraphView = <Refusal, Logic>({
           : { kind: 'decision', decisionId: target.decisionId }
       );
     }
+  };
+  const bodyContext: DecisionGraphBodyContext = {
+    revealDecision: (decisionId, byKey) => {
+      if (!drawn.has(decisionId)) {
+        onOpenDecision?.(decisionId);
+        return;
+      }
+      reveal({
+        kind: 'decision',
+        decisionId,
+        mode: { kind: 'navigate', focus: byKey, flash: true },
+      });
+    },
   };
   const openOf = (decisionId: string) => onOpenDecision && (() => onOpenDecision(decisionId));
   const actions = useDecisionGraphActions({
@@ -281,15 +300,14 @@ export const DecisionGraphView = <Refusal, Logic>({
       decisionId === selected ||
       decisionId === revealed ||
       decisionId === focused;
-    if (mounted) return renderBody(decisionId, { container: scrollContainer });
+    if (mounted) return renderBody(decisionId, { container: scrollContainer }, bodyContext);
     const height =
       heightsRef.current.get(decisionId) ??
       Math.max(1, ruleCounts.get(decisionId) ?? 1) * perRuleHeight;
     return <div aria-hidden data-graph-placeholder style={{ height }} />;
   };
   const onFocus = (event: React.FocusEvent<HTMLElement>) => {
-    const card =
-      event.target instanceof Element ? event.target.closest('[data-decision-id]') : null;
+    const card = event.target instanceof Element ? event.target.closest('[data-graph-card]') : null;
     const decisionId = card instanceof HTMLElement ? card.dataset.decisionId : undefined;
     if (decisionId !== undefined) setFocused(decisionId);
   };
@@ -300,10 +318,11 @@ export const DecisionGraphView = <Refusal, Logic>({
       const card = cardsRef.current.get(pending.decisionId);
       if (!scroller || !card) return false;
       if (pending.kind === 'decision') {
-        if (pending.mode.kind === 'navigate') scrollTo(scroller, contentTopIn(card, scroller));
-        if (focuses(pending.mode)) {
-          card.querySelector<HTMLElement>('[data-graph-toggle]')?.focus({ preventScroll: true });
+        const heading = card.querySelector<HTMLElement>('[data-graph-toggle]');
+        if (pending.mode.kind === 'navigate') {
+          revealIn(scroller, { vertical: card, horizontal: heading ?? card, block: 'start' });
         }
+        if (focuses(pending.mode)) heading?.focus({ preventScroll: true });
         if (flashes(pending.mode)) flash(card);
         return true;
       }
@@ -312,10 +331,7 @@ export const DecisionGraphView = <Refusal, Logic>({
       );
       if (!rule) return false;
       if (pending.mode.kind === 'navigate') {
-        scrollTo(
-          scroller,
-          contentTopIn(rule, scroller) - (scroller.clientHeight - rule.offsetHeight) / 2
-        );
+        revealIn(scroller, { vertical: rule, horizontal: rule, block: 'center' });
       }
       if (focuses(pending.mode)) {
         if (!rule.hasAttribute('tabindex')) rule.tabIndex = -1;
@@ -424,6 +440,7 @@ export const DecisionGraphView = <Refusal, Logic>({
         ref={setScroller}
         aria-label={labels.graph}
         className={GRAPH_SCROLLER_CLASS}
+        style={{ scrollPaddingInlineStart: launcherEnd + GRAPH_MINIMAP_GAP_PX }}
         data-testid={`${dataTestId}-scroller`}
       >
         {nodes.length === 0 && (

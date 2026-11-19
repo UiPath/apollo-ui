@@ -2451,6 +2451,17 @@ describe('DecisionText', () => {
       expect(valueChip('row-0', 'decision')).toBe(chip);
     });
 
+    it('keeps a focused row whose id is empty mounted while it scrolls away, with nothing selected', () => {
+      const [first, ...rest] = manySentenceRules(2000);
+      if (!first) throw new Error('no rule');
+      const rules = [{ ...first, rowId: '' }, ...rest];
+      renderView({ rules });
+      act(() => card('').focus());
+      act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
+      expect(card('row-500')).toBeInTheDocument();
+      expect(card('')).toBeInTheDocument();
+    });
+
     it.each([
       'the document',
       'a shadow root',
@@ -5880,7 +5891,7 @@ describe('DecisionText', () => {
       });
       expect(link('r1')).toHaveAttribute('tabindex', '-1');
       fireEvent.click(link('r2'));
-      expect(onOpenDecision).toHaveBeenCalledWith('income-decision');
+      expect(onOpenDecision).toHaveBeenCalledWith('income-decision', true);
       expect(onSelect).not.toHaveBeenCalled();
       act(() => valueChip('r1', 'income').focus());
       press('Enter', { altKey: true });
@@ -5933,7 +5944,7 @@ describe('DecisionText', () => {
       await user.tab();
       expect(document.activeElement).toBe(link('r1'));
       await user.keyboard('{Enter}');
-      expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
+      expect(onOpenDecision.mock.calls).toEqual([['income-decision', true]]);
     });
 
     it.each([
@@ -5951,7 +5962,7 @@ describe('DecisionText', () => {
           : renderSelectable({ ...props, edit, initial: { kind: 'rule', rowId: 'r2' } });
       const user = userEvent.setup();
       await user.click(link('r2'));
-      expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
+      expect(onOpenDecision.mock.calls).toEqual([['income-decision', false]]);
       expect(onSelect).not.toHaveBeenCalled();
       expect(onStartEdit).not.toHaveBeenCalled();
       if (mode === 'read-only') return;
@@ -5980,7 +5991,7 @@ describe('DecisionText', () => {
       const user = userEvent.setup();
       act(() => link('r2').focus());
       await user.keyboard(' ');
-      expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
+      expect(onOpenDecision.mock.calls).toEqual([['income-decision', true]]);
       expect(onStartEdit).not.toHaveBeenCalled();
       await user.keyboard('{Enter}');
       expect(onOpenDecision).toHaveBeenCalledTimes(editable ? 1 : 2);
@@ -6013,7 +6024,7 @@ describe('DecisionText', () => {
       ]);
       walk('ArrowLeft', 'ArrowLeft');
       press('Enter', { altKey: true });
-      expect(onOpenDecision.mock.calls).toEqual([['income-decision']]);
+      expect(onOpenDecision.mock.calls).toEqual([['income-decision', true]]);
     });
 
     it('keeps a read-only link in the tab order, and the input plain without onOpenDecision', () => {

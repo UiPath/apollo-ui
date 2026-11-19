@@ -1,6 +1,12 @@
 import { selectionOf } from './sentenceSelection';
 import type { SentenceCellId, SentenceSelection, SentenceValueId } from './sentenceTypes';
 
+/** The rule row holding `element`. */
+export const rowIdOf = (element: EventTarget | null): string | undefined =>
+  element instanceof HTMLElement
+    ? element.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId
+    : undefined;
+
 /** A value chip under the pointer and the cell it stands for. */
 export interface HoveredToken {
   chip: HTMLElement;

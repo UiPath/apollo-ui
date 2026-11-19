@@ -1,7 +1,13 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { hasLostFocus, onNextGesture } from './gridEvents';
-import { clickedDecision, clickedSelection, stopDecisionOf, valueTokenAt } from './sentenceTargets';
+import {
+  clickedDecision,
+  clickedSelection,
+  rowIdOf,
+  stopDecisionOf,
+  valueTokenAt,
+} from './sentenceTargets';
 import type { useCellHover } from './useCellHover';
 import type { RuleMenus } from './useRuleMenus';
 import type { RuleWindow } from './useRuleWindow';
@@ -21,11 +27,13 @@ export interface ContainerHandlersParams {
   navigation: SentenceNavigation;
   valueEditing: ValueEditing;
   ruleMenus: RuleMenus;
-  /** Opens the decision a linked input names. */
-  onOpenDecision: ((decisionId: string) => void) | undefined;
+  /** Opens the decision a linked input names; `byKey` when pressed from the keyboard rather than clicked. */
+  onOpenDecision: ((decisionId: string, byKey: boolean) => void) | undefined;
   container: RuleWindow['container'];
   /** Whether a selected stop takes Tab into the view in place of the view itself. */
   stopTabbable: boolean;
+  /** The rule holding focus, which the view keeps mounted. */
+  focusRow: (rowId: string | undefined) => void;
 }
 
 /** Whether a key is a forward Tab pressed on the view itself. */
@@ -42,6 +50,7 @@ export const useContainerHandlers = ({
   onOpenDecision,
   container,
   stopTabbable,
+  focusRow,
 }: ContainerHandlersParams) => {
   const focusWithinRef = useRef(false);
   const pressedRef = useRef(false);
@@ -92,17 +101,21 @@ export const useContainerHandlers = ({
     }
     consumerPointerOut?.(event);
   };
-  const openDecision = (event: React.SyntheticEvent, decisionId: string | undefined): boolean => {
+  const openDecision = (
+    event: React.SyntheticEvent,
+    decisionId: string | undefined,
+    byKey: boolean
+  ): boolean => {
     if (!onOpenDecision || decisionId === undefined) return false;
     event.preventDefault();
-    onOpenDecision(decisionId);
+    onOpenDecision(decisionId, byKey);
     return true;
   };
   const openStopDecision = (event: React.KeyboardEvent<HTMLElement>): boolean =>
     event.key === 'Enter' &&
     event.altKey &&
     !isIgnoredKey(event) &&
-    openDecision(event, stopDecisionOf(event.target));
+    openDecision(event, stopDecisionOf(event.target), true);
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (stopTabbable && isTabOnView(event)) {
       event.preventDefault();
@@ -120,6 +133,7 @@ export const useContainerHandlers = ({
     const entered = !focusWithinRef.current && event.target === event.currentTarget;
     focusWithinRef.current = true;
     setFocusInside(true);
+    focusRow(rowIdOf(event.target));
     if (entered && stopTabbable && !pressedRef.current) navigation.refocus();
     consumerFocus?.(event);
   };
@@ -131,12 +145,13 @@ export const useContainerHandlers = ({
       focusWithinRef.current = false;
       endPress();
       setFocusInside(false);
+      focusRow(undefined);
     }
     consumerBlur?.(event);
   };
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
     const claimed =
-      openDecision(event, clickedDecision(event.target)) ||
+      openDecision(event, clickedDecision(event.target), event.detail === 0) ||
       ruleMenus.onClick(event) ||
       valueEditing.onClick(event);
     const selection = claimed ? null : clickedSelection(event.target);

@@ -183,12 +183,13 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   const hoverTo = useCellHover(onCellHover);
   const shown = usePendingCondition({ edit, rules, bands });
   const listed = diffRows?.rules ?? shown.rules;
-  const ruleWindow = useRuleWindow(
-    listed,
-    selected?.rowId,
-    edit?.editing?.rowId ?? selected?.rowId,
-    scroll
+  const [focusedRowId, setFocusedRowId] = useState<string | undefined>(undefined);
+  const retainedRowId = edit?.editing?.rowId ?? selected?.rowId;
+  const retainedRowIds = useMemo(
+    () => [retainedRowId, focusedRowId],
+    [retainedRowId, focusedRowId]
   );
+  const ruleWindow = useRuleWindow(listed, selected?.rowId, retainedRowIds, scroll);
   const selectable = onSelect !== undefined;
   const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
@@ -218,6 +219,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     onOpenDecision,
     container: ruleWindow.container,
     stopTabbable: selectable && ruleWindow.selectedRow !== null,
+    focusRow: setFocusedRowId,
   });
   const columnEditing = useColumnEditing({
     column: mode.kind === 'edit' ? mode.edit.column : undefined,
