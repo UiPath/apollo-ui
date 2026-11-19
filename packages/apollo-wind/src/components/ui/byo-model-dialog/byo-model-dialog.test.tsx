@@ -374,6 +374,31 @@ describe('ByoModelDialog', () => {
     });
   });
 
+  it("edits a model on the provider's first connection when its own is not listed", async () => {
+    const api = fakeApi({
+      loadModel: vi.fn(async () => ({
+        ok: true as const,
+        value: { ...SAVED_MODEL, connectionId: 'in-a-personal-workspace' },
+      })),
+    });
+    render(
+      <ByoModelDialog
+        open
+        onOpenChange={vi.fn()}
+        api={api}
+        onSaved={vi.fn()}
+        editing={{ configurationId: 'cfg1', name: 'Taken' }}
+      />
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Connection' })).toHaveTextContent(
+        'Saved connection: My OpenAI · My Workspace'
+      )
+    );
+    expect(api.listModels).toHaveBeenCalledWith('openai', SAVED);
+  });
+
   it('edits a saved connection in place', async () => {
     const user = userEvent.setup();
     const api = fakeApi({
@@ -654,6 +679,23 @@ describe('ByoModelDialog', () => {
       // A UiPath model already replaced is not offered again.
       expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
         'Add custom alias',
+        'gpt-4.1',
+        'gpt-4o-2024-05-13Deprecated',
+      ]);
+    });
+
+    it('keeps a custom alias and its edit action above the UiPath models', async () => {
+      const user = userEvent.setup();
+      render(
+        <ByoModelDialog open onOpenChange={vi.fn()} api={withReplaceable()} onSaved={vi.fn()} />
+      );
+
+      await addCustomAlias(user, 'mine');
+      await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+
+      expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+        'mine',
+        'Edit custom alias',
         'gpt-4.1',
         'gpt-4o-2024-05-13Deprecated',
       ]);
