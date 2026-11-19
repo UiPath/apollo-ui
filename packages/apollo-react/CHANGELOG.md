@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v8.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@8.0.0...@uipath/apollo-react@8.1.0) (2026-11-19)
+
+### Features
+
+* **apollo-react:** optional citations, out of the read-view tab order, named apart [ECS-2150] ([24b77ba](https://github.com/UiPath/apollo-ui/commit/24b77ba135650444f91151d886e03639d9ca6adc))
+
 ## [@uipath/apollo-react-v7.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.35.0...@uipath/apollo-react@7.36.0) (2026-11-19)
 
 ### Features
