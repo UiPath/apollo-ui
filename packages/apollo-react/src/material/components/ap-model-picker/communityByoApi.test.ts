@@ -659,6 +659,35 @@ describe('createCommunityByoApi', () => {
     expect(result.value.takenModelNames).toEqual(['gpt-4o', 'gpt-5-2025-08-07', 'my-claude']);
   });
 
+  it('refuses to edit a connection whose authentication type the dialog does not offer', async () => {
+    routes.push(
+      on('POST', `${TENANT}/connections_/api/v1/Connections/conn-aws/auth`, () => ({
+        body: { sessionId: 'sid-aws', expiresAt: Date.now() + 600_000 },
+      })),
+      on(
+        'GET',
+        `${TENANT}/elements_/v1/elements/normalized-instances/applications/sessions/sid-aws`,
+        () => ({
+          body: {
+            configs: {
+              'authentication.type': 'awsUipathManagedCrossAccountAssumeRole',
+              'aws.region': 'us-east-1',
+            },
+            elementInstance: { id: 1 },
+          },
+        })
+      )
+    );
+    const saved = { id: 'conn-aws', providerId: 'bedrock', name: 'AWS', folderId: 'f' };
+
+    const result = await api().loadConnectionValues('bedrock', saved);
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.failure.title).toBe('Edit this connection in Integration Service');
+    expect(result.failure.message).toContain('awsUipathManagedCrossAccountAssumeRole');
+  });
+
   it('edits a saved connection through its own session, keeping a secret left blank', async () => {
     let sessions = 0;
     routes.push(
