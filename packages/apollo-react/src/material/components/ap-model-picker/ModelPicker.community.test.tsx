@@ -212,6 +212,44 @@ describe('<ModelPicker isCommunity>', () => {
     expect(onChange).not.toHaveBeenCalledWith(expect.objectContaining({ modelName: 'my-gpt' }));
   });
 
+  it.each([
+    ['is blocked by policy', { ...ADDED, isBlockedByPolicy: true }, undefined],
+    [
+      "is left out by the host's filter",
+      ADDED,
+      (m: DiscoveryModel) => m.modelSubscriptionType === 'UiPathOwned',
+    ],
+  ])('selects no saved model that %s', async (_, refreshed, filter) => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    let rerenderWith: (models: DiscoveryModel[]) => void = () => {};
+    const onCustomModelSaved = vi.fn(async () => rerenderWith([HOSTED, refreshed]));
+    const picker = (models: DiscoveryModel[]) => (
+      <ModelPicker
+        models={models}
+        value={null}
+        onChange={onChange}
+        filter={filter}
+        canManageByo
+        isCommunity
+        requestContext={CTX}
+        onCustomModelSaved={onCustomModelSaved}
+      />
+    );
+    const { rerender } = render(picker([HOSTED]));
+    rerenderWith = (models) => rerender(picker(models));
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(await screen.findByText(/use custom model/i));
+    await addMyGptThroughMyOpenAi(user);
+    await waitFor(() => expect(onCustomModelSaved).toHaveBeenCalled());
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it("shows the saved model's folder when another folder is shown", async () => {
     const user = userEvent.setup();
     const onFolderChange = vi.fn();
