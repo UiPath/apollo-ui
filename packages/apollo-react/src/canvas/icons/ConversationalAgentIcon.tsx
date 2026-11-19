@@ -2,10 +2,13 @@ export const ConversationalAgentIcon = ({
   w = 48,
   h = 48,
   color = 'currentColor',
+  label,
 }: {
   w?: number | string;
   h?: number | string;
   color?: string;
+  /** Accessible name; without one the icon is hidden from assistive technology. */
+  label?: string;
 }) => {
   return (
     <svg
@@ -15,6 +18,7 @@ export const ConversationalAgentIcon = ({
       viewBox="0 0 26 26"
       fill="none"
       data-testid="conversational-agent-icon"
+      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
     >
       <path
         d="M9.20901 13.541L11.7657 16.0977L10.4873 17.376L9.20901 16.0977L7.93068 17.376L6.65234 16.0977L9.20901 13.541ZM16.7923 13.541L19.349 16.0977L18.0707 17.376L16.7923 16.0977L15.514 17.376L14.2357 16.0977L16.7923 13.541Z"

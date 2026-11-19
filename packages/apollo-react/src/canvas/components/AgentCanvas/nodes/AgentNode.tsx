@@ -135,15 +135,31 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     (definition?.metadata as Record<string, unknown>)?.isConversational === true;
   const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
 
+  const agentTypeLabel = isConversational
+    ? translations.conversationalAgent
+    : translations.autonomousAgent;
+
   // Conditional icon based on agent type
   const agentIcon = useMemo(() => {
     if (isConversational) {
       return (
-        <Icons.ConversationalAgentIcon color="var(--canvas-foreground-de-emp)" w={32} h={32} />
+        <Icons.ConversationalAgentIcon
+          color="var(--canvas-foreground-de-emp)"
+          w={32}
+          h={32}
+          label={agentTypeLabel}
+        />
       );
     }
-    return <Icons.AutonomousAgentIcon color="var(--canvas-foreground-de-emp)" w={32} h={32} />;
-  }, [isConversational]);
+    return (
+      <Icons.AutonomousAgentIcon
+        color="var(--canvas-foreground-de-emp)"
+        w={32}
+        h={32}
+        label={agentTypeLabel}
+      />
+    );
+  }, [isConversational, agentTypeLabel]);
 
   // Extract settings from definition
   const settings = definition?.settings as
@@ -346,22 +362,18 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   }, [healthScore, onHealthScoreClick]);
 
   const subLabelWithHealthScore = useMemo(() => {
-    const baseSubLabel = isConversational
-      ? translations.conversationalAgent
-      : translations.autonomousAgent;
-
     if (!healthScoreBadge) {
-      return baseSubLabel;
+      return agentTypeLabel;
     }
 
     // Return composite element with both text and badge
     return (
       <SubLabelContainer>
-        <span>{baseSubLabel}</span>
+        <span>{agentTypeLabel}</span>
         {healthScoreBadge}
       </SubLabelContainer>
     );
-  }, [isConversational, translations, healthScoreBadge]);
+  }, [agentTypeLabel, healthScoreBadge]);
 
   const { instructionsFooter, footerVariant } = useMemo((): {
     instructionsFooter: React.ReactNode;
@@ -578,9 +590,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
             ...data,
             display: {
               label: name,
-              subLabel: isConversational
-                ? translations.conversationalAgent
-                : translations.autonomousAgent,
+              subLabel: agentTypeLabel,
               shape: 'rectangle',
               background: 'var(--canvas-background)',
               iconBackground: 'var(--canvas-background-secondary)',
