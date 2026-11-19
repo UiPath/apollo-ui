@@ -220,13 +220,13 @@ describe('createCommunityByoApi', () => {
     expect(result.value.fields[5]?.defaultValue).toBe('2023-10-01-preview');
   });
 
-  it("asks for Bedrock's region from a list and the credentials of the chosen authentication type", async () => {
+  it("asks for Bedrock's region from a list and an access key", async () => {
     const result = await api().loadForm('bedrock', null);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const { authTypes, fields } = result.value;
-    expect(authTypes.map((t) => t.value)).toEqual(['accessKey', 'assumeRole']);
+    expect(authTypes.map((t) => t.value)).toEqual(['accessKey']);
     const region = fields.find((f) => f.key === 'aws.region');
     expect(region).toMatchObject({ required: true, advanced: false, group: null });
     const regions = region?.options?.map((o) => o.value) ?? [];
@@ -237,11 +237,32 @@ describe('createCommunityByoApi', () => {
     const shown = (authType: string) =>
       fields.filter((f) => f.group === authType && f.required).map((f) => f.key);
     expect(shown('accessKey')).toEqual(['aws.api.key', 'aws.api.secret']);
-    expect(shown('assumeRole')).toEqual([
-      'assume.role.aws.api.key',
-      'assume.role.aws.api.secret',
-      'assume.role.aws.iam.role',
-    ]);
+  });
+
+  it('connects Amazon Web Services to the Bedrock runtime with an access key', async () => {
+    routeNewConnection();
+    const client = api();
+    const form = await client.loadForm('bedrock', null);
+    if (!form.ok) throw new Error('no form');
+
+    const result = await client.connect({
+      providerId: 'bedrock',
+      form: form.value,
+      authType: 'accessKey',
+      values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': 's' },
+      name: 'My AWS',
+      folderId: 'folder-key',
+    });
+
+    expect(result.ok).toBe(true);
+    const auth = calls.find((c) => c.url.endsWith('/authenticate'));
+    expect((auth?.body as { configuration: unknown }).configuration).toEqual({
+      'authentication.type': 'accessKey',
+      'aws.region': 'eu-central-1',
+      'aws.api.key': 'AKIA',
+      'aws.api.secret': 's',
+      'default.service.name': 'bedrock-runtime',
+    });
   });
 
   it.each(
