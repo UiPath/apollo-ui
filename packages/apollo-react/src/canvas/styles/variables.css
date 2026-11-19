@@ -205,3 +205,32 @@ body.light-hc {
   --canvas-node-filter-lifted: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12))
     drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
 }
+
+/**
+ * DMN decision requirements diagram: one icon tile per element type, so a type reads at a glance
+ * across a large graph. An Apollo hue mixed into the node surface: into white for the light themes
+ * (decision brand blue #0067df 18%, input data emerald #10b981 22%, knowledge model accessory
+ * yellow #ffb40e 35%, knowledge source accessory purple #933692 20%), and 35% into Apollo's dark
+ * node surface #334049 for the dark themes (#66adff, #34d399, #ffb40e, #c27bc1). The icon keeps the
+ * node's light or dark foreground, above 4.9 : 1 on all eight tiles.
+ */
+body.light,
+body.light-hc,
+.future-light,
+.wireframe {
+  --canvas-dmn-decision-tile: #d1e4f9;
+  --canvas-dmn-input-data-tile: #caf0e3;
+  --canvas-dmn-knowledge-model-tile: #ffe5ab;
+  --canvas-dmn-knowledge-source-tile: #e9d7e9;
+}
+
+body.dark,
+body.dark-hc,
+.future-dark,
+.vertex,
+.canvas {
+  --canvas-dmn-decision-tile: #456689;
+  --canvas-dmn-input-data-tile: #337365;
+  --canvas-dmn-knowledge-model-tile: #7a6934;
+  --canvas-dmn-knowledge-source-tile: #655573;
+}
