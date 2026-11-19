@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.34.0...@uipath/apollo-react@7.35.0) (2026-11-19)
+
+### Features
+
+* **apollo-react:** reveal a linked decision in place in the graph text view [ECS-2216] ([ee660b2](https://github.com/UiPath/apollo-ui/commit/ee660b23cee61d19c05b0d07baf82ae7d4f57512))
+
 ## [@uipath/apollo-react-v7.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.33.0...@uipath/apollo-react@7.34.0) (2026-11-19)
 
 ### Features
