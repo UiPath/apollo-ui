@@ -2,13 +2,19 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import { createNode, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import {
+  caseStageEdgeTypes,
+  caseStageNodeTypes,
+  STAGE_WIDTH,
+  stageNode,
+  TRIGGER_NODE_TYPE,
+  triggerEdge,
+} from '../../storybook-utils/case-flow';
 import type { ElementStatus } from '../../types/execution';
 import { BaseCanvas } from '../BaseCanvas';
 import { BaseNodeOverrideConfigProvider } from '../BaseNode/BaseNodeConfigContext';
 import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle/ButtonHandle';
 import { caseFlowManifest } from './case-flow.manifest';
-
-const TRIGGER_NODE_TYPE = 'uipath.case.trigger';
 
 const TRIGGER_VARIANTS: Array<{
   id: string;
@@ -106,14 +112,16 @@ export const Default: Story = {
 // ============================================================================
 // WithHoverPreview — demos `onHandleMouseEnter` / `onHandleMouseLeave` /
 // `onHandleAction` on the trigger's source-handle `+` button. Hovering the `+`
-// adds a translucent "preview" node next to the trigger; unhovering removes it;
-// clicking commits the preview into a solid node. This is the affordance
+// adds a translucent preview stage next to the trigger (the only category the
+// trigger's output accepts); unhovering removes it; clicking commits it as a
+// connected stage. This is the affordance
 // PO.Frontend's case-management canvas uses for its hover-to-preview UX and is
 // the visual baseline for that capability.
 // ============================================================================
 
 const PREVIEW_NODE_ID = 'hover-preview';
 const COMMITTED_NODE_ID = 'hover-committed';
+const PREVIEW_POSITION = { x: 296, y: 136 };
 
 const HoverPreviewStory = () => {
   const triggerInitialNodes = useMemo(
@@ -132,7 +140,14 @@ const HoverPreviewStory = () => {
     []
   );
 
-  const { canvasProps, setNodes } = useCanvasStory({ initialNodes: triggerInitialNodes });
+  const { canvasProps, setNodes, setEdges } = useCanvasStory({
+    initialNodes: triggerInitialNodes,
+    additionalNodeTypes: caseStageNodeTypes,
+  });
+  const edgeTypes = useMemo(
+    () => ({ ...canvasProps.edgeTypes, ...caseStageEdgeTypes }),
+    [canvasProps.edgeTypes]
+  );
   const [isCommitted, setIsCommitted] = useState(false);
 
   const overrideConfig = useMemo(
@@ -143,50 +158,42 @@ const HoverPreviewStory = () => {
           if (nodes.some((n) => n.id === PREVIEW_NODE_ID)) return nodes;
           return [
             ...nodes,
-            createNode({
-              id: PREVIEW_NODE_ID,
-              type: TRIGGER_NODE_TYPE,
-              position: { x: 296, y: 160 },
-              data: {
-                nodeType: TRIGGER_NODE_TYPE,
-                version: '1.0.0',
-                display: { label: 'Preview', icon: 'circle-dashed' },
-                // Visual cue for "preview" (translucent). Apollo's BaseNode
-                // doesn't have a first-class translucent variant; story-only
-                // styling is fine here for the visual demo.
-                style: { opacity: 0.4 },
-              },
-            }),
+            {
+              ...stageNode(PREVIEW_NODE_ID, 'New stage', PREVIEW_POSITION.x, PREVIEW_POSITION.y),
+              // Story-only styling: StageNode has no first-class translucent preview variant.
+              style: { opacity: 0.4, width: STAGE_WIDTH },
+            },
           ];
         });
+        setEdges((edges) =>
+          edges.some((e) => e.target === PREVIEW_NODE_ID)
+            ? edges
+            : [...edges, triggerEdge(PREVIEW_NODE_ID)]
+        );
       },
       onHandleMouseLeave: (_event: HandleMouseEvent) => {
         if (isCommitted) return;
         setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
+        setEdges((edges) => edges.filter((e) => e.target !== PREVIEW_NODE_ID));
       },
       onHandleAction: (_event: HandleActionEvent) => {
         setIsCommitted(true);
         setNodes((nodes) => [
           ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID),
-          createNode({
-            id: COMMITTED_NODE_ID,
-            type: TRIGGER_NODE_TYPE,
-            position: { x: 296, y: 160 },
-            data: {
-              nodeType: TRIGGER_NODE_TYPE,
-              version: '1.0.0',
-              display: { label: 'Committed', icon: 'check' },
-            },
-          }),
+          stageNode(COMMITTED_NODE_ID, 'Stage 1', PREVIEW_POSITION.x, PREVIEW_POSITION.y),
+        ]);
+        setEdges((edges) => [
+          ...edges.filter((e) => e.target !== PREVIEW_NODE_ID),
+          triggerEdge(COMMITTED_NODE_ID),
         ]);
       },
     }),
-    [isCommitted, setNodes]
+    [isCommitted, setNodes, setEdges]
   );
 
   return (
     <BaseNodeOverrideConfigProvider value={overrideConfig}>
-      <BaseCanvas {...canvasProps} mode="design" />
+      <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design" />
     </BaseNodeOverrideConfigProvider>
   );
 };
