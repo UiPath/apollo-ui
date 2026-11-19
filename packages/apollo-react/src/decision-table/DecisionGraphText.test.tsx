@@ -38,7 +38,6 @@ const textBody = (
   edit?: FixtureEdit
 ) => (
   <DecisionText
-    citations={{ kind: 'none' }}
     table={{ rules: RULES, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
     hitPolicies={HIT_POLICIES}
     columnTypes={COLUMN_TYPES}
@@ -58,7 +57,6 @@ const held = (
 
 const graph = (props: Partial<DecisionGraphTextProps<never, never>> = {}) => (
   <DecisionGraphText
-    citations={{ kind: 'none' }}
     nodes={SHARED_DEPENDENCY.nodes}
     renderBody={(id, scroll) => textBody(id, scroll)}
     mode={{ kind: 'read', selected: null }}
@@ -85,7 +83,6 @@ const SelectingHost = ({
   const [selected, setSelected] = useState<{ id: string; rowId: string } | null>(null);
   return (
     <DecisionGraphText
-      citations={{ kind: 'none' }}
       nodes={nodes}
       renderBody={(id, scroll) =>
         textBody(
@@ -329,7 +326,6 @@ describe('DecisionGraphText', () => {
       const [shown, setShown] = useState<{ id: string; rowId: string } | null>(null);
       return (
         <DecisionGraphText
-          citations={{ kind: 'none' }}
           nodes={MARKED.nodes}
           renderBody={(id, scroll) =>
             textBody(id, scroll, shown?.id === id ? { kind: 'rule', rowId: shown.rowId } : null)
@@ -414,7 +410,6 @@ describe('DecisionGraphText', () => {
             Fold
           </button>
           <DecisionGraphText
-            citations={{ kind: 'none' }}
             nodes={SHARED_DEPENDENCY.nodes}
             mode={{ kind: 'read', selected: null }}
             expansion={{ expanded, onChange: setExpanded }}
@@ -520,12 +515,10 @@ describe('DecisionGraphText', () => {
       const [selected, setSelected] = useState<{ id: string; rowId: string } | null>(null);
       return (
         <DecisionGraphText
-          citations={{ kind: 'none' }}
           nodes={nodes}
           expansion={held(new Set(ids))}
           renderBody={(id, scroll) => (
             <DecisionText
-              citations={{ kind: 'none' }}
               table={{ rules: rules, ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
               hitPolicies={HIT_POLICIES}
               columnTypes={COLUMN_TYPES}

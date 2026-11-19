@@ -47,7 +47,6 @@ const Host = ({
   const [selected, setSelected] = useState<{ kind: 'rule'; rowId: string } | null>(null);
   return (
     <DecisionGraphText
-      citations={{ kind: 'none' }}
       nodes={[leaf('a'), leaf('income')]}
       expansion={{ expanded, onChange: setExpanded }}
       onOpenDecision={onOpenDecision}
@@ -55,7 +54,6 @@ const Host = ({
       renderBody={(decisionId, scroll, { revealDecision }) =>
         decisionId === 'a' ? (
           <DecisionText
-            citations={{ kind: 'none' }}
             table={{
               rules: rulesLinkedTo(linkTo),
               ...GRID_SENTENCE_COLUMNS,

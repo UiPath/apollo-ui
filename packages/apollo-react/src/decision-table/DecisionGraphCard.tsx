@@ -3,8 +3,6 @@ import { ChevronDown, ChevronRight, CornerDownRight, Ellipsis, Network } from 'l
 import type React from 'react';
 import { useId, useLayoutEffect, useRef } from 'react';
 import { CitationButtons } from './CitationButton';
-import type { DecisionGraphDecisionNode, DecisionGraphReferenceNode } from './decisionGraphTypes';
-import { isComposing } from './gridEvents';
 import {
   GRAPH_BODY_CLASS,
   GRAPH_CARD_CLASS,
@@ -21,7 +19,9 @@ import {
   GRAPH_RULE_COUNT_CLASS,
   GRAPH_TOGGLE_CLASS,
 } from './decisionGraphStyles';
+import type { DecisionGraphDecisionNode, DecisionGraphReferenceNode } from './decisionGraphTypes';
 import { GridMenuButton, type GridMenuEntry } from './GridMenu';
+import { isComposing } from './gridEvents';
 import { MarkGlyph } from './MarkGlyph';
 import { isLineMark } from './sentenceMarks';
 import type { OpenCitation, SentenceCitation } from './sentenceTypes';
@@ -285,10 +285,15 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
         {citations && (
           <CitationButtons
             citations={citations.citations}
+            owner={{ kind: 'decision', name: node.label }}
             onOpen={citations.onOpen}
             selected={active}
             tabIndex={0}
-            className={cn('shrink-0', !active && GRAPH_REVEAL_CLASS)}
+            className={cn(
+              'shrink-0',
+              !active && GRAPH_REVEAL_CLASS,
+              '[@media(hover:none)]:opacity-100'
+            )}
             labels={labels}
             dataTestId={`${dataTestId}-citation-${node.id}`}
           />

@@ -15,13 +15,7 @@ const editMode = (actions: readonly Action[]): DecisionGraphMode<string, string>
 });
 
 const graph = (mode: DecisionGraphMode<string, string>, nodes: readonly DecisionGraphNode[]) => (
-  <DecisionGraphText
-    citations={{ kind: 'none' }}
-    nodes={nodes}
-    mode={mode}
-    renderBody={() => null}
-    dataTestId="graph"
-  />
+  <DecisionGraphText nodes={nodes} mode={mode} renderBody={() => null} dataTestId="graph" />
 );
 
 const leaf = (id: string, label: string): DecisionGraphNode => ({

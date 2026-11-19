@@ -14,7 +14,6 @@ const graph = (
   renderBody: (id: string) => React.ReactNode = () => null
 ) => (
   <DecisionGraphText
-    citations={{ kind: 'none' }}
     nodes={nodes}
     mode={{
       kind: 'edit',

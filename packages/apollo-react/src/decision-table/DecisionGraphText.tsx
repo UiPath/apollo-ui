@@ -24,8 +24,8 @@ import {
   GRAPH_BRANCH_CLASS,
   GRAPH_COLUMN_CLASS,
   GRAPH_EMPTY_CLASS,
-  GRAPH_MINIMAP_GAP_PX,
   GRAPH_FRAME_CLASS,
+  GRAPH_MINIMAP_GAP_PX,
   GRAPH_NEST_CLASS,
   GRAPH_OUTPUT_HUE_CLASS,
   GRAPH_SCROLLER_CLASS,
@@ -47,6 +47,8 @@ import { useDecisionTextLabels } from './useDecisionTextStrings';
 import type { DecisionTextScroll } from './useRuleWindow';
 import { useTextAnnouncements } from './useTextAnnouncements';
 
+const NO_CITATIONS: DecisionGraphCitations = { kind: 'none' };
+
 export interface DecisionGraphTextProps<Refusal, Logic> {
   /** The decisions in reading order, each with the decisions it requires as children; one already drawn is a reference. */
   nodes: readonly DecisionGraphNode[];
@@ -58,8 +60,8 @@ export interface DecisionGraphTextProps<Refusal, Logic> {
     scroll: Exclude<DecisionTextScroll, 'self'>,
     context: DecisionGraphBodyContext
   ) => React.ReactNode;
-  /** Where each decision was read from, on its heading and opened by the host; `{ kind: 'none' }` shows none. */
-  citations: DecisionGraphCitations;
+  /** Where each decision was read from, on its heading and opened by the host; none when omitted. */
+  citations?: DecisionGraphCitations;
   /** The view folded this decision, unmounting its body: close what the host had open in it, such as its editor. */
   onFold?: (decisionId: string) => void;
   /** The open decisions as the host keeps them; without it the view keeps them, all folded at first. */
@@ -170,7 +172,7 @@ export const DecisionGraphText = <Refusal, Logic>({
   nodes,
   mode,
   renderBody,
-  citations,
+  citations = NO_CITATIONS,
   expansion,
   onFold,
   onOpenDecision,

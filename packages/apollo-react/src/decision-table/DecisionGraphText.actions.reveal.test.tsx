@@ -26,7 +26,6 @@ const Host = () => {
   const nodes = useMemo(() => nodesOf(model), [model]);
   return (
     <DecisionGraphText
-      citations={{ kind: 'none' }}
       nodes={nodes}
       mode={{
         kind: 'edit',

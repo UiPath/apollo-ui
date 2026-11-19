@@ -1,13 +1,12 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { CitationButtons, type CitationLabels } from './CitationButton';
 import { forwardRef, useId } from 'react';
+import { CitationButtons, type CitationLabels } from './CitationButton';
 import type { DiffLabels } from './decisionTextDiff';
 import { MarkBadge, type MarkBadgeProps, markIds } from './MarkBadge';
 import type { Mark } from './marks';
 import { PolicyPicker, type PolicyPickerProps } from './PolicyPicker';
 import { isLineMark, type LineMarks } from './sentenceMarks';
-import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 import {
   CHANGED_CHIP_CLASS,
   DECISION_TEXT_HEADER_CLASS,
@@ -17,6 +16,7 @@ import {
   HIT_POLICY_CHANGE_CLASS,
   STRUCK_VALUE_CLASS,
 } from './sentenceStyles';
+import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 
 export interface DecisionTextHeaderProps {
   /** The hit policy: its label, the picker in its place, or its change in a diff. */
@@ -87,8 +87,9 @@ export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderP
           <span className={HEADER_CITATIONS_CLASS}>
             <CitationButtons
               citations={citations.citations}
+              owner={{ kind: 'table' }}
               onOpen={citations.onOpen}
-              selected={false}
+              selected
               tabIndex={0}
               className={HEADER_CITATION_REVEAL_CLASS}
               labels={labels}

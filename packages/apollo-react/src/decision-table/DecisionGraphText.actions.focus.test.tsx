@@ -12,7 +12,6 @@ const NODES = SHARED_DEPENDENCY.nodes;
 
 const graph = (actions: readonly Action[], nodes: readonly DecisionGraphNode[] = NODES) => (
   <DecisionGraphText
-    citations={{ kind: 'none' }}
     nodes={nodes}
     mode={{
       kind: 'edit',

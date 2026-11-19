@@ -220,7 +220,7 @@ export const RULE_ACTION_CLASS = 'size-6 text-foreground-de-emp hover:text-foreg
 
 /** Hidden until its card is hovered or holds the selection, or it has keyboard focus. */
 export const REVEALED_ACTION_CLASS =
-  'opacity-0 group-hover/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100';
+  'opacity-0 group-hover/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
 export const CITATION_BUTTON_CLASS =
   'gap-1 text-foreground-de-emp hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0';
@@ -234,7 +234,7 @@ export const CITED_LINE_CLASS = 'grow';
 export const HEADER_CITATIONS_CLASS = 'ms-auto flex gap-1 self-center';
 
 export const HEADER_CITATION_REVEAL_CLASS =
-  'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100';
+  'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
 export const DELETE_RULE_CLASS = cn(
   RULE_ACTION_CLASS,
