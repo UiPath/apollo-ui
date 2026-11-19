@@ -95,4 +95,5 @@ export {
   getSubstitutionTarget,
   groupModels,
   isTextGenerationModel,
+  isUiPathModel,
 } from './utils';

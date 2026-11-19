@@ -831,6 +831,7 @@ export {
   getSubstitutionTarget,
   groupModels,
   isTextGenerationModel,
+  isUiPathModel,
   MODEL_BADGES,
   ModelOptionRow,
   ModelPicker,

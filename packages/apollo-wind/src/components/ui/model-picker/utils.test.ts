@@ -10,6 +10,7 @@ import {
   getSubstitutionTarget,
   groupModels,
   isTextGenerationModel,
+  isUiPathModel,
   resolveHomeGeography,
 } from './utils';
 
@@ -99,6 +100,11 @@ describe('groupModels (Category view ordering)', () => {
     ];
     const groups = groupModels(models, 'vendor');
     expect(groups[0]?.key).toBe('byo');
+  });
+
+  it('Provider view labels the UiPathMls vendor as UiPath', () => {
+    const groups = groupModels([model({ modelId: 'path-mini', vendor: 'UiPathMls' })], 'vendor');
+    expect(groups.find((g) => g.key === 'UiPathMls')?.label).toBe('UiPath');
   });
 
   it('Provider view orders each vendor section Recommended → Preview → More → Deprecating', () => {
@@ -413,6 +419,26 @@ describe('badge pool', () => {
     expect(tags.find((t) => t.kind === 'not-a-real-badge')).toBeUndefined();
   });
 
+  it('stamps By UiPath on UiPath-built models by default', () => {
+    const tags = deriveModelTags(model({ modelId: 'path-mini', vendor: 'UiPathMls' }));
+    const badge = tags.find((t) => t.kind === 'uipath-model');
+    expect(badge?.label).toBe('By UiPath');
+    expect(badge?.variant).toBe('info-mini');
+    expect(badge?.tooltip).toBeTruthy();
+  });
+
+  it('does not stamp By UiPath on third-party models', () => {
+    const tags = deriveModelTags(model({ modelId: 'a', vendor: 'OpenAi' }));
+    expect(tags.find((t) => t.kind === 'uipath-model')).toBeUndefined();
+  });
+
+  it('lets a host badgesFor add By UiPath next to its own badges', () => {
+    const tags = deriveModelTags(model({ modelId: 'path-mini', vendor: 'UiPathMls' }), {
+      badgesFor: (m) => (isUiPathModel(m) ? ['uipath-model', 'cost-basic'] : ['cost-basic']),
+    });
+    expect(tags.map((t) => t.kind)).toEqual(expect.arrayContaining(['uipath-model', 'cost-basic']));
+  });
+
   it('renders pool badges before customTagsFor extras', () => {
     const tags = deriveModelTags(model({ modelId: 'a' }), {
       badgesFor: () => ['cost-basic'],
@@ -541,5 +567,23 @@ describe('isTextGenerationModel', () => {
     expect(
       isTextGenerationModel(model({ modelId: 'a', capabilities: ['Chat', 'Embeddings'] }))
     ).toBe(true);
+  });
+});
+
+describe('isUiPathModel', () => {
+  it('is true for the UiPathMls vendor', () => {
+    expect(isUiPathModel(model({ modelId: 'path-mini', vendor: 'UiPathMls' }))).toBe(true);
+  });
+
+  it('is false for third-party vendors', () => {
+    expect(isUiPathModel(model({ modelId: 'a', vendor: 'OpenAi' }))).toBe(false);
+  });
+
+  it('is false for BYO rows', () => {
+    expect(
+      isUiPathModel(
+        model({ modelId: 'path-mini', vendor: 'UiPathMls', modelSubscriptionType: 'BYOMAdded' })
+      )
+    ).toBe(false);
   });
 });

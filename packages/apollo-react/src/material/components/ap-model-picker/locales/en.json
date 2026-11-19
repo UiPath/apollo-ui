@@ -3,6 +3,8 @@
   "modelPicker.badge.costBasic.label": "Basic",
   "modelPicker.badge.costPremium.label": "Premium",
   "modelPicker.badge.costStandard.label": "Standard",
+  "modelPicker.badge.uipathModel.label": "By UiPath",
+  "modelPicker.badge.uipathModel.tooltip": "A model built and trained by UiPath",
   "modelPicker.count.many": "{n} models",
   "modelPicker.count.one": "{n} model",
   "modelPicker.deleteConfirm.cancel": "Cancel",

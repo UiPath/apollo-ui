@@ -43,6 +43,8 @@ export interface ModelPickerLabels {
   costStandard: string;
   costPremium: string;
   costTooltip: string;
+  uipathModel: string;
+  uipathModelTooltip: string;
 
   /* Sections */
   recommendedGroup: string;
@@ -133,6 +135,8 @@ export const DEFAULT_MODEL_PICKER_LABELS: ModelPickerLabels = {
   costStandard: 'Standard',
   costPremium: 'Premium',
   costTooltip: 'Relative cost tier for this product',
+  uipathModel: 'By UiPath',
+  uipathModelTooltip: 'A model built and trained by UiPath',
 
   recommendedGroup: 'Recommended',
   recommendedGroupHint: 'Based on evaluation runs for this product',

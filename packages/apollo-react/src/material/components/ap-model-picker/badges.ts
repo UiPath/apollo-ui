@@ -8,8 +8,8 @@
  * localized once, centrally.
  *
  * Adding a badge is a design-system PR: one entry below plus its
- * `msg()` descriptor in `i18n.ts`. The pool starts with the cost tiers
- * (Basic / Standard / Premium).
+ * `msg()` descriptor in `i18n.ts`. The pool holds the cost tiers
+ * (Basic / Standard / Premium) and the "By UiPath" badge.
  *
  * `customTagsFor` remains as an escape hatch for experiments, but the
  * expectation is that anything worth shipping graduates into the pool.
@@ -20,7 +20,7 @@ import type { MessageDescriptor } from '@lingui/core';
 import { BADGE_LABELS } from './i18n';
 
 /** Kinds available in the pool. Grows by design-system PR. */
-export type ModelBadgeKind = 'cost-basic' | 'cost-standard' | 'cost-premium';
+export type ModelBadgeKind = 'cost-basic' | 'cost-standard' | 'cost-premium' | 'uipath-model';
 
 export interface ModelBadgeDefinition {
   /** Localized chip label. */
@@ -54,5 +54,11 @@ export const MODEL_BADGES: Record<ModelBadgeKind, ModelBadgeDefinition> = {
     label: BADGE_LABELS.costPremium,
     tooltip: BADGE_LABELS.costTooltip,
     variant: 'mini',
+  },
+  // Marks models UiPath builds itself (see `isUiPathModel`).
+  'uipath-model': {
+    label: BADGE_LABELS.uipathModel,
+    tooltip: BADGE_LABELS.uipathModelTooltip,
+    variant: 'info-mini',
   },
 };
