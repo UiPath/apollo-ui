@@ -336,6 +336,7 @@ function DialogBody({
     setConnect({ status: 'idle' });
     resetDownstream();
     // Which UiPath models a provider can replace, and through which API types, is its own.
+    setUseAs(ctx?.allowsNewNames === false ? 'replacement' : 'own');
     setReplaces('');
     setApiType('');
     loadModels(id, existing[0] ?? null, gen);

@@ -590,6 +590,22 @@ describe('ByoModelDialog', () => {
       expect(api.apiTypes).toHaveBeenCalledWith('openai', 'gpt-4.1');
     });
 
+    it('goes back to a name of your own when another provider can replace nothing', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+        apiTypes: vi.fn((providerId: string) => (providerId === 'openai' ? TWO_TYPES : [])),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await connectAndPickModel(user, 'gpt-5.1');
+      await user.click(screen.getByRole('radio', { name: 'Replace a UiPath model' }));
+      await pick(user, 'Provider', 'Azure OpenAI');
+
+      expect(screen.queryByRole('combobox', { name: 'Replace a UiPath model' })).toBeNull();
+      expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toBeInTheDocument();
+    });
+
     it('says when a replaced UiPath model is being retired', async () => {
       const user = userEvent.setup();
       const api = fakeApi({
