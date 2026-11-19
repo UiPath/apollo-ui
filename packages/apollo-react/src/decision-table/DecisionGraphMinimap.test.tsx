@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
-import { vi } from 'vitest';
+import { type Mock, vi } from 'vitest';
 import {
   largeGraph,
   NOT_A_TABLE,
@@ -93,9 +93,12 @@ const optionLabels = () =>
     .map((option) => option.textContent);
 
 let scrollToSpy: ReturnType<typeof vi.fn>;
+let scrollIntoViewSpy: Mock<Element['scrollIntoView']>;
 beforeEach(() => {
   scrollToSpy = vi.fn();
   HTMLElement.prototype.scrollTo = scrollToSpy as unknown as HTMLElement['scrollTo'];
+  scrollIntoViewSpy = vi.fn<Element['scrollIntoView']>();
+  Element.prototype.scrollIntoView = scrollIntoViewSpy;
 });
 afterEach(cleanup);
 
@@ -441,7 +444,10 @@ describe('DecisionGraphText minimap', () => {
     await user.click(screen.getByTestId('graph-minimap-row-decision-net-income'));
     expect(screen.getByTestId('graph-toggle-net-income')).toHaveAttribute('aria-expanded', 'true');
     expect(document.activeElement).toBe(screen.getByTestId('graph-toggle-net-income'));
-    expect(scrollToSpy).toHaveBeenCalled();
+    expect(scrollToSpy.mock.contexts).toContain(screen.getByTestId('graph-scroller'));
+    expect(scrollIntoViewSpy.mock.contexts).not.toContain(
+      screen.getByTestId('graph-toggle-net-income')
+    );
   });
 
   it('selects and focuses a picked rule in an editable body', async () => {

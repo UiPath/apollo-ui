@@ -21,6 +21,7 @@ import {
   clickedDecision,
   clickedValue,
   type RuleAction,
+  rowIdOf,
 } from './sentenceTargets';
 import type {
   SentenceBand,
@@ -96,11 +97,6 @@ const textIn = (rules: readonly SentenceRule[], cell: SentenceSelection): string
   const rule = rules.find((candidate) => candidate.rowId === cell.rowId);
   return rule && (cell.kind === 'rule' ? '' : cellTextOf(rule, cell.columnId));
 };
-
-const rowIdOf = (element: Element | null): string | undefined =>
-  element instanceof HTMLElement
-    ? element.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId
-    : undefined;
 
 /** The view's value editing: starting an edit, the editor's context, and where a commit or cancel moves. */
 export const useValueEditing = ({

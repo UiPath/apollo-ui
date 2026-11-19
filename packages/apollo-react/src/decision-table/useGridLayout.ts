@@ -204,14 +204,22 @@ export const useGridLayout = ({
   // Both axes are windowed to the viewport; spacers stand in for the rest, so DOM size follows the
   // viewport, not the table. Retained items (an editing cell, a dragged unit) stay mounted: unmounting
   // an editor mid-edit would discard the draft without a blur commit.
-  const rowWindow = useVirtualizedAxis(rowCount, rowHeightPx, retainedRowIndex, {
+  const retainedRows = useMemo(
+    () => (retainedRowIndex === null ? [] : [retainedRowIndex]),
+    [retainedRowIndex]
+  );
+  const retainedColumns = useMemo(
+    () => (retainedColumnIndex === null ? [] : [retainedColumnIndex]),
+    [retainedColumnIndex]
+  );
+  const rowWindow = useVirtualizedAxis(rowCount, rowHeightPx, retainedRows, {
     axis: 'vertical',
     overscanItems: DEFAULT_ROW_OVERSCAN,
     fallbackViewportPx: FALLBACK_ROW_VIEWPORT_PX,
     leadingFixedPx: headerHeight,
     stickyLeadingPx: headerHeight,
   });
-  const columnWindow = useVirtualizedAxis(windowedCount, COLUMN_ESTIMATE_PX, retainedColumnIndex, {
+  const columnWindow = useVirtualizedAxis(windowedCount, COLUMN_ESTIMATE_PX, retainedColumns, {
     axis: 'horizontal',
     overscanItems: DEFAULT_COLUMN_OVERSCAN,
     fallbackViewportPx: FALLBACK_COLUMN_VIEWPORT_PX,

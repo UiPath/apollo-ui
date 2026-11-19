@@ -45,3 +45,9 @@ export interface DecisionGraphExpansion {
   expanded: ReadonlySet<string>;
   onChange: (expanded: ReadonlySet<string>) => void;
 }
+
+/** What an open decision's body can ask of the graph. */
+export interface DecisionGraphBodyContext {
+  /** Opens, scrolls to and flashes a decision in the graph, focusing its heading when `byKey`; an id not drawn in full goes to `onOpenDecision`. */
+  revealDecision: (decisionId: string, byKey: boolean) => void;
+}

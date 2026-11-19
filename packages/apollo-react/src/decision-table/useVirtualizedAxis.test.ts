@@ -35,7 +35,7 @@ describe('useVirtualizedAxis (virtual-core binding)', () => {
       const narrow = offsetsFor(new Array<number>(100).fill(100));
       const { result, rerender } = renderHook(
         ({ offsets }: { offsets: number[] }) =>
-          useVirtualizedAxis(100, 200, null, {
+          useVirtualizedAxis(100, 200, [], {
             axis: 'horizontal',
             overscanItems: 4,
             fallbackViewportPx: 400,
@@ -98,7 +98,7 @@ describe('useVirtualizedAxis coverage while scrolling', () => {
       });
     try {
       const { result, rerender } = renderHook(() =>
-        useVirtualizedAxis(sizes.length, sizes[0] ?? 64, null, {
+        useVirtualizedAxis(sizes.length, sizes[0] ?? 64, [], {
           axis,
           overscanItems: OVERSCAN,
           fallbackViewportPx: viewport,
@@ -181,13 +181,13 @@ describe('windowSegments', () => {
 
   it('covers a small table with a single run and no spacers', () => {
     expect(
-      windowSegments({ itemCount: 5, itemSizePx: HEIGHT, start: 0, end: 5, retained: null })
+      windowSegments({ itemCount: 5, itemSizePx: HEIGHT, start: 0, end: 5, retained: [] })
     ).toEqual([{ type: 'items', from: 0, to: 5 }]);
   });
 
   it('stands in for the rows beyond the window with one spacer', () => {
     expect(
-      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 0, end: 40, retained: null })
+      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 0, end: 40, retained: [] })
     ).toEqual([
       { type: 'items', from: 0, to: 40 },
       { type: 'spacer', sizePx: 60 * HEIGHT },
@@ -196,7 +196,7 @@ describe('windowSegments', () => {
 
   it('brackets a mid-table window with spacers on both sides', () => {
     expect(
-      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: null })
+      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: [] })
     ).toEqual([
       { type: 'spacer', sizePx: 40 * HEIGHT },
       { type: 'items', from: 40, to: 70 },
@@ -206,7 +206,7 @@ describe('windowSegments', () => {
 
   it('pins a row above the window at its true offset', () => {
     expect(
-      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: 3 })
+      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: [3] })
     ).toEqual([
       { type: 'spacer', sizePx: 3 * HEIGHT },
       { type: 'items', from: 3, to: 4 },
@@ -218,7 +218,7 @@ describe('windowSegments', () => {
 
   it('pins a row below the window at its true offset', () => {
     expect(
-      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 0, end: 30, retained: 90 })
+      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 0, end: 30, retained: [90] })
     ).toEqual([
       { type: 'items', from: 0, to: 30 },
       { type: 'spacer', sizePx: 60 * HEIGHT },
@@ -229,7 +229,7 @@ describe('windowSegments', () => {
 
   it('does not duplicate a retained row that the window already holds', () => {
     expect(
-      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: 50 })
+      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: [50] })
     ).toEqual([
       { type: 'spacer', sizePx: 40 * HEIGHT },
       { type: 'items', from: 40, to: 70 },
@@ -239,7 +239,7 @@ describe('windowSegments', () => {
 
   it('pins the row adjacent to the window without a zero-height spacer between them', () => {
     expect(
-      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: 70 })
+      windowSegments({ itemCount: 100, itemSizePx: HEIGHT, start: 40, end: 70, retained: [70] })
     ).toEqual([
       { type: 'spacer', sizePx: 40 * HEIGHT },
       { type: 'items', from: 40, to: 70 },
@@ -250,7 +250,7 @@ describe('windowSegments', () => {
 
   it('returns nothing for an empty table', () => {
     expect(
-      windowSegments({ itemCount: 0, itemSizePx: HEIGHT, start: 0, end: 0, retained: null })
+      windowSegments({ itemCount: 0, itemSizePx: HEIGHT, start: 0, end: 0, retained: [] })
     ).toEqual([]);
   });
 
@@ -258,7 +258,7 @@ describe('windowSegments', () => {
     // A negative start would reach the consumer's slice() as a wrap-around; an end past the table
     // and a pin outside it would fabricate items. All are callers' bugs, absorbed loudly here.
     expect(
-      windowSegments({ itemCount: 10, itemSizePx: HEIGHT, start: -5, end: 20, retained: 40 })
+      windowSegments({ itemCount: 10, itemSizePx: HEIGHT, start: -5, end: 20, retained: [40] })
     ).toEqual([{ type: 'items', from: 0, to: 10 }]);
   });
 
@@ -271,7 +271,7 @@ describe('windowSegments', () => {
         itemSizePx: HEIGHT,
         start: 2,
         end: 4,
-        retained: null,
+        retained: [],
         offsetsPx,
       })
     ).toEqual([
@@ -282,17 +282,18 @@ describe('windowSegments', () => {
   });
 
   it.each([
-    [100, 0, 40, null],
-    [100, 40, 70, 3],
-    [100, 0, 30, 90],
-    [1000, 500, 540, 0],
+    [100, 0, 40, []],
+    [100, 40, 70, [3]],
+    [100, 0, 30, [90]],
+    [1000, 500, 540, [0]],
+    [100, 40, 70, [90, 3, 50, 3]],
   ])('accounts for every row exactly once (rows=%i window=%i..%i pin=%p)', (rows, start, end, pin) => {
     const segments = windowSegments({
       itemCount: rows,
       itemSizePx: HEIGHT,
       start,
       end,
-      retained: pin as number | null,
+      retained: pin,
     });
     let cursor = 0;
     let accounted = 0;

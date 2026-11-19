@@ -46,7 +46,26 @@ interface GraphHostProps {
 
 const isTable = (body: GraphBody | undefined): body is EditableTable => typeof body === 'object';
 
-const tablesOf = (bodies: GraphFixture['bodies']): Readonly<Record<string, StoryTable>> =>
+const drawnIdsOf = (nodes: readonly DecisionGraphNode[]): string[] =>
+  nodes.flatMap((node) =>
+    node.kind === 'decision' ? [node.id, ...drawnIdsOf(node.children)] : []
+  );
+
+/** The table with each input linked only to a drawn decision other than its own. */
+const linkedToDrawn = (
+  decisionId: string,
+  table: EditableTable,
+  drawn: ReadonlySet<string>
+): EditableTable => ({
+  ...table,
+  inputs: table.inputs.map(({ producedBy, ...input }) =>
+    producedBy !== undefined && producedBy !== decisionId && drawn.has(producedBy)
+      ? { ...input, producedBy }
+      : input
+  ),
+});
+
+const tablesOf = ({ bodies }: GraphFixture): Readonly<Record<string, StoryTable>> =>
   Object.fromEntries(
     Object.entries(bodies).flatMap(([id, body]) =>
       isTable(body) ? [[id, storyTableOf(body)]] : []
@@ -69,7 +88,7 @@ const headedNodes = (
   });
 
 const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
-  const [tables, setTables] = useState(() => tablesOf(graph.bodies));
+  const [tables, setTables] = useState(() => tablesOf(graph));
   const [selected, setSelected] = useState<GraphSelection | null>(null);
   const [editing, setEditing] = useState<{ decisionId: string; value: SentenceValueId } | null>(
     null
@@ -77,18 +96,27 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
   const [revealed, setRevealed] = useState<DecisionGraphTarget | null>(null);
   const [opened, setOpened] = useState<string | null>(null);
   const [moreProperties, setMoreProperties] = useState<string | null>(null);
-  const rulesById = useMemo(
-    () => new Map(Object.entries(tables).map(([id, { table }]) => [id, wordedRules(table)])),
-    [tables]
-  );
   const [model, setModel] = useState(() => graphOf(graph.nodes));
   const nodes = useMemo(() => headedNodes(nodesOf(model), tables), [model, tables]);
+  const rulesById = useMemo(() => {
+    const drawn = new Set(drawnIdsOf(nodes));
+    return new Map(
+      Object.entries(tables).map(([id, { table }]) => [
+        id,
+        wordedRules(linkedToDrawn(id, table, drawn)),
+      ])
+    );
+  }, [tables, nodes]);
   const notes = [...model.decisions.values()].reduce((count, { notes }) => count + notes.length, 0);
 
   const isTableNow = (decisionId: string) =>
     model.decisions.get(decisionId)?.node.logic.kind === 'table';
 
-  const renderBody: DecisionGraphTextProps['renderBody'] = (decisionId, scroll) => {
+  const renderBody: DecisionGraphTextProps['renderBody'] = (
+    decisionId,
+    scroll,
+    { revealDecision }
+  ) => {
     const table = isTableNow(decisionId);
     const state = table ? tables[decisionId] : undefined;
     if (!state) {
@@ -117,7 +145,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
         dataTestId={`text-${decisionId}`}
         numbered
         scroll={scroll}
-        onOpenDecision={setOpened}
+        onOpenDecision={revealDecision}
         mode={
           mode === 'read'
             ? { kind: 'read', selected: shown }

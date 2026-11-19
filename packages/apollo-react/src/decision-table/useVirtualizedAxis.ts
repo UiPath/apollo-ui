@@ -15,13 +15,13 @@ interface WindowSegmentsInput {
   itemSizePx: number;
   start: number;
   end: number;
-  retained: number | null;
+  retained: readonly number[];
   /** Prefix sums when items vary in size: item i spans `[offsetsPx[i], offsetsPx[i + 1])`. */
   offsetsPx?: number[];
 }
 
 /**
- * The window plus a retained item, kept mounted at its true offset even when scrolled out:
+ * The window plus the retained items, each kept mounted at its true offset even when scrolled out:
  * unmounting an editor is not a blur, so scrolling it away would silently discard the draft.
  * Ranges are clamped here, not at call sites: this is exported, and an out-of-range `start`
  * reaching a consumer's `slice` makes items vanish quietly while the scrollbar shrinks.
@@ -38,18 +38,16 @@ export const windowSegments = ({
     offsetsPx ? offsetsPx[to]! - offsetsPx[from]! : (to - from) * itemSizePx;
   const safeStart = Math.min(Math.max(0, start), itemCount);
   const safeEnd = Math.min(Math.max(safeStart, end), itemCount);
-  const safeRetained = retained !== null && retained >= 0 && retained < itemCount ? retained : null;
+  const outside = [...new Set(retained)]
+    .filter((index) => index >= 0 && index < itemCount && (index < safeStart || index >= safeEnd))
+    .sort((left, right) => left - right);
+  const single = (index: number) => ({ from: index, to: index + 1 });
 
-  const runs: { from: number; to: number }[] = [];
-  if (safeRetained !== null && safeRetained < safeStart) {
-    runs.push({ from: safeRetained, to: safeRetained + 1 });
-  }
-  if (safeStart < safeEnd) {
-    runs.push({ from: safeStart, to: safeEnd });
-  }
-  if (safeRetained !== null && safeRetained >= safeEnd) {
-    runs.push({ from: safeRetained, to: safeRetained + 1 });
-  }
+  const runs: { from: number; to: number }[] = [
+    ...outside.filter((index) => index < safeStart).map(single),
+    ...(safeStart < safeEnd ? [{ from: safeStart, to: safeEnd }] : []),
+    ...outside.filter((index) => index >= safeEnd).map(single),
+  ];
 
   const segments: AxisSegment[] = [];
   let cursor = 0;
@@ -138,7 +136,7 @@ const resolve = (value: number | (() => number) | undefined): number =>
 export const useVirtualizedAxis = (
   itemCount: number,
   itemSizePx: number,
-  retained: number | null,
+  retained: readonly number[],
   options: VirtualizedAxisOptions
 ): VirtualizedAxis => {
   const {

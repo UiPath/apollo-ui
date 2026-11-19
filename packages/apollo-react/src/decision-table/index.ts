@@ -21,6 +21,7 @@ export type {
   DecisionGraphPlace,
 } from './decisionGraphActionTypes';
 export type {
+  DecisionGraphBodyContext,
   DecisionGraphDecisionNode,
   DecisionGraphExpansion,
   DecisionGraphLogic,

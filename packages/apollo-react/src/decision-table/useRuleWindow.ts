@@ -100,11 +100,11 @@ export interface RuleWindow {
   scrollStopIntoView: (rowIndex: number, stop: HTMLElement) => void;
 }
 
-/** The window of rules the list mounts, kept on the retained rule, and the scrolls that reveal a rule or a stop. */
+/** The window of rules the list mounts, kept on the retained rules, and the scrolls that reveal a rule or a stop. */
 export const useRuleWindow = (
   rules: readonly SentenceRule[],
   selectedRowId: string | undefined,
-  retainedRowId: string | undefined,
+  retainedRowIds: readonly (string | undefined)[],
   scroll: DecisionTextScroll = 'self'
 ): RuleWindow => {
   const named = scroll === 'self' ? undefined : (scroll.container ?? null);
@@ -128,11 +128,18 @@ export const useRuleWindow = (
   const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(NO_HEIGHTS);
   const offsetsPx = useMemo(() => sentenceRuleOffsets(rules, measured), [rules, measured]);
   const selectedRow = useMemo(() => rowIndexOf(rules, selectedRowId), [rules, selectedRowId]);
-  const retainedRow = useMemo(() => rowIndexOf(rules, retainedRowId), [rules, retainedRowId]);
+  const retainedRows = useMemo(
+    () =>
+      retainedRowIds.flatMap((rowId) => {
+        const index = rowIndexOf(rules, rowId);
+        return index === null ? [] : [index];
+      }),
+    [rules, retainedRowIds]
+  );
   const { segments, measureRef, scrollItemIntoView } = useVirtualizedAxis(
     rules.length,
     SENTENCE_MIN_RULE_HEIGHT_PX,
-    retainedRow,
+    retainedRows,
     {
       axis: 'vertical',
       overscanItems: SENTENCE_RULE_OVERSCAN,
