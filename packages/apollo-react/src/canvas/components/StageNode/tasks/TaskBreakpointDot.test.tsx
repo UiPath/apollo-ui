@@ -38,29 +38,31 @@ describe('TaskBreakpointDot', () => {
     it('is static while the breakpoint is only armed', () => {
       render(<TaskBreakpointDot taskId="t1" active={true} />);
 
-      expect(screen.getByTestId('stage-task-breakpoint-t1')).not.toHaveClass('animate-glow');
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).not.toHaveClass('animate-glow-ring');
     });
   });
 
   // The run stopping on a breakpoint is what makes its marker pulse, via apollo-wind's
-  // `animate-glow` utility — which also gives it prefers-reduced-motion handling.
+  // `animate-glow-ring` utility — which also gives it prefers-reduced-motion handling.
   describe('when the run is paused on it', () => {
     it('pulses the marker', () => {
       render(<TaskBreakpointDot taskId="t1" active={true} paused={true} />);
 
-      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('animate-glow');
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('animate-glow-ring');
     });
 
     it('pulses the marker in the Debug view too, where it is a button', () => {
       render(<TaskBreakpointDot taskId="t1" active={true} paused={true} onToggle={vi.fn()} />);
 
-      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('animate-glow');
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('animate-glow-ring');
     });
 
     it('does not pulse the ghosted add affordance when no breakpoint is set', () => {
       render(<TaskBreakpointDot taskId="t1" active={false} paused={true} onToggle={vi.fn()} />);
 
-      expect(screen.getByTestId('stage-task-add-breakpoint-t1')).not.toHaveClass('animate-glow');
+      expect(screen.getByTestId('stage-task-add-breakpoint-t1')).not.toHaveClass(
+        'animate-glow-ring'
+      );
     });
   });
 

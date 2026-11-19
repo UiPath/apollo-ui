@@ -1672,13 +1672,15 @@ describe('StageNode - pulse on the paused breakpoint', () => {
   it('pulses the marker the run is paused on, so it can be found at a glance', () => {
     renderArmedAdhocTask('Paused');
 
-    expect(screen.getByTestId('stage-task-breakpoint-adhoc-1')).toHaveClass('animate-glow');
+    expect(screen.getByTestId('stage-task-breakpoint-adhoc-1')).toHaveClass('animate-glow-ring');
   });
 
   it('leaves a merely armed breakpoint static', () => {
     renderArmedAdhocTask('InProgress');
 
-    expect(screen.getByTestId('stage-task-breakpoint-adhoc-1')).not.toHaveClass('animate-glow');
+    expect(screen.getByTestId('stage-task-breakpoint-adhoc-1')).not.toHaveClass(
+      'animate-glow-ring'
+    );
   });
 
   it('never animates the task card — only the marker moves', () => {
@@ -1686,7 +1688,7 @@ describe('StageNode - pulse on the paused breakpoint', () => {
 
     // Emotion injects its styles at runtime, so a card animation would show up here.
     expect(getComputedStyle(screen.getByTestId('stage-task-card-adhoc-1')).animation).toBe('');
-    expect(screen.getByTestId('stage-task-card-adhoc-1')).not.toHaveClass('animate-glow');
+    expect(screen.getByTestId('stage-task-card-adhoc-1')).not.toHaveClass('animate-glow-ring');
   });
 });
 

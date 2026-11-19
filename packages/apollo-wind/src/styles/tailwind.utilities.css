@@ -94,6 +94,31 @@
   }
 }
 
+/* `animate-glow-stroke` is `animate-glow-ring` for an SVG outline: put it on an
+ * `<svg>` behind the outlined one, holding the same path. Half the stroke sits
+ * under the outline's fill, so the visible ring is half its width. */
+
+@utility animate-glow-stroke {
+  overflow: visible;
+  fill: none;
+  stroke: color-mix(
+    in srgb,
+    var(--glow-color, var(--brand, currentColor)) var(--glow-strength, 40%),
+    transparent
+  );
+  stroke-width: 16px;
+  opacity: 0;
+  animation: apollo-glow-ring 2s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-glow-stroke {
+    animation: none;
+    opacity: 1;
+    stroke-width: 10px;
+  }
+}
+
 @keyframes apollo-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }

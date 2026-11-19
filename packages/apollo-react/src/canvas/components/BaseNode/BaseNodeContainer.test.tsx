@@ -303,10 +303,23 @@ describe('BaseContainer cancel status treatment', () => {
     );
 
     const outline = screen.getByTestId('base-node-outline').querySelector('path');
+    const glow = screen.getByTestId('base-node-outline-glow');
 
     expect(outline).toHaveClass('stroke-icon-default');
-    expect(outline).toHaveClass('animate-glow');
-    expect(outline).toHaveClass('[--glow-color:var(--color-icon-default)]');
+    expect(outline).not.toHaveClass('animate-glow');
+    expect(glow).toHaveClass('animate-glow-stroke');
+    expect(glow).toHaveClass('[--glow-color:var(--color-icon-default)]');
+    expect(glow.querySelector('path')).toHaveAttribute('d', outline?.getAttribute('d'));
     expect(outline).not.toHaveClass('stroke-error');
+  });
+
+  it('draws no glow for a status that does not pulse', () => {
+    render(
+      <BaseContainer shape="clipped" executionStatus="Completed">
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.queryByTestId('base-node-outline-glow')).not.toBeInTheDocument();
   });
 });

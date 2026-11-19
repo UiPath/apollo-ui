@@ -54,30 +54,36 @@ export const pathFor = (shape: OutlineDrawnNodeShape, width: number, height: num
 /** The stroke counterpart of `getStatusBorder`, which paints nothing without a border. */
 export const getStatusStroke = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType
-): string => {
+): { stroke: string; glow: string | null } => {
   switch (status) {
     case 'InProgress':
-      return 'stroke-info animate-glow [--glow-color:var(--info)]';
+      return { stroke: 'stroke-info', glow: '[--glow-color:var(--info)]' };
     case 'Completed':
     case 'add':
-      return 'stroke-success';
+      return { stroke: 'stroke-success', glow: null };
     case 'ActionNeeded':
     case 'Paused':
     case 'Warning':
     case 'WARNING':
     case 'update':
-      return 'stroke-warning animate-glow [--glow-color:var(--warning)]';
+      return {
+        stroke: 'stroke-warning',
+        glow: '[--glow-color:var(--warning)]',
+      };
     case 'Cancelled':
     case 'UserCancelled':
-      return 'stroke-icon-default animate-glow [--glow-color:var(--color-icon-default)]';
+      return {
+        stroke: 'stroke-icon-default',
+        glow: '[--glow-color:var(--color-icon-default)]',
+      };
     case 'Failed':
     case 'Terminated':
     case 'ERROR':
     case 'CRITICAL':
     case 'delete':
-      return 'stroke-error animate-glow [--glow-color:var(--error)]';
+      return { stroke: 'stroke-error', glow: '[--glow-color:var(--error)]' };
     default:
-      return '';
+      return { stroke: '', glow: null };
   }
 };
 
@@ -139,36 +145,53 @@ export const BaseNodeOutline = memo(
       return () => observer.disconnect();
     }, []);
 
-    const statusStroke = getStatusStroke(status);
+    const { stroke: statusStroke, glow } = getStatusStroke(status);
+    const d = pathFor(shape, box.width, box.height);
+    const viewBox = `0 0 ${box.width} ${box.height}`;
 
     return (
-      <svg
-        ref={ref}
-        aria-hidden
-        data-testid="base-node-outline"
-        className={cn(
-          // `-z-10` matters: an absolutely positioned element paints above in-flow content
-          // whatever the DOM order, so without it this opaque fill covers the node's icon and
-          // label — and a label nobody can see is a label nobody can double-click to edit.
-          'pointer-events-none absolute inset-0 -z-10 h-full w-full transition-[filter] duration-150',
-          shadow && outlineShadow(isDragging, isHovered)
+      <>
+        {glow && (
+          <svg
+            aria-hidden
+            data-testid="base-node-outline-glow"
+            className={cn(
+              'animate-glow-stroke pointer-events-none absolute inset-0 -z-10 h-full w-full',
+              glow
+            )}
+            viewBox={viewBox}
+          >
+            <path d={d} />
+          </svg>
         )}
-        viewBox={`0 0 ${box.width} ${box.height}`}
-      >
-        <path
-          d={pathFor(shape, box.width, box.height)}
+        <svg
+          ref={ref}
+          aria-hidden
+          data-testid="base-node-outline"
           className={cn(
-            'fill-surface-overlay transition-[stroke,stroke-width] duration-150',
-            statusStroke ||
-              (isSelected
-                ? 'stroke-foreground-accent-muted'
-                : isHovered
-                  ? 'stroke-border-hover'
-                  : 'stroke-border')
+            // `-z-10` matters: an absolutely positioned element paints above in-flow content
+            // whatever the DOM order, so without it this opaque fill covers the node's icon and
+            // label — and a label nobody can see is a label nobody can double-click to edit.
+            'pointer-events-none absolute inset-0 -z-10 h-full w-full transition-[filter] duration-150',
+            shadow && outlineShadow(isDragging, isHovered)
           )}
-          strokeWidth={isSelected ? 2 : 1}
-        />
-      </svg>
+          viewBox={viewBox}
+        >
+          <path
+            d={d}
+            className={cn(
+              'fill-surface-overlay transition-[stroke,stroke-width] duration-150',
+              statusStroke ||
+                (isSelected
+                  ? 'stroke-foreground-accent-muted'
+                  : isHovered
+                    ? 'stroke-border-hover'
+                    : 'stroke-border')
+            )}
+            strokeWidth={isSelected ? 2 : 1}
+          />
+        </svg>
+      </>
     );
   }
 );

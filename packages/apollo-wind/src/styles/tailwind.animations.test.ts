@@ -74,3 +74,34 @@ describe('animate-glow-ring', () => {
     expect(body).toContain('opacity: 1');
   });
 });
+
+describe('animate-glow-stroke', () => {
+  const utility = (css: string) => {
+    const start = css.indexOf('.animate-glow-stroke {');
+    expect(start).toBeGreaterThan(-1);
+    return css.slice(start, css.indexOf('\n  }\n', start));
+  };
+
+  it('strokes the outline in the glow colour without filling it', async () => {
+    const body = utility(await build(['animate-glow-stroke']));
+    expect(body).toContain('overflow: visible');
+    expect(body).toContain('fill: none');
+    expect(body).toContain('stroke-width: 16px');
+    expect(body).toMatch(/stroke: color-mix\(\s*in srgb,\s*var\(--glow-color/);
+  });
+
+  it('pulses only opacity, on the ring keyframes', async () => {
+    const body = utility(await build(['animate-glow-stroke']));
+    expect(body).toMatch(/opacity: 0;\s*animation: apollo-glow-ring 2s infinite;/);
+    expect(body).not.toContain('box-shadow');
+  });
+
+  it('holds a static stroke for reduced motion', async () => {
+    const css = await build(['animate-glow-stroke']);
+    const start = css.indexOf('.animate-glow-stroke {', css.indexOf('.animate-glow-stroke {') + 1);
+    expect(css.slice(css.lastIndexOf('@media', start), start)).toContain('prefers-reduced-motion');
+    const body = css.slice(start, css.indexOf('}', start));
+    expect(body).toContain('animation: none');
+    expect(body).toContain('opacity: 1');
+  });
+});

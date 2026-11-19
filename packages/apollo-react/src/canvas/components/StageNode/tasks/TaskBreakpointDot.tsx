@@ -25,11 +25,12 @@ const DOT = 'absolute -top-1.5 -left-1.5 z-10 h-3.5 w-3.5 rounded-full bg-(--can
 
 /**
  * Ring that pulses out of the marker while the run is stopped on it, the way an executing node's
- * border pulses (`getStatusBorder`). apollo-wind's `animate-glow` is the canvas-wide utility for
+ * border pulses (`getStatusBorder`). apollo-wind's `animate-glow-ring` is the canvas-wide utility for
  * this, so it comes with `prefers-reduced-motion: reduce` handling — it falls back to a static
  * ring rather than dropping the cue. `--glow-strength` is the design's 55%.
  */
-const PAUSED_GLOW = 'animate-glow [--glow-color:var(--canvas-error-icon)] [--glow-strength:55%]';
+const PAUSED_GLOW =
+  'animate-glow-ring [--glow-border-width:0px] [--glow-color:var(--canvas-error-icon)] [--glow-strength:55%]';
 
 /**
  * Breakpoint marker for a stage task, at the top-left corner of the task card.
@@ -67,8 +68,14 @@ function TaskBreakpointDotInner({ active, taskId, paused, onToggle }: TaskBreakp
   }
 
   const label = active
-    ? _({ id: 'stage-node.breakpoint.remove', message: 'Click to remove the breakpoint' })
-    : _({ id: 'stage-node.breakpoint.add', message: 'Click to add a breakpoint' });
+    ? _({
+        id: 'stage-node.breakpoint.remove',
+        message: 'Click to remove the breakpoint',
+      })
+    : _({
+        id: 'stage-node.breakpoint.add',
+        message: 'Click to add a breakpoint',
+      });
 
   return (
     <CanvasTooltip content={label} placement="top">
