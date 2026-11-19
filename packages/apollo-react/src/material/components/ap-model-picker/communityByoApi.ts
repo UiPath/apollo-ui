@@ -121,8 +121,6 @@ const AWS_REGIONS: [string, string][] = [
   ['ap-southeast-2', 'Asia Pacific (Sydney)'],
 ];
 
-const IAM_ROLE_PLACEHOLDER = 'arn:aws:iam::123456789012:role/my-role';
-
 export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
   {
     id: 'openai',
@@ -172,17 +170,15 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
     },
   },
   // AI Trust Layer reaches Bedrock through the Amazon Web Services connector, never `uipath-aws-bedrock`.
-  // Its third authentication type, a UiPath-managed cross-account role, needs onboarding by support.
+  // Only access keys are offered: an assumed role or a UiPath-managed cross-account role is set up
+  // in AI Trust Layer.
   {
     id: 'bedrock',
     name: 'Amazon Bedrock',
     connector: 'uipath-amazon-webservices',
     connectorType: 'AmazonWebServices',
     form: {
-      authTypes: [
-        { value: 'accessKey', label: 'Access key' },
-        { value: 'assumeRole', label: 'Assume role' },
-      ],
+      authTypes: [{ value: 'accessKey', label: 'Access key' }],
       defaultAuthType: 'accessKey',
       fields: [
         // The gateway calls Bedrock in the connection's region.
@@ -197,20 +193,10 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
           group: 'accessKey',
           hint: 'Only for temporary credentials.',
         }),
-        field('assume.role.aws.api.key', 'Access key ID', { group: 'assumeRole' }),
-        secret('assume.role.aws.api.secret', 'Secret access key', { group: 'assumeRole' }),
-        field('assume.role.aws.iam.role', 'IAM role ARN', {
-          group: 'assumeRole',
-          placeholder: IAM_ROLE_PLACEHOLDER,
-          hint: 'The role these credentials assume to call Bedrock.',
-        }),
-        advanced('assume.role.aws.temporary.session.token', 'Session token', {
-          secret: true,
-          group: 'assumeRole',
-          hint: 'Only for temporary credentials.',
-        }),
       ],
     },
+    // The connector serves any AWS service; the connection is for Bedrock's runtime.
+    derive: (): Record<string, string> => ({ 'default.service.name': 'bedrock-runtime' }),
   },
   {
     id: 'anthropic',
