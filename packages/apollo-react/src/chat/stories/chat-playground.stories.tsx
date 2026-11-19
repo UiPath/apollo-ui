@@ -44,7 +44,7 @@ const featureArgTypes = Object.fromEntries(
 const ARG_BEHAVIOUR = `
 Controls apply to the running chat through the service setters, without a new chat or a remount:
 
-- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), \`allowFeedbackChange\` (patchConfig), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`infoLinks\` (setInfoLinks), \`compactMode\` (patchConfig spacing), \`firstRunExperience\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`autoScroll\` (toggleAutoScroll), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
+- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), \`allowFeedbackChange\` (patchConfig), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`infoLinks\` (setInfoLinks), \`compactMode\` (patchConfig spacing), \`firstRunExperience\`, \`branding\`, \`brandingHeight\` and \`brandingImageOnly\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`autoScroll\` (toggleAutoScroll), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
 - **In place, with a chat added or removed**: \`renderer\`. Switching between wind and material calls setRenderer on the same service and keeps the transcript. Choosing both adds a Material chat on its own service that copies the current transcript; leaving both removes it.
 - **Appends**: \`scenario\` scripts its traffic into the current transcript. Scenarios that need an empty transcript start a new chat first and say so: First-run experience, Long history with pagination. Changing scenario stops whatever the previous one still had scheduled (for example the rest of a stream).
 - **Remounts**: nothing driven by a control. Storybook's Remount button and the locale toolbar (which remounts every story) are the full reset: the chat keeps its service instance and starts it over from the story's controls.
@@ -136,6 +136,25 @@ const meta = {
       table: { category: 'Flags' },
     },
     ...featureArgTypes,
+    branding: {
+      control: 'inline-radio',
+      options: ['none', 'wordmark', 'small', 'large', 'missing', 'refused'],
+      description:
+        'firstRunExperience.image, Wind only. Needs firstRunExperience on and an empty transcript. Wordmark has a light and a dark variant that follow the theme toolbar. Small (24px) keeps its size and large (512px) is scaled down to fit. Missing is a URL that fails to load and refused is a data: URL: both leave the first run as it is without an image.',
+      table: { category: 'Branding' },
+    },
+    brandingHeight: {
+      control: { type: 'number', min: 0, max: 400, step: 4 },
+      description:
+        'firstRunExperience.image.height in pixels. 0 leaves it unset, so the image shows at its own size. The maximum size still applies.',
+      table: { category: 'Branding' },
+    },
+    brandingImageOnly: {
+      control: 'boolean',
+      description:
+        'Passes an empty title, description and suggestions, so the first run is the image alone. With no image, or one that cannot be shown, no first run shows.',
+      table: { category: 'Branding' },
+    },
     title: { control: 'text', table: { category: 'Labels' } },
     inputPlaceholder: { control: 'text', table: { category: 'Labels' } },
     footerDisclaimer: { control: 'text', table: { category: 'Labels' } },
@@ -182,6 +201,9 @@ const meta = {
     customHeaderActions: true,
     preHooks: false,
     autoScroll: true,
+    branding: 'none',
+    brandingHeight: 0,
+    brandingImageOnly: false,
     disableClose: 'unset',
     ...featureArgs,
     title: '',

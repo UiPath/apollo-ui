@@ -28,6 +28,7 @@ import {
   customHeaderActionReply,
   MATERIAL_CUSTOM_HEADER_ACTIONS,
   STORY_AGENT_MODES,
+  STORY_BRANDING_IMAGES,
   STORY_FIRST_RUN_EXPERIENCE,
   STORY_LOADING_MESSAGES,
   STORY_MODELS,
@@ -57,6 +58,7 @@ export type PlaygroundMode = AutopilotChatMode.Embedded | AutopilotChatMode.Full
 export type PlaygroundAutoReply = 'off' | 'echo' | 'stream';
 /** `unset` leaves `close` undefined: Embedded then hides close, other modes show it. */
 export type PlaygroundCloseFlag = 'unset' | 'disabled' | 'enabled';
+export type PlaygroundBranding = 'none' | keyof typeof STORY_BRANDING_IMAGES;
 
 /** `disabledFeatures` flags exposed as boolean args (`close` has its own three-way arg). */
 export const PLAYGROUND_FEATURE_FLAGS = [
@@ -99,6 +101,12 @@ export interface PlaygroundArgs extends FeatureFlagArgs {
   footerDisclaimer: string;
   infoLinks: AutopilotChatInfoLink[];
   firstRunExperience: boolean;
+  /** `firstRunExperience.image`, or none. */
+  branding: PlaygroundBranding;
+  /** Empties the first-run title, description and suggestions, leaving the image alone. */
+  brandingImageOnly: boolean;
+  /** `firstRunExperience.image.height` in pixels; 0 leaves it unset. */
+  brandingHeight: number;
   customHeaderActions: boolean;
   preHooks: boolean;
   /** `toggleAutoScroll`: follow new content while at the end. */
@@ -120,8 +128,27 @@ const PRE_HOOK_ACTIONS = Object.values(AutopilotChatPreHookAction);
 
 const NO_FIRST_RUN_EXPERIENCE = { title: '', description: '', suggestions: [] };
 
-const firstRunExperienceFor = (enabled: boolean) =>
-  enabled ? STORY_FIRST_RUN_EXPERIENCE : NO_FIRST_RUN_EXPERIENCE;
+type FirstRunArgs = Pick<
+  PlaygroundArgs,
+  'firstRunExperience' | 'branding' | 'brandingImageOnly' | 'brandingHeight'
+>;
+
+const firstRunExperienceFor = (args: FirstRunArgs) => {
+  if (!args.firstRunExperience) return NO_FIRST_RUN_EXPERIENCE;
+  return {
+    ...STORY_FIRST_RUN_EXPERIENCE,
+    ...(args.brandingImageOnly ? NO_FIRST_RUN_EXPERIENCE : {}),
+    ...(args.branding === 'none'
+      ? {}
+      : {
+          image: {
+            ...STORY_BRANDING_IMAGES[args.branding],
+            alt: 'UiPath',
+            ...(args.brandingHeight > 0 ? { height: args.brandingHeight } : {}),
+          },
+        }),
+  };
+};
 
 const overrideLabelsFrom = (args: PlaygroundArgs) => ({
   title: args.title || undefined,
@@ -234,7 +261,7 @@ function createSlotService(
       disabledFeatures: disabledFeaturesFrom(args),
       overrideLabels: overrideLabelsFrom(args),
       infoLinks: args.infoLinks,
-      firstRunExperience: firstRunExperienceFor(args.firstRunExperience),
+      firstRunExperience: firstRunExperienceFor(args),
       spacing: { compactMode: args.compactMode },
       preHooks: preHooksFrom(args.preHooks),
       models: STORY_MODELS,
@@ -467,8 +494,9 @@ function ChatSlot({
   useOnChange(args.compactMode, (compactMode) =>
     patchConfigInPlace(service, { spacing: { compactMode } })
   );
-  useOnChange(args.firstRunExperience, (enabled) =>
-    service.setFirstRunExperience(firstRunExperienceFor(enabled))
+  useOnChange(
+    `${args.firstRunExperience}\n${args.branding}\n${args.brandingImageOnly}\n${args.brandingHeight}`,
+    () => service.setFirstRunExperience(firstRunExperienceFor(argsRef.current))
   );
   useOnChange(args.customHeaderActions, (enabled) =>
     service.setCustomHeaderActions(customActionsFor(renderer, enabled))

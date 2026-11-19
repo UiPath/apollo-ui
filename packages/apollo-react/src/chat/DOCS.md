@@ -156,6 +156,7 @@ Wind matches Material's behaviour and the service contract. These are the intend
 - The cited-range highlight is not applied while a message streams.
 - Suggestions set with `setSuggestions` belong to the user turn they were set in and are left behind by the next user message; Material keeps showing them while the conversation is non-empty.
 - In FullScreen the first-run suggestions are one horizontal row under the welcome text.
+- `firstRunExperience.image` (the host's own image on the first-run experience) is rendered by Wind only; Material ignores it and shows the title and description. See [First Run Experience](#first-run-experience).
 - A message of attachments alone shows its attachment row without a bubble.
 
 **Tool calls and trees**
@@ -2353,7 +2354,7 @@ When using `contentPartChunk` for streaming citations, the structure includes:
 
 ## First Run Experience
 
-The first run experience is displayed when the chat is opened for the first time or when starting a new chat with no messages. It consists of a title, description, and optional suggested prompts that users can click on to start a conversation.
+The first run experience is displayed when the chat is opened for the first time or when starting a new chat with no messages. It consists of a title, description, optional suggested prompts that users can click on to start a conversation, and in the Wind renderer an optional [image](#first-run-image).
 
 ### Basic First Run Setup
 
@@ -2368,6 +2369,47 @@ chatService.setFirstRunExperience({
   sendOnClick: true, // sends the message instead of setting the prompt
 });
 ```
+
+### First Run Image
+
+Wind renderer only. `image` puts the host's own image above the title and description, in Embedded and FullScreen. In FullScreen it takes the place of the Autopilot logo; Embedded shows no logo without it.
+
+```typescript
+chatService.setFirstRunExperience({
+  title: 'Welcome to Acme Assistant',
+  description: 'Ask me anything about your orders.',
+  image: {
+    light: 'https://cdn.acme.com/assistant-light.svg',
+    dark: 'https://cdn.acme.com/assistant-dark.svg',
+    alt: 'Acme Assistant',
+    height: 48,
+  },
+});
+```
+
+| Field   | Description |
+| ------- | ----------- |
+| `light` | Image URL for the `light`, `light-hc` and `future-light` themes. Also used in the dark themes when `dark` is not set. |
+| `dark`  | Optional image URL for the `dark`, `dark-hc` and `future-dark` themes. The image follows the theme at runtime (`setTheme` or the `theme` prop). |
+| `alt`   | Alternative text. Leave it empty for a decorative image beside a title; set it when the image stands alone. |
+| `height` | Optional height to show the image at, in CSS pixels. The width follows the image's proportions. Unset, the image shows at its own size. |
+
+**Size.** Without `height` the image shows at its own size, so the host decides how large it is by the file it serves: a 40px logo stays 40px and a banner stays a banner. It is not enlarged or cropped. An image larger than the space below is scaled down to fit, keeping its proportions. An SVG needs `width` and `height` attributes to have a size of its own.
+
+Set `height` when the size is known. The chat then holds that height before the image arrives, so nothing moves when it loads, and a high-resolution file (a 96px tall image for a 48px logo) shows sharp at the smaller size. A `height` above the file's own enlarges it. The maximum below applies to `height` as well, and a value that is not a positive number is ignored. The maximum heights are in rem, given here for a 16px root font size; `height` is in CSS pixels.
+
+|            | Largest width             | Largest height                |
+| ---------- | ------------------------- | ----------------------------- |
+| FullScreen | The chat column           | 240px (160px in compact mode) |
+| Embedded   | The panel, less its gutters | 160px (120px in compact mode) |
+
+Without `height` the image's size is not known before it loads, so the content under it moves down once when it arrives.
+
+**Image alone.** The title and description show whenever they are set. Pass empty strings for both to show the image by itself. An image that can be shown counts as content, so the first-run experience shows even when the title, description and suggestions are all empty.
+
+**URLs.** Only `http:`, `https:` and relative URLs are loaded. `data:`, `blob:`, `javascript:` and any other scheme are refused. A relative URL is checked against the page's own address, so it loads only when the page itself is served over http(s). The image is requested with `referrerPolicy="no-referrer"`, and the host's Content Security Policy must allow its origin in `img-src`.
+
+**Fallback.** With a refused URL, or an image that fails to load, the first-run experience is as it is without `image`: FullScreen shows the Autopilot logo and Embedded shows no logo, and a first run of only an image does not show. Nothing is logged. The dark variant is not replaced by the light one when it cannot be shown. A URL that failed is not requested again until the host sets the first-run experience again.
 
 ## Dynamic Suggestions
 

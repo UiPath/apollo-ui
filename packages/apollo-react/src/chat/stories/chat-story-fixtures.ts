@@ -275,6 +275,19 @@ export const STORY_FIRST_RUN_EXPERIENCE = {
   ],
 };
 
+/**
+ * `firstRunExperience.image` samples for the playground, from Storybook's static brand logos:
+ * a wordmark with a light and a dark variant, an image smaller and one larger than the hero
+ * allows, a URL that does not exist and a scheme the chat refuses.
+ */
+export const STORY_BRANDING_IMAGES = {
+  wordmark: { light: 'brand/uipath-full-light.svg', dark: 'brand/uipath-full-dark.svg' },
+  small: { light: 'brand/zoom.svg' },
+  large: { light: 'brand/uipath-favicon.svg' },
+  missing: { light: 'brand/no-such-image.svg' },
+  refused: { light: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22/%3E' },
+} as const;
+
 export function storyHistoryItems(now = Date.now()): AutopilotChatHistory[] {
   return [
     { id: '1', name: 'Previous Conversation 1', timestamp: new Date(now - 86400000).toISOString() },
