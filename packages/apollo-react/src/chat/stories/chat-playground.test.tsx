@@ -38,6 +38,9 @@ const baseProps = (): ChatPlaygroundProps => ({
   footerDisclaimer: '',
   infoLinks: [],
   firstRunExperience: false,
+  branding: 'none',
+  brandingHeight: 0,
+  brandingImageOnly: false,
   customHeaderActions: false,
   preHooks: false,
   autoScroll: true,
@@ -208,6 +211,34 @@ describe('ChatPlayground', () => {
 
     expect(material?.getConversation()).toHaveLength(1);
     expect(wind?.getConversation().map((message) => message.content)).toEqual(['hello']);
+  });
+
+  it('applies the branding args to both renderers', async () => {
+    const props = { ...baseProps(), renderer: 'both' as const, firstRunExperience: true };
+    const { rerender } = render(<ChatPlayground {...props} />);
+    await flush();
+    const services = [slotService('primary'), slotService('compare')];
+    for (const service of services) {
+      expect(service?.getConfig().firstRunExperience?.image).toBeUndefined();
+    }
+
+    rerender(
+      <ChatPlayground {...props} branding="wordmark" brandingImageOnly brandingHeight={48} />
+    );
+    await flush();
+
+    for (const service of services) {
+      const firstRun = service?.getConfig().firstRunExperience;
+      expect(firstRun?.image).toEqual({
+        light: 'brand/uipath-full-light.svg',
+        dark: 'brand/uipath-full-dark.svg',
+        alt: 'UiPath',
+        height: 48,
+      });
+      expect(firstRun?.title).toBe('');
+      expect(firstRun?.description).toBe('');
+      expect(firstRun?.suggestions).toEqual([]);
+    }
   });
 
   it('reuses its service across remounts and starts it over', async () => {

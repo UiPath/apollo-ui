@@ -3,26 +3,27 @@ import {
   ChatHeroDescription,
   ChatHeroHeader,
   type ChatHeroLayout,
-  ChatHeroLogo,
   ChatHeroTitle,
   cn,
 } from '@uipath/apollo-wind';
 import type React from 'react';
 
-import { AutopilotLogo } from '../../assets/autopilot-logo';
 import { useChatState } from '../../headless/providers/chat-state-provider';
 import { useLoading } from '../../headless/providers/loading-provider';
 import { ThinkingRow } from '../messages/thinking-row';
+import { HeroBranding, useHeroImage } from './hero-branding';
 import { SuggestionList } from './suggestion-list';
 
 /**
- * Whether the first-run experience shows in Wind: the shared selector, but not while a
- * conversation is loading, where the skeleton shows instead.
+ * Whether the first-run experience shows in Wind: the shared selector, or an image the hero can
+ * show on an empty conversation, but not while a conversation is loading, where the skeleton
+ * shows instead.
  */
 export function useFirstRunShown() {
-  const { firstRunVisible } = useChatState();
+  const { firstRunVisible, firstRunExperience, hasMessages } = useChatState();
   const { skeletonLoader } = useLoading();
-  return firstRunVisible && !skeletonLoader;
+  const image = useHeroImage(firstRunExperience?.image);
+  return (firstRunVisible || (!hasMessages && image !== undefined)) && !skeletonLoader;
 }
 
 // Keeps the chip that takes keyboard focus in view inside the sideways-scrolling row.
@@ -67,11 +68,7 @@ export function FirstRun({
     >
       {shown && (
         <ChatHeroHeader>
-          {centered && (
-            <ChatHeroLogo>
-              <AutopilotLogo className="size-10" />
-            </ChatHeroLogo>
-          )}
+          <HeroBranding image={firstRunExperience?.image} layout={layout} density={density} />
           <ChatHeroTitle>{firstRunExperience?.title}</ChatHeroTitle>
           <ChatHeroDescription>{firstRunExperience?.description}</ChatHeroDescription>
         </ChatHeroHeader>

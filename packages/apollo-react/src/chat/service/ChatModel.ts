@@ -579,6 +579,28 @@ export interface AutopilotChatConfiguration {
     description: string;
     suggestions?: AutopilotChatSuggestion[];
     sendOnClick?: boolean;
+    /**
+     * Wind renderer only. The host's own image above the title and description; in FullScreen
+     * it takes the Autopilot logo's place. It shows at its own size, or at `height`, and is
+     * scaled down to fit the first-run experience. URLs must be http(s) or relative; any other
+     * scheme (`data:`, `blob:`, `javascript:`) is refused. With a refused URL or an image that
+     * fails to load, the first-run experience is as it is without `image`.
+     */
+    image?: {
+      /** Shown in the light themes, and in the dark ones when `dark` is not set. */
+      light: string;
+      /** Shown in `dark`, `dark-hc` and `future-dark`. */
+      dark?: string;
+      /** Alternative text. Empty for a decorative image beside a title. */
+      alt: string;
+      /**
+       * The height to show the image at, in CSS pixels; its width follows its proportions.
+       * Unset, the image shows at its own size. Setting it keeps the layout still while the
+       * image loads and lets a high-resolution file show at a smaller size. The first-run
+       * experience's maximum size still applies.
+       */
+      height?: number;
+    };
   };
   useLocalHistory?: boolean;
   allowedAttachments?: AutopilotChatAllowedAttachments;
