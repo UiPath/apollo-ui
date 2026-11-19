@@ -53,6 +53,47 @@
   }
 }
 
+/* `animate-glow-ring` is the compositor-only `animate-glow` for many nodes at
+ * once: a static ring on `::after` whose opacity pulses. The host must be
+ * positioned (`relative` or `absolute`); a border wider than 1px sets
+ * `--glow-border-width`. */
+
+@keyframes apollo-glow-ring {
+  0%   { opacity: 0; }
+  20%  { opacity: 0.6; }
+  70%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@utility animate-glow-ring {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--glow-border-width, 1px));
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 0 8px color-mix(
+      in srgb,
+      var(--glow-color, var(--brand, currentColor)) var(--glow-strength, 40%),
+      transparent
+    );
+    opacity: 0;
+    animation: apollo-glow-ring 2s infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-glow-ring::after {
+    animation: none;
+    opacity: 1;
+    box-shadow: 0 0 0 5px color-mix(
+      in srgb,
+      var(--glow-color, var(--brand, currentColor)) var(--glow-strength, 40%),
+      transparent
+    );
+  }
+}
+
 @keyframes apollo-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }

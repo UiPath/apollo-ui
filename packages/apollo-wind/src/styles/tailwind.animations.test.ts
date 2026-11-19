@@ -38,3 +38,39 @@ describe('enter and exit animation utilities', () => {
     expect(css.replace(/\s+/g, ' ')).toContain(declaration);
   });
 });
+
+describe('animate-glow-ring', () => {
+  const keyframes = (css: string) => {
+    const start = css.indexOf('@keyframes apollo-glow-ring');
+    expect(start).toBeGreaterThan(-1);
+    return css.slice(start, css.indexOf('\n}\n', start));
+  };
+
+  it('draws the ring on an ::after overlay from the host border edge', async () => {
+    const css = await build(['animate-glow-ring']);
+    const ring = rule(css, '.animate-glow-ring');
+    expect(ring).toContain('&::after');
+    expect(ring).toContain('position: absolute');
+    expect(ring).toContain('inset: calc(-1 * var(--glow-border-width, 1px))');
+    expect(ring).toContain('pointer-events: none');
+    expect(ring).toContain('box-shadow: 0 0 0 8px');
+    expect(css.slice(css.indexOf('.animate-glow-ring {'))).toMatch(
+      /opacity: 0;\s*animation: apollo-glow-ring 2s infinite;/
+    );
+  });
+
+  it('pulses only opacity', async () => {
+    const frames = keyframes(await build(['animate-glow-ring']));
+    expect(frames).toContain('opacity');
+    expect(frames).not.toContain('box-shadow');
+  });
+
+  it('holds a static ring for reduced motion', async () => {
+    const css = await build(['animate-glow-ring']);
+    const start = css.indexOf('.animate-glow-ring::after', css.indexOf('prefers-reduced-motion'));
+    expect(start).toBeGreaterThan(-1);
+    const body = css.slice(start, css.indexOf('}', start));
+    expect(body).toContain('animation: none');
+    expect(body).toContain('opacity: 1');
+  });
+});

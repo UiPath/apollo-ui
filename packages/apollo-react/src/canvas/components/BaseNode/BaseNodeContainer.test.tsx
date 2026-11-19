@@ -287,7 +287,7 @@ describe('BaseContainer cancel status treatment', () => {
     const container = screen.getByTestId('base-container');
 
     expect(container).toHaveClass('border-icon-default');
-    expect(container).toHaveClass('animate-glow');
+    expect(container).toHaveClass('animate-glow-ring');
     expect(container).toHaveClass('[--glow-color:var(--color-icon-default)]');
     expect(container).not.toHaveClass('border-error');
   });

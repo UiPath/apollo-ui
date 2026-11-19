@@ -11,7 +11,7 @@ export const getStatusBorder = (
 ): string => {
   switch (status) {
     case 'InProgress':
-      return 'border-info animate-glow [--glow-color:var(--info)]';
+      return 'border-info animate-glow-ring [--glow-color:var(--info)]';
     case 'Completed':
     case 'add':
       return 'border-success';
@@ -20,16 +20,16 @@ export const getStatusBorder = (
     case 'Warning':
     case 'WARNING':
     case 'update':
-      return 'border-warning animate-glow [--glow-color:var(--warning)]';
+      return 'border-warning animate-glow-ring [--glow-color:var(--warning)]';
     case 'Cancelled':
     case 'UserCancelled':
-      return 'border-icon-default animate-glow [--glow-color:var(--color-icon-default)]';
+      return 'border-icon-default animate-glow-ring [--glow-color:var(--color-icon-default)]';
     case 'Failed':
     case 'Terminated':
     case 'ERROR':
     case 'CRITICAL':
     case 'delete':
-      return 'border-error animate-glow [--glow-color:var(--error)]';
+      return 'border-error animate-glow-ring [--glow-color:var(--error)]';
     default:
       return '';
   }
