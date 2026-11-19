@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.31.1...@uipath/apollo-react@7.32.0) (2026-11-19)
+
+### Features
+
+* **apollo-react:** export the shared node handle visibility rule [MST-17835] ([b889f90](https://github.com/UiPath/apollo-ui/commit/b889f9082965c2c924696de8dc24093975e9e93c))
+
 ## [@uipath/apollo-react-v7.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.31.0...@uipath/apollo-react@7.31.1) (2026-11-19)
 
 ### Bug Fixes
