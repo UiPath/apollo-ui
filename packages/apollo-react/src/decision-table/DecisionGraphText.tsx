@@ -63,7 +63,7 @@ export type DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> =
 export interface DecisionGraphTextProps<Refusal, Logic, Op, Policy, Total, Type, TextRefusal> {
   /** The decisions in reading order, each with the decisions it requires as children; one already drawn is a reference. */
   nodes: readonly DecisionGraphNode[];
-  /** Read only with the host's selected decision; `select` also tells the host what the view brought into view; `edit` adds the host's actions on the decisions, each shown in the cards' menus and keys only when listed. */
+  /** Read only with the host's selected decision; `select` also tells the host what the view brought into view; `edit` adds the host's actions on the decisions, each shown in the cards' menus and keys only when listed; the host clears a selection whose rule or cell an edit removed, using `liveSelection`. */
   mode: DecisionGraphMode<Refusal, Logic>;
   /** The body of an open decision, its table in any `DecisionText` mode; `context.revealDecision` takes a link to another decision in other content in place. */
   renderBody: (

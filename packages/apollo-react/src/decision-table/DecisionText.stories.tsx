@@ -20,24 +20,23 @@ import {
   wordedRules,
 } from './__fixtures__/editableSentences.fixtures';
 import {
+  COLUMN_TYPES,
   HIT_POLICIES,
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_POLICY,
   manySentenceRules,
-  COLUMN_TYPES,
 } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
-  liveSelection,
   NUMERIC_INPUTS,
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
-import { useStoryHistory } from './__fixtures__/useStoryHistory';
 import type { FixtureEdit, FixtureTextProps } from './__fixtures__/textMode';
+import { useStoryHistory } from './__fixtures__/useStoryHistory';
 import { DecisionText } from './DecisionText';
 import type { Mark, RowMark, TableMarks } from './marks';
-import { sameSelection } from './sentenceSelection';
+import { liveSelection, sameSelection } from './sentenceSelection';
 import type {
   DecisionTextCitations,
   SentenceCellId,

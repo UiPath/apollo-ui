@@ -18,10 +18,9 @@ import {
   nodesOf,
   wordFixtureRefusal,
 } from './__fixtures__/graphActionsHost';
-import { HIT_POLICIES, COLUMN_TYPES } from './__fixtures__/sentences.fixtures';
+import { COLUMN_TYPES, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
-  liveSelection,
   type StoryGraphBody,
   type StoryTable,
   storyHeadingOf,
@@ -35,7 +34,7 @@ import type {
   DecisionGraphNode,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
-import { sameSelection, selectedColumnOf } from './sentenceSelection';
+import { liveSelection, sameSelection, selectedColumnOf } from './sentenceSelection';
 import type { SentenceCitation, SentenceSelection, SentenceValueId } from './sentenceTypes';
 
 interface GraphSelection {
