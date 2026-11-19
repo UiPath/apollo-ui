@@ -18,3 +18,9 @@ export const cellSelection = ({ rowId, columnId }: SentenceCellId): SentenceSele
 export const selectedColumnOf = (
   selection: SentenceSelection | null | undefined
 ): string | undefined => (selection?.kind === 'cell' ? selection.columnId : undefined);
+
+/** Whether two selections stop on the same rule and column. */
+export const sameSelection = (
+  left: SentenceSelection | null,
+  right: SentenceSelection | null
+): boolean => left?.rowId === right?.rowId && selectedColumnOf(left) === selectedColumnOf(right);

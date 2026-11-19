@@ -19,7 +19,7 @@ const graph = (actions: readonly Action[], nodes: readonly DecisionGraphNode[] =
       onReveal: () => {},
       edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
     }}
-    renderBody={() => null}
+    renderBody={() => ({ kind: 'other', content: null })}
     dataTestId="graph"
   />
 );

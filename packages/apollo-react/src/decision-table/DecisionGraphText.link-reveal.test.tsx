@@ -11,7 +11,6 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import { DecisionGraphText } from './DecisionGraphText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
-import { DecisionText } from './DecisionText';
 import type { SentenceRule } from './sentenceTypes';
 
 const leaf = (id: string): DecisionGraphNode => ({
@@ -51,29 +50,28 @@ const Host = ({
       expansion={{ expanded, onChange: setExpanded }}
       onOpenDecision={onOpenDecision}
       mode={{ kind: 'select', selected: null, onReveal }}
-      renderBody={(decisionId, scroll, { revealDecision }) =>
-        decisionId === 'a' ? (
-          <DecisionText
-            table={{
-              rules: rulesLinkedTo(linkTo),
-              ...GRID_SENTENCE_COLUMNS,
-              hitPolicy: GRID_SENTENCE_POLICY,
-            }}
-            hitPolicies={HIT_POLICIES}
-            columnTypes={COLUMN_TYPES}
-            ariaLabel="Rules of a"
-            dataTestId="text-a"
-            scroll={scroll}
-            onOpenDecision={revealDecision}
-            mode={{
-              kind: 'select',
-              selected,
-              onSelect: (next) => setSelected(next?.kind === 'rule' ? next : null),
-            }}
-          />
-        ) : (
-          <p data-testid={`body-${decisionId}`}>{decisionId}</p>
-        )
+      renderBody={(decisionId) =>
+        decisionId === 'a'
+          ? {
+              kind: 'table',
+              text: {
+                table: {
+                  rules: rulesLinkedTo(linkTo),
+                  ...GRID_SENTENCE_COLUMNS,
+                  hitPolicy: GRID_SENTENCE_POLICY,
+                },
+                hitPolicies: HIT_POLICIES,
+                columnTypes: COLUMN_TYPES,
+                ariaLabel: 'Rules of a',
+                dataTestId: 'text-a',
+                mode: {
+                  kind: 'select',
+                  selected,
+                  onSelect: (next) => setSelected(next?.kind === 'rule' ? next : null),
+                },
+              },
+            }
+          : { kind: 'other', content: <p data-testid={`body-${decisionId}`}>{decisionId}</p> }
       }
       dataTestId="graph"
     />
