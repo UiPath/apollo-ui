@@ -22,7 +22,11 @@ import { RuleList } from './RuleList';
 import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
-import { DECISION_TEXT_FRAME_CLASS, DECISION_TEXT_INLINE_FRAME_CLASS } from './sentenceStyles';
+import {
+  DECISION_TEXT_FRAME_CLASS,
+  DECISION_TEXT_INLINE_FRAME_CLASS,
+  TEXT_COLUMN_CLASS,
+} from './sentenceStyles';
 import type {
   DecisionTextCitations,
   DecisionTextTable,
@@ -87,8 +91,6 @@ export interface DecisionTextProps<Op, Policy, Total, Type, Refusal> {
   columnTypes: readonly ColumnTypeOption<Type>[];
   /** Where the decision and its rules were read from, each opened by the host; none when omitted. */
   citations?: DecisionTextCitations;
-  /** Shows each rule's 1-based position before its heading. */
-  numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
@@ -132,7 +134,6 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   hitPolicies,
   columnTypes,
   citations = NO_CITATIONS,
-  numbered = false,
   marks = EMPTY_MARKS,
   onCellHover,
   headerMark,
@@ -256,7 +257,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     container: ruleWindow.container,
   });
   const columnEditorId = `${idPrefix}-column-editor`;
-  const listStyle = sentenceListStyle(numbered, rules.length);
+  const listStyle = sentenceListStyle(diff !== undefined, rules.length);
   const onExpandFold = useCallback(
     (firstRowId: string) =>
       setFolds((current) => ({
@@ -282,72 +283,73 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
         sectionProps.className
       )}
     >
-      <DecisionTextHeader
-        ref={ruleWindow.headerRef}
-        title={title}
-        hint={policyHeader.hint}
-        mark={headerMark}
-        citations={
-          citations.kind === 'cited' && citations.decision.length > 0
-            ? { citations: citations.decision, onOpen: citations.onOpenCitation }
-            : null
-        }
-        labels={labels}
-        sticky={scroll === 'self'}
-        dataTestId={dataTestId}
-      />
-      {bands.length > 0 && (
-        <SentenceBands
-          bands={bands}
-          marks={bandMarks}
-          style={listStyle}
-          idPrefix={idPrefix}
-          dataTestId={dataTestId}
-          labels={labels}
-          mode={
-            columns
-              ? { kind: 'diff', changes: columns.changes }
-              : columnEditing.kind === 'edit'
-                ? { kind: 'edit', ...columnEditing.pills, editorId: columnEditorId }
-                : { kind: 'read' }
+      <div className={TEXT_COLUMN_CLASS} data-testid={`${dataTestId}-column`}>
+        <DecisionTextHeader
+          ref={ruleWindow.headerRef}
+          title={title}
+          hint={policyHeader.hint}
+          mark={headerMark}
+          citations={
+            citations.kind === 'cited' && citations.decision.length > 0
+              ? { citations: citations.decision, onOpen: citations.onOpenCitation }
+              : null
           }
-        />
-      )}
-      {listed.length === 0 ? (
-        <EmptyRules title={labels.emptyRules} addRule={addRuleAction} dataTestId={dataTestId} />
-      ) : (
-        <RuleList
-          ref={ruleWindow.listRef}
-          rules={listed}
-          mode={
-            diffRows
-              ? { kind: 'diff', diffRows: diffRows.rows, onExpandFold }
-              : edit
-                ? {
-                    kind: 'edit',
-                    editLabels: edit.labels,
-                    openMenu: ruleMenus.state,
-                    pending: shown.pending,
-                  }
-                : { kind: 'read' }
-          }
-          segments={ruleWindow.segments}
-          numbered={numbered}
-          marks={rowMarks}
-          selectedRow={ruleWindow.selectedRow}
-          selectedColumnId={navigation.selectedColumnId}
-          selectable={selectable}
-          decisionLinks={onOpenDecision !== undefined}
-          citations={citations}
-          style={listStyle}
-          idPrefix={idPrefix}
-          dataTestId={dataTestId}
           labels={labels}
+          sticky={scroll === 'self'}
+          dataTestId={dataTestId}
         />
-      )}
-      {addRuleAction && rules.length > 0 && (
-        <AddRuleFooter addRule={addRuleAction} style={listStyle} />
-      )}
+        {bands.length > 0 && (
+          <SentenceBands
+            bands={bands}
+            marks={bandMarks}
+            style={listStyle}
+            idPrefix={idPrefix}
+            dataTestId={dataTestId}
+            labels={labels}
+            mode={
+              columns
+                ? { kind: 'diff', changes: columns.changes }
+                : columnEditing.kind === 'edit'
+                  ? { kind: 'edit', ...columnEditing.pills, editorId: columnEditorId }
+                  : { kind: 'read' }
+            }
+          />
+        )}
+        {listed.length === 0 ? (
+          <EmptyRules title={labels.emptyRules} addRule={addRuleAction} dataTestId={dataTestId} />
+        ) : (
+          <RuleList
+            ref={ruleWindow.listRef}
+            rules={listed}
+            mode={
+              diffRows
+                ? { kind: 'diff', diffRows: diffRows.rows, onExpandFold }
+                : edit
+                  ? {
+                      kind: 'edit',
+                      editLabels: edit.labels,
+                      openMenu: ruleMenus.state,
+                      pending: shown.pending,
+                    }
+                  : { kind: 'read' }
+            }
+            segments={ruleWindow.segments}
+            marks={rowMarks}
+            selectedRow={ruleWindow.selectedRow}
+            selectedColumnId={navigation.selectedColumnId}
+            selectable={selectable}
+            decisionLinks={onOpenDecision !== undefined}
+            citations={citations}
+            style={listStyle}
+            idPrefix={idPrefix}
+            dataTestId={dataTestId}
+            labels={labels}
+          />
+        )}
+        {addRuleAction && rules.length > 0 && (
+          <AddRuleFooter addRule={addRuleAction} style={listStyle} />
+        )}
+      </div>
       {valueEditing.editor && edit && (
         <ValueEditorOverlay
           key={valueEditing.editorKey}

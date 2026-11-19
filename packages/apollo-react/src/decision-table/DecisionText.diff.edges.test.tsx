@@ -8,7 +8,7 @@ import {
   DIFF_RULES,
   largeDiffTable,
 } from './__fixtures__/diffSentences.fixtures';
-import { HIT_POLICIES, COLUMN_TYPES } from './__fixtures__/sentences.fixtures';
+import { COLUMN_TYPES, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
 import { type FlatTextProps, textPropsOf } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
 import { withRemoved } from './decisionTextDiff';
@@ -21,7 +21,6 @@ const renderDiff = (diff: FixtureDiff, props: Partial<Pick<FlatTextProps, 'rules
         rules: DIFF_RULES,
         ...DIFF_COLUMNS,
         hitPolicy: DIFF_POLICY,
-        numbered: true,
         ariaLabel: 'Rules',
         dataTestId: 'nl',
         ...props,
@@ -108,7 +107,6 @@ describe('DecisionText diff edges', () => {
         table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
-        numbered
         ariaLabel="Rules"
         dataTestId="nl"
         mode={{ kind: 'diff', diff: next }}

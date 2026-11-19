@@ -3,7 +3,6 @@ import { BandColumn, type BandColumnProps } from './BandColumn';
 import type { TableMarks } from './marks';
 import { BAND_COLUMNS_CLASS } from './sentenceStyles';
 import type { SentenceBand } from './sentenceTypes';
-import { useHorizontalOverflow } from './useHorizontalOverflow';
 
 export interface BandListProps {
   band: SentenceBand;
@@ -25,35 +24,27 @@ export type BandMode =
       editorId: string;
     };
 
-/** A band's columns on one line, a tab stop while they overflow it and are no buttons, so the keyboard can scroll it. */
-export const BandList: React.FC<BandListProps> = ({ band, marks, badgeIdPrefix, labels, mode }) => {
-  const { ref, overflows } = useHorizontalOverflow<HTMLUListElement>();
-  return (
-    <ul
-      ref={ref}
-      className={BAND_COLUMNS_CLASS}
-      aria-label={band.label}
-      tabIndex={overflows && mode.kind !== 'edit' ? 0 : undefined}
-    >
-      {band.columns.map((column, columnIndex) => (
-        <BandColumn
-          key={column.id}
-          column={column}
-          mark={marks.get(column.id)}
-          badgeId={`${badgeIdPrefix}-${columnIndex}`}
-          change={mode.kind === 'diff' ? mode.changes.get(column.id) : undefined}
-          labels={labels}
-          pill={
-            mode.kind === 'edit'
-              ? {
-                  kind: 'button',
-                  onToggle: mode.onToggle,
-                  openEditorId: column.id === mode.openColumnId ? mode.editorId : null,
-                }
-              : { kind: 'plain' }
-          }
-        />
-      ))}
-    </ul>
-  );
-};
+/** A band's columns, wrapping onto as many lines as they need. */
+export const BandList: React.FC<BandListProps> = ({ band, marks, badgeIdPrefix, labels, mode }) => (
+  <ul className={BAND_COLUMNS_CLASS} aria-label={band.label}>
+    {band.columns.map((column, columnIndex) => (
+      <BandColumn
+        key={column.id}
+        column={column}
+        mark={marks.get(column.id)}
+        badgeId={`${badgeIdPrefix}-${columnIndex}`}
+        change={mode.kind === 'diff' ? mode.changes.get(column.id) : undefined}
+        labels={labels}
+        pill={
+          mode.kind === 'edit'
+            ? {
+                kind: 'button',
+                onToggle: mode.onToggle,
+                openEditorId: column.id === mode.openColumnId ? mode.editorId : null,
+              }
+            : { kind: 'plain' }
+        }
+      />
+    ))}
+  </ul>
+);

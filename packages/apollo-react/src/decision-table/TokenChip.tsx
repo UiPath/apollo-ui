@@ -8,6 +8,7 @@ import {
   CHANGED_CHIP_CLASS,
   CHANGED_VALUE_CLASS,
   DECISION_LINK_CLASS,
+  EDITABLE_VALUE_CLASS,
   EMPTY_OUTPUT_VALUE_CLASS,
   MARKED_CHIP_CLASS,
   OUTPUT_VALUE_CLASS,
@@ -109,7 +110,8 @@ export const TokenChip: React.FC<TokenChipProps> = ({
         isValue && MARKED_CHIP_CLASS,
         (isValue || change) && CHANGED_CHIP_CLASS,
         isValue && !output && CHANGED_VALUE_CLASS,
-        (isValue || stop) && SELECTED_CHIP_CLASS
+        (isValue || stop) && SELECTED_CHIP_CLASS,
+        isValue && !output && EDITABLE_VALUE_CLASS
       )}
       role={stop && (stop.editable ? 'button' : 'group')}
       tabIndex={stop && (selected ? 0 : -1)}
