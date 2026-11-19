@@ -12,6 +12,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { PortalContainerOverride } from '@/components/ui/portal-container';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib';
 import type { ByoModelDialogLabels } from './labels';
 import type { ByoReplaceableModel } from './types';
@@ -67,6 +74,10 @@ export function ModelAliasPicker({
   const choose = (alias: ModelAlias) => {
     onChange(alias);
     close();
+  };
+  const startAdding = () => {
+    setDraft(custom ?? query.trim());
+    setAdding(true);
   };
   const confirmCustom = () => {
     const name = draft.trim();
@@ -150,31 +161,54 @@ export function ModelAliasPicker({
             <CommandList className="max-h-[280px]">
               <CommandEmpty>{labels.aliasNoMatch(query)}</CommandEmpty>
               {/* First, as in AI Trust Layer, so a long list does not hide it. */}
-              {allowsCustom && (
+              {allowsCustom && (custom === null || customShown) && (
                 <CommandGroup heading={labels.useOwnName}>
-                  {custom !== null && customShown && (
+                  {custom !== null ? (
                     <CommandItem
                       value={`custom:${custom}`}
                       onSelect={() => choose({ kind: 'custom', name: custom })}
-                      className="gap-2 py-1.5"
+                      className="gap-2 py-1"
                     >
                       <Selected on />
                       <span className="min-w-0 truncate font-mono text-xs text-foreground">
                         {custom}
                       </span>
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="3xs"
+                              icon
+                              className="ml-auto"
+                              aria-label={labels.editCustomAlias}
+                              // The row selects the alias; the pencil edits it instead.
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                startAdding();
+                              }}
+                            >
+                              <Pencil />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipPortal container={container}>
+                            <TooltipContent>{labels.editCustomAlias}</TooltipContent>
+                          </TooltipPortal>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </CommandItem>
+                  ) : (
+                    <CommandItem
+                      value="custom:add"
+                      onSelect={startAdding}
+                      className="gap-2 py-1.5 text-foreground-accent"
+                    >
+                      <Plus size={14} />
+                      {labels.addCustomAlias}
                     </CommandItem>
                   )}
-                  <CommandItem
-                    value="custom:add"
-                    onSelect={() => {
-                      setDraft(custom ?? query.trim());
-                      setAdding(true);
-                    }}
-                    className="gap-2 py-1.5 text-foreground-accent"
-                  >
-                    {custom === null ? <Plus size={14} /> : <Pencil size={14} />}
-                    {custom === null ? labels.addCustomAlias : labels.editCustomAlias}
-                  </CommandItem>
                 </CommandGroup>
               )}
               {shown.length > 0 && (
