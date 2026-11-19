@@ -652,6 +652,20 @@ describe('ByoModelDialog', () => {
       );
     });
 
+    it('clears the API type shown once a provider switch drops the choice', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({ apiTypes: vi.fn(() => TWO_TYPES) });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await connectAndPickModel(user, 'gpt-5.1');
+      await pick(user, 'API type', 'OpenAI Chat Completions');
+      await pick(user, 'Provider', 'Azure OpenAI');
+
+      const apiType = screen.getByRole('combobox', { name: 'API type' });
+      expect(apiType).not.toHaveTextContent('OpenAI Chat Completions');
+      expect(apiType).toHaveTextContent('Select an API type');
+    });
+
     it('refuses a name of your own that is a UiPath model name', async () => {
       const user = userEvent.setup();
       const api = fakeApi({

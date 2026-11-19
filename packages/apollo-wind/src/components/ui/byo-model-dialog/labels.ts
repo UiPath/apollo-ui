@@ -108,7 +108,7 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   inUiPathCaption: (provider) => `Your connection to ${provider} will be saved in this folder.`,
   connectionName: 'Connection name',
   folder: 'Folder',
-  folderHint: 'Personal workspace keeps it to you; a shared folder lets teammates reuse it.',
+  folderHint: 'Teammates with access to this folder can reuse the connection.',
   connectionNameTaken: 'You already have a connection with this name.',
   connect: 'Connect',
   connecting: 'Connecting…',
