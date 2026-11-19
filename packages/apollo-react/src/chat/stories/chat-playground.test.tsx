@@ -36,6 +36,7 @@ const baseProps = (): ChatPlaygroundProps => ({
   title: '',
   inputPlaceholder: '',
   footerDisclaimer: '',
+  infoLinks: [],
   firstRunExperience: false,
   customHeaderActions: false,
   preHooks: false,
@@ -85,6 +86,26 @@ describe('ChatPlayground', () => {
       'data-mode',
       AutopilotChatMode.FullScreen
     );
+  });
+
+  it('applies infoLinks to the running chat through setInfoLinks', async () => {
+    const props = baseProps();
+    const { rerender } = render(<ChatPlayground {...props} />);
+    await flush();
+    const root = document.querySelector('[data-slot="wind-chat"]');
+    expect(screen.queryByRole('link', { name: 'Terms' })).toBeNull();
+
+    rerender(
+      <ChatPlayground {...props} infoLinks={[{ label: 'Terms', url: 'https://a.test/terms' }]} />
+    );
+    await flush();
+
+    expect(document.querySelector('[data-slot="wind-chat"]')).toBe(root);
+    expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute(
+      'href',
+      'https://a.test/terms'
+    );
+    expect(slotService('primary')?.getConfig().infoLinks).toHaveLength(1);
   });
 
   it('applies an initial autoScroll of false at mount', async () => {

@@ -13,6 +13,7 @@ import {
   type AutopilotChatCustomHeaderAction,
   type AutopilotChatDisabledFeatures,
   AutopilotChatEvent,
+  type AutopilotChatInfoLink,
   type AutopilotChatMessage,
   AutopilotChatMode,
   AutopilotChatPreHookAction,
@@ -96,6 +97,7 @@ export interface PlaygroundArgs extends FeatureFlagArgs {
   title: string;
   inputPlaceholder: string;
   footerDisclaimer: string;
+  infoLinks: AutopilotChatInfoLink[];
   firstRunExperience: boolean;
   customHeaderActions: boolean;
   preHooks: boolean;
@@ -231,6 +233,7 @@ function createSlotService(
       allowFeedbackChange: args.allowFeedbackChange,
       disabledFeatures: disabledFeaturesFrom(args),
       overrideLabels: overrideLabelsFrom(args),
+      infoLinks: args.infoLinks,
       firstRunExperience: firstRunExperienceFor(args.firstRunExperience),
       spacing: { compactMode: args.compactMode },
       preHooks: preHooksFrom(args.preHooks),
@@ -457,6 +460,9 @@ function ChatSlot({
   );
   useOnChange(`${args.title}\n${args.inputPlaceholder}\n${args.footerDisclaimer}`, () =>
     service.setOverrideLabels(overrideLabelsFrom(argsRef.current))
+  );
+  useOnChange(JSON.stringify(args.infoLinks), () =>
+    service.setInfoLinks(argsRef.current.infoLinks ?? [])
   );
   useOnChange(args.compactMode, (compactMode) =>
     patchConfigInPlace(service, { spacing: { compactMode } })

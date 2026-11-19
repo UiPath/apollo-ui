@@ -18,6 +18,7 @@ import type {
   AutopilotChatEventInterceptor,
   AutopilotChatFileInfo,
   AutopilotChatHistory,
+  AutopilotChatInfoLink,
   AutopilotChatInputStreamEvent,
   AutopilotChatMessage,
   AutopilotChatMessageRenderer,
@@ -264,6 +265,9 @@ export class AutopilotChatService {
       this.setOverrideLabels(config.overrideLabels);
     }
 
+    // Published even when absent, so links left out of a new configuration leave the footer.
+    this.setInfoLinks(config.infoLinks ?? []);
+
     if (config.firstRunExperience) {
       this.setFirstRunExperience(config.firstRunExperience);
     }
@@ -475,6 +479,18 @@ export class AutopilotChatService {
     };
 
     this._eventBus.publish(AutopilotChatEvent.SetOverrideLabels, this._config.overrideLabels);
+  }
+
+  /**
+   * Sets the links shown beside the footer disclaimer, replacing the current ones
+   *
+   * @param links - The links to show; an empty array removes them
+   */
+  setInfoLinks(links: AutopilotChatInfoLink[]) {
+    // A copy, so a host changing and re-sending its own array is seen as a change.
+    this._config.infoLinks = Array.isArray(links) ? [...links] : [];
+
+    this._eventBus.publish(AutopilotChatEvent.SetInfoLinks, this._config.infoLinks);
   }
 
   /**

@@ -4,7 +4,6 @@ import {
   type ChatComposerAttachmentItem,
   ChatComposerAttachments,
   ChatComposerError,
-  ChatComposerFooter,
   ChatComposerInputGroup,
   ChatComposerSubmit,
   ChatComposerTextarea,
@@ -36,6 +35,7 @@ import {
 } from '../../service';
 import { AttachmentTypeIcon } from '../messages/message-attachments';
 import { useMarkdownStrings } from '../renderers/markdown-renderer';
+import { WindComposerFooter } from './composer-footer';
 import { useComposerStrings } from './composer-strings';
 
 const promptText = (prompt: AutopilotChatPrompt | string | undefined) =>
@@ -60,7 +60,7 @@ function ComposerErrorText({ message }: { message: string }) {
 export function WindChatComposer() {
   const chatService = useChatService();
   const { disabledFeatures, spacing, allowedAttachments } = useChatState();
-  const { inputPlaceholder, footerDisclaimer } = useChatLabels();
+  const { inputPlaceholder } = useChatLabels();
   const { skeletonLoader } = useLoading();
   const { error, clearError } = useError();
   const { attachments, attachmentsLoading, removeAttachment, clearAttachments } = useAttachments();
@@ -197,10 +197,7 @@ export function WindChatComposer() {
           <ChatComposerSubmit variant="default" />
         </ChatComposerToolbar>
       </ChatComposerInputGroup>
-      {!disabledFeatures.footer && (
-        // Material's footer size.
-        <ChatComposerFooter className="text-[10px]">{footerDisclaimer}</ChatComposerFooter>
-      )}
+      {!disabledFeatures.footer && <WindComposerFooter />}
     </ChatComposer>
   );
 }

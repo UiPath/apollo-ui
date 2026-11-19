@@ -144,6 +144,7 @@ Wind matches Material's behaviour and the service contract. These are the intend
 - Settings slide in from the right as Material's do, styled as the history popover. In Embedded they cover the area below the header rather than the whole panel, so the header stays usable; the conversation under them is inert. They also close on Escape anywhere in the chat, through the `ToggleSettings` pre-hook.
 - The code block expand dialog covers the page at z-index 1300, in `portalContainer` or `document.body`.
 - In compact mode turns are 32px apart (Material: 21px), since Wind's message actions sit in flow under the message.
+- An info link's label stays on one line in Wind; Material's wraps. Material's links also open on Space, Wind's on Enter only.
 
 **Messages**
 
@@ -371,6 +372,23 @@ chatService.sendOutputStreamEvent({ mediaChunks: [ /* audio/pcm chunks */ ] });
 | Method                                                   | Description                                                                                                                |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `setOverrideLabels(labels: AutopilotChatOverrideLabels)` | Configures which labes to override in the chat interface (see [AutopilotChatOverrideLabels](#autopilotchatoverridelabels)) |
+| `setInfoLinks(links: AutopilotChatInfoLink[])`           | Sets the links shown beside the footer disclaimer, replacing the current ones (see [AutopilotChatInfoLink](#autopilotchatinfolink))  |
+
+#### Info links
+
+`infoLinks` adds links such as Terms of Use or a privacy policy to the line under the input. Set them in the configuration (`initialize`, `patchConfig`, `open`) or at runtime with `setInfoLinks`. An empty array removes them, and so does a configuration passed to `initialize` without `infoLinks`. Labels are shown as given, so pass them already localized.
+
+```typescript
+chatService.setInfoLinks([
+  { label: 'Terms', url: 'https://example.com/terms' },
+  { label: 'Privacy policy', url: 'https://example.com/privacy' },
+]);
+```
+
+- Both renderers show the links first and the `footerDisclaimer` at the end of the same row. When the row does not fit, the disclaimer wraps under the links. Without links the disclaimer stays centered, as before.
+- Links open in a new tab with `rel="noopener noreferrer"` and follow the input controls in the tab order. Each renderer uses its standard link, so the link color and weight follow that renderer.
+- Only `http`, `https` and relative URLs are linked. Any other URL (`javascript:`, `data:`, an empty string) shows its label as plain text. An entry without a label is left out.
+- The links are part of the footer: `disabledFeatures.footer` and read-only mode hide them with the disclaimer. An empty `footerDisclaimer` leaves the links on their own.
 
 ### Pre-hooks
 
@@ -410,6 +428,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetFirstRunExperience`: When the first run experience is set
 - `SetDisabledFeatures`: When disabled features are set
 - `SetOverrideLabels`: When override labels are set
+- `SetInfoLinks`: When the info links are set
 - `Open`: When the chat is opened
 - `Close`: When the chat is closed
 - `SendChunk`: When a chunk of streaming content is sent
@@ -3124,6 +3143,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * @property renderer - The renderer ('wind' or 'material'); defaults to the default of the entry ApChat comes from
  * @property disabledFeatures - The disabled features of the chat
  * @property overrideLabels - The override labels of the chat
+ * @property infoLinks - Links shown beside the footer disclaimer (hidden with `disabledFeatures.footer`)
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
@@ -3150,6 +3170,7 @@ export interface AutopilotChatConfiguration {
   renderer?: AutopilotChatRenderer; // 'wind' | 'material' (defaults to the ApChat entry's default)
   disabledFeatures?: AutopilotChatDisabledFeatures;
   overrideLabels?: AutopilotChatOverrideLabels;
+  infoLinks?: AutopilotChatInfoLink[];
   firstRunExperience?: {
     title: string;
     description: string;
@@ -3285,6 +3306,22 @@ export interface AutopilotChatOverrideLabels {
   inputPlaceholder?: string;
   footerDisclaimer?: string;
   title?: string;
+}
+```
+
+### AutopilotChatInfoLink
+
+```typescript
+/**
+ * A link the chat shows beside its disclaimer, such as Terms of Use or a privacy policy.
+ *
+ * @property label - The link text, already localized by the host
+ * @property url - An http(s) or relative URL, opened in a new tab. With any other URL the
+ *                 label shows as plain text.
+ */
+export interface AutopilotChatInfoLink {
+  label: string;
+  url: string;
 }
 ```
 

@@ -146,6 +146,64 @@ describe('AutopilotChatService', () => {
     });
   });
 
+  describe('info links', () => {
+    const links = [{ label: 'Terms', url: 'https://a.test/terms' }];
+
+    it('stores the links, replacing the previous ones, and emits SetInfoLinks', () => {
+      const service = createService();
+      const handler = vi.fn();
+      service.on(AutopilotChatEvent.SetInfoLinks, handler);
+
+      service.setInfoLinks(links);
+      service.setInfoLinks([]);
+
+      expect(service.getConfig().infoLinks).toEqual([]);
+      expect(handler.mock.calls).toEqual([[links], [[]]]);
+    });
+
+    it('applies config.infoLinks on initialize and patchConfig', () => {
+      const service = createService();
+      const handler = vi.fn();
+      service.on(AutopilotChatEvent.SetInfoLinks, handler);
+
+      service.initialize({ mode: AutopilotChatMode.SideBySide, infoLinks: links });
+      expect(service.getConfig().infoLinks).toEqual(links);
+      expect(handler).toHaveBeenLastCalledWith(links);
+
+      const next = [{ label: 'Privacy policy', url: '/privacy' }];
+      service.patchConfig({ infoLinks: next });
+      expect(service.getConfig().infoLinks).toEqual(next);
+      expect(handler).toHaveBeenLastCalledWith(next);
+    });
+
+    it('removes links that a new configuration leaves out', () => {
+      const service = createService();
+      service.setInfoLinks(links);
+      const handler = vi.fn();
+      service.on(AutopilotChatEvent.SetInfoLinks, handler);
+
+      service.initialize({ mode: AutopilotChatMode.SideBySide });
+
+      expect(service.getConfig().infoLinks).toEqual([]);
+      expect(handler).toHaveBeenLastCalledWith([]);
+    });
+
+    it('keeps a copy, so the host array can change and be sent again', () => {
+      const service = createService();
+      const handler = vi.fn();
+      service.on(AutopilotChatEvent.SetInfoLinks, handler);
+      const hostLinks = [...links];
+
+      service.setInfoLinks(hostLinks);
+      hostLinks.push({ label: 'Privacy policy', url: '/privacy' });
+
+      expect(service.getConfig().infoLinks).toEqual(links);
+      service.setInfoLinks(hostLinks);
+      expect(handler.mock.calls[1][0]).not.toBe(handler.mock.calls[0][0]);
+      expect(service.getConfig().infoLinks).toHaveLength(2);
+    });
+  });
+
   describe('history', () => {
     it('forgets the open conversation on a new chat', () => {
       const service = createService();
