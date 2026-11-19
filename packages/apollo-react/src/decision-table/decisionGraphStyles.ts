@@ -1,11 +1,12 @@
 import { cn } from '@uipath/apollo-wind';
+import { TEXT_COLUMN_CLASS } from './sentenceStyles';
 
 export const GRAPH_FRAME_CLASS =
   'relative flex min-h-0 flex-1 flex-col bg-background-secondary future:bg-background';
 
 export const GRAPH_SCROLLER_CLASS = 'min-h-0 flex-1 scroll-pt-12 overflow-auto';
 
-export const GRAPH_COLUMN_CLASS = 'mx-auto flex w-full max-w-3xl flex-col gap-4 py-8 pr-8';
+export const GRAPH_COLUMN_CLASS = cn(TEXT_COLUMN_CLASS, 'flex flex-col gap-4 py-8 pr-8');
 
 export const GRAPH_EMPTY_CLASS = 'm-0 px-8 py-8 text-sm text-foreground-de-emp';
 
@@ -61,7 +62,7 @@ export const GRAPH_ADD_DECISION_CLASS =
   'flex h-10 cursor-pointer items-center gap-2 rounded-[10px] border border-dashed border-border-de-emp bg-transparent px-3 text-start text-sm text-foreground-de-emp hover:bg-background-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-4';
 
 export const GRAPH_BODY_CLASS =
-  'flex flex-col overflow-clip rounded-b-[9px] bg-background-secondary future:bg-background';
+  'flex flex-col gap-3 overflow-clip rounded-b-[9px] bg-background-secondary px-3.5 pt-3.5 pb-4 future:bg-background';
 
 export const GRAPH_NEST_CLASS = 'ms-[22px] flex flex-col gap-3 pt-3 ps-6';
 

@@ -6,7 +6,7 @@ import { CitationButtons } from './CitationButton';
 import { ConditionLine } from './ConditionLine';
 import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
-import { RuleLine } from './RuleLine';
+import { RuleLine, type RuleLineProps } from './RuleLine';
 import {
   type CardMode,
   type RuleCardBase,
@@ -19,6 +19,7 @@ import {
   CITED_LINE_CLASS,
   CITED_LINES_CLASS,
   HEADING_ACTIONS_SPACE_CLASS,
+  INLINE_LINE_CLASS,
   LINES_CLASS,
   MOVED_ICON_CLASS,
   REVEALED_ACTION_CLASS,
@@ -28,6 +29,7 @@ import {
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
   RULE_CITATIONS_CLASS,
+  SENTENCE_CLASS,
 } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
 import type { DecisionTextCitations } from './sentenceTypes';
@@ -45,6 +47,8 @@ const CitedLine: React.FC<{ citations: React.ReactNode; children: React.ReactNod
   ) : (
     children
   );
+
+const NO_REMOVALS: RuleLineProps['removals'] = [];
 
 /** A diff's sign for each change, as the Business Rules table diff marks them. */
 const CHANGE_SIGNS = { add: '+', update: '~', delete: '−' } satisfies Record<DiffChange, string>;
@@ -93,7 +97,6 @@ export const RuleCard = memo<RuleCardProps>(
     rule,
     position,
     setSize,
-    numbered,
     mark,
     selectedColumnId,
     selectable,
@@ -110,7 +113,6 @@ export const RuleCard = memo<RuleCardProps>(
     const card = ruleCardModel({
       rule,
       position,
-      numbered,
       mark,
       selectable,
       decisionLinks,
@@ -160,6 +162,7 @@ export const RuleCard = memo<RuleCardProps>(
         data-tone={card.tone}
         data-change={diff?.change}
         data-dim={card.dim}
+        data-editable={edit !== undefined || undefined}
         data-testid={`${dataTestId}-row-${rule.rowId}`}
       >
         <div
@@ -173,25 +176,34 @@ export const RuleCard = memo<RuleCardProps>(
               {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
             </span>
           )}
-          <RuleLine
-            heading
-            parts={rule.heading}
-            title={card.title}
-            badge={card.badges.heading}
-            removals={card.removals.heading}
-            unworded={diff?.removedOutcomes}
-            className={edit && HEADING_ACTIONS_SPACE_CLASS}
-            {...lineProps}
-          />
           <CitedLine citations={lined ? null : citationButtons}>
-            <RuleLine
-              verdicts
-              className={citationButtons && !lined ? CITED_LINE_CLASS : undefined}
-              parts={rule.lead}
-              badge={card.badges.lead}
-              removals={card.removals.lead}
-              {...lineProps}
-            />
+            <div
+              className={cn(
+                SENTENCE_CLASS,
+                edit && HEADING_ACTIONS_SPACE_CLASS,
+                citationButtons && !lined && CITED_LINE_CLASS
+              )}
+              data-sentence
+            >
+              <RuleLine
+                heading
+                parts={rule.heading}
+                title={card.title}
+                badge={card.badges.heading}
+                removals={NO_REMOVALS}
+                unworded={diff?.removedOutcomes}
+                className={INLINE_LINE_CLASS}
+                {...lineProps}
+              />{' '}
+              <RuleLine
+                verdicts
+                className={INLINE_LINE_CLASS}
+                parts={rule.lead}
+                badge={card.badges.lead}
+                removals={[...card.removals.heading, ...card.removals.lead]}
+                {...lineProps}
+              />
+            </div>
           </CitedLine>
           {lined && (
             <CitedLine citations={citationButtons}>

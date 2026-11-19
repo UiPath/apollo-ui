@@ -13,9 +13,9 @@ import {
 } from './__fixtures__/decisionGraph.fixtures';
 import { tableColumns, wordedRules } from './__fixtures__/editableSentences.fixtures';
 import {
+  COLUMN_TYPES,
   GRID_SENTENCE_POLICY,
   HIT_POLICIES,
-  COLUMN_TYPES,
   wordRefusal,
 } from './__fixtures__/sentences.fixtures';
 import {
@@ -473,6 +473,7 @@ describe('DecisionGraphText', () => {
     const scroller = screen.getByTestId('graph-scroller');
     expect(slot?.className).toContain('absolute');
     expect(slot?.parentElement).toBe(scroller.parentElement);
+    expect(scroller.firstElementChild).toHaveClass('mx-auto', 'w-full', 'max-w-3xl');
     expect(scroller.firstElementChild).toHaveStyle({
       paddingLeft: 'max(2rem, calc(167px - max(0px, (100% - 48rem) / 2)))',
     });
@@ -687,10 +688,20 @@ describe('DecisionGraphText mark clicks', () => {
   it('flashes the decision when the rule its mark names is outside the mounted window', async () => {
     const animate = vi.fn();
     HTMLElement.prototype.animate = animate;
-    render(<SelectingHost />);
+    const farMark = (nodes: readonly DecisionGraphNode[]): DecisionGraphNode[] =>
+      nodes.map((node) =>
+        node.kind === 'reference'
+          ? node
+          : {
+              ...node,
+              mark: node.mark?.kind === 'rule' ? { ...node.mark, rowId: 'r30' } : node.mark,
+              children: farMark(node.children),
+            }
+      );
+    render(<SelectingHost nodes={farMark(MARKED.nodes)} />);
     const scrollNow = scrolled();
     await userEvent.click(screen.getByTestId('graph-mark-risk'));
-    expect(screen.queryByTestId('text-risk-row-r20')).toBeNull();
+    expect(screen.queryByTestId('text-risk-row-r30')).toBeNull();
     await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
     expect(animate.mock.contexts).toContain(screen.getByTestId('graph-decision-risk'));
     expect(scrollNow()).toEqual(UNMOVED);
