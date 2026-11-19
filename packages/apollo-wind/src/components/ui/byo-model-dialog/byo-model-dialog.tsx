@@ -6,6 +6,7 @@ import {
   ChevronRight,
   CircleCheck,
   KeyRound,
+  X,
 } from 'lucide-react';
 import * as React from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -31,7 +32,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { PortalContainerOverride } from '@/components/ui/portal-container';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -42,6 +42,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib';
 import { type ByoModelDialogLabels, resolveByoModelDialogLabels } from './labels';
+import { type ModelAlias, ModelAliasPicker } from './model-alias-picker';
 import type {
   ByoConnection,
   ByoConnectionForm,
@@ -183,9 +184,9 @@ function DialogBody({
   const [modelQuery, setModelQuery] = React.useState('');
   const [modelListOpen, setModelListOpen] = React.useState(false);
   const [name, setName] = React.useState('');
-  const [nameTouched, setNameTouched] = React.useState(false);
   // A name of the user's own, or the UiPath model the model replaces, whose name it then takes.
-  const [useAs, setUseAs] = React.useState<'own' | 'replacement'>('own');
+  const [useAs, setUseAs] = React.useState<'own' | 'replacement'>('replacement');
+  const [dismissedFailure, setDismissedFailure] = React.useState<ByoFailure | null>(null);
   const [replaces, setReplaces] = React.useState('');
   const [apiType, setApiType] = React.useState('');
   const [test, setTest] = React.useState<Attempt<ByoSavedModel>>({ status: 'idle' });
@@ -269,7 +270,6 @@ function DialogBody({
     setConnName(defaultConnectionName(savedProvider?.name ?? model.providerId, loaded.connections));
     setModelId(model.modelId);
     setName(model.replaces ? '' : model.name);
-    setNameTouched(true);
     setUseAs(model.replaces ? 'replacement' : 'own');
     setReplaces(model.replaces ?? '');
     setApiType(model.apiType ?? '');
@@ -305,7 +305,6 @@ function DialogBody({
       setContext({ status: 'ok', value: loaded });
       setConnections(loaded.connections);
       setFolderId(defaultFolder);
-      if (!loaded.allowsNewNames) setUseAs('replacement');
       if (savedModel) startFromSavedModel(savedModel, loaded, defaultFolder);
     };
     load().catch((err: unknown) => {
@@ -317,8 +316,6 @@ function DialogBody({
     setModelQuery('');
     setModelListOpen(false);
     setModelId('');
-    setName('');
-    setNameTouched(false);
     setTest({ status: 'idle' });
   };
 
@@ -335,12 +332,24 @@ function DialogBody({
     setEditingConnection(false);
     setConnect({ status: 'idle' });
     resetDownstream();
-    // Which UiPath models a provider can replace, and through which API types, is its own.
-    setUseAs(ctx?.allowsNewNames === false ? 'replacement' : 'own');
-    setReplaces('');
     setApiType('');
     loadModels(id, existing[0] ?? null, gen);
     loadForm(id, folderId);
+  };
+
+  /** Drops the provider and everything chosen after it. */
+  const clearProvider = () => {
+    generation.current += 1;
+    formLoad.current += 1;
+    setProviderId('');
+    setConnectionChoice(NEW);
+    setMoreOpen(false);
+    setEditingConnection(false);
+    setConnect({ status: 'idle' });
+    resetDownstream();
+    setApiType('');
+    setModelsState(NO_MODELS);
+    setFormState(NO_FORM);
   };
 
   const chooseConnection = (id: string) => {
@@ -480,7 +489,6 @@ function DialogBody({
 
   const pickModel = (id: string) => {
     setModelId(id);
-    if (!nameTouched) setName(id);
     setTest({ status: 'idle' });
   };
 
@@ -494,34 +502,48 @@ function DialogBody({
   else if (ownName && reservedNames.has(ownName.toLowerCase()))
     nameProblem = labels.nameReserved(ownName);
 
-  // The UiPath models this provider can serve, apart from those already replaced; the edited
+  // The UiPath models some provider can serve, apart from those already replaced; the edited
   // model keeps its own.
   const replacementOptions = (ctx?.replaceableModels ?? []).filter(
     (m) =>
       (!m.replaced || m.name === modelToEdit?.replaces) &&
-      Boolean(provider) &&
-      api.apiTypes(providerId, m.name).length > 0
+      providers.some((p) => api.apiTypes(p.id, m.name).length > 0)
   );
   const canUseOwnName = ctx?.allowsNewNames ?? false;
   const replacing = useAs === 'replacement';
   const replacement = replacementOptions.find((m) => m.name === replaces) ?? null;
   const chosenName = replacing ? (replacement?.name ?? '') : ownName;
   const nameReady = replacing ? Boolean(replacement) : Boolean(ownName) && !nameProblem;
+  let alias: ModelAlias | null = null;
+  if (replacing && replacement) alias = { kind: 'replacement', name: replacement.name };
+  else if (!replacing && ownName) alias = { kind: 'custom', name: ownName };
 
-  const apiTypeOptions =
-    provider && (!replacing || replacement)
-      ? api.apiTypes(providerId, replacing ? (replacement?.name ?? null) : null)
-      : [];
+  const apiTypesFor = (pid: string, a: ModelAlias | null) =>
+    api.apiTypes(pid, a?.kind === 'replacement' ? a.name : null);
+  // Only the providers with an API type that can serve the chosen name.
+  const providerOptions = providers.filter((p) => apiTypesFor(p.id, alias).length > 0);
+
+  const chooseAlias = (next: ModelAlias) => {
+    if (next.kind === 'replacement') {
+      setUseAs('replacement');
+      setReplaces(next.name);
+    } else {
+      setUseAs('own');
+      setName(next.name);
+    }
+    setTest({ status: 'idle' });
+    if (providerId && apiTypesFor(providerId, next).length === 0) clearProvider();
+  };
+
+  const apiTypeOptions = provider && alias ? apiTypesFor(providerId, alias) : [];
   const apiTypeKey = apiTypeOptions.map((t) => t.value).join('|');
-  // A choice the options no longer hold is dropped, and so is one cleared by a provider switch.
-  // As in AI Trust Layer, the first option is taken for a replacement, and the only one whenever
-  // there is just one.
+  // As in AI Trust Layer, the first API type offered is taken. An edited model keeps its own
+  // while it is still offered.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the options are compared by their values
   React.useEffect(() => {
     if (apiTypeOptions.some((t) => t.value === apiType)) return;
-    const first = apiTypeOptions[0]?.value ?? '';
-    setApiType(replacing || apiTypeOptions.length === 1 ? first : '');
-  }, [apiTypeKey, replacing, apiType]);
+    setApiType(apiTypeOptions[0]?.value ?? '');
+  }, [apiTypeKey, apiType]);
   const apiTypeReady = apiTypeOptions.some((t) => t.value === apiType);
 
   const busy = keyLocked || test.status === 'running' || test.status === 'ok';
@@ -653,6 +675,17 @@ function DialogBody({
   if (connect.status === 'error') failure = connect.failure;
   else if (test.status === 'error') failure = test.failure;
   else if (modelsState.status === 'error') failure = modelsState.failure ?? null;
+  // A dismissed failure stays hidden until another one takes its place.
+  if (failure === dismissedFailure) failure = null;
+
+  let aliasHint = { text: labels.nameHint, tone: 'text-foreground-muted' };
+  if (replacing && replacement?.retiresOn) {
+    aliasHint = { text: labels.retiresOn(replacement.retiresOn), tone: 'text-warning' };
+  } else if (replacing && replacement) {
+    aliasHint = { text: labels.replacementHint, tone: 'text-foreground-muted' };
+  } else if (!replacing && nameProblem) {
+    aliasHint = { text: nameProblem, tone: 'text-error' };
+  }
 
   const title = editTarget ? labels.editTitle : labels.title;
   const description = editTarget ? labels.editDescription : labels.description;
@@ -680,13 +713,29 @@ function DialogBody({
 
         {ctx && (
           <>
-            <Step n={1} title={labels.providerStep} done={Boolean(provider)}>
+            <Step n={1} title={labels.nameStep} done={nameReady}>
+              <div className="flex flex-col gap-1.5">
+                <ModelAliasPicker
+                  replaceable={replacementOptions}
+                  allowsCustom={canUseOwnName}
+                  value={alias}
+                  onChange={chooseAlias}
+                  disabled={busy}
+                  invalid={Boolean(nameProblem) && !replacing}
+                  container={container}
+                  labels={labels}
+                />
+                <p className={cn('text-xs', aliasHint.tone)}>{aliasHint.text}</p>
+              </div>
+            </Step>
+
+            <Step n={2} title={labels.providerStep} done={Boolean(provider)} disabled={!nameReady}>
               <Select value={providerId} onValueChange={chooseProvider} disabled={busy}>
                 <SelectTrigger className="w-full" aria-label={labels.providerStep}>
                   <SelectValue placeholder={labels.providerPlaceholder} />
                 </SelectTrigger>
                 <SelectContent container={container}>
-                  {providers.map((p) => (
+                  {providerOptions.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
                     </SelectItem>
@@ -695,7 +744,7 @@ function DialogBody({
               </Select>
             </Step>
 
-            <Step n={2} title={labels.connectionStep} done={connected} disabled={!provider}>
+            <Step n={3} title={labels.connectionStep} done={connected} disabled={!provider}>
               <div className="flex flex-col gap-3">
                 {!provider && (
                   <Input
@@ -872,7 +921,7 @@ function DialogBody({
               </div>
             </Step>
 
-            <Step n={3} title={labels.modelStep} done={hasModel} disabled={!connected}>
+            <Step n={4} title={labels.modelStep} done={hasModel} disabled={!connected}>
               {freeTextModel ? (
                 <Input
                   ref={modelTriggerRef}
@@ -961,137 +1010,17 @@ function DialogBody({
                 </Popover>
               )}
             </Step>
-
-            <Step n={4} title={labels.nameStep} done={hasModel && nameReady} disabled={!hasModel}>
-              <div className="flex flex-col gap-3">
-                {canUseOwnName && replacementOptions.length > 0 && (
-                  <RadioGroup
-                    value={useAs}
-                    onValueChange={(v) => {
-                      setUseAs(v as 'own' | 'replacement');
-                      setTest({ status: 'idle' });
-                    }}
-                    disabled={busy}
-                    aria-label={labels.nameStep}
-                    className="flex flex-wrap gap-4"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="own" id="byo-use-own" />
-                      <Label htmlFor="byo-use-own" className="text-xs font-normal">
-                        {labels.useOwnName}
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="replacement" id="byo-use-replacement" />
-                      <Label htmlFor="byo-use-replacement" className="text-xs font-normal">
-                        {labels.useReplacement}
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                )}
-                {replacing ? (
-                  <div className="flex flex-col gap-1.5">
-                    <Select
-                      value={replacement?.name}
-                      onValueChange={(v) => {
-                        setReplaces(v);
-                        setTest({ status: 'idle' });
-                      }}
-                      disabled={busy}
-                    >
-                      <SelectTrigger className="w-full" aria-label={labels.useReplacement}>
-                        <SelectValue placeholder={labels.replacementPlaceholder} />
-                      </SelectTrigger>
-                      <SelectContent container={container}>
-                        {replacementOptions.map((m) => (
-                          <SelectItem key={m.name} value={m.name}>
-                            <span className="font-mono text-xs">{m.name}</span>
-                            {m.retiresOn && (
-                              <span className="ml-2 text-xs text-foreground-muted">
-                                {labels.deprecated}
-                              </span>
-                            )}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p
-                      className={cn(
-                        'text-xs',
-                        replacement?.retiresOn ? 'text-warning' : 'text-foreground-muted'
-                      )}
-                    >
-                      {replacement?.retiresOn
-                        ? labels.retiresOn(replacement.retiresOn)
-                        : labels.replacementHint}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-1.5">
-                    <Input
-                      aria-label={labels.nameStep}
-                      value={name}
-                      disabled={busy}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        setNameTouched(true);
-                        setTest({ status: 'idle' });
-                      }}
-                      aria-invalid={Boolean(nameProblem)}
-                    />
-                    <p
-                      className={cn(
-                        'text-xs',
-                        nameProblem ? 'text-error' : 'text-foreground-muted'
-                      )}
-                    >
-                      {nameProblem ?? labels.nameHint}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </Step>
-
-            <Step
-              n={5}
-              title={labels.apiTypeStep}
-              done={readyToSave}
-              disabled={!hasModel || !nameReady}
-            >
-              <div className="flex flex-col gap-1.5">
-                <Select
-                  value={apiTypeReady ? apiType : ''}
-                  onValueChange={(v) => {
-                    setApiType(v);
-                    setTest({ status: 'idle' });
-                  }}
-                  disabled={busy || apiTypeOptions.length === 0}
-                >
-                  <SelectTrigger className="w-full" aria-label={labels.apiTypeStep}>
-                    <SelectValue placeholder={labels.apiTypePlaceholder} />
-                  </SelectTrigger>
-                  <SelectContent container={container}>
-                    {apiTypeOptions.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-foreground-muted">
-                  {hasModel && nameReady && apiTypeOptions.length === 0
-                    ? labels.apiTypeNone(providerName)
-                    : labels.apiTypeHint}
-                </p>
-              </div>
-            </Step>
           </>
         )}
       </div>
 
       {failure && (
         <div className="max-h-[40%] shrink-0 overflow-y-auto border-t border-border-subtle px-6 py-3">
-          <FailureAlert failure={failure} labels={labels} />
+          <FailureAlert
+            failure={failure}
+            labels={labels}
+            onDismiss={() => setDismissedFailure(failure)}
+          />
         </div>
       )}
 
@@ -1218,10 +1147,31 @@ function Field({ id, label, hint, required, children }: FieldProps) {
 }
 
 /** What failed, with the raw response one click away (or the message, when there is none). */
-function FailureAlert({ failure, labels }: { failure: ByoFailure; labels: ByoModelDialogLabels }) {
+function FailureAlert({
+  failure,
+  labels,
+  onDismiss,
+}: {
+  failure: ByoFailure;
+  labels: ByoModelDialogLabels;
+  onDismiss?: () => void;
+}) {
   const [showRaw, setShowRaw] = React.useState(false);
   return (
-    <Alert variant="destructive" className="min-w-0">
+    <Alert variant="destructive" className={cn('min-w-0', onDismiss && 'pr-9')}>
+      {/* Ahead of the icon, so the alert's indent for what follows its icon does not apply. */}
+      {onDismiss && (
+        <Button
+          variant="ghost"
+          size="3xs"
+          icon
+          className="absolute top-2 right-2"
+          aria-label={labels.dismiss}
+          onClick={onDismiss}
+        >
+          <X />
+        </Button>
+      )}
       <AlertCircle />
       <AlertTitle>{failure.title}</AlertTitle>
       {failure.detail && (
