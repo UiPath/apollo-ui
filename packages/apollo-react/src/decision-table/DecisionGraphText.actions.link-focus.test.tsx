@@ -89,9 +89,11 @@ const setup = () => {
           onReveal: () => {},
           edit: { actions, wordRefusal: (refusal) => refusal },
         }}
-        renderBody={(decisionId) =>
-          decisionId === 'a' && showLink ? <div data-testid="body-a">{linkToX}</div> : null
-        }
+        renderBody={(decisionId) => ({
+          kind: 'other',
+          content:
+            decisionId === 'a' && showLink ? <div data-testid="body-a">{linkToX}</div> : null,
+        })}
         expansion={{ expanded, onChange: setExpanded }}
         dataTestId="graph"
       />

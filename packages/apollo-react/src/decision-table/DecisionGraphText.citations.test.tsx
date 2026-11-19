@@ -17,10 +17,12 @@ const firstLabel = () => {
   return node?.kind === 'decision' ? node.label : '';
 };
 
-const graph = (props: Partial<DecisionGraphTextProps<never, never>> = {}) => (
+const graph = (
+  props: Partial<DecisionGraphTextProps<never, never, never, never, never, never, never>> = {}
+) => (
   <DecisionGraphText
     nodes={SHARED_DEPENDENCY.nodes}
-    renderBody={() => null}
+    renderBody={() => ({ kind: 'other', content: null })}
     mode={{ kind: 'read', selected: null }}
     dataTestId="graph"
     {...props}

@@ -71,7 +71,10 @@ describe('focus when a focused rule in a graph body is deleted', () => {
             onReveal: () => {},
             edit: { actions: [], wordRefusal: (r: string) => r },
           }}
-          renderBody={() => (lifted ? <Table rows={rows} /> : <Body />)}
+          renderBody={() => ({
+            kind: 'other',
+            content: lifted ? <Table rows={rows} /> : <Body />,
+          })}
           dataTestId="graph"
         />
       );

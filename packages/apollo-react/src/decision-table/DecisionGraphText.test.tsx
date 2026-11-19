@@ -18,12 +18,16 @@ import {
   COLUMN_TYPES,
   wordRefusal,
 } from './__fixtures__/sentences.fixtures';
-import { type FixtureEdit, modeOf, outcomeField } from './__fixtures__/textMode';
-import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
-import { DecisionText } from './DecisionText';
+import {
+  type FixtureEdit,
+  type FixtureGraphBody,
+  type FixtureGraphProps,
+  modeOf,
+  outcomeField,
+} from './__fixtures__/textMode';
+import { DecisionGraphText } from './DecisionGraphText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
 import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
-import type { DecisionTextScroll } from './useRuleWindow';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
@@ -32,33 +36,30 @@ const RULES = wordedRules(TABLE);
 
 const textBody = (
   decisionId: string,
-  scroll: DecisionTextScroll,
   selected: SentenceSelection | null = null,
   onSelect?: (selection: SentenceSelection | null) => void,
   edit?: FixtureEdit
-) => (
-  <DecisionText
-    table={{ rules: RULES, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
-    hitPolicies={HIT_POLICIES}
-    columnTypes={COLUMN_TYPES}
-    ariaLabel={`Rules of ${decisionId}`}
-    dataTestId={`text-${decisionId}`}
-    scroll={scroll}
-    mode={modeOf({ selected, onSelect, edit })}
-  />
-);
+): FixtureGraphBody => ({
+  kind: 'table',
+  text: {
+    table: { rules: RULES, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY },
+    hitPolicies: HIT_POLICIES,
+    columnTypes: COLUMN_TYPES,
+    ariaLabel: `Rules of ${decisionId}`,
+    dataTestId: `text-${decisionId}`,
+    mode: modeOf({ selected, onSelect, edit }),
+  },
+});
 
-const held = (
-  expanded: ReadonlySet<string>
-): DecisionGraphTextProps<never, never>['expansion'] => ({
+const held = (expanded: ReadonlySet<string>): FixtureGraphProps['expansion'] => ({
   expanded,
   onChange: () => {},
 });
 
-const graph = (props: Partial<DecisionGraphTextProps<never, never>> = {}) => (
+const graph = (props: Partial<FixtureGraphProps> = {}) => (
   <DecisionGraphText
     nodes={SHARED_DEPENDENCY.nodes}
-    renderBody={(id, scroll) => textBody(id, scroll)}
+    renderBody={(id) => textBody(id)}
     mode={{ kind: 'read', selected: null }}
     dataTestId="graph"
     {...props}
@@ -84,13 +85,8 @@ const SelectingHost = ({
   return (
     <DecisionGraphText
       nodes={nodes}
-      renderBody={(id, scroll) =>
-        textBody(
-          id,
-          scroll,
-          selected?.id === id ? { kind: 'rule', rowId: selected.rowId } : null,
-          () => {}
-        )
+      renderBody={(id) =>
+        textBody(id, selected?.id === id ? { kind: 'rule', rowId: selected.rowId } : null, () => {})
       }
       mode={{
         kind: 'select',
@@ -265,7 +261,7 @@ describe('DecisionGraphText', () => {
     render(
       graph({
         nodes: NOT_A_TABLE.nodes,
-        renderBody: (id) => <p>{String(NOT_A_TABLE.bodies[id])}</p>,
+        renderBody: (id) => ({ kind: 'other', content: <p>{String(NOT_A_TABLE.bodies[id])}</p> }),
       })
     );
     expect(screen.getByTestId('graph-hit-policy-offer')).toHaveTextContent('Unique');
@@ -306,7 +302,7 @@ describe('DecisionGraphText', () => {
             children: [],
           },
         ],
-        renderBody: () => null,
+        renderBody: () => ({ kind: 'other', content: null }),
         mode: { kind: 'select', selected: null, onReveal },
       })
     );
@@ -327,8 +323,8 @@ describe('DecisionGraphText', () => {
       return (
         <DecisionGraphText
           nodes={MARKED.nodes}
-          renderBody={(id, scroll) =>
-            textBody(id, scroll, shown?.id === id ? { kind: 'rule', rowId: shown.rowId } : null)
+          renderBody={(id) =>
+            textBody(id, shown?.id === id ? { kind: 'rule', rowId: shown.rowId } : null)
           }
           mode={{
             kind: 'select',
@@ -360,7 +356,7 @@ describe('DecisionGraphText', () => {
     const user = userEvent.setup();
     render(
       graph({
-        renderBody: () => <input aria-label="Inside" />,
+        renderBody: () => ({ kind: 'other', content: <input aria-label="Inside" /> }),
       })
     );
     await user.click(toggle('eligibility'));
@@ -379,7 +375,7 @@ describe('DecisionGraphText', () => {
           n ? [n] : []
         ),
         expansion: held(new Set(['pricing'])),
-        renderBody: () => <button type="button">Inside</button>,
+        renderBody: () => ({ kind: 'other', content: <button type="button">Inside</button> }),
       })
     );
     toggle('pricing').focus();
@@ -417,8 +413,8 @@ describe('DecisionGraphText', () => {
               onFold(decisionId);
               edit.onCancel?.();
             }}
-            renderBody={(id, scroll) =>
-              textBody(id, scroll, { kind: 'cell', rowId: 'r1', columnId: 'age' }, () => {}, edit)
+            renderBody={(id) =>
+              textBody(id, { kind: 'cell', rowId: 'r1', columnId: 'age' }, () => {}, edit)
             }
             dataTestId="graph"
           />
@@ -448,22 +444,18 @@ describe('DecisionGraphText', () => {
     const mount = document.createElement('div');
     shadow.append(mount);
     const root = createRoot(mount);
-    const given: { id: string; container: HTMLElement | null | undefined }[] = [];
     await act(async () =>
       root.render(
         graph({
           expansion: held(new Set(['risk'])),
-          renderBody: (id, scroll) => {
-            given.push({ id, container: scroll.container });
-            return textBody(id, scroll);
-          },
+          renderBody: (id) => textBody(id),
         })
       )
     );
     const scroller = shadow.querySelector('[data-testid="graph-scroller"]');
     expect(scroller).not.toBeNull();
-    expect(given).toEqual([{ id: 'risk', container: scroller }]);
-    expect(shadow.querySelector('[data-testid="text-risk"]')).not.toBeNull();
+    expect(shadow.querySelector('[data-testid="text-risk"]')).toHaveClass('relative');
+    expect(shadow.querySelector('[data-testid="text-risk"]')).not.toHaveClass('overflow-auto');
     const link = shadow.querySelector<HTMLElement>(
       '[data-testid="graph-reference-link-pricing-risk"]'
     );
@@ -517,21 +509,21 @@ describe('DecisionGraphText', () => {
         <DecisionGraphText
           nodes={nodes}
           expansion={held(new Set(ids))}
-          renderBody={(id, scroll) => (
-            <DecisionText
-              table={{ rules: rules, ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
-              hitPolicies={HIT_POLICIES}
-              columnTypes={COLUMN_TYPES}
-              ariaLabel={`Rules of ${id}`}
-              dataTestId={`text-${id}`}
-              scroll={scroll}
-              mode={{
+          renderBody={(id) => ({
+            kind: 'table',
+            text: {
+              table: { rules: rules, ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY },
+              hitPolicies: HIT_POLICIES,
+              columnTypes: COLUMN_TYPES,
+              ariaLabel: `Rules of ${id}`,
+              dataTestId: `text-${id}`,
+              mode: {
                 kind: 'select',
                 selected: selected?.id === id ? { kind: 'rule', rowId: selected.rowId } : null,
                 onSelect: () => {},
-              }}
-            />
-          )}
+              },
+            },
+          })}
           mode={{
             kind: 'select',
             selected: selected?.id ?? null,
@@ -597,8 +589,8 @@ describe('DecisionGraphText open', () => {
       graph({
         expansion: held(new Set(['risk'])),
         onOpenDecision,
-        renderBody: (id, scroll) =>
-          textBody(id, scroll, null, () => {}, {
+        renderBody: (id) =>
+          textBody(id, null, () => {}, {
             onCommit: () => undefined,
             onClearCell: () => {},
             onDeleteRule: () => {},

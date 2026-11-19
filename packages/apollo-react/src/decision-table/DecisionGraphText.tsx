@@ -11,6 +11,7 @@ import {
   DecisionGraphMinimapSlot,
   type DecisionGraphMinimapSlotProps,
 } from './DecisionGraphMinimapSlot';
+import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { DecisionGraphMode } from './decisionGraphActionTypes';
 import {
   childPositionsOf,
@@ -44,22 +45,31 @@ import { SENTENCE_MIN_RULE_HEIGHT_PX } from './sentenceRuleHeights';
 import { useDecisionGraphActions } from './useDecisionGraphActions';
 import { useDecisionGraphLabels } from './useDecisionGraphStrings';
 import { useDecisionTextLabels } from './useDecisionTextStrings';
-import type { DecisionTextScroll } from './useRuleWindow';
 import { useTextAnnouncements } from './useTextAnnouncements';
 
 const NO_CITATIONS: DecisionGraphCitations = { kind: 'none' };
 
-export interface DecisionGraphTextProps<Refusal, Logic> {
+/** An open decision's body: its table, shown as a `DecisionText` in the graph's scroll container with its links revealing decisions in the graph, or the host's own content for logic that is not a table. */
+export type DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> =
+  | {
+      kind: 'table';
+      text: Omit<
+        DecisionTextProps<Op, Policy, Total, Type, TextRefusal>,
+        'scroll' | 'onOpenDecision'
+      >;
+    }
+  | { kind: 'other'; content: React.ReactNode };
+
+export interface DecisionGraphTextProps<Refusal, Logic, Op, Policy, Total, Type, TextRefusal> {
   /** The decisions in reading order, each with the decisions it requires as children; one already drawn is a reference. */
   nodes: readonly DecisionGraphNode[];
   /** Read only with the host's selected decision; `select` also tells the host what the view brought into view; `edit` adds the host's actions on the decisions, each shown in the cards' menus and keys only when listed. */
   mode: DecisionGraphMode<Refusal, Logic>;
-  /** The body of an open decision: its `DecisionText` given `scroll`, the graph's own scroll container, or whatever stands for logic that is not a table; `context.revealDecision` takes a link to another decision there in place. */
+  /** The body of an open decision, its table in any `DecisionText` mode; `context.revealDecision` takes a link to another decision in other content in place. */
   renderBody: (
     decisionId: string,
-    scroll: Exclude<DecisionTextScroll, 'self'>,
     context: DecisionGraphBodyContext
-  ) => React.ReactNode;
+  ) => DecisionGraphBody<Op, Policy, Total, Type, TextRefusal>;
   /** Where each decision was read from, on its heading and opened by the host; none when omitted. */
   citations?: DecisionGraphCitations;
   /** The view folded this decision, unmounting its body: close what the host had open in it, such as its editor. */
@@ -168,7 +178,7 @@ const perRuleHeightOf = (
 };
 
 /** A decision graph as text: one folding card per decision in the order given, the decisions it requires nested under it. */
-export const DecisionGraphText = <Refusal, Logic>({
+export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextRefusal>({
   nodes,
   mode,
   renderBody,
@@ -178,7 +188,15 @@ export const DecisionGraphText = <Refusal, Logic>({
   onOpenDecision,
   rules,
   dataTestId,
-}: DecisionGraphTextProps<Refusal, Logic>): React.ReactElement => {
+}: DecisionGraphTextProps<
+  Refusal,
+  Logic,
+  Op,
+  Policy,
+  Total,
+  Type,
+  TextRefusal
+>): React.ReactElement => {
   const labels = useDecisionGraphLabels();
   const { selected } = mode;
   const { announce, region } = useTextAnnouncements(useDecisionTextLabels(), dataTestId);
@@ -315,7 +333,18 @@ export const DecisionGraphText = <Refusal, Logic>({
       decisionId === selected ||
       decisionId === revealed ||
       decisionId === focused;
-    if (mounted) return renderBody(decisionId, { container: scrollContainer }, bodyContext);
+    if (mounted) {
+      const body = renderBody(decisionId, bodyContext);
+      return body.kind === 'table' ? (
+        <DecisionText
+          {...body.text}
+          scroll={{ container: scrollContainer }}
+          onOpenDecision={bodyContext.revealDecision}
+        />
+      ) : (
+        body.content
+      );
+    }
     const height =
       heightsRef.current.get(decisionId) ??
       Math.max(1, ruleCounts.get(decisionId) ?? 1) * perRuleHeight;
