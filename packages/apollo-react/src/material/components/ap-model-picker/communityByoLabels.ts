@@ -137,6 +137,50 @@ const M = {
     id: 'modelPicker.community.nameTaken',
     message: '"{name}" is already in your model list. Pick another name.',
   }),
+  nameReserved: msg({
+    id: 'modelPicker.community.nameReserved',
+    message: '"{name}" is the name of a UiPath model. Pick another name.',
+  }),
+  useOwnName: msg({
+    id: 'modelPicker.community.useOwnName',
+    message: 'A name of your own',
+  }),
+  useReplacement: msg({
+    id: 'modelPicker.community.useReplacement',
+    message: 'Replace a UiPath model',
+  }),
+  replacementPlaceholder: msg({
+    id: 'modelPicker.community.replacementPlaceholder',
+    message: 'Select a UiPath model',
+  }),
+  replacementHint: msg({
+    id: 'modelPicker.community.replacementHint',
+    message: 'Calls to this UiPath model go to your model instead.',
+  }),
+  deprecated: msg({
+    id: 'modelPicker.community.deprecated',
+    message: 'Deprecated',
+  }),
+  retiresOn: msg({
+    id: 'modelPicker.community.retiresOn',
+    message: 'To be retired on {date}',
+  }),
+  apiTypeStep: msg({
+    id: 'modelPicker.community.apiTypeStep',
+    message: 'API type',
+  }),
+  apiTypePlaceholder: msg({
+    id: 'modelPicker.community.apiTypePlaceholder',
+    message: 'Select an API type',
+  }),
+  apiTypeHint: msg({
+    id: 'modelPicker.community.apiTypeHint',
+    message: 'The API endpoint supported by the LLM.',
+  }),
+  apiTypeNone: msg({
+    id: 'modelPicker.community.apiTypeNone',
+    message: '{provider} offers no API type that can serve this model.',
+  }),
   showResponse: msg({ id: 'modelPicker.community.showResponse', message: 'Show LLM response' }),
   hideResponse: msg({ id: 'modelPicker.community.hideResponse', message: 'Hide LLM response' }),
   close: msg({ id: 'modelPicker.community.close', message: 'Close' }),
@@ -166,6 +210,13 @@ export function communitySavedMessage(
   edited: boolean
 ): string {
   return _({ ...(edited ? SAVED.edited : SAVED.added), values: { name } });
+}
+
+/** A `YYYY-MM-DD` day in the reader's own date format; any other text as given. */
+function formatDay(day: string): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return day;
+  return date.toLocaleDateString(undefined, { timeZone: 'UTC', dateStyle: 'medium' });
 }
 
 /** The Community dialog's strings, resolved through the picker's translator. */
@@ -220,6 +271,17 @@ export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLa
     nameStep: t(M.nameStep),
     nameHint: t(M.nameHint),
     nameTaken: (name) => t(M.nameTaken, { name }),
+    nameReserved: (name) => t(M.nameReserved, { name }),
+    useOwnName: t(M.useOwnName),
+    useReplacement: t(M.useReplacement),
+    replacementPlaceholder: t(M.replacementPlaceholder),
+    replacementHint: t(M.replacementHint),
+    deprecated: t(M.deprecated),
+    retiresOn: (date) => t(M.retiresOn, { date: formatDay(date) }),
+    apiTypeStep: t(M.apiTypeStep),
+    apiTypePlaceholder: t(M.apiTypePlaceholder),
+    apiTypeHint: t(M.apiTypeHint),
+    apiTypeNone: (provider) => t(M.apiTypeNone, { provider }),
     showResponse: t(M.showResponse),
     hideResponse: t(M.hideResponse),
     close: t(M.close),

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createCommunityByoApi } from './communityByoApi';
+import { COMMUNITY_BYO_PROVIDERS, createCommunityByoApi } from './communityByoApi';
 import type { PlatformRequestContext } from './usePlatformAccess';
 
 const CTX: PlatformRequestContext = {
@@ -67,51 +67,91 @@ const noSleep = () => Promise.resolve();
 const api = (overrides: Partial<Parameters<typeof createCommunityByoApi>[1]> = {}) =>
   createCommunityByoApi(CTX, { takenModelNames: () => ['gpt-4o'], sleep: noSleep, ...overrides });
 
-const AZURE_DEFINITION = {
-  configuration: [
-    {
-      key: 'authentication.type',
-      type: 'COMBO',
-      defaultValue: 'customApiKey',
-      options: [{ value: 'customApiKey' }, { value: 'oauth2ClientCredentials' }],
+const FEATURE_PROBES = [
+  'OpenAiResponses',
+  'OpenAiChatCompletions',
+  'AwsBedrockInvoke',
+  'AwsBedrockConverse',
+  'AnthropicMessages',
+  'GeminiGenerateContent',
+].map((apiFlavor) => ({ apiFlavor, probeId: `${apiFlavor}-probe` }));
+
+/** The gateway's BYO rules for agents' design-eval-deploy, shaped like alpha's. */
+const featureWith = (overrides: Record<string, unknown> = {}) => ({
+  agents: {
+    'agents-design-eval-deploy': {
+      modelsConfigurationOption: 'AnyModelWithOwnAdditions',
+      models: [
+        { model: 'gpt-4o-2024-05-13', usageEndDate: '2026-09-23' },
+        { model: 'gpt-4.1-2025-04-14', usageEndDate: 'N/A' },
+        { model: 'gpt-5-2025-08-07', usageEndDate: 'N/A' },
+        { model: 'anthropic.claude-sonnet-4-6', usageEndDate: 'N/A' },
+      ],
+      probes: FEATURE_PROBES,
+      ...overrides,
     },
-    {
-      key: 'api-key',
-      name: 'API key',
-      type: 'PASSWORD',
-      required: true,
-      configScreenType: 'pre',
-      displayOrder: 1,
-      groupBy: 'customApiKey',
-      hintText: 'Key 1 <i>or</i> Key&nbsp;2<br>from the portal',
-    },
-    {
-      key: 'url',
-      name: 'Url',
-      type: 'TEXTFIELD_1000',
-      required: false,
-      configScreenType: 'pre-optional',
-      displayOrder: 0,
-      groupBy: '',
-    },
-    {
-      key: 'apiVersion',
-      name: 'API version',
-      type: 'TEXTFIELD_1000',
-      configScreenType: 'pre-optional',
-      displayOrder: 2,
-      defaultValue: '2023-10-01-preview',
-      groupBy: '',
-    },
-    {
-      key: 'subdomain',
-      name: 'Azure OpenAI resource',
-      configScreenType: 'none',
-      hideFromConsole: true,
-    },
-    { key: 'internal', name: 'Internal', configScreenType: '' },
-  ],
-};
+  },
+});
+
+/** Routes the gateway reads `loadContext` makes besides folders and connections. */
+const routeGatewayRules = (products: unknown = featureWith()) =>
+  routes.push(
+    on('GET', `${GATEWAY}/api/byom/products`, () => ({ body: products })),
+    on('GET', `${GATEWAY}/api/byom/vendors/llms`, () => ({
+      body: {
+        AzureOpenAi: ['gpt-4o-2024-05-13', 'gpt-4.1-2025-04-14', 'gpt-5-2025-08-07'],
+        AwsBedrock: ['anthropic.claude-sonnet-4-6'],
+        GoogleVertex: ['gemini-2.5-flash'],
+      },
+    })),
+    on('GET', `${GATEWAY}/api/byom/vendors/llms/api-flavors`, () => ({
+      body: {
+        'gpt-4o-2024-05-13': ['OpenAiChatCompletions'],
+        'gpt-4.1-2025-04-14': ['OpenAiResponses', 'OpenAiChatCompletions'],
+        'gpt-5-2025-08-07': ['OpenAiResponses', 'OpenAiChatCompletions'],
+        'anthropic.claude-sonnet-4-6': [
+          'AwsBedrockInvoke',
+          'AwsBedrockConverse',
+          'AnthropicMessages',
+        ],
+        'gemini-2.5-flash': ['GeminiGenerateContent'],
+      },
+    })),
+    on('GET', `${GATEWAY}/api/byo/product/llm-configurations`, () => ({
+      body: [
+        {
+          product: 'agents',
+          operationGroupName: 'agents-design-eval-deploy',
+          llmConfigurations: [{ desiredModel: 'gpt-5-2025-08-07' }, { desiredModel: 'my-claude' }],
+        },
+        // Another feature's replacement does not take this feature's model.
+        {
+          product: 'agents',
+          operationGroupName: 'agents-autopilot',
+          llmConfigurations: [{ desiredModel: 'gpt-4.1-2025-04-14' }],
+        },
+      ],
+    }))
+  );
+
+/** Routes an empty folder and connection list, for tests about the gateway rules. */
+const routeNoFoldersOrConnections = () =>
+  routes.push(
+    on(
+      'GET',
+      `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`,
+      () => ({
+        body: { PageItems: [{ Key: 'me', DisplayName: 'My Workspace', IsPersonal: true }] },
+      })
+    ),
+    on(
+      'GET',
+      `${TENANT}/connections_/api/v1/Connections?allFolders=true&folderDefaults=true`,
+      () => ({
+        body: [],
+      })
+    )
+  );
 
 /** Routes the calls that create the connection `conn-1` through a provisioning session. */
 const routeNewConnection = () =>
@@ -147,13 +187,8 @@ const connectNewConnection = async (client: ReturnType<typeof api>) => {
 };
 
 describe('createCommunityByoApi', () => {
-  it('builds the form from the connector definition', async () => {
-    routes.push(
-      on('GET', `${TENANT}/elements_/v3/element/elements/uipath-microsoft-azureopenai`, () => ({
-        body: AZURE_DEFINITION,
-      }))
-    );
-
+  it("declares each provider's form, without reading it from Integration Service", async () => {
+    // No route is registered, so any call would fail the test.
     const result = await api().loadForm('azure-openai', null);
 
     expect(result.ok).toBe(true);
@@ -164,59 +199,56 @@ describe('createCommunityByoApi', () => {
     ]);
     expect(result.value.defaultAuthType).toBe('customApiKey');
     expect(
-      result.value.fields.map((f) => [f.key, f.label, f.required, f.advanced, f.group])
+      result.value.fields.map((f) => [f.key, f.required, f.advanced, f.group, f.secret])
     ).toEqual([
-      ['url', 'Endpoint', false, false, null],
-      ['api-key', 'API key', true, false, 'customApiKey'],
-      ['apiVersion', 'API version', false, true, null],
+      ['url', true, false, null, false],
+      ['api-key', true, false, 'customApiKey', true],
+      ['oauth.api.key', true, false, 'oauth2ClientCredentials', false],
+      ['oauth.api.secret', true, false, 'oauth2ClientCredentials', true],
+      ['tenantID', true, false, 'oauth2ClientCredentials', false],
+      ['api-version', false, true, null, false],
     ]);
-    expect(result.value.fields[1]?.secret).toBe(true);
-    expect(result.value.fields[1]?.hint).toBe('Key 1 or Key 2 from the portal');
-    expect(result.value.fields[2]?.defaultValue).toBe('2023-10-01-preview');
+    expect(result.value.fields[5]?.defaultValue).toBe('2023-10-01-preview');
   });
 
-  it.each([
-    [
-      'one authentication type',
-      [
-        {
-          key: 'authentication.type',
-          type: 'COMBO',
-          defaultValue: 'apiKey',
-          options: [{ value: 'apiKey' }],
-        },
-      ],
-      'apiKey',
-    ],
-    ['no authentication type', [], null],
-  ])('shows the grouped credentials of a connector with %s', async (_, auth, defaultAuthType) => {
-    routes.push(
-      on('GET', `${TENANT}/elements_/v3/element/elements/uipath-openai-openai`, () => ({
-        body: {
-          configuration: [
-            ...auth,
-            {
-              key: 'apikey',
-              name: 'API key',
-              type: 'PASSWORD',
-              required: true,
-              configScreenType: 'pre',
-              groupBy: 'apiKey',
-            },
-          ],
-        },
-      }))
-    );
-
-    const result = await api().loadForm('openai', null);
+  it("asks for Bedrock's region from a list and the credentials of the chosen authentication type", async () => {
+    const result = await api().loadForm('bedrock', null);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.defaultAuthType).toBe(defaultAuthType);
-    const key = result.value.fields.find((f) => f.key === 'apikey');
-    // The field is shown for the auth type in effect, so its required value is asked for.
-    expect(key?.required).toBe(true);
-    expect(key?.group === null || key?.group === result.value.defaultAuthType).toBe(true);
+    const { authTypes, fields } = result.value;
+    expect(authTypes.map((t) => t.value)).toEqual(['accessKey', 'assumeRole']);
+    const region = fields.find((f) => f.key === 'aws.region');
+    expect(region).toMatchObject({ required: true, advanced: false, group: null });
+    const regions = region?.options?.map((o) => o.value) ?? [];
+    expect(regions).toContain('us-east-1');
+    expect(regions).toContain('eu-central-1');
+    // The gateway's bedrock-runtime.{region}.amazonaws.com does not exist there.
+    expect(regions.filter((r) => /^(cn|us-gov|us-iso)/.test(r))).toEqual([]);
+    const shown = (authType: string) =>
+      fields.filter((f) => f.group === authType && f.required).map((f) => f.key);
+    expect(shown('accessKey')).toEqual(['aws.api.key', 'aws.api.secret']);
+    expect(shown('assumeRole')).toEqual([
+      'assume.role.aws.api.key',
+      'assume.role.aws.api.secret',
+      'assume.role.aws.iam.role',
+    ]);
+  });
+
+  it.each(
+    COMMUNITY_BYO_PROVIDERS.map((p) => [p.name, p] as const)
+  )('declares a consistent form for %s', (_, provider) => {
+    const { authTypes, defaultAuthType, fields } = provider.form;
+    const types = authTypes.map((t) => t.value);
+    expect(defaultAuthType === null).toBe(types.length === 0);
+    if (defaultAuthType !== null) expect(types).toContain(defaultAuthType);
+    for (const f of fields) {
+      if (f.group !== null) expect(types).toContain(f.group);
+      // "More settings" holds optional fields only.
+      if (f.advanced) expect(f.required).toBe(false);
+    }
+    const keys = fields.map((f) => f.key);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   it('creates the connection from the defaults, the session configs and what the user entered', async () => {
@@ -486,7 +518,10 @@ describe('createCommunityByoApi', () => {
       }),
       on('POST', `${GATEWAY}/api/byo/product/llm-configurations`, () => ({ body: { id: 'cfg' } }))
     );
+    routeGatewayRules();
+    routeNoFoldersOrConnections();
     const client = api();
+    expect((await client.loadContext()).ok).toBe(true);
     const connection = await connectNewConnection(client);
 
     const result = await client.testAndSave({
@@ -494,13 +529,17 @@ describe('createCommunityByoApi', () => {
       connection,
       modelId: 'gpt-4o',
       name: 'my-gpt',
+      replaces: null,
+      apiType: 'OpenAiResponses',
     });
 
     expect(result.ok).toBe(true);
     expect(validations).toBe(3);
     const validate = calls.find((c) => c.url.endsWith('/validate'));
     expect(validate?.headers['X-UiPath-LlmGateway-ByoConfigMode']).toBe('add');
-    const save = calls.find((c) => c.url === `${GATEWAY}/api/byo/product/llm-configurations`);
+    const save = calls.find(
+      (c) => c.method === 'POST' && c.url === `${GATEWAY}/api/byo/product/llm-configurations`
+    );
     expect(save?.body).toMatchObject({
       enabled: true,
       operationGroupName: 'agents-design-eval-deploy',
@@ -511,9 +550,12 @@ describe('createCommunityByoApi', () => {
       llmConfigurations: [
         {
           desiredModel: 'my-gpt',
+          defaultModel: 'my-gpt',
           customerModel: 'gpt-4o',
           connectorType: 'OpenAi',
           connectionId: 'conn-1',
+          apiFlavor: 'OpenAiResponses',
+          configurationType: 'SelfServe',
           customFieldMappings: { a: 'b' },
         },
       ],
@@ -539,6 +581,8 @@ describe('createCommunityByoApi', () => {
       connection: { id: 'old', providerId: 'openai', name: 'n', folderId: 'f' },
       modelId: 'gpt-4o',
       name: 'x',
+      replaces: null,
+      apiType: 'OpenAiResponses',
     });
 
     expect(result.ok).toBe(false);
@@ -580,10 +624,24 @@ describe('createCommunityByoApi', () => {
               connector: { key: 'uipath-salesforce-slack' },
               folder: { key: 'me' },
             },
+            // AI Trust Layer reaches Bedrock through Amazon Web Services, never this connector.
+            {
+              id: 'c3',
+              name: 'Old Bedrock',
+              connector: { key: 'uipath-aws-bedrock' },
+              folder: { key: 'me' },
+            },
+            {
+              id: 'c4',
+              name: 'My AWS',
+              connector: { key: 'uipath-amazon-webservices' },
+              folder: { key: 'me' },
+            },
           ],
         })
       )
     );
+    routeGatewayRules();
 
     const result = await api().loadContext();
 
@@ -596,27 +654,14 @@ describe('createCommunityByoApi', () => {
     expect(result.value.defaultFolderId).toBe('me');
     expect(result.value.connections).toEqual([
       { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'me' },
+      { id: 'c4', providerId: 'bedrock', name: 'My AWS', folderId: 'me' },
     ]);
-    expect(result.value.takenModelNames).toEqual(['gpt-4o']);
+    expect(result.value.takenModelNames).toEqual(['gpt-4o', 'gpt-5-2025-08-07', 'my-claude']);
   });
 
   it('edits a saved connection through its own session, keeping a secret left blank', async () => {
     let sessions = 0;
     routes.push(
-      on('GET', `${TENANT}/elements_/v3/element/elements/uipath-openai-openaiv1compliant`, () => ({
-        body: {
-          configuration: [
-            { key: 'url', name: 'Url', required: true, configScreenType: 'pre' },
-            {
-              key: 'apikey',
-              name: 'Key',
-              type: 'PASSWORD',
-              required: true,
-              configScreenType: 'pre',
-            },
-          ],
-        },
-      })),
       on('POST', `${TENANT}/connections_/api/v1/Connections/conn-1/auth`, () => {
         sessions += 1;
         return { body: { sessionId: 'sid-edit', expiresAt: Date.now() + 600_000 } };
@@ -717,6 +762,8 @@ describe('createCommunityByoApi', () => {
         connectionId: 'conn-1',
         modelId: 'gpt-4o',
         name: 'my-gpt',
+        replaces: null,
+        apiType: null,
       },
     });
     if (!editing.ok) return;
@@ -726,6 +773,8 @@ describe('createCommunityByoApi', () => {
       connection: { id: 'conn-2', providerId: 'openai', name: 'n', folderId: 'me' },
       modelId: 'gpt-5.1',
       name: 'renamed',
+      replaces: null,
+      apiType: 'OpenAiChatCompletions',
       editing: editing.value,
     });
 
@@ -743,9 +792,12 @@ describe('createCommunityByoApi', () => {
         {
           id: 'e1',
           desiredModel: 'renamed',
+          defaultModel: 'renamed',
           customerModel: 'gpt-5.1',
           connectorType: 'OpenAi',
           connectionId: 'conn-2',
+          apiFlavor: 'OpenAiChatCompletions',
+          configurationType: 'SelfServe',
           organizationId: 'org-guid',
           tenantId: 'tenant-guid',
           customFieldMappings: null,
@@ -756,5 +808,178 @@ describe('createCommunityByoApi', () => {
     expect(
       calls.filter((c) => c.method === 'POST' && c.url.endsWith('/llm-configurations'))
     ).toHaveLength(0);
+  });
+  describe('replacing UiPath models and API types, as AI Trust Layer offers them', () => {
+    const loaded = async (products?: unknown) => {
+      routeGatewayRules(products);
+      routeNoFoldersOrConnections();
+      const client = api();
+      const context = await client.loadContext();
+      return { client, context };
+    };
+
+    it('lists the feature models, marking those this feature replaced and retiring ones last', async () => {
+      const { context } = await loaded();
+
+      expect(context.ok).toBe(true);
+      if (!context.ok) return;
+      expect(context.value.replaceableModels).toEqual([
+        { name: 'gpt-4.1-2025-04-14', replaced: false },
+        { name: 'gpt-5-2025-08-07', replaced: true },
+        { name: 'anthropic.claude-sonnet-4-6', replaced: false },
+        { name: 'gpt-4o-2024-05-13', retiresOn: '2026-09-23', replaced: false },
+      ]);
+      expect(context.value.allowsNewNames).toBe(true);
+      expect(context.value.reservedModelNames).toEqual([
+        'gpt-4o-2024-05-13',
+        'gpt-4.1-2025-04-14',
+        'gpt-5-2025-08-07',
+        'anthropic.claude-sonnet-4-6',
+        'gemini-2.5-flash',
+      ]);
+    });
+
+    it('offers the probes the provider carries for a name of your own, Chat Completions last', async () => {
+      const { client } = await loaded();
+      const values = (providerId: string) => client.apiTypes(providerId, null).map((t) => t.value);
+
+      expect(client.apiTypes('openai', null)).toEqual([
+        { value: 'OpenAiResponses', label: 'OpenAI Responses' },
+        { value: 'OpenAiChatCompletions', label: 'OpenAI Chat Completions' },
+      ]);
+      expect(values('bedrock')).toEqual(['AwsBedrockInvoke', 'AwsBedrockConverse']);
+      expect(values('anthropic')).toEqual(['AnthropicMessages']);
+      expect(values('vertex')).toEqual(['GeminiGenerateContent']);
+    });
+
+    it("narrows a replacement to what the UiPath model supports and its provider's connector carries", async () => {
+      const { client } = await loaded();
+      const values = (providerId: string, replaces: string) =>
+        client.apiTypes(providerId, replaces).map((t) => t.value);
+
+      expect(values('openai', 'gpt-4.1-2025-04-14')).toEqual([
+        'OpenAiResponses',
+        'OpenAiChatCompletions',
+      ]);
+      expect(values('azure-openai', 'gpt-4o-2024-05-13')).toEqual(['OpenAiChatCompletions']);
+      expect(values('bedrock', 'anthropic.claude-sonnet-4-6')).toEqual([
+        'AwsBedrockInvoke',
+        'AwsBedrockConverse',
+      ]);
+      expect(values('anthropic', 'anthropic.claude-sonnet-4-6')).toEqual(['AnthropicMessages']);
+      // Chat Completions for Claude would need a custom AI gateway connector.
+      expect(values('openai', 'anthropic.claude-sonnet-4-6')).toEqual([]);
+    });
+
+    it("prefers the UiPath model's own probes over the feature's", async () => {
+      const { client } = await loaded(
+        featureWith({
+          models: [
+            {
+              model: 'gpt-4.1-2025-04-14',
+              probes: [{ apiFlavor: 'OpenAiChatCompletions', probeId: 'chat' }],
+            },
+          ],
+        })
+      );
+
+      expect(client.apiTypes('openai', 'gpt-4.1-2025-04-14').map((t) => t.value)).toEqual([
+        'OpenAiChatCompletions',
+      ]);
+    });
+
+    it('serves a replacement only through its own vendor when the feature takes no names of your own', async () => {
+      const { client, context } = await loaded(
+        featureWith({ modelsConfigurationOption: 'AnyModel' })
+      );
+
+      expect(context.ok && context.value.allowsNewNames).toBe(false);
+      expect(client.apiTypes('azure-openai', 'gpt-4.1-2025-04-14').length).toBeGreaterThan(0);
+      expect(client.apiTypes('anthropic', 'anthropic.claude-sonnet-4-6')).toEqual([]);
+      expect(client.apiTypes('bedrock', 'anthropic.claude-sonnet-4-6').length).toBeGreaterThan(0);
+    });
+
+    it('refuses a feature whose models are configured together, or one that takes no own models', async () => {
+      const all = await loaded(featureWith({ modelsConfigurationOption: 'AllModels' }));
+      expect(all.context.ok).toBe(false);
+      routes = [];
+      const none = await loaded({ agents: {} });
+      expect(none.context.ok).toBe(false);
+      expect(!none.context.ok && none.context.failure.title).toBe(
+        'This feature does not take models of your own'
+      );
+    });
+
+    it('saves a replacement under the UiPath model name, tested in replace mode', async () => {
+      const { client } = await loaded();
+      routes.push(
+        on('POST', `${GATEWAY}/api/byo/product/llm-configurations/validate`, () => ({
+          body: { 'gpt-4.1-2025-04-14': { isAvailable: true, isCompatible: true } },
+        })),
+        on('POST', `${GATEWAY}/api/byo/product/llm-configurations`, () => ({ body: {} }))
+      );
+
+      const result = await client.testAndSave({
+        providerId: 'azure-openai',
+        connection: { id: 'conn-9', providerId: 'azure-openai', name: 'n', folderId: 'me' },
+        modelId: 'my-deployment',
+        name: 'gpt-4.1-2025-04-14',
+        replaces: 'gpt-4.1-2025-04-14',
+        apiType: 'OpenAiResponses',
+      });
+
+      expect(result.ok).toBe(true);
+      const validate = calls.find((c) => c.url.endsWith('/validate'));
+      expect(validate?.headers['X-UiPath-LlmGateway-ByoConfigMode']).toBe('replace');
+      const save = calls.find(
+        (c) => c.method === 'POST' && c.url === `${GATEWAY}/api/byo/product/llm-configurations`
+      );
+      expect(save?.body).toMatchObject({
+        llmConfigurations: [
+          {
+            desiredModel: 'gpt-4.1-2025-04-14',
+            defaultModel: 'gpt-4.1-2025-04-14',
+            customerModel: 'my-deployment',
+            connectorType: 'AzureOpenAi',
+            apiFlavor: 'OpenAiResponses',
+            configurationType: 'SelfServe',
+          },
+        ],
+      });
+    });
+
+    it('reads a saved replacement back as one, with its API type', async () => {
+      const { client } = await loaded();
+      routes.push(
+        on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-r`, () => ({
+          body: {
+            id: 'cfg-r',
+            folderId: 'me',
+            llmConfigurations: [
+              {
+                desiredModel: 'gpt-5-2025-08-07',
+                defaultModel: 'gpt-5-2025-08-07',
+                customerModel: 'gpt-5',
+                connectorType: 'OpenAi',
+                connectionId: 'conn-1',
+                apiFlavor: 'OpenAiResponses',
+                configurationType: 'SelfServe',
+              },
+            ],
+          },
+        }))
+      );
+
+      const editing = await client.loadModel({
+        configurationId: 'cfg-r',
+        name: 'gpt-5-2025-08-07',
+      });
+
+      expect(editing.ok && editing.value).toMatchObject({
+        name: 'gpt-5-2025-08-07',
+        replaces: 'gpt-5-2025-08-07',
+        apiType: 'OpenAiResponses',
+      });
+    });
   });
 });

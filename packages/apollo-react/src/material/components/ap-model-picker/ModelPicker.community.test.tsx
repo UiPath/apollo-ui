@@ -31,6 +31,21 @@ const RESPONSES: Record<string, unknown> = {
       folder: { key: 'me' },
     },
   ],
+  // One probe, so the dialog takes the API type itself.
+  [`GET ${GATEWAY}/api/byom/products`]: {
+    agents: {
+      'agents-design-eval-deploy': {
+        modelsConfigurationOption: 'AnyModelWithOwnAdditions',
+        models: [{ model: 'gpt-4.1', usageEndDate: 'N/A' }],
+        probes: [{ apiFlavor: 'OpenAiResponses', probeId: 'responses' }],
+      },
+    },
+  },
+  [`GET ${GATEWAY}/api/byom/vendors/llms`]: { AzureOpenAi: ['gpt-4.1'] },
+  [`GET ${GATEWAY}/api/byom/vendors/llms/api-flavors`]: {
+    'gpt-4.1': ['OpenAiResponses', 'OpenAiChatCompletions'],
+  },
+  [`GET ${GATEWAY}/api/byo/product/llm-configurations`]: [],
   [`POST ${GATEWAY}/api/byom/available-models`]: ['gpt-4o'],
   [`POST ${GATEWAY}/api/byo/product/llm-configurations/validate`]: {
     'my-gpt': { isAvailable: true, isCompatible: true },
