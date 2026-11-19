@@ -359,6 +359,10 @@ const flavorsOf = (probes?: FeatureProbe[] | null) => [
 const retirementOf = (model: FeatureModel) =>
   model.usageEndDate && model.usageEndDate !== 'N/A' ? model.usageEndDate : undefined;
 
+/** `map[key]` when the map itself holds it, so a model named `constructor` is not read off Object's prototype. */
+const own = <T>(map: Record<string, T>, key: string): T | undefined =>
+  Object.hasOwn(map, key) ? map[key] : undefined;
+
 /** AI Trust Layer's model → connector types map, from the connector → models one. */
 function connectorTypesByModelOf(data: unknown): Record<string, string[]> {
   const byModel: Record<string, string[]> = {};
@@ -699,7 +703,7 @@ export function createCommunityByoApi(
     // What a replaced UiPath model supports, plus Chat Completions, which AI Trust Layer always
     // offers; a name of the user's own has no such list.
     let supported: string[] | undefined;
-    const modelApiTypes = replaces ? apiTypesByModel[replaces] : null;
+    const modelApiTypes = replaces ? own(apiTypesByModel, replaces) : null;
     if (modelApiTypes) {
       const featureFlavors = flavorsOf(feature.probes);
       const withConnector = new Set(modelApiTypes.filter((t) => connectorsCarrying(t).length));
@@ -719,7 +723,7 @@ export function createCommunityByoApi(
       candidates = supported?.length ? supported : Object.keys(API_TYPE_LABELS);
     }
 
-    const servedBy = replaces ? connectorTypesByModel[replaces] : undefined;
+    const servedBy = replaces ? own(connectorTypesByModel, replaces) : undefined;
     const carried = CONNECTOR_API_TYPES[provider.connectorType] ?? [];
     const shown = candidates.filter((t) => {
       if (!carried.includes(t)) return false;
@@ -756,7 +760,7 @@ export function createCommunityByoApi(
     }
     const savedName = entry.desiredModel ?? name;
     // As in AI Trust Layer, a model under a UiPath model's name replaces that model.
-    const replaces = rules && savedName in rules.connectorTypesByModel ? savedName : null;
+    const replaces = rules && own(rules.connectorTypesByModel, savedName) ? savedName : null;
     return ok<ByoModelToEdit>({
       configurationId,
       providerId: provider.id,
