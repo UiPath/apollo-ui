@@ -576,8 +576,9 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       });
     }, [catalog, connectionNames]);
 
-    // A model the Community dialog saved, selected as soon as it appears in the catalog.
-    // The user's own pick cancels it, so a late catalog refresh cannot override that pick.
+    // A model the Community dialog saved, selected as soon as the picker offers it: a model
+    // blocked by policy or left out by the host's `filter` is never selected. The user's own
+    // pick cancels it, so a late catalog refresh cannot override that pick.
     // `staleCatalog` is the catalog shown before a folder switch, whose entry for an edited
     // model is the old one; the model is selected only from a catalog loaded since.
     const [pendingSelection, setPendingSelection] = React.useState<{
@@ -715,15 +716,16 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     React.useEffect(() => {
       if (!pendingSelection || catalog === pendingSelection.staleCatalog) return;
       const { model } = pendingSelection;
-      const added = catalog.find(
+      const added = effectiveModels.find(
         (m) =>
           m.modelName === model.name &&
-          m.byomDetails?.integrationServiceConnectionId === model.connectionId
+          m.byomDetails?.integrationServiceConnectionId === model.connectionId &&
+          (!filter || filter(m))
       );
       if (!added) return;
       setPendingSelection(null);
       onChange?.(added);
-    }, [pendingSelection, catalog, onChange]);
+    }, [pendingSelection, catalog, effectiveModels, filter, onChange]);
 
     // Folder list: fetched internally when the product opts in via
     // `enableFolders`, unless a test/storybook override supplies the
