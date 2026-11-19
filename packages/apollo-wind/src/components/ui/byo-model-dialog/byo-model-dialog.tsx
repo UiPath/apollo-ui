@@ -263,17 +263,17 @@ function DialogBody({
   ) => {
     const gen = generation.current;
     // A connection the dialog does not list, such as one in a personal workspace, gives way to
-    // the provider's first saved one.
+    // the provider's first saved one, whose models are picked afresh: the same id on another
+    // account can be another deployment.
+    const ownConnection = loaded.connections.find((c) => c.id === model.connectionId) ?? null;
     const savedConnection =
-      loaded.connections.find((c) => c.id === model.connectionId) ??
-      loaded.connections.find((c) => c.providerId === model.providerId) ??
-      null;
+      ownConnection ?? loaded.connections.find((c) => c.providerId === model.providerId) ?? null;
     const savedProvider = loaded.providers.find((p) => p.id === model.providerId);
     setModelToEdit(model);
     setProviderId(model.providerId);
     setConnectionChoice(savedConnection ? savedConnection.id : NEW);
     setConnName(defaultConnectionName(savedProvider?.name ?? model.providerId, loaded.connections));
-    setModelId(model.modelId);
+    setModelId(ownConnection ? model.modelId : '');
     setName(model.replaces ? '' : model.name);
     setUseAs(model.replaces ? 'replacement' : 'own');
     setReplaces(model.replaces ?? '');
