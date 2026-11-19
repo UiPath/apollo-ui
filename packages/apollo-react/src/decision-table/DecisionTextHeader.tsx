@@ -1,14 +1,18 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
+import { CitationButtons, type CitationLabels } from './CitationButton';
 import { forwardRef, useId } from 'react';
 import type { DiffLabels } from './decisionTextDiff';
 import { MarkBadge, type MarkBadgeProps, markIds } from './MarkBadge';
 import type { Mark } from './marks';
 import { PolicyPicker, type PolicyPickerProps } from './PolicyPicker';
 import { isLineMark, type LineMarks } from './sentenceMarks';
+import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 import {
   CHANGED_CHIP_CLASS,
   DECISION_TEXT_HEADER_CLASS,
+  HEADER_CITATION_REVEAL_CLASS,
+  HEADER_CITATIONS_CLASS,
   HEADER_LABEL_CLASS,
   HIT_POLICY_CHANGE_CLASS,
   STRUCK_VALUE_CLASS,
@@ -24,7 +28,11 @@ export interface DecisionTextHeaderProps {
   hint: string;
   /** The mark of the decision as a whole. */
   mark: Mark | undefined;
-  labels: MarkBadgeProps['labels'] & Pick<DiffLabels, 'previousValue' | 'currentValue'>;
+  /** Where the decision was read from, or null. */
+  citations: { citations: readonly SentenceCitation[]; onOpen: OpenCitation } | null;
+  labels: MarkBadgeProps['labels'] &
+    Pick<DiffLabels, 'previousValue' | 'currentValue'> &
+    CitationLabels;
   /** Sticks to the top of the view's own scroll frame. */
   sticky: boolean;
   dataTestId: string;
@@ -52,7 +60,7 @@ const HitPolicyChange: React.FC<HitPolicyChangeProps> = ({ change, describedBy, 
 
 /** The sticky line above the rules: its label, or the picker in its place, its mark, then its hint. */
 export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderProps>(
-  ({ title, hint, mark, labels, sticky, dataTestId }, ref) => {
+  ({ title, hint, mark, citations, labels, sticky, dataTestId }, ref) => {
     const badgeId = useId();
     const marks: LineMarks | null = isLineMark(mark) ? [mark] : null;
     const describedBy = marks ? markIds(badgeId, marks).join(' ') : undefined;
@@ -75,6 +83,19 @@ export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderP
         )}
         {marks && <MarkBadge id={badgeId} marks={marks} labels={labels} />}
         <span>{hint}</span>
+        {citations && (
+          <span className={HEADER_CITATIONS_CLASS}>
+            <CitationButtons
+              citations={citations.citations}
+              onOpen={citations.onOpen}
+              selected={false}
+              tabIndex={0}
+              className={HEADER_CITATION_REVEAL_CLASS}
+              labels={labels}
+              dataTestId={`${dataTestId}-citation`}
+            />
+          </span>
+        )}
       </div>
     );
   }

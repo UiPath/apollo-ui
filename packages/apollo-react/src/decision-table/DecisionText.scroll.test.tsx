@@ -685,6 +685,7 @@ describe('DecisionText mark clicks', () => {
     render(
       <div data-testid="scroller" style={{ overflowY: 'auto', height: 600 }}>
         <DecisionText
+          citations={{ kind: 'none' }}
           table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
           hitPolicies={HIT_POLICIES}
           columnTypes={COLUMN_TYPES}

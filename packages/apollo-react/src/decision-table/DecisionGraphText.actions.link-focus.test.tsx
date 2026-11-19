@@ -82,6 +82,7 @@ const setup = () => {
     handle.dropLink = () => setShowLink(false);
     return (
       <DecisionGraphText
+        citations={{ kind: 'none' }}
         nodes={[leaf('a', 'A'), leaf('m', 'M'), leaf('x', 'X')]}
         mode={{
           kind: 'edit',

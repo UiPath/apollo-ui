@@ -19,7 +19,25 @@ import type { useCellHover } from './useCellHover';
 import type { RuleMenus } from './useRuleMenus';
 import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
+
 import type { ValueEditing } from './useValueEditing';
+
+/** What of its card a click keeps focused: the citation it hit, unless its host moved focus out of the view, else the card's own stop. */
+const clickedCitationOf = (
+  target: EventTarget | null,
+  view: HTMLElement
+): Parameters<SentenceNavigation['select']>[1] => {
+  const button =
+    target instanceof Element ? target.closest<HTMLElement>('[data-rule-action="citation"]') : null;
+  if (!button) return undefined;
+  return (card) => {
+    const active = button.ownerDocument.activeElement;
+    const movedOut =
+      active !== null && active !== button.ownerDocument.body && !view.contains(active);
+    if (movedOut) return null;
+    return card.contains(button) ? button : card;
+  };
+};
 
 /** The scroll container's props a host may add; the view names the region and owns its tab stop. */
 export type DecisionTextContainerProps = Omit<
@@ -186,7 +204,7 @@ export const useContainerHandlers = ({
       valueEditing.onClick(event);
     const selection = claimed ? null : clickedSelection(event.target);
     if (selection) {
-      navigation.select(selection, undefined, false);
+      navigation.select(selection, clickedCitationOf(event.target, event.currentTarget), false);
     }
     consumerClick?.(event);
   };

@@ -64,6 +64,7 @@ describe('focus when a focused rule in a graph body is deleted', () => {
       if (lifted) remove = () => setRows(['r2']);
       return (
         <DecisionGraphText
+          citations={{ kind: 'none' }}
           nodes={nodes}
           mode={{
             kind: 'edit',

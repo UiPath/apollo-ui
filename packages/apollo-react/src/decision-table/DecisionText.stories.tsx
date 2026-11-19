@@ -38,7 +38,13 @@ import { DecisionText } from './DecisionText';
 import type { Mark, RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
 import { selectedColumnOf } from './sentenceSelection';
-import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
+import type {
+  DecisionTextCitations,
+  SentenceCellId,
+  SentenceCitation,
+  SentenceRule,
+  SentenceSelection,
+} from './sentenceTypes';
 import type { ExpressionEditorProps } from './valueTypes';
 
 const NO_MARKS: TableMarks = { rows: new Map(), columns: new Map() };
@@ -156,6 +162,7 @@ const TableHost = ({
   return (
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
       <DecisionText
+        citations={{ kind: 'none' }}
         table={{ rules, ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -375,6 +382,68 @@ export const Errors: StoryObj = {
   ),
 };
 
+const citationOf = (page: number, index: number): SentenceCitation => {
+  const box = { x: 72, y: 96 + index * 40, width: 420, height: 32 };
+  if (index % 3 === 0) return { kind: 'block', page, blockId: index, box };
+  return index % 3 === 1 ? { kind: 'box', page, box } : { kind: 'page', page };
+};
+
+const CitedHost: React.FC = () => {
+  const rules = useMemo(() => wordedRules(EDITABLE_TABLE), []);
+  const [selected, setSelected] = useState<SentenceSelection | null>(null);
+  const [opened, setOpened] = useState<SentenceCitation | null>(null);
+  const { columns, hitPolicy } = storyTableProps({
+    state: storyTableOf(EDITABLE_TABLE),
+    onChange: () => {},
+    onSelect: setSelected,
+    onMoreProperties: () => {},
+    renderEditor: undefined,
+  });
+  const citations = useMemo(
+    (): DecisionTextCitations => ({
+      kind: 'cited',
+      decision: [citationOf(1, 0), citationOf(2, 2)],
+      rules: new Map(
+        rules.flatMap((rule, index): [string, readonly SentenceCitation[]][] => {
+          if (index === 1) return [];
+          const own = citationOf(index + 2, index);
+          return [[rule.rowId, index === 0 ? [own, citationOf(index + 3, index + 1)] : [own]]];
+        })
+      ),
+      onOpenCitation: setOpened,
+    }),
+    [rules]
+  );
+  return (
+    <div className="flex h-[600px] flex-col gap-2">
+      <DecisionText
+        citations={citations}
+        table={{ rules, ...columns, hitPolicy }}
+        hitPolicies={HIT_POLICIES}
+        columnTypes={COLUMN_TYPES}
+        ariaLabel="Rules"
+        dataTestId="decision-text"
+        numbered
+        mode={{ kind: 'select', selected, onSelect: setSelected }}
+      />
+      <StoryCaption>
+        Opened citation:{' '}
+        {opened
+          ? `page ${opened.page}${opened.kind === 'block' ? `, block ${opened.blockId}` : ''}`
+          : 'none'}
+      </StoryCaption>
+      <StoryCaption>
+        Hover a rule or the header for its source; select a rule to show its page. Rule 1 has two
+        sources, rule 2 none.
+      </StoryCaption>
+    </div>
+  );
+};
+
+export const Citations: StoryObj = {
+  render: () => <CitedHost />,
+};
+
 const LARGE_TABLE = manyRulesTable(50_000, 10_000, 50);
 
 export const LargeTable: StoryObj = {
@@ -453,6 +522,7 @@ const DiffHost = ({ mode, scenario }: DiffArgs) => {
   return (
     <div className="flex h-[640px] flex-col gap-2">
       <DecisionText
+        citations={{ kind: 'none' }}
         key={scenario}
         table={{ rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
@@ -501,6 +571,7 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
           data-testid={`stacked-${id}`}
         >
           <DecisionText
+            citations={{ kind: 'none' }}
             table={{
               rules: STACKED_RULES,
               ...MULTI_SENTENCE_COLUMNS,

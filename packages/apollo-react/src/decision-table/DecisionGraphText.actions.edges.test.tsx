@@ -17,6 +17,7 @@ const graph = (
   onOpenDecision: ((id: string) => void) | undefined = undefined
 ) => (
   <DecisionGraphText
+    citations={{ kind: 'none' }}
     nodes={nodes}
     mode={{
       kind: 'edit',
@@ -160,6 +161,7 @@ describe('dialogs and a11y', () => {
           </button>
           {read ? (
             <DecisionGraphText
+              citations={{ kind: 'none' }}
               nodes={NODES}
               mode={{ kind: 'read', selected: null }}
               renderBody={() => null}

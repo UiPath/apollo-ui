@@ -112,6 +112,7 @@ const Host = ({
   };
   return (
     <DecisionText
+      citations={{ kind: 'none' }}
       table={{ rules: wordedRules(table), ...tableColumns(table), hitPolicy: GRID_SENTENCE_POLICY }}
       hitPolicies={HIT_POLICIES}
       columnTypes={COLUMN_TYPES}
