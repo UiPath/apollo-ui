@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { PortalContainerOverride } from '@/components/ui/portal-container';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -70,9 +71,10 @@ export interface ByoModelDialogProps {
 
 /**
  * "Use your own model": pick a provider, reuse a saved connection or create
- * one inline from the provider's credentials, pick a model, name it, then test
- * and add it. A saved connection can be edited in place. With `editing`, the
- * same steps start from a saved model and save the changes to it.
+ * one inline from the provider's credentials, pick a model, name it or pick the
+ * UiPath model it replaces, choose the API it is called through, then test and
+ * add it. A saved connection can be edited in place. With `editing`, the same
+ * steps start from a saved model and save the changes to it.
  * Every call goes through `api`.
  */
 export function ByoModelDialog({ open, onOpenChange, ...rest }: ByoModelDialogProps) {
@@ -182,6 +184,10 @@ function DialogBody({
   const [modelListOpen, setModelListOpen] = React.useState(false);
   const [name, setName] = React.useState('');
   const [nameTouched, setNameTouched] = React.useState(false);
+  // A name of the user's own, or the UiPath model the model replaces, whose name it then takes.
+  const [useAs, setUseAs] = React.useState<'own' | 'replacement'>('own');
+  const [replaces, setReplaces] = React.useState('');
+  const [apiType, setApiType] = React.useState('');
   const [test, setTest] = React.useState<Attempt<ByoSavedModel>>({ status: 'idle' });
 
   const ctx = context.status === 'ok' ? context.value : null;
@@ -262,8 +268,11 @@ function DialogBody({
     setConnectionChoice(savedConnection ? savedConnection.id : NEW);
     setConnName(defaultConnectionName(savedProvider?.name ?? model.providerId, loaded.connections));
     setModelId(model.modelId);
-    setName(model.name);
+    setName(model.replaces ? '' : model.name);
     setNameTouched(true);
+    setUseAs(model.replaces ? 'replacement' : 'own');
+    setReplaces(model.replaces ?? '');
+    setApiType(model.apiType ?? '');
     loadModels(model.providerId, savedConnection, gen);
     loadForm(model.providerId, savedConnection?.folderId ?? defaultFolder);
   };
@@ -296,6 +305,7 @@ function DialogBody({
       setContext({ status: 'ok', value: loaded });
       setConnections(loaded.connections);
       setFolderId(defaultFolder);
+      if (!loaded.allowsNewNames) setUseAs('replacement');
       if (savedModel) startFromSavedModel(savedModel, loaded, defaultFolder);
     };
     load().catch((err: unknown) => {
@@ -325,6 +335,9 @@ function DialogBody({
     setEditingConnection(false);
     setConnect({ status: 'idle' });
     resetDownstream();
+    // Which UiPath models a provider can replace, and through which API types, is its own.
+    setReplaces('');
+    setApiType('');
     loadModels(id, existing[0] ?? null, gen);
     loadForm(id, folderId);
   };
@@ -473,10 +486,45 @@ function DialogBody({
   const takenNames = new Set((ctx?.takenModelNames ?? []).map((n) => n.toLowerCase()));
   // The edited model's own name is not a clash.
   if (editTarget) takenNames.delete(editTarget.name.toLowerCase());
-  const nameClash = Boolean(name.trim()) && takenNames.has(name.trim().toLowerCase());
+  const reservedNames = new Set((ctx?.reservedModelNames ?? []).map((n) => n.toLowerCase()));
+  const ownName = name.trim();
+  let nameProblem: string | null = null;
+  if (ownName && takenNames.has(ownName.toLowerCase())) nameProblem = labels.nameTaken(ownName);
+  else if (ownName && reservedNames.has(ownName.toLowerCase()))
+    nameProblem = labels.nameReserved(ownName);
+
+  // The UiPath models this provider can serve, apart from those already replaced; the edited
+  // model keeps its own.
+  const replacementOptions = (ctx?.replaceableModels ?? []).filter(
+    (m) =>
+      (!m.replaced || m.name === modelToEdit?.replaces) &&
+      Boolean(provider) &&
+      api.apiTypes(providerId, m.name).length > 0
+  );
+  const canUseOwnName = ctx?.allowsNewNames ?? false;
+  const replacing = useAs === 'replacement';
+  const replacement = replacementOptions.find((m) => m.name === replaces) ?? null;
+  const chosenName = replacing ? (replacement?.name ?? '') : ownName;
+  const nameReady = replacing ? Boolean(replacement) : Boolean(ownName) && !nameProblem;
+
+  const apiTypeOptions =
+    provider && (!replacing || replacement)
+      ? api.apiTypes(providerId, replacing ? (replacement?.name ?? null) : null)
+      : [];
+  const apiTypeKey = apiTypeOptions.map((t) => t.value).join('|');
+  // A choice the options no longer hold is dropped. As in AI Trust Layer, the first option is
+  // taken for a replacement, and the only one whenever there is just one.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the options are compared by their values
+  React.useEffect(() => {
+    if (apiTypeOptions.some((t) => t.value === apiType)) return;
+    const first = apiTypeOptions[0]?.value ?? '';
+    setApiType(replacing || apiTypeOptions.length === 1 ? first : '');
+  }, [apiTypeKey, replacing]);
+  const apiTypeReady = apiTypeOptions.some((t) => t.value === apiType);
+
   const busy = keyLocked || test.status === 'running' || test.status === 'ok';
   const hasModel = Boolean(modelId.trim());
-  const readyToSave = connected && hasModel && Boolean(name.trim()) && !nameClash;
+  const readyToSave = connected && hasModel && nameReady && apiTypeReady;
 
   /** Tests the model, then adds it or saves the changes to the one being edited. */
   const runTest = async () => {
@@ -489,7 +537,9 @@ function DialogBody({
         providerId,
         connection,
         modelId: modelId.trim(),
-        name: name.trim(),
+        name: chosenName,
+        replaces: replacing ? chosenName : null,
+        apiType,
         editing: modelToEdit ?? undefined,
       });
     } catch (err) {
@@ -537,25 +587,48 @@ function DialogBody({
         hint={keepsCurrentValue(f) ? labels.secretKeepHint : f.hint}
         required={isRequired(f)}
       >
-        <Input
-          id={`byo-${f.key}`}
-          type={f.secret ? 'password' : 'text'}
-          autoComplete="off"
-          spellCheck={false}
-          placeholder={f.placeholder}
-          value={values[f.key] ?? ''}
-          disabled={keyLocked}
-          aria-required={isRequired(f) || undefined}
-          onChange={(e) => setValue(f.key, e.target.value)}
-          onKeyDown={
-            main
-              ? (e) => {
-                  if (e.key === 'Enter') runConnect();
-                }
-              : undefined
-          }
-          className={f.secret ? 'font-mono' : undefined}
-        />
+        {f.options?.length ? (
+          <Select
+            value={values[f.key] || undefined}
+            onValueChange={(v) => setValue(f.key, v)}
+            disabled={keyLocked}
+          >
+            <SelectTrigger
+              id={`byo-${f.key}`}
+              className="w-full"
+              aria-required={isRequired(f) || undefined}
+            >
+              <SelectValue placeholder={f.placeholder || undefined} />
+            </SelectTrigger>
+            <SelectContent container={container}>
+              {f.options.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            id={`byo-${f.key}`}
+            type={f.secret ? 'password' : 'text'}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={f.placeholder}
+            value={values[f.key] ?? ''}
+            disabled={keyLocked}
+            aria-required={isRequired(f) || undefined}
+            onChange={(e) => setValue(f.key, e.target.value)}
+            onKeyDown={
+              main
+                ? (e) => {
+                    if (e.key === 'Enter') runConnect();
+                  }
+                : undefined
+            }
+            className={f.secret ? 'font-mono' : undefined}
+          />
+        )}
       </Field>
     );
   };
@@ -891,21 +964,126 @@ function DialogBody({
               )}
             </Step>
 
-            <Step n={4} title={labels.nameStep} done={readyToSave} disabled={!hasModel}>
+            <Step n={4} title={labels.nameStep} done={hasModel && nameReady} disabled={!hasModel}>
+              <div className="flex flex-col gap-3">
+                {canUseOwnName && replacementOptions.length > 0 && (
+                  <RadioGroup
+                    value={useAs}
+                    onValueChange={(v) => {
+                      setUseAs(v as 'own' | 'replacement');
+                      setTest({ status: 'idle' });
+                    }}
+                    disabled={busy}
+                    aria-label={labels.nameStep}
+                    className="flex flex-wrap gap-4"
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="own" id="byo-use-own" />
+                      <Label htmlFor="byo-use-own" className="text-xs font-normal">
+                        {labels.useOwnName}
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="replacement" id="byo-use-replacement" />
+                      <Label htmlFor="byo-use-replacement" className="text-xs font-normal">
+                        {labels.useReplacement}
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                )}
+                {replacing ? (
+                  <div className="flex flex-col gap-1.5">
+                    <Select
+                      value={replacement?.name}
+                      onValueChange={(v) => {
+                        setReplaces(v);
+                        setTest({ status: 'idle' });
+                      }}
+                      disabled={busy}
+                    >
+                      <SelectTrigger className="w-full" aria-label={labels.useReplacement}>
+                        <SelectValue placeholder={labels.replacementPlaceholder} />
+                      </SelectTrigger>
+                      <SelectContent container={container}>
+                        {replacementOptions.map((m) => (
+                          <SelectItem key={m.name} value={m.name}>
+                            <span className="font-mono text-xs">{m.name}</span>
+                            {m.retiresOn && (
+                              <span className="ml-2 text-xs text-foreground-muted">
+                                {labels.deprecated}
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p
+                      className={cn(
+                        'text-xs',
+                        replacement?.retiresOn ? 'text-warning' : 'text-foreground-muted'
+                      )}
+                    >
+                      {replacement?.retiresOn
+                        ? labels.retiresOn(replacement.retiresOn)
+                        : labels.replacementHint}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1.5">
+                    <Input
+                      aria-label={labels.nameStep}
+                      value={name}
+                      disabled={busy}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        setNameTouched(true);
+                        setTest({ status: 'idle' });
+                      }}
+                      aria-invalid={Boolean(nameProblem)}
+                    />
+                    <p
+                      className={cn(
+                        'text-xs',
+                        nameProblem ? 'text-error' : 'text-foreground-muted'
+                      )}
+                    >
+                      {nameProblem ?? labels.nameHint}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Step>
+
+            <Step
+              n={5}
+              title={labels.apiTypeStep}
+              done={readyToSave}
+              disabled={!hasModel || !nameReady}
+            >
               <div className="flex flex-col gap-1.5">
-                <Input
-                  aria-label={labels.nameStep}
-                  value={name}
-                  disabled={busy}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setNameTouched(true);
+                <Select
+                  value={apiTypeReady ? apiType : undefined}
+                  onValueChange={(v) => {
+                    setApiType(v);
                     setTest({ status: 'idle' });
                   }}
-                  aria-invalid={nameClash}
-                />
-                <p className={cn('text-xs', nameClash ? 'text-error' : 'text-foreground-muted')}>
-                  {nameClash ? labels.nameTaken(name.trim()) : labels.nameHint}
+                  disabled={busy || apiTypeOptions.length === 0}
+                >
+                  <SelectTrigger className="w-full" aria-label={labels.apiTypeStep}>
+                    <SelectValue placeholder={labels.apiTypePlaceholder} />
+                  </SelectTrigger>
+                  <SelectContent container={container}>
+                    {apiTypeOptions.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-foreground-muted">
+                  {hasModel && nameReady && apiTypeOptions.length === 0
+                    ? labels.apiTypeNone(providerName)
+                    : labels.apiTypeHint}
                 </p>
               </div>
             </Step>

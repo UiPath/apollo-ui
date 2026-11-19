@@ -3,6 +3,7 @@ export { ByoModelDialog } from './byo-model-dialog';
 export type { ByoModelDialogLabels } from './labels';
 export { DEFAULT_BYO_MODEL_DIALOG_LABELS, resolveByoModelDialogLabels } from './labels';
 export type {
+  ByoApiType,
   ByoAuthType,
   ByoConnection,
   ByoConnectionForm,
@@ -11,6 +12,7 @@ export type {
   ByoDialogContext,
   ByoEditTarget,
   ByoFailure,
+  ByoFieldOption,
   ByoFolder,
   ByoFormField,
   ByoModelDialogApi,
@@ -18,6 +20,7 @@ export type {
   ByoProvider,
   ByoProviderModel,
   ByoProviderModels,
+  ByoReplaceableModel,
   ByoResult,
   ByoSavedModel,
   ByoSaveRequest,

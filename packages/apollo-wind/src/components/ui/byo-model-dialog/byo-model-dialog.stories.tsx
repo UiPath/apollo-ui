@@ -38,6 +38,12 @@ function storyApi(): ByoModelDialogApi {
           ],
           defaultFolderId: 'me',
           takenModelNames: ['gpt-4.1'],
+          replaceableModels: [
+            { name: 'gpt-5-2025-08-07', replaced: false },
+            { name: 'gpt-4o-2024-05-13', retiresOn: '2026-09-23', replaced: false },
+          ],
+          allowsNewNames: true,
+          reservedModelNames: ['gpt-5-2025-08-07', 'gpt-4o-2024-05-13'],
         },
       };
     },
@@ -51,6 +57,8 @@ function storyApi(): ByoModelDialogApi {
           connectionId: 'conn-openai',
           modelId: 'gpt-4.1',
           name,
+          replaces: null,
+          apiType: 'OpenAiResponses',
         },
       };
     },
@@ -235,6 +243,13 @@ function storyApi(): ByoModelDialogApi {
               },
       };
     },
+    apiTypes: (_providerId, replaces) =>
+      replaces
+        ? [{ value: 'OpenAiResponses', label: 'OpenAI Responses' }]
+        : [
+            { value: 'OpenAiResponses', label: 'OpenAI Responses' },
+            { value: 'OpenAiChatCompletions', label: 'OpenAI Chat Completions' },
+          ],
     testAndSave: async ({ connection, modelId, name }) => {
       await wait(1200);
       if (modelId === 'bad-model') {

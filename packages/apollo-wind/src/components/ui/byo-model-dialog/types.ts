@@ -24,6 +24,14 @@ export interface ByoFormField {
   defaultValue: string;
   placeholder: string;
   hint: string;
+  /** The values the field takes, rendered as a dropdown; omitted for a free-text field. */
+  options?: ByoFieldOption[];
+}
+
+/** One value a dropdown field offers. */
+export interface ByoFieldOption {
+  value: string;
+  label: string;
 }
 
 export interface ByoConnectionForm {
@@ -83,6 +91,21 @@ export interface ByoFailure {
 
 export type ByoResult<T> = { ok: true; value: T } | { ok: false; failure: ByoFailure };
 
+/** An API the model is called through, e.g. OpenAI Responses. */
+export interface ByoApiType {
+  value: string;
+  label: string;
+}
+
+/** A UiPath model the user's own model can stand in for, under the UiPath model's name. */
+export interface ByoReplaceableModel {
+  name: string;
+  /** The date the UiPath model retires on (`YYYY-MM-DD`); set only for a model being retired. */
+  retiresOn?: string;
+  /** Already replaced by one of the user's models, so it cannot be replaced again. */
+  replaced: boolean;
+}
+
 export interface ByoDialogContext {
   providers: ByoProvider[];
   connections: ByoConnection[];
@@ -90,6 +113,12 @@ export interface ByoDialogContext {
   defaultFolderId: string | null;
   /** Names already in the user's model list, compared case-insensitively. */
   takenModelNames: string[];
+  /** UiPath models the user's model can replace. */
+  replaceableModels: ByoReplaceableModel[];
+  /** Whether a model can be added under a name of the user's own. */
+  allowsNewNames: boolean;
+  /** UiPath model names, which a name of the user's own cannot take. Compared case-insensitively. */
+  reservedModelNames: string[];
 }
 
 /** Which saved model the dialog edits: the host knows it from its model list. */
@@ -106,6 +135,10 @@ export interface ByoModelToEdit {
   connectionId: string;
   modelId: string;
   name: string;
+  /** The UiPath model it replaces, whose name `name` then is; `null` for a name of the user's own. */
+  replaces: string | null;
+  /** `null` when the saved model names none. */
+  apiType: string | null;
 }
 
 export interface ByoConnectRequest {
@@ -124,6 +157,9 @@ export interface ByoSaveRequest {
   connection: ByoConnection;
   modelId: string;
   name: string;
+  /** The UiPath model it replaces, whose name `name` then is; `null` for a name of the user's own. */
+  replaces: string | null;
+  apiType: string;
   /** The saved model being edited; omitted when adding a model. */
   editing?: ByoModelToEdit;
 }
@@ -157,6 +193,12 @@ export interface ByoModelDialogApi {
     providerId: string,
     connection: ByoConnection
   ) => Promise<ByoResult<ByoProviderModels>>;
+  /**
+   * The API types the provider can call the model through, most suitable first: replacing the
+   * UiPath model `replaces`, or under a name of the user's own when it is `null`. Answers from
+   * what `loadContext` read.
+   */
+  apiTypes: (providerId: string, replaces: string | null) => ByoApiType[];
   /**
    * Tests the model through the connection and, if it passes, saves it:
    * adds it to the user's model list, or updates `editing` when one is given.

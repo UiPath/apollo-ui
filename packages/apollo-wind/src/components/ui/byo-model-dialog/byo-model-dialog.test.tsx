@@ -28,6 +28,9 @@ const CONTEXT: ByoDialogContext = {
   ],
   defaultFolderId: 'me',
   takenModelNames: ['Taken'],
+  replaceableModels: [],
+  allowsNewNames: true,
+  reservedModelNames: [],
 };
 
 const SAVED_MODEL: ByoModelToEdit = {
@@ -36,6 +39,8 @@ const SAVED_MODEL: ByoModelToEdit = {
   connectionId: 'c1',
   modelId: 'gpt-4o',
   name: 'Taken',
+  replaces: null,
+  apiType: 'OpenAiResponses',
 };
 
 const AZURE_FORM: ByoConnectionForm = {
@@ -100,6 +105,7 @@ function fakeApi(overrides: Partial<ByoModelDialogApi> = {}): ByoModelDialogApi 
         ],
       },
     })),
+    apiTypes: vi.fn(() => [{ value: 'OpenAiResponses', label: 'OpenAI Responses' }]),
     testAndSave: vi.fn(async (r) => ({
       ok: true as const,
       value: {
@@ -142,6 +148,9 @@ describe('ByoModelDialog', () => {
       connection: SAVED,
       modelId: 'gpt-4o',
       name: 'gpt-4o',
+      replaces: null,
+      apiType: 'OpenAiResponses',
+      editing: undefined,
     });
     expect(onSaved.mock.calls[0]?.[0]).toMatchObject({ name: 'gpt-4o', connectionId: 'c1' });
     expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -286,6 +295,8 @@ describe('ByoModelDialog', () => {
       connection: SAVED,
       modelId: 'gpt-5.1',
       name: 'Taken',
+      replaces: null,
+      apiType: 'OpenAiResponses',
       editing: SAVED_MODEL,
     });
   });
@@ -526,5 +537,171 @@ describe('ByoModelDialog', () => {
     await waitFor(() =>
       expect(onSaved).toHaveBeenCalledWith(expect.objectContaining({ name: 'gpt-4o' }))
     );
+  });
+  describe('name and API type', () => {
+    const REPLACEABLE: ByoDialogContext = {
+      ...CONTEXT,
+      replaceableModels: [
+        { name: 'gpt-4.1', replaced: false },
+        { name: 'gpt-4o-2024-05-13', retiresOn: '2026-09-23', replaced: false },
+        { name: 'gpt-5', replaced: true },
+      ],
+      reservedModelNames: ['gpt-4.1', 'gpt-4o-2024-05-13', 'gpt-5', 'gpt-4o'],
+    };
+    const TWO_TYPES = [
+      { value: 'OpenAiResponses', label: 'OpenAI Responses' },
+      { value: 'OpenAiChatCompletions', label: 'OpenAI Chat Completions' },
+    ];
+
+    async function connectAndPickModel(user: ReturnType<typeof userEvent.setup>, model: string) {
+      await pick(user, 'Provider', 'OpenAI');
+      await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+      await pick(user, 'Model', model);
+    }
+
+    it('replaces a UiPath model, taking its name and the first API type', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+        apiTypes: vi.fn(() => TWO_TYPES),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await connectAndPickModel(user, 'gpt-5.1');
+      await user.click(screen.getByRole('radio', { name: 'Replace a UiPath model' }));
+      await user.click(screen.getByRole('combobox', { name: 'Replace a UiPath model' }));
+      // A UiPath model already replaced is not offered again.
+      expect(screen.queryByRole('option', { name: /^gpt-5$/ })).not.toBeInTheDocument();
+      await user.click(await screen.findByRole('option', { name: 'gpt-4.1' }));
+
+      expect(screen.getByRole('combobox', { name: 'API type' })).toHaveTextContent(
+        'OpenAI Responses'
+      );
+      await user.click(screen.getByRole('button', { name: 'Test and add' }));
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: 'gpt-4.1',
+            replaces: 'gpt-4.1',
+            apiType: 'OpenAiResponses',
+          })
+        )
+      );
+      expect(api.apiTypes).toHaveBeenCalledWith('openai', 'gpt-4.1');
+    });
+
+    it('says when a replaced UiPath model is being retired', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await connectAndPickModel(user, 'gpt-5.1');
+      await user.click(screen.getByRole('radio', { name: 'Replace a UiPath model' }));
+      await user.click(screen.getByRole('combobox', { name: 'Replace a UiPath model' }));
+      const retiring = await screen.findByRole('option', { name: /gpt-4o-2024-05-13/ });
+      expect(retiring).toHaveTextContent('Deprecated');
+      await user.click(retiring);
+      expect(screen.getByText('To be retired on 2026-09-23')).toBeInTheDocument();
+    });
+
+    it('asks for the API type when a name of your own has several', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({ apiTypes: vi.fn(() => TWO_TYPES) });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await connectAndPickModel(user, 'gpt-5.1');
+      const save = screen.getByRole('button', { name: 'Test and add' });
+      expect(save).toBeDisabled();
+      await pick(user, 'API type', 'OpenAI Chat Completions');
+      expect(save).toBeEnabled();
+      await user.click(save);
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({ replaces: null, apiType: 'OpenAiChatCompletions' })
+        )
+      );
+    });
+
+    it('refuses a name of your own that is a UiPath model name', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await connectAndPickModel(user, 'gpt-4o');
+      expect(
+        screen.getByText('"gpt-4o" is the name of a UiPath model. Pick another name.')
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
+    });
+
+    it('offers only replacements when the feature takes no names of your own', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        loadContext: vi.fn(async () => ({
+          ok: true as const,
+          value: { ...REPLACEABLE, allowsNewNames: false },
+        })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await connectAndPickModel(user, 'gpt-5.1');
+      expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('textbox', { name: 'Name in your model list' })
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Replace a UiPath model' })).toBeInTheDocument();
+    });
+
+    it('edits a replacement, keeping the UiPath model it replaces and its API type', async () => {
+      const user = userEvent.setup();
+      const editing: ByoModelToEdit = {
+        ...SAVED_MODEL,
+        name: 'gpt-5',
+        replaces: 'gpt-5',
+        apiType: 'OpenAiChatCompletions',
+      };
+      const api = fakeApi({
+        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+        loadModel: vi.fn(async () => ({ ok: true as const, value: editing })),
+        apiTypes: vi.fn(() => TWO_TYPES),
+      });
+      render(
+        <ByoModelDialog
+          open
+          onOpenChange={vi.fn()}
+          api={api}
+          onSaved={vi.fn()}
+          editing={{ configurationId: 'cfg1', name: 'gpt-5' }}
+        />
+      );
+
+      // Its own UiPath model is offered although it is replaced, by this very model.
+      await waitFor(() =>
+        expect(screen.getByRole('combobox', { name: 'Replace a UiPath model' })).toHaveTextContent(
+          'gpt-5'
+        )
+      );
+      expect(screen.getByRole('combobox', { name: 'API type' })).toHaveTextContent(
+        'OpenAI Chat Completions'
+      );
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
+      );
+      await user.click(screen.getByRole('button', { name: 'Test and save' }));
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: 'gpt-5',
+            replaces: 'gpt-5',
+            apiType: 'OpenAiChatCompletions',
+            editing,
+          })
+        )
+      );
+    });
   });
 });
