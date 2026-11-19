@@ -157,7 +157,6 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
     });
     return (
       <DecisionText
-        citations={{ kind: 'none' }}
         table={{ rules: rulesById.get(decisionId) ?? [], ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}

@@ -64,12 +64,28 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
           message: "Open {input}'s decision",
           values: { input },
         }),
-      openCitation: (page) =>
-        _({
-          id: 'decision-text.open_citation',
-          message: 'Open source, page {page}',
-          values: { page },
-        }),
+      openCitation: (owner, page, index) => {
+        const numbered = index ?? 0;
+        if (owner.kind === 'rule') {
+          return _({
+            id: 'decision-text.open_rule_citation',
+            message: 'Open source{index, plural, =0 {} other { #}} of rule {position}, page {page}',
+            values: { index: numbered, position: owner.position, page },
+          });
+        }
+        if (owner.kind === 'decision') {
+          return _({
+            id: 'decision-text.open_decision_citation',
+            message: 'Open source{index, plural, =0 {} other { #}} of {decision}, page {page}',
+            values: { index: numbered, decision: owner.name, page },
+          });
+        }
+        return _({
+          id: 'decision-text.open_table_citation',
+          message: 'Open source{index, plural, =0 {} other { #}} of this decision, page {page}',
+          values: { index: numbered, page },
+        });
+      },
       citationPage: (page) =>
         _({ id: 'decision-text.citation_page', message: 'Page {page}', values: { page } }),
       changeStatus: (change) => changes[change],

@@ -12,13 +12,16 @@ const CITATION: SentenceCitation = {
 };
 
 const firstId = () => SHARED_DEPENDENCY.nodes[0]?.id ?? '';
+const firstLabel = () => {
+  const node = SHARED_DEPENDENCY.nodes[0];
+  return node?.kind === 'decision' ? node.label : '';
+};
 
 const graph = (props: Partial<DecisionGraphTextProps<never, never>> = {}) => (
   <DecisionGraphText
     nodes={SHARED_DEPENDENCY.nodes}
     renderBody={() => null}
     mode={{ kind: 'read', selected: null }}
-    citations={{ kind: 'none' }}
     dataTestId="graph"
     {...props}
   />
@@ -45,7 +48,7 @@ describe('DecisionGraphText citations', () => {
     const button = within(screen.getByTestId(`graph-decision-${firstId()}`)).getByTestId(
       `graph-citation-${firstId()}`
     );
-    expect(button.getAttribute('aria-label')).toBe('Open source, page 4');
+    expect(button.getAttribute('aria-label')).toBe(`Open source of ${firstLabel()}, page 4`);
     expect(button.className).toContain('opacity-0');
     expect(within(button).queryByText('Page 4')).toBeNull();
     expect(screen.getAllByRole('button', { name: /Open source/ })).toHaveLength(1);
@@ -92,6 +95,21 @@ describe('DecisionGraphText citations', () => {
     viewer.remove();
   });
 
+  it('shows a folded decision citation on a touch screen', () => {
+    render(
+      graph({
+        citations: {
+          kind: 'cited',
+          decisions: new Map([[firstId(), [CITATION]]]),
+          onOpenCitation: vi.fn(),
+        },
+      })
+    );
+    expect(screen.getByTestId(`graph-citation-${firstId()}`).className).toContain(
+      '[@media(hover:none)]:opacity-100'
+    );
+  });
+
   it('shows one button per citation of a decision', async () => {
     const onOpenCitation = vi.fn();
     const other: SentenceCitation = { kind: 'page', page: 9 };
@@ -106,7 +124,9 @@ describe('DecisionGraphText citations', () => {
     );
     const heading = within(screen.getByTestId(`graph-decision-${firstId()}`));
     expect(heading.getAllByRole('button', { name: /Open source/ })).toHaveLength(2);
-    await userEvent.click(heading.getByRole('button', { name: 'Open source, page 9' }));
+    await userEvent.click(
+      heading.getByRole('button', { name: `Open source of ${firstLabel()}, page 9` })
+    );
     expect(onOpenCitation).toHaveBeenCalledWith(other);
   });
 });

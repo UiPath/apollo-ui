@@ -18,7 +18,6 @@ const graph = (
   onOpenDecision: ((decisionId: string) => void) | undefined = undefined
 ) => (
   <DecisionGraphText
-    citations={{ kind: 'none' }}
     nodes={nodes}
     mode={{
       kind: 'edit',
@@ -59,7 +58,6 @@ describe('DecisionGraphText actions', () => {
   it('shows no menu, keys or add button when read only', () => {
     render(
       <DecisionGraphText
-        citations={{ kind: 'none' }}
         nodes={NODES}
         mode={{ kind: 'read', selected: null }}
         renderBody={() => null}

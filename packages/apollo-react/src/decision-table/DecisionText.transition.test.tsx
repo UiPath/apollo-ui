@@ -74,7 +74,6 @@ describe('DecisionText value popover across a suspended transition', () => {
       return (
         <Suspense fallback={<p>loading</p>}>
           <DecisionText
-            citations={{ kind: 'none' }}
             table={{
               rules: MULTI_SENTENCE_RULES,
               ...MULTI_SENTENCE_COLUMNS,
@@ -149,7 +148,6 @@ describe('DecisionText value popover reopened after a value with no row', () => 
           : { kind: 'outcome', allowedValues: [] };
       return (
         <DecisionText
-          citations={{ kind: 'none' }}
           table={{
             rules: MULTI_SENTENCE_RULES,
             ...MULTI_SENTENCE_COLUMNS,
@@ -220,7 +218,6 @@ describe('DecisionText value popover reopened after a value with no row', () => 
           : { kind: 'outcome', allowedValues: [] };
       return (
         <DecisionText
-          citations={{ kind: 'none' }}
           table={{
             rules: MULTI_SENTENCE_RULES,
             ...MULTI_SENTENCE_COLUMNS,
