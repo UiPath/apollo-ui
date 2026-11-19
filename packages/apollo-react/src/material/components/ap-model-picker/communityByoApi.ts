@@ -652,34 +652,42 @@ export function createCommunityByoApi(
       // As in AI Trust Layer, models being retired come last.
       .sort((a, b) => Number(Boolean(a.retiresOn)) - Number(Boolean(b.retiresOn)));
 
-    const rows = asList(folders.data)
-      .filter((f) => f.IsSelectable !== false)
+    // AI Trust Layer keeps connections out of personal workspaces and solution debug folders.
+    const folderRows: ByoFolder[] = asList(folders.data)
+      .filter(
+        (f) =>
+          f.IsSelectable !== false &&
+          !f.IsPersonal &&
+          f.FolderType !== 'Personal' &&
+          f.FolderType !== 'DebugSolution'
+      )
       .map((f) => ({
-        folder: {
-          id: String(f.Key),
-          label: f.IsPersonal
-            ? String(f.DisplayName)
-            : String(f.FullyQualifiedName ?? f.DisplayName)
-                .split('/')
-                .join(' › '),
-        } satisfies ByoFolder,
-        personal: Boolean(f.IsPersonal),
+        id: String(f.Key),
+        label: String(f.FullyQualifiedName ?? f.DisplayName)
+          .split('/')
+          .join(' › '),
       }));
-    rows.sort((a, b) => Number(b.personal) - Number(a.personal));
+    if (folderRows.length === 0) {
+      return fail({
+        title: 'You need a folder for your connection',
+        detail: 'Create a folder in Orchestrator, or ask an administrator to add you to one.',
+      });
+    }
+    const folderIds = new Set(folderRows.map((f) => f.id));
     const byConnector = (key: unknown) => providers.find((p) => p.connector === key);
     const saved: ByoConnection[] = asList(connections.data).flatMap((c) => {
       const connector = (c.connector as { key?: string } | undefined)?.key;
       const provider = byConnector(connector);
       const folder = (c.folder as { key?: string } | undefined)?.key;
-      return provider && folder
+      return provider && folder && folderIds.has(folder)
         ? [{ id: String(c.id), providerId: provider.id, name: String(c.name), folderId: folder }]
         : [];
     });
     return ok({
       providers: providers.map(({ id, name }) => ({ id, name })),
       connections: saved,
-      folders: rows.map((r) => r.folder),
-      defaultFolderId: rows[0]?.folder.id ?? null,
+      folders: folderRows,
+      defaultFolderId: folderRows[0]?.id ?? null,
       takenModelNames: [...new Set([...options.takenModelNames(), ...configured])],
       replaceableModels,
       allowsNewNames: feature.modelsConfigurationOption === ADD_OWN_MODELS,
