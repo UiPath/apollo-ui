@@ -94,6 +94,8 @@ const Host = ({
         onSelect: setSelected,
         onPolicyChange: () => {},
         onAddRule: () => {},
+        onUndo: () => {},
+        onRedo: () => {},
         edit: {
           editing,
           onStartEdit: setEditing,
@@ -1237,6 +1239,8 @@ describe('DecisionText popover field the host updates while it is open', () => {
           onSelect: () => {},
           onPolicyChange: () => {},
           onAddRule: () => {},
+          onUndo: () => {},
+          onRedo: () => {},
           edit: {
             editing,
             onStartEdit: setEditing,
@@ -1338,6 +1342,8 @@ describe('DecisionText popover for a host whose operators are new objects on eve
               onSelect: () => {},
               onPolicyChange: () => {},
               onAddRule: () => {},
+              onUndo: () => {},
+              onRedo: () => {},
               edit: {
                 editing: at('m3', 'score'),
                 onCommit,

@@ -1,6 +1,13 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { hasLostFocus, onNextGesture } from './gridEvents';
+import {
+  hasLostFocus,
+  isComposing,
+  isFromTextField,
+  isRedoKey,
+  isUndoKey,
+  onNextGesture,
+} from './gridEvents';
 import {
   clickedDecision,
   clickedSelection,
@@ -21,6 +28,12 @@ export type DecisionTextContainerProps = Omit<
 > &
   Record<`data-${string}`, string | undefined>;
 
+/** The host's history steps, taken by Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl+Y as the grid takes them. */
+export interface TextHistory {
+  onUndo: () => void;
+  onRedo: () => void;
+}
+
 export interface ContainerHandlersParams {
   containerProps: DecisionTextContainerProps | undefined;
   hoverTo: ReturnType<typeof useCellHover>;
@@ -34,6 +47,8 @@ export interface ContainerHandlersParams {
   stopTabbable: boolean;
   /** The rule holding focus, which the view keeps mounted. */
   focusRow: (rowId: string | undefined) => void;
+  /** The edit mode's history; null while the view does not edit. */
+  history: TextHistory | null;
 }
 
 /** Whether a key is a forward Tab pressed on the view itself. */
@@ -51,6 +66,7 @@ export const useContainerHandlers = ({
   container,
   stopTabbable,
   focusRow,
+  history,
 }: ContainerHandlersParams) => {
   const focusWithinRef = useRef(false);
   const pressedRef = useRef(false);
@@ -116,6 +132,19 @@ export const useContainerHandlers = ({
     event.altKey &&
     !isIgnoredKey(event) &&
     openDecision(event, stopDecisionOf(event.target), true);
+  const stepHistory = (event: React.KeyboardEvent<HTMLElement>): boolean => {
+    const { target } = event;
+    if (!history || event.defaultPrevented || isComposing(event) || isFromTextField(target)) {
+      return false;
+    }
+    const dialog = target instanceof Element ? target.closest('dialog') : null;
+    if (dialog !== event.currentTarget.closest('dialog')) return false;
+    const step = isRedoKey(event) ? history.onRedo : isUndoKey(event) ? history.onUndo : null;
+    if (!step) return false;
+    event.preventDefault();
+    step();
+    return true;
+  };
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (stopTabbable && isTabOnView(event)) {
       event.preventDefault();
@@ -123,7 +152,8 @@ export const useContainerHandlers = ({
     } else if (
       openStopDecision(event) ||
       valueEditing.onKeyDown(event) ||
-      navigation.onKeyDown(event)
+      navigation.onKeyDown(event) ||
+      stepHistory(event)
     ) {
       return;
     }

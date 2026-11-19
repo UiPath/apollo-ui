@@ -26,6 +26,7 @@ import {
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
+import { useStoryHistory } from './__fixtures__/useStoryHistory';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
 import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
@@ -87,7 +88,7 @@ const headedNodes = (
   });
 
 const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
-  const [tables, setTables] = useState(() => tablesOf(graph));
+  const { state: tables, set: setTables, onUndo, onRedo } = useStoryHistory(() => tablesOf(graph));
   const [selected, setSelected] = useState<GraphSelection | null>(null);
   const [editing, setEditing] = useState<{ decisionId: string; value: SentenceValueId } | null>(
     null
@@ -155,6 +156,8 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
                   onSelect,
                   onPolicyChange,
                   onAddRule,
+                  onUndo,
+                  onRedo,
                   edit: {
                     ...edit,
                     editing: editing?.decisionId === decisionId ? editing.value : null,

@@ -126,6 +126,8 @@ const Host = ({
               edit,
               onPolicyChange: vi.fn(),
               onAddRule: vi.fn(),
+              onUndo: () => {},
+              onRedo: () => {},
             }
           : { kind: 'select', selected, onSelect: setSelected }
       }

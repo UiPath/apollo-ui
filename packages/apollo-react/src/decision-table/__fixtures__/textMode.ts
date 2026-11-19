@@ -40,9 +40,12 @@ export const outcomeField = (): ReturnType<FixtureEdit['valueField']> => ({
   allowedValues: [],
 });
 
-/** A test host's mode as separate props: a diff reads what changed, an edit, Add rule or policy change edits, an onSelect selects, else the view reads. */
+/** A test host's mode as separate props: a diff reads what changed, an edit, Add rule, policy change, undo or redo edits, an onSelect selects, else the view reads. */
 export type ModeProps = Partial<
-  Pick<EditMode, 'selected' | 'onSelect' | 'edit' | 'onAddRule' | 'onPolicyChange'> &
+  Pick<
+    EditMode,
+    'selected' | 'onSelect' | 'edit' | 'onAddRule' | 'onPolicyChange' | 'onUndo' | 'onRedo'
+  > &
     Pick<Extract<FixtureMode, { kind: 'diff' }>, 'diff'>
 >;
 
@@ -64,10 +67,12 @@ export const modeOf = ({
   edit,
   onAddRule,
   onPolicyChange,
+  onUndo,
+  onRedo,
   diff,
 }: ModeProps): FixtureMode => {
   if (diff) return { kind: 'diff', diff };
-  if (edit || onAddRule || onPolicyChange) {
+  if (edit || onAddRule || onPolicyChange || onUndo || onRedo) {
     return {
       kind: 'edit',
       selected,
@@ -81,6 +86,8 @@ export const modeOf = ({
       },
       onPolicyChange: onPolicyChange ?? noop,
       onAddRule: onAddRule ?? noop,
+      onUndo: onUndo ?? noop,
+      onRedo: onRedo ?? noop,
     };
   }
   return onSelect ? { kind: 'select', selected, onSelect } : { kind: 'read', selected };
@@ -93,6 +100,8 @@ export const textPropsOf = ({
   edit,
   onAddRule,
   onPolicyChange,
+  onUndo,
+  onRedo,
   diff,
   hitPolicy,
   inputs,
@@ -106,5 +115,5 @@ export const textPropsOf = ({
   table: { hitPolicy, inputs, outputs, rules },
   hitPolicies,
   columnTypes,
-  mode: modeOf({ selected, onSelect, edit, onAddRule, onPolicyChange, diff }),
+  mode: modeOf({ selected, onSelect, edit, onAddRule, onPolicyChange, onUndo, onRedo, diff }),
 });
