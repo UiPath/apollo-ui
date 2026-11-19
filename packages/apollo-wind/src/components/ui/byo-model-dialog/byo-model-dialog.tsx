@@ -591,7 +591,7 @@ function DialogBody({
       >
         {f.options?.length ? (
           <Select
-            value={values[f.key] || undefined}
+            value={values[f.key] ?? ''}
             onValueChange={(v) => setValue(f.key, v)}
             disabled={keyLocked}
           >
@@ -681,11 +681,7 @@ function DialogBody({
         {ctx && (
           <>
             <Step n={1} title={labels.providerStep} done={Boolean(provider)}>
-              <Select
-                value={providerId || undefined}
-                onValueChange={chooseProvider}
-                disabled={busy}
-              >
+              <Select value={providerId} onValueChange={chooseProvider} disabled={busy}>
                 <SelectTrigger className="w-full" aria-label={labels.providerStep}>
                   <SelectValue placeholder={labels.providerPlaceholder} />
                 </SelectTrigger>
@@ -820,7 +816,7 @@ function DialogBody({
                         </Field>
                         <Field id="byo-folder" label={labels.folder}>
                           <Select
-                            value={formFolderId || undefined}
+                            value={formFolderId}
                             onValueChange={setFolderId}
                             disabled={keyLocked || editingConnection}
                           >
@@ -1064,7 +1060,7 @@ function DialogBody({
             >
               <div className="flex flex-col gap-1.5">
                 <Select
-                  value={apiTypeReady ? apiType : undefined}
+                  value={apiTypeReady ? apiType : ''}
                   onValueChange={(v) => {
                     setApiType(v);
                     setTest({ status: 'idle' });
