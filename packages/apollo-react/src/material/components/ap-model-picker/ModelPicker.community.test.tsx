@@ -128,14 +128,15 @@ const REPLACING: DiscoveryModel = {
 
 /** Fills the open dialog with gpt-4o through the saved "My OpenAI" connection, as `my-gpt`. */
 const addMyGptThroughMyOpenAi = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(await screen.findByRole('combobox', { name: 'Provider' }));
+  await user.click(await screen.findByRole('combobox', { name: 'Model alias' }));
+  await user.click(await screen.findByRole('option', { name: 'Add custom alias' }));
+  await user.type(screen.getByRole('textbox', { name: 'Enter a custom alias' }), 'my-gpt');
+  await user.click(screen.getByRole('button', { name: 'Add' }));
+  await user.click(screen.getByRole('combobox', { name: 'Provider' }));
   await user.click(await screen.findByRole('option', { name: 'OpenAI' }));
-  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-  await user.click(screen.getByRole('combobox', { name: 'Model' }));
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+  await user.click(screen.getByRole('combobox', { name: 'Your model' }));
   await user.click(await screen.findByRole('option', { name: 'gpt-4o' }));
-  const name = screen.getByRole('textbox', { name: 'Name in your model list' });
-  await user.clear(name);
-  await user.type(name, 'my-gpt');
   await user.click(screen.getByRole('button', { name: 'Test and add' }));
 };
 
@@ -304,7 +305,7 @@ describe('<ModelPicker isCommunity>', () => {
     await user.click(await screen.findByRole('button', { name: 'Edit configuration' }));
     expect(await screen.findByRole('dialog', { name: 'Edit your model' })).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('my-gpt')
+      expect(screen.getByRole('combobox', { name: 'Model alias' })).toHaveTextContent('my-gpt')
     );
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
