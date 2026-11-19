@@ -329,6 +329,11 @@ describe('ByoModelDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
 
     expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    // Neither failure comes back once both were dismissed.
+    expect(screen.queryByRole('button', { name: 'Dismiss' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Could not read the connection settings')).not.toBeInTheDocument();
   });
 
   it('edits a saved model, keeping its own name', async () => {
