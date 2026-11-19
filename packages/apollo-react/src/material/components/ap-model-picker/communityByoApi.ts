@@ -803,6 +803,13 @@ export function createCommunityByoApi(
     }
     const savedAuthType = current['authentication.type'];
     const knownAuthType = form.authTypes.some((t) => t.value === savedAuthType);
+    // Shown as another type, the connection would be switched to it on Connect.
+    if (form.authTypes.length && savedAuthType && !knownAuthType) {
+      return fail({
+        title: 'Edit this connection in Integration Service',
+        message: `It uses an authentication type this dialog does not offer (${savedAuthType}).`,
+      });
+    }
     return ok<ByoConnectionValues>({
       authType: knownAuthType ? (savedAuthType ?? null) : form.defaultAuthType,
       values,
