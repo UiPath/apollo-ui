@@ -58,6 +58,10 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
           values: { cell: [column, values].filter(Boolean).join(' '), position },
         }),
       emptyValue: _({ id: 'decision-text.empty_value', message: 'empty' }),
+      pressEnterForSources: _({
+        id: 'decision-text.press_enter_for_sources',
+        message: "Press Enter to reach the rules' sources",
+      }),
       openDecision: (input) =>
         _({
           id: 'decision-text.open_decision',
@@ -65,25 +69,28 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
           values: { input },
         }),
       openCitation: (owner, page, index) => {
-        const numbered = index ?? 0;
+        const numbered = index === null ? 'no' : 'yes';
         if (owner.kind === 'rule') {
           return _({
             id: 'decision-text.open_rule_citation',
-            message: 'Open source{index, plural, =0 {} other { #}} of rule {position}, page {page}',
-            values: { index: numbered, position: owner.position, page },
+            message:
+              'Open source{numbered, select, yes { {index}} other {}} of rule {position}, page {page}',
+            values: { numbered, index: index ?? 0, position: owner.position, page },
           });
         }
         if (owner.kind === 'decision') {
           return _({
             id: 'decision-text.open_decision_citation',
-            message: 'Open source{index, plural, =0 {} other { #}} of {decision}, page {page}',
-            values: { index: numbered, decision: owner.name, page },
+            message:
+              'Open source{numbered, select, yes { {index}} other {}} of {decision}, page {page}',
+            values: { numbered, index: index ?? 0, decision: owner.name, page },
           });
         }
         return _({
           id: 'decision-text.open_table_citation',
-          message: 'Open source{index, plural, =0 {} other { #}} of this decision, page {page}',
-          values: { index: numbered, page },
+          message:
+            'Open source{numbered, select, yes { {index}} other {}} of this decision, page {page}',
+          values: { numbered, index: index ?? 0, page },
         });
       },
       citationPage: (page) =>
