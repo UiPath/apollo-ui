@@ -66,7 +66,7 @@ const M = {
   folder: msg({ id: 'modelPicker.community.folder', message: 'Folder' }),
   folderHint: msg({
     id: 'modelPicker.community.folderHint',
-    message: 'Personal workspace keeps it to you; a shared folder lets teammates reuse it.',
+    message: 'Teammates with access to this folder can reuse the connection.',
   }),
   connectionNameTaken: msg({
     id: 'modelPicker.community.connectionNameTaken',
