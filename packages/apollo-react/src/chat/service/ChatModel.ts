@@ -209,6 +209,7 @@ export interface AutopilotChatError {
  * @property {string} SetFirstRunExperience - Emitted when the first run experience is configured
  * @property {string} SetDisabledFeatures - Emitted when disabled features are configured
  * @property {string} SetOverrideLabels - Emitted when override labels are configured
+ * @property {string} SetInfoLinks - Emitted when the info links are configured (payload: AutopilotChatInfoLink[])
  * @property {string} Open - Emitted when the chat is opened
  * @property {string} Close - Emitted when the chat is closed
  * @property {string} SendChunk - Emitted when a chunk of a streaming response is sent
@@ -254,6 +255,7 @@ export enum AutopilotChatEvent {
   SetFirstRunExperience = 'setFirstRunExperience',
   SetDisabledFeatures = 'setDisabledFeatures',
   SetOverrideLabels = 'setOverrideLabels',
+  SetInfoLinks = 'setInfoLinks',
   Open = 'open',
   Close = 'close',
   SendChunk = 'sendChunk',
@@ -492,6 +494,18 @@ export interface AutopilotChatOverrideLabels {
 }
 
 /**
+ * A link the chat shows beside its disclaimer, such as Terms of Use or a privacy policy.
+ *
+ * @property label - The link text, already localized by the host
+ * @property url - An http(s) or relative URL, opened in a new tab. With any other URL the
+ *                 label shows as plain text.
+ */
+export interface AutopilotChatInfoLink {
+  label: string;
+  url: string;
+}
+
+/**
  * Represents the various pre-hook actions that can occur in the Autopilot Chat system.
  * These actions are used to trigger before the user action (UI interaction) of the chat.
  *
@@ -528,6 +542,7 @@ export enum AutopilotChatPreHookAction {
  * @property renderer - The UI implementation to render ('material' or 'wind'); falls back to the host's default
  * @property disabledFeatures - The disabled features of the chat
  * @property overrideLabels - The override labels of the chat
+ * @property infoLinks - Links shown beside the footer disclaimer (hidden with `disabledFeatures.footer`)
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
@@ -558,6 +573,7 @@ export interface AutopilotChatConfiguration {
   renderer?: AutopilotChatRenderer;
   disabledFeatures?: AutopilotChatDisabledFeatures;
   overrideLabels?: AutopilotChatOverrideLabels;
+  infoLinks?: AutopilotChatInfoLink[];
   firstRunExperience?: {
     title: string;
     description: string;

@@ -44,7 +44,7 @@ const featureArgTypes = Object.fromEntries(
 const ARG_BEHAVIOUR = `
 Controls apply to the running chat through the service setters, without a new chat or a remount:
 
-- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), \`allowFeedbackChange\` (patchConfig), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`compactMode\` (patchConfig spacing), \`firstRunExperience\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`autoScroll\` (toggleAutoScroll), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
+- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), \`allowFeedbackChange\` (patchConfig), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`infoLinks\` (setInfoLinks), \`compactMode\` (patchConfig spacing), \`firstRunExperience\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`autoScroll\` (toggleAutoScroll), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
 - **In place, with a chat added or removed**: \`renderer\`. Switching between wind and material calls setRenderer on the same service and keeps the transcript. Choosing both adds a Material chat on its own service that copies the current transcript; leaving both removes it.
 - **Appends**: \`scenario\` scripts its traffic into the current transcript. Scenarios that need an empty transcript start a new chat first and say so: First-run experience, Long history with pagination. Changing scenario stops whatever the previous one still had scheduled (for example the rest of a stream).
 - **Remounts**: nothing driven by a control. Storybook's Remount button and the locale toolbar (which remounts every story) are the full reset: the chat keeps its service instance and starts it over from the story's controls.
@@ -139,6 +139,12 @@ const meta = {
     title: { control: 'text', table: { category: 'Labels' } },
     inputPlaceholder: { control: 'text', table: { category: 'Labels' } },
     footerDisclaimer: { control: 'text', table: { category: 'Labels' } },
+    infoLinks: {
+      control: 'object',
+      description:
+        'Links shown beside the footer disclaimer, as `{ label, url }` entries. A URL that is not http(s) or relative shows its label as plain text. Hidden with disableFooter.',
+      table: { category: 'Labels' },
+    },
     scenario: {
       control: {
         type: 'select',
@@ -181,6 +187,7 @@ const meta = {
     title: '',
     inputPlaceholder: '',
     footerDisclaimer: '',
+    infoLinks: [],
     scenario: 'conversation',
     autoReply: 'stream',
     streamDelayMs: 80,
@@ -210,6 +217,20 @@ export const CompareRenderers: Story = {
   name: 'Compare renderers',
   args: { renderer: 'both' },
   // Material mounts after the story reports rendered.
+  parameters: { sbdiff: { delayMs: 1500 } },
+};
+
+/** Info links beside the footer disclaimer, compared across both renderers. */
+export const InfoLinks: Story = {
+  name: 'Info links',
+  args: {
+    renderer: 'both',
+    infoLinks: [
+      { label: 'Terms', url: 'https://example.com/terms' },
+      { label: 'Privacy policy', url: 'https://example.com/privacy' },
+      { label: 'Chat history policy', url: 'https://example.com/chat-history' },
+    ],
+  },
   parameters: { sbdiff: { delayMs: 1500 } },
 };
 

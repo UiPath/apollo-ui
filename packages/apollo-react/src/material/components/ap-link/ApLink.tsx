@@ -13,6 +13,7 @@ export const ApLink = React.forwardRef<HTMLAnchorElement, ApLinkProps>(
     {
       href,
       target = '_self',
+      rel,
       label,
       color,
       variant = FontVariantToken.fontSizeLink,
@@ -33,14 +34,23 @@ export const ApLink = React.forwardRef<HTMLAnchorElement, ApLinkProps>(
           // For keyboard events, just navigate - onClick is for mouse events only
           if (href) {
             if (target === '_blank') {
-              window.open(href, '_blank');
+              // The anchor's `rel` applies to a click only, so it is repeated as window features.
+              const features = rel
+                ?.split(/\s+/)
+                .filter((token) => token === 'noopener' || token === 'noreferrer')
+                .join(',');
+              if (features) {
+                window.open(href, '_blank', features);
+              } else {
+                window.open(href, '_blank');
+              }
             } else {
               window.location.href = href;
             }
           }
         }
       },
-      [href, target]
+      [href, target, rel]
     );
 
     return (
@@ -48,6 +58,7 @@ export const ApLink = React.forwardRef<HTMLAnchorElement, ApLinkProps>(
         ref={ref}
         href={href}
         target={target}
+        rel={rel}
         aria-label={label}
         tabIndex={tabIndex}
         onClick={onClick}
