@@ -6,7 +6,7 @@
  * Supports both Lucide icons (via DynamicIcon) and UIPath custom icons.
  */
 
-import { icons } from 'lucide-react';
+import { icons, type LucideIcon } from 'lucide-react';
 import { type ComponentType, type CSSProperties, type JSX, memo, useMemo } from 'react';
 import {
   AgentGlyph,
@@ -44,6 +44,35 @@ const sizedIcon =
     const height = h ?? 24;
     return <Icon size={width} color={color} style={height === width ? undefined : { height }} />;
   };
+
+/**
+ * The DMN element icons, sized for a node's icon tile: lucide drawn at 86% of its box with a 1.5
+ * stroke, so the glyph sits lighter inside the tile than a full-size, 2-weight icon would. The
+ * viewBox is widened around the centre rather than the svg transformed, so the element's box stays
+ * what is drawn. Toolbars and palettes, which set these beside full-size icons, should use the
+ * plain lucide names instead.
+ */
+const DMN_TILE_ICON_SCALE = 15.5 / 18;
+const DMN_TILE_VIEWBOX_SIZE = 24 / DMN_TILE_ICON_SCALE;
+const DMN_TILE_VIEWBOX = [
+  (24 - DMN_TILE_VIEWBOX_SIZE) / 2,
+  (24 - DMN_TILE_VIEWBOX_SIZE) / 2,
+  DMN_TILE_VIEWBOX_SIZE,
+  DMN_TILE_VIEWBOX_SIZE,
+]
+  .map((value) => Number(value.toFixed(3)))
+  .join(' ');
+const dmnTileIcon =
+  (Icon: LucideIcon): IconComponent =>
+  ({ w, h, color }) => (
+    <Icon
+      width={w ?? 24}
+      height={h ?? 24}
+      color={color}
+      viewBox={DMN_TILE_VIEWBOX}
+      strokeWidth={1.5 / DMN_TILE_ICON_SCALE}
+    />
+  );
 
 /**
  * Registry of available icons (UIPath icons only)
@@ -87,6 +116,13 @@ const iconRegistry: Record<string, IconComponent> = {
   'maestro-case': sizedIcon(MaestroCaseFlat),
   'maestro-flow': sizedIcon(MaestroFlowFlat),
   rpa: sizedIcon(RpaGlyph),
+  // DMN decision requirements diagram elements, sized for a node's icon tile.
+  'dmn-decision-table': dmnTileIcon(icons.Table2),
+  'dmn-decision-expression': dmnTileIcon(icons.SquareFunction),
+  'dmn-input-data': dmnTileIcon(icons.SquareArrowRightEnter),
+  'dmn-knowledge-model': dmnTileIcon(icons.BookOpenText),
+  'dmn-knowledge-source': dmnTileIcon(icons.FileText),
+  'dmn-text-annotation': dmnTileIcon(icons.MessageSquare),
 };
 
 /**
