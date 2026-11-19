@@ -32,6 +32,7 @@ const Host = ({ initial }: { initial: FixtureGraph }) => {
   const [graph, setGraph] = useState(initial);
   return (
     <DecisionGraphText
+      citations={{ kind: 'none' }}
       nodes={nodesOf(graph)}
       mode={{
         kind: 'edit',
@@ -78,6 +79,7 @@ describe('rename while the host changes the name', () => {
     const actions: DecisionGraphAction<string, string>[] = [{ kind: 'rename', onRename }];
     const view = (label: string) => (
       <DecisionGraphText
+        citations={{ kind: 'none' }}
         nodes={[leaf('a', label)]}
         mode={{
           kind: 'edit',

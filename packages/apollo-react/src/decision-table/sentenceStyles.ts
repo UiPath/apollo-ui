@@ -15,7 +15,7 @@ export const DECISION_TEXT_FRAME_CLASS = cn(
 export const DECISION_TEXT_INLINE_FRAME_CLASS = DECISION_TEXT_SURFACE_CLASS;
 
 export const DECISION_TEXT_HEADER_CLASS =
-  'sticky top-0 z-2 flex flex-wrap items-baseline gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
+  'group/header sticky top-0 z-2 flex flex-wrap items-baseline gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
 
 export const HEADER_LABEL_CLASS = 'font-semibold';
 
@@ -219,8 +219,22 @@ export const RULE_ACTIONS_CLASS =
 export const RULE_ACTION_CLASS = 'size-6 text-foreground-de-emp hover:text-foreground';
 
 /** Hidden until its card is hovered or holds the selection, or it has keyboard focus. */
-const REVEALED_ACTION_CLASS =
+export const REVEALED_ACTION_CLASS =
   'opacity-0 group-hover/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100';
+
+export const CITATION_BUTTON_CLASS =
+  'gap-1 text-foreground-de-emp hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0';
+
+export const RULE_CITATIONS_CLASS = 'ms-auto flex flex-wrap justify-end gap-1';
+
+export const CITED_LINES_CLASS = 'flex flex-wrap items-end gap-x-2';
+
+export const CITED_LINE_CLASS = 'grow';
+
+export const HEADER_CITATIONS_CLASS = 'ms-auto flex gap-1 self-center';
+
+export const HEADER_CITATION_REVEAL_CLASS =
+  'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100';
 
 export const DELETE_RULE_CLASS = cn(
   RULE_ACTION_CLASS,

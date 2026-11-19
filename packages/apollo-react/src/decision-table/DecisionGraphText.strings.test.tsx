@@ -16,7 +16,7 @@ type Calls<Labels> = {
     : never;
 };
 
-const CALLS: Omit<Calls<DecisionGraphLabels>, 'markStatus'> = {
+const CALLS: Omit<Calls<DecisionGraphLabels>, 'markStatus' | 'openCitation' | 'citationPage'> = {
   ruleCount: [[1], [12]],
   seeAbove: [['Risk']],
   usedBy: [['Eligibility, Pricing']],
@@ -46,7 +46,12 @@ const providerFor =
     i18n ? <I18nProvider i18n={i18n}>{children}</I18nProvider> : children;
 
 const builtInStrings = (i18n: I18n | null): string[] => {
-  const { markStatus: _, ...labels } = renderHook(() => useDecisionGraphLabels(), {
+  const {
+    markStatus: _,
+    openCitation: _openCitation,
+    citationPage: _citationPage,
+    ...labels
+  } = renderHook(() => useDecisionGraphLabels(), {
     wrapper: providerFor(i18n),
   }).result.current;
   return Object.entries(labels).flatMap(([key, value]) =>

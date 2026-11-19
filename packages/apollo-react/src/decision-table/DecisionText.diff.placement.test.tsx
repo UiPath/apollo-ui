@@ -158,6 +158,7 @@ describe('values of a removed column', () => {
   it('shows the removed output value in the card heading, not among its conditions', () => {
     render(
       <DecisionText
+        citations={{ kind: 'none' }}
         table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -181,6 +182,7 @@ describe('values of a removed column', () => {
 const renderDiff = (diff: FixtureDiff, rules: readonly SentenceRule[] = DIFF_RULES) =>
   render(
     <DecisionText
+      citations={{ kind: 'none' }}
       table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
       hitPolicies={HIT_POLICIES}
       columnTypes={COLUMN_TYPES}

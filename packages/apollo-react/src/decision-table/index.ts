@@ -22,6 +22,7 @@ export type {
 } from './decisionGraphActionTypes';
 export type {
   DecisionGraphBodyContext,
+  DecisionGraphCitations,
   DecisionGraphDecisionNode,
   DecisionGraphExpansion,
   DecisionGraphLogic,
@@ -104,9 +105,13 @@ export {
 } from './sentenceGridSelection';
 export type { GlyphTone } from './sentenceMarks';
 export type {
+  CitationBox,
+  DecisionTextCitations,
   DecisionTextTable,
+  OpenCitation,
   SentenceBandColumn,
   SentenceCellId,
+  SentenceCitation,
   SentenceLine,
   SentenceNameToken,
   SentencePart,

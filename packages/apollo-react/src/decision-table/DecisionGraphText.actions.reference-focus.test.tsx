@@ -26,6 +26,7 @@ const withReference = (present: boolean): DecisionGraphNode[] => [
 
 const graph = (actions: readonly Action[], nodes: readonly DecisionGraphNode[]) => (
   <DecisionGraphText
+    citations={{ kind: 'none' }}
     nodes={nodes}
     mode={{
       kind: 'edit',

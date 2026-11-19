@@ -29,9 +29,13 @@ import {
 import { useStoryHistory } from './__fixtures__/useStoryHistory';
 import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
 import { DecisionText } from './DecisionText';
-import type { DecisionGraphNode, DecisionGraphTarget } from './decisionGraphTypes';
+import type {
+  DecisionGraphCitations,
+  DecisionGraphNode,
+  DecisionGraphTarget,
+} from './decisionGraphTypes';
 import { selectedColumnOf } from './sentenceSelection';
-import type { SentenceSelection, SentenceValueId } from './sentenceTypes';
+import type { SentenceCitation, SentenceSelection, SentenceValueId } from './sentenceTypes';
 
 interface GraphSelection {
   decisionId: string;
@@ -42,6 +46,7 @@ interface GraphHostProps {
   graph: GraphFixture;
   mode?: HostMode;
   caption: string;
+  cited: boolean;
 }
 
 const isTable = (body: GraphBody | undefined): body is EditableTable => typeof body === 'object';
@@ -87,7 +92,7 @@ const headedNodes = (
     };
   });
 
-const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
+const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => {
   const { state: tables, set: setTables, onUndo, onRedo } = useStoryHistory(() => tablesOf(graph));
   const [selected, setSelected] = useState<GraphSelection | null>(null);
   const [editing, setEditing] = useState<{ decisionId: string; value: SentenceValueId } | null>(
@@ -107,6 +112,20 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
       ])
     );
   }, [tables, nodes]);
+  const [openedCitation, setOpenedCitation] = useState<SentenceCitation | null>(null);
+  const citations = useMemo((): DecisionGraphCitations => {
+    if (!cited) return { kind: 'none' };
+    const [first, second] = drawnIdsOf(nodes);
+    const box = { x: 72, y: 120, width: 420, height: 32 };
+    const decisions = new Map<string, readonly SentenceCitation[]>();
+    if (first)
+      decisions.set(first, [
+        { kind: 'block', page: 1, blockId: 4, box },
+        { kind: 'page', page: 2 },
+      ]);
+    if (second) decisions.set(second, [{ kind: 'box', page: 3, box }]);
+    return { kind: 'cited', decisions, onOpenCitation: setOpenedCitation };
+  }, [cited, nodes]);
   const notes = [...model.decisions.values()].reduce((count, { notes }) => count + notes.length, 0);
 
   const isTableNow = (decisionId: string) =>
@@ -138,6 +157,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     });
     return (
       <DecisionText
+        citations={{ kind: 'none' }}
         table={{ rules: rulesById.get(decisionId) ?? [], ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -191,6 +211,7 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
     <div className="flex flex-col gap-2">
       <div className="flex h-[640px] flex-col border border-border-de-emp">
         <DecisionGraphText
+          citations={citations}
           nodes={nodes}
           renderBody={renderBody}
           onFold={(decisionId) => {
@@ -223,7 +244,8 @@ const GraphHost = ({ graph, mode = 'edit', caption }: GraphHostProps) => {
         {revealed
           ? `${revealed.decisionId} / ${revealed.kind === 'rule' ? revealed.rowId : 'decision'}`
           : 'none'}{' '}
-        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'} · Notes: {notes}
+        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'} · Notes: {notes}{' '}
+        · Source: {openedCitation ? `page ${openedCitation.page}` : 'none'}
       </p>
       <p className="text-xs text-foreground-de-emp">{caption}</p>
       <p className="text-xs text-foreground-de-emp">
@@ -283,6 +305,7 @@ export const Default: StoryObj<DefaultArgs> = {
   },
   render: ({ graph, mode }) => (
     <GraphHost
+      cited={false}
       key={`${graph}-${mode}`}
       graph={GRAPHS[graph].graph}
       mode={mode}
@@ -296,6 +319,7 @@ export const Errors: StoryObj<GraphArgs> = {
   argTypes: { mode: MODE_ARG },
   render: ({ mode }) => (
     <GraphHost
+      cited={false}
       key={mode}
       graph={MARKED}
       mode={mode}
@@ -311,10 +335,22 @@ export const LargeGraph: StoryObj<GraphArgs> = {
   argTypes: { mode: MODE_ARG },
   render: ({ mode }) => (
     <GraphHost
+      cited={false}
       key={mode}
       graph={LARGE_GRAPH}
       mode={mode}
       caption="50 decisions and 500 rules: open the minimap top left, search, and pick a decision or a rule."
+    />
+  ),
+};
+
+export const Citations: StoryObj = {
+  render: () => (
+    <GraphHost
+      cited
+      graph={GRAPHS['shared dependency'].graph}
+      mode="select"
+      caption="The first decision has two sources and the second one: hover a heading for its source buttons, or select it to show their pages."
     />
   ),
 };

@@ -24,6 +24,7 @@ import { tableMarks } from './sentenceMarks';
 import { sentenceListStyle } from './sentenceRuleHeights';
 import { DECISION_TEXT_FRAME_CLASS, DECISION_TEXT_INLINE_FRAME_CLASS } from './sentenceStyles';
 import type {
+  DecisionTextCitations,
   DecisionTextTable,
   SentenceBand,
   SentenceNameToken,
@@ -76,6 +77,8 @@ export interface DecisionTextProps<Op, Policy, Total, Type, Refusal> {
   hitPolicies: HitPolicyCatalog<Policy, Total>;
   /** The host's column types, worded and each told apart by `===`, which the band glyphs and the column popover's select show. */
   columnTypes: readonly ColumnTypeOption<Type>[];
+  /** Where the decision and its rules were read from, each opened by the host; `{ kind: 'none' }` shows none. */
+  citations: DecisionTextCitations;
   /** Shows each rule's 1-based position before its heading. */
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
@@ -120,6 +123,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   mode,
   hitPolicies,
   columnTypes,
+  citations,
   numbered = false,
   marks = EMPTY_MARKS,
   onCellHover,
@@ -255,6 +259,11 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
         title={title}
         hint={policyHeader.hint}
         mark={headerMark}
+        citations={
+          citations.kind === 'cited' && citations.decision.length > 0
+            ? { citations: citations.decision, onOpen: citations.onOpenCitation }
+            : null
+        }
         labels={labels}
         sticky={scroll === 'self'}
         dataTestId={dataTestId}
@@ -301,6 +310,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
           selectedColumnId={navigation.selectedColumnId}
           selectable={selectable}
           decisionLinks={onOpenDecision !== undefined}
+          citations={citations}
           style={listStyle}
           idPrefix={idPrefix}
           dataTestId={dataTestId}

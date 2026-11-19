@@ -379,10 +379,12 @@ describe('DecisionGraphText minimap', () => {
     const [selected, setSelected] = useState<{ id: string; rule: SentenceSelection } | null>(null);
     return (
       <DecisionGraphText
+        citations={{ kind: 'none' }}
         nodes={nodes}
         rules={() => rules}
         renderBody={(id, scroll) => (
           <DecisionText
+            citations={{ kind: 'none' }}
             table={{ rules: rules, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
             hitPolicies={HIT_POLICIES}
             columnTypes={COLUMN_TYPES}
@@ -496,6 +498,7 @@ describe('DecisionGraphText minimap', () => {
     });
     render(
       <DecisionGraphText
+        citations={{ kind: 'none' }}
         nodes={[first, second].map(({ decisionId }) => ({
           kind: 'decision',
           id: decisionId,

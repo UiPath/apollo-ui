@@ -2,7 +2,11 @@ import { cn } from '@uipath/apollo-wind';
 import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { DecisionGraphCard, DecisionGraphReference } from './DecisionGraphCard';
+import {
+  DecisionGraphCard,
+  type DecisionGraphCardProps,
+  DecisionGraphReference,
+} from './DecisionGraphCard';
 import {
   DecisionGraphMinimapSlot,
   type DecisionGraphMinimapSlotProps,
@@ -29,6 +33,7 @@ import {
 } from './decisionGraphStyles';
 import type {
   DecisionGraphBodyContext,
+  DecisionGraphCitations,
   DecisionGraphDecisionNode,
   DecisionGraphExpansion,
   DecisionGraphNode,
@@ -53,6 +58,8 @@ export interface DecisionGraphTextProps<Refusal, Logic> {
     scroll: Exclude<DecisionTextScroll, 'self'>,
     context: DecisionGraphBodyContext
   ) => React.ReactNode;
+  /** Where each decision was read from, on its heading and opened by the host; `{ kind: 'none' }` shows none. */
+  citations: DecisionGraphCitations;
   /** The view folded this decision, unmounting its body: close what the host had open in it, such as its editor. */
   onFold?: (decisionId: string) => void;
   /** The open decisions as the host keeps them; without it the view keeps them, all folded at first. */
@@ -76,6 +83,16 @@ const markTargetOf = ({ id, mark }: DecisionGraphDecisionNode): DecisionGraphTar
   mark?.kind === 'rule'
     ? { kind: 'rule', decisionId: id, rowId: mark.rowId }
     : { kind: 'decision', decisionId: id };
+
+const citationOf = (
+  citations: DecisionGraphCitations,
+  decisionId: string
+): DecisionGraphCardProps['citations'] => {
+  const cited = citations.kind === 'cited' ? (citations.decisions.get(decisionId) ?? []) : [];
+  return citations.kind === 'cited' && cited.length > 0
+    ? { citations: cited, onOpen: citations.onOpenCitation }
+    : null;
+};
 
 const focuses = (mode: RevealMode): boolean => mode.kind === 'navigate' && mode.focus;
 
@@ -153,6 +170,7 @@ export const DecisionGraphText = <Refusal, Logic>({
   nodes,
   mode,
   renderBody,
+  citations,
   expansion,
   onFold,
   onOpenDecision,
@@ -391,6 +409,7 @@ export const DecisionGraphText = <Refusal, Logic>({
           }
           onOpen={openOf(node.id)}
           actions={actions.cardOf(node, position)}
+          citations={citationOf(citations, node.id)}
           cardRef={cardRef(node.id)}
           dataTestId={dataTestId}
         />

@@ -52,13 +52,16 @@ export type ModeProps = Partial<
 /** The view's props with its mode and table given as separate props, in the fixtures' vocabulary unless it names another. */
 export type FlatTextProps = Omit<
   FixtureTextProps,
-  'mode' | 'table' | 'hitPolicies' | 'columnTypes'
+  'mode' | 'table' | 'hitPolicies' | 'columnTypes' | 'citations'
 > &
   ModeProps &
   DecisionTextTable<FixturePolicy, FixtureTotal, FixtureType> &
-  Partial<Pick<FixtureTextProps, 'hitPolicies' | 'columnTypes'>>;
+  Partial<Pick<FixtureTextProps, 'hitPolicies' | 'columnTypes' | 'citations'>>;
 
 const noop = () => {};
+
+/** No citations, as a host without extraction passes. */
+export const NO_CITATIONS: FixtureTextProps['citations'] = { kind: 'none' };
 
 /** The mode the separate props name. */
 export const modeOf = ({
@@ -109,11 +112,13 @@ export const textPropsOf = ({
   rules,
   hitPolicies = HIT_POLICIES,
   columnTypes = COLUMN_TYPES,
+  citations = NO_CITATIONS,
   ...props
 }: FlatTextProps): FixtureTextProps => ({
   ...props,
   table: { hitPolicy, inputs, outputs, rules },
   hitPolicies,
   columnTypes,
+  citations,
   mode: modeOf({ selected, onSelect, edit, onAddRule, onPolicyChange, onUndo, onRedo, diff }),
 });
