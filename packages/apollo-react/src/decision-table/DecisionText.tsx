@@ -53,8 +53,13 @@ import { ValueEditorOverlay } from './ValueEditorOverlay';
 /** A click or key asks for this selection, or null on Escape. */
 type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
 
-/** How the view is used: read, select rules and cells the host keeps, edit them in the host's operators, hit policies, column types and refusals, or read what changed. */
 const NO_CITATIONS: DecisionTextCitations = { kind: 'none' };
+
+/** The host's own value for an attribute, with the view's hint after it. */
+const withHint = (host: string | undefined, hint: string | false): string | undefined =>
+  [host, hint].filter(Boolean).join(' ') || undefined;
+
+/** How the view is used: read, select rules and cells the host keeps, edit them in the host's operators, hit policies, column types and refusals, or read what changed. */
 
 export type DecisionTextMode<Op, Policy, Total, Type, Refusal> =
   | { kind: 'read'; selected: SentenceSelection | null }
@@ -244,6 +249,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     revealRow: ruleWindow.scrollRowIntoView,
     revealStop: ruleWindow.scrollStopIntoView,
   });
+  const citationKeysHinted = !selectable && citedRows.length > 0;
   const columnEditing = useColumnEditing({
     column: mode.kind === 'edit' ? mode.edit.column : undefined,
     bands,
@@ -266,6 +272,11 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
       data-testid={dataTestId}
       {...sectionProps}
       aria-label={ariaLabel}
+      aria-keyshortcuts={withHint(sectionProps['aria-keyshortcuts'], citationKeysHinted && 'Enter')}
+      aria-description={withHint(
+        sectionProps['aria-description'],
+        citationKeysHinted && labels.pressEnterForSources
+      )}
       className={cn(
         scroll === 'self' ? DECISION_TEXT_FRAME_CLASS : DECISION_TEXT_INLINE_FRAME_CLASS,
         sectionProps.className

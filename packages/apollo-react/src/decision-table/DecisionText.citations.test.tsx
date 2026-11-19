@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
@@ -20,6 +23,10 @@ import {
 import { type FixtureTextProps, textPropsOf } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextCitations, SentenceCitation, SentenceSelection } from './sentenceTypes';
+
+const catalog: Record<string, string> = JSON.parse(
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'locales', 'en.json'), 'utf8')
+);
 
 const BOX = { x: 10, y: 20, width: 300, height: 40 };
 const DECISION_CITATION: SentenceCitation = { kind: 'page', page: 1 };
@@ -138,6 +145,61 @@ describe('DecisionText citations', () => {
     expect(onOpenCitation).toHaveBeenCalledTimes(1);
     expect(onOpenCitation).toHaveBeenCalledWith(RULE_CITATION);
     expect(onSelect).not.toHaveBeenCalledWith({ kind: 'rule', rowId: secondRowId() });
+  });
+
+  it('tells a read view with rule citations how to reach them', () => {
+    renderView({ citations: cited() });
+    const view = screen.getByRole('region', { name: 'Rules' });
+    expect(view.getAttribute('aria-keyshortcuts')).toBe('Enter');
+    expect(view.getAttribute('aria-description')).toBe("Press Enter to reach the rules' sources");
+  });
+
+  it.each([
+    ['no citations', {}],
+    ['a selectable view', { citations: cited(), selected: null, onSelect: vi.fn() }],
+    [
+      'only a decision citation',
+      {
+        citations: {
+          kind: 'cited',
+          decision: [DECISION_CITATION],
+          rules: new Map(),
+          onOpenCitation: vi.fn(),
+        } satisfies DecisionTextCitations,
+      },
+    ],
+  ] as const)('gives no citation key hint with %s', (_, props) => {
+    renderView(props);
+    const view = screen.getByRole('region', { name: 'Rules' });
+    expect(view.hasAttribute('aria-keyshortcuts')).toBe(false);
+    expect(view.hasAttribute('aria-description')).toBe(false);
+  });
+
+  it.each([
+    ['no citations', {}, 'Control+K', 'Host hint'],
+    [
+      'rule citations',
+      { citations: cited() },
+      'Control+K Enter',
+      "Host hint Press Enter to reach the rules' sources",
+    ],
+  ] as const)('keeps the host keys and description with %s', (_, props, keys, description) => {
+    renderView({
+      ...props,
+      containerProps: { 'aria-keyshortcuts': 'Control+K', 'aria-description': 'Host hint' },
+    });
+    const view = screen.getByRole('region', { name: 'Rules' });
+    expect(view.getAttribute('aria-keyshortcuts')).toBe(keys);
+    expect(view.getAttribute('aria-description')).toBe(description);
+  });
+
+  it.each([
+    'decision-text.open_rule_citation',
+    'decision-text.open_decision_citation',
+    'decision-text.open_table_citation',
+  ] as const)('words %s with a numbered select, not a count', (id) => {
+    expect(catalog[id]).toContain('{numbered, select, yes {');
+    expect(catalog[id]).not.toContain('plural');
   });
 
   it('keeps rule citations out of the tab order in read mode', () => {
