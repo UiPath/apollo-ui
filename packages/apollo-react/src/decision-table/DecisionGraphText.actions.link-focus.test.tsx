@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { vi } from 'vitest';
 import type { DecisionGraphAction } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 import { TokenChip } from './TokenChip';
 
 type Action = DecisionGraphAction<string, string>;
@@ -81,9 +81,14 @@ const setup = () => {
     handle.fold = () => setExpanded(new Set());
     handle.dropLink = () => setShowLink(false);
     return (
-      <EditableDecisionGraphText
+      <DecisionGraphText
         nodes={[leaf('a', 'A'), leaf('m', 'M'), leaf('x', 'X')]}
-        mode={{ kind: 'edit', edit: { actions, wordRefusal: (refusal) => refusal } }}
+        mode={{
+          kind: 'edit',
+          selected: null,
+          onReveal: () => {},
+          edit: { actions, wordRefusal: (refusal) => refusal },
+        }}
         renderBody={(decisionId) =>
           decisionId === 'a' && showLink ? <div data-testid="body-a">{linkToX}</div> : null
         }

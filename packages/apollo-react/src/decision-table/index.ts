@@ -41,10 +41,6 @@ export type {
 } from './decisionTextDiff';
 export type { DecisionTextEdit } from './decisionTextTypes';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
-export {
-  EditableDecisionGraphText,
-  type EditableDecisionGraphTextProps,
-} from './EditableDecisionGraphText';
 export { GridCell, type GridCellProps, renderRestingCellContent } from './GridCell';
 export {
   GridContextMenu,

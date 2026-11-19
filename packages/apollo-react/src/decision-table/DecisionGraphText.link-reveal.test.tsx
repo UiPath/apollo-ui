@@ -50,7 +50,7 @@ const Host = ({
       nodes={[leaf('a'), leaf('income')]}
       expansion={{ expanded, onChange: setExpanded }}
       onOpenDecision={onOpenDecision}
-      onReveal={onReveal}
+      mode={{ kind: 'select', selected: null, onReveal }}
       renderBody={(decisionId, scroll, { revealDecision }) =>
         decisionId === 'a' ? (
           <DecisionText

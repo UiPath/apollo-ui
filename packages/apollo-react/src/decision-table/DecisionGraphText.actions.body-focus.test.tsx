@@ -6,7 +6,7 @@ import { vi } from 'vitest';
 import { DecisionTable } from './DecisionTable';
 import type { DecisionGraphNode } from './decisionGraphTypes';
 import * as stories from './DecisionGraphText.stories';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
@@ -63,9 +63,14 @@ describe('focus when a focused rule in a graph body is deleted', () => {
       const [rows, setRows] = useState(['r1', 'r2']);
       if (lifted) remove = () => setRows(['r2']);
       return (
-        <EditableDecisionGraphText
+        <DecisionGraphText
           nodes={nodes}
-          mode={{ kind: 'edit', edit: { actions: [], wordRefusal: (r: string) => r } }}
+          mode={{
+            kind: 'edit',
+            selected: null,
+            onReveal: () => {},
+            edit: { actions: [], wordRefusal: (r: string) => r },
+          }}
           renderBody={() => (lifted ? <Table rows={rows} /> : <Body />)}
           dataTestId="graph"
         />

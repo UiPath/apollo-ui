@@ -11,7 +11,7 @@ import {
 } from './__fixtures__/graphActionsHost';
 import type { DecisionGraphAction } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 const leaf = (
   id: string,
@@ -31,10 +31,12 @@ const START = graphOf([leaf('p', 'P', [leaf('a', 'A', [leaf('d', 'D')]), ref('p-
 const Host = ({ initial }: { initial: FixtureGraph }) => {
   const [graph, setGraph] = useState(initial);
   return (
-    <EditableDecisionGraphText
+    <DecisionGraphText
       nodes={nodesOf(graph)}
       mode={{
         kind: 'edit',
+        selected: null,
+        onReveal: () => {},
         edit: { actions: fixtureActions(graph, setGraph), wordRefusal: wordFixtureRefusal },
       }}
       renderBody={() => null}
@@ -75,9 +77,14 @@ describe('rename while the host changes the name', () => {
     const onRename = vi.fn();
     const actions: DecisionGraphAction<string, string>[] = [{ kind: 'rename', onRename }];
     const view = (label: string) => (
-      <EditableDecisionGraphText
+      <DecisionGraphText
         nodes={[leaf('a', label)]}
-        mode={{ kind: 'edit', edit: { actions, wordRefusal: (r) => r } }}
+        mode={{
+          kind: 'edit',
+          selected: null,
+          onReveal: () => {},
+          edit: { actions, wordRefusal: (r) => r },
+        }}
         renderBody={() => null}
         dataTestId="graph"
       />

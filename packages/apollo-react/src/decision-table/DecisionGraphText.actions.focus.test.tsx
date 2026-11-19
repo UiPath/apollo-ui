@@ -5,15 +5,20 @@ import { vi } from 'vitest';
 import { SHARED_DEPENDENCY } from './__fixtures__/decisionGraph.fixtures';
 import type { DecisionGraphAction } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 type Action = DecisionGraphAction<string, string>;
 const NODES = SHARED_DEPENDENCY.nodes;
 
 const graph = (actions: readonly Action[], nodes: readonly DecisionGraphNode[] = NODES) => (
-  <EditableDecisionGraphText
+  <DecisionGraphText
     nodes={nodes}
-    mode={{ kind: 'edit', edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` } }}
+    mode={{
+      kind: 'edit',
+      selected: null,
+      onReveal: () => {},
+      edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
+    }}
     renderBody={() => null}
     dataTestId="graph"
   />

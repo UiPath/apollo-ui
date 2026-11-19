@@ -3,17 +3,19 @@ import userEvent from '@testing-library/user-event';
 import { createRoot } from 'react-dom/client';
 import type { DecisionGraphAction, DecisionGraphMode } from './decisionGraphActionTypes';
 import type { DecisionGraphNode } from './decisionGraphTypes';
-import { EditableDecisionGraphText } from './EditableDecisionGraphText';
+import { DecisionGraphText } from './DecisionGraphText';
 
 type Action = DecisionGraphAction<string, string>;
 
 const editMode = (actions: readonly Action[]): DecisionGraphMode<string, string> => ({
   kind: 'edit',
+  selected: null,
+  onReveal: () => {},
   edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
 });
 
 const graph = (mode: DecisionGraphMode<string, string>, nodes: readonly DecisionGraphNode[]) => (
-  <EditableDecisionGraphText nodes={nodes} mode={mode} renderBody={() => null} dataTestId="graph" />
+  <DecisionGraphText nodes={nodes} mode={mode} renderBody={() => null} dataTestId="graph" />
 );
 
 const leaf = (id: string, label: string): DecisionGraphNode => ({
@@ -74,7 +76,7 @@ describe('focus when the host takes away what holds it', () => {
     screen.getByTestId('graph-toggle-a').focus();
     await userEvent.keyboard('{F2}');
     act(() => {
-      rerender(graph({ kind: 'read' }, NODES));
+      rerender(graph({ kind: 'read', selected: null }, NODES));
     });
     expect(document.activeElement).not.toBe(document.body);
   });
@@ -108,7 +110,7 @@ describe('focus when the host takes away what holds it', () => {
     await userEvent.click(screen.getByTestId('graph-menu-a'));
     expect(await screen.findByRole('menuitem', { name: 'Add note' })).toBeTruthy();
     act(() => {
-      rerender(graph({ kind: 'read' }, NODES));
+      rerender(graph({ kind: 'read', selected: null }, NODES));
     });
     expect(screen.queryByRole('menu')).toBeNull();
     expect(document.activeElement).not.toBe(document.body);
