@@ -254,7 +254,7 @@ describe('ByoModelDialog', () => {
 
     await addCustomAlias(user, 'mine');
     await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
-    await user.click(await screen.findByRole('option', { name: 'Edit custom alias' }));
+    await user.click(await screen.findByRole('button', { name: 'Edit custom alias' }));
     const input = screen.getByRole('textbox', { name: 'Enter a custom alias' });
     expect(input).toHaveValue('mine');
     await user.clear(input);
@@ -695,10 +695,10 @@ describe('ByoModelDialog', () => {
 
       expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
         'mine',
-        'Edit custom alias',
         'gpt-4.1',
         'gpt-4o-2024-05-13Deprecated',
       ]);
+      expect(screen.getByRole('button', { name: 'Edit custom alias' })).toBeInTheDocument();
     });
 
     it('replaces a UiPath model, taking its name and the first API type', async () => {
