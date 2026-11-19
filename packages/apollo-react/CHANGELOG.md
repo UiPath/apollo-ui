@@ -1,3 +1,28 @@
+## [@uipath/apollo-react-v7.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.33.0...@uipath/apollo-react@7.34.0) (2026-11-19)
+
+### Features
+
+* **apollo-react:** add a notify prop for the Community dialog's confirmation [LLM-4518] ([9c1caed](https://github.com/UiPath/apollo-ui/commit/9c1caed4354fb4ec1f71602c531f84e66ff030dc))
+* **apollo-react:** add an inline BYO dialog to ModelPicker for Community [LLM-4518] ([555d955](https://github.com/UiPath/apollo-ui/commit/555d9550893ce8ca04646024282191e90d5700a8))
+* **apollo-react:** edit Community BYO models and connections inline [LLM-4518] ([a906835](https://github.com/UiPath/apollo-ui/commit/a9068356c30f4842762834a1eabe250efa8b0084))
+* **apollo-react:** match AI Trust Layer's BYO form in the Community dialog [LLM-4518] ([2a754b9](https://github.com/UiPath/apollo-ui/commit/2a754b9b195b552d99b4a2617fce19bc9c56c7bb))
+
+### Bug Fixes
+
+* **apollo-react:** address review findings on the Community BYO picker [LLM-4518] ([9563172](https://github.com/UiPath/apollo-ui/commit/956317221fe967af3d2671c7e27d90c04b62bc3c))
+* **apollo-react:** edit every BYO model inline in the Community dialog [LLM-4518] ([326cd82](https://github.com/UiPath/apollo-ui/commit/326cd82d247758503680b99210608181757caa58))
+* **apollo-react:** harden Community BYO saves and edits in ModelPicker [LLM-4518] ([f519795](https://github.com/UiPath/apollo-ui/commit/f51979536d26fa1a67c4b0f0ae349a462de3582e))
+* **apollo-react:** keep the user's pick and report the saved folder [LLM-4518] ([5cd8bb5](https://github.com/UiPath/apollo-ui/commit/5cd8bb531550b72e0a9ce15ce0dab037b2860f9e))
+* **apollo-react:** list more image and video models as not supported [LLM-4518] ([ca7a6e9](https://github.com/UiPath/apollo-ui/commit/ca7a6e98d4cb770da203189133370e1b4734ade5))
+* **apollo-react:** look up model names as own properties only [LLM-4518] ([56b935d](https://github.com/UiPath/apollo-ui/commit/56b935d79f8911f163697dba32b9d3300b3ce486))
+* **apollo-react:** no edit fallback in Community, require a finished session [LLM-4518] ([e776e42](https://github.com/UiPath/apollo-ui/commit/e776e426ec89327f110d0c03924e9dfa06080810))
+* **apollo-react:** read the edited connection's form from its provider [LLM-4518] ([e2eb591](https://github.com/UiPath/apollo-ui/commit/e2eb59180b0e683ab0cb954d35501aabf6739648))
+* **apollo-react:** refuse to edit a connection of an unoffered auth type [LLM-4518] ([1c1f59b](https://github.com/UiPath/apollo-ui/commit/1c1f59b9803e9febeadde702fc5f8dd2b7d8a0b1))
+* **apollo-react:** select a saved model only from a catalog loaded after the save [LLM-4518] ([ca1f0ed](https://github.com/UiPath/apollo-ui/commit/ca1f0ed814884a17a2dd7c716af57bfd38a40d91))
+* **apollo-react:** select a saved model only when the picker offers it [LLM-4518] ([07a1776](https://github.com/UiPath/apollo-ui/commit/07a17760ff5741b7143c52a2f4cc364269121f0a))
+* **apollo-react:** select an edited model from the saved folder's catalog [LLM-4518] ([8b17661](https://github.com/UiPath/apollo-ui/commit/8b1766114158af7eee71c750b2afaa07719db3f2))
+* **apollo-react:** show the credentials of a single-auth-type connector [LLM-4518] ([8abd5ea](https://github.com/UiPath/apollo-ui/commit/8abd5ea91ba7f8e9bf10f0196d6191a94567d75a))
+
 ## [@uipath/apollo-react-v7.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.32.0...@uipath/apollo-react@7.33.0) (2026-11-19)
 
 ### Features

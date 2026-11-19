@@ -1,3 +1,22 @@
+## [@uipath/apollo-wind-v2.95.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.94.1...@uipath/apollo-wind@2.95.0) (2026-11-19)
+
+### Features
+
+* **apollo-wind:** add the "Use your own model" dialog [LLM-4518] ([3e1fff9](https://github.com/UiPath/apollo-ui/commit/3e1fff990ec11a517251372a40b9936e55cfe010))
+* **apollo-wind:** edit saved models and connections in the BYO dialog [LLM-4518] ([8f75c0d](https://github.com/UiPath/apollo-ui/commit/8f75c0dba15305d67c859b674d8464fd3404f889))
+* **apollo-wind:** replace a UiPath model and pick the API type in the BYO dialog [LLM-4518] ([b03f2ab](https://github.com/UiPath/apollo-ui/commit/b03f2abeddd9fdfe2c8b41d8f9609693ce8a9ddb))
+
+### Bug Fixes
+
+* **apollo-wind:** close the BYO dialog once the model is saved [LLM-4518] ([1d979d4](https://github.com/UiPath/apollo-ui/commit/1d979d4963a72611d6de3b41649456842665d9fb))
+* **apollo-wind:** pick the only API type again after a provider switch [LLM-4518] ([d52e5d3](https://github.com/UiPath/apollo-ui/commit/d52e5d37a1f4a39f76da5fd5ef592d7b334e921d))
+* **apollo-wind:** reload the model list after a failed connection edit [LLM-4518] ([58f0f4d](https://github.com/UiPath/apollo-ui/commit/58f0f4dcfe25a767fb47256e86b9981c546bd21d))
+* **apollo-wind:** require the secrets of a newly chosen auth type in an edit [LLM-4518] ([6ac95d8](https://github.com/UiPath/apollo-ui/commit/6ac95d89285de8179d8428556d5f84a911f209f8))
+* **apollo-wind:** reset the name mode when the BYO provider changes [LLM-4518] ([498701e](https://github.com/UiPath/apollo-ui/commit/498701efa5a7cca3ceee49534db7d34c491e884c))
+* **apollo-wind:** show why a provider's models could not be listed [LLM-4518] ([d32061b](https://github.com/UiPath/apollo-ui/commit/d32061b35742218b72b057cf89b58366bc3d17b7))
+* **apollo-wind:** stop a connection edit whose settings could not be read [LLM-4518] ([654e2c2](https://github.com/UiPath/apollo-ui/commit/654e2c26836c2efd75f23f9a4768162f0843d4e2))
+* **apollo-wind:** tell screen readers which credential fields are required [LLM-4518] ([7e1fa7b](https://github.com/UiPath/apollo-ui/commit/7e1fa7b3e1e3e2ef98806aa900377d12b2d329a6))
+
 ## [@uipath/apollo-wind-v2.94.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.94.0...@uipath/apollo-wind@2.94.1) (2026-11-18)
 
 ### Bug Fixes
