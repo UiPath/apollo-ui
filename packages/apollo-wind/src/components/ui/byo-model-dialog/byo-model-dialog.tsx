@@ -113,9 +113,9 @@ interface ConnectOutcome {
   updated: boolean;
 }
 
-/** "OpenAI – personal", or "OpenAI – personal 2" if that one is taken. */
+/** "OpenAI", or "OpenAI 2" if that one is taken. */
 function defaultConnectionName(providerName: string, connections: ByoConnection[]) {
-  const base = `${providerName} – personal`;
+  const base = providerName;
   const taken = new Set(connections.map((c) => c.name.toLowerCase()));
   if (!taken.has(base.toLowerCase())) return base;
   let n = 2;

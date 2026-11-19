@@ -185,9 +185,7 @@ describe('ByoModelDialog', () => {
     await user.type(screen.getByLabelText(/Endpoint/), 'https://res.openai.azure.com');
     await user.type(screen.getByLabelText(/API key/), 'secret');
     expect(screen.getByLabelText(/API key/)).toHaveAttribute('type', 'password');
-    expect(screen.getByRole('textbox', { name: 'Connection name' })).toHaveValue(
-      'Azure OpenAI – personal'
-    );
+    expect(screen.getByRole('textbox', { name: 'Connection name' })).toHaveValue('Azure OpenAI');
     await user.click(connect);
 
     await screen.findByText('Connected. New connection created in My Workspace.');
@@ -199,7 +197,7 @@ describe('ByoModelDialog', () => {
           'api-key': 'secret',
           apiVersion: '2023-10-01',
         },
-        name: 'Azure OpenAI – personal',
+        name: 'Azure OpenAI',
         folderId: 'me',
       })
     );
@@ -640,7 +638,7 @@ describe('ByoModelDialog', () => {
       await pick(user, 'Your model', model);
     }
 
-    it('lists the UiPath models it can replace, then a custom alias', async () => {
+    it('offers a custom alias first, then the UiPath models it can replace', async () => {
       const user = userEvent.setup();
       render(
         <ByoModelDialog open onOpenChange={vi.fn()} api={withReplaceable()} onSaved={vi.fn()} />
@@ -650,9 +648,9 @@ describe('ByoModelDialog', () => {
 
       // A UiPath model already replaced is not offered again.
       expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+        'Add custom alias',
         'gpt-4.1',
         'gpt-4o-2024-05-13Deprecated',
-        'Add custom alias',
       ]);
     });
 

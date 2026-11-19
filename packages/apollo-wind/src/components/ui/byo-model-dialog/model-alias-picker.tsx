@@ -149,6 +149,22 @@ export function ModelAliasPicker({
             />
             <CommandList className="max-h-[280px]">
               <CommandEmpty>{labels.aliasNoMatch(query)}</CommandEmpty>
+              {/* First, as in AI Trust Layer, so a long list does not hide it. */}
+              {allowsCustom && (
+                <CommandGroup>
+                  <CommandItem
+                    value="custom:add"
+                    onSelect={() => {
+                      setDraft(custom ?? query.trim());
+                      setAdding(true);
+                    }}
+                    className="gap-2 py-1.5 text-foreground-accent"
+                  >
+                    {custom === null ? <Plus size={14} /> : <Pencil size={14} />}
+                    {custom === null ? labels.addCustomAlias : labels.editCustomAlias}
+                  </CommandItem>
+                </CommandGroup>
+              )}
               {shown.length > 0 && (
                 <CommandGroup heading={labels.useReplacement}>
                   {shown.map((m) => (
@@ -182,21 +198,6 @@ export function ModelAliasPicker({
                     <span className="min-w-0 truncate font-mono text-xs text-foreground">
                       {custom}
                     </span>
-                  </CommandItem>
-                </CommandGroup>
-              )}
-              {allowsCustom && (
-                <CommandGroup>
-                  <CommandItem
-                    value="custom:add"
-                    onSelect={() => {
-                      setDraft(custom ?? query.trim());
-                      setAdding(true);
-                    }}
-                    className="gap-2 py-1.5 text-foreground-accent"
-                  >
-                    {custom === null ? <Plus size={14} /> : <Pencil size={14} />}
-                    {custom === null ? labels.addCustomAlias : labels.editCustomAlias}
                   </CommandItem>
                 </CommandGroup>
               )}
