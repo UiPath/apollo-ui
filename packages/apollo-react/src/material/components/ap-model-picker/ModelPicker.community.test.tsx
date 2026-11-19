@@ -21,14 +21,21 @@ const GATEWAY = 'https://cloud.local/org-guid/tenant-guid/llmgateway_';
 const RESPONSES: Record<string, unknown> = {
   [`GET ${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`]:
     {
-      PageItems: [{ Key: 'me', DisplayName: 'My Workspace', IsPersonal: true }],
+      PageItems: [
+        {
+          Key: 'shared',
+          DisplayName: 'Shared',
+          FullyQualifiedName: 'Shared',
+          FolderType: 'Standard',
+        },
+      ],
     },
   [`GET ${TENANT}/connections_/api/v1/Connections?allFolders=true&folderDefaults=true`]: [
     {
       id: 'conn-1',
       name: 'My OpenAI',
       connector: { key: 'uipath-openai-openai' },
-      folder: { key: 'me' },
+      folder: { key: 'shared' },
     },
   ],
   // One probe, so the dialog takes the API type itself.
@@ -53,7 +60,7 @@ const RESPONSES: Record<string, unknown> = {
   [`POST ${GATEWAY}/api/byo/product/llm-configurations`]: { id: 'cfg-1' },
   [`GET ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`]: {
     id: 'cfg-1',
-    folderId: 'me',
+    folderId: 'shared',
     llmConfigurations: [
       {
         id: 'e1',
@@ -67,7 +74,7 @@ const RESPONSES: Record<string, unknown> = {
   [`PUT ${GATEWAY}/api/byo/product/llm-configurations/cfg-1`]: {},
   [`GET ${GATEWAY}/api/byo/product/llm-configurations/cfg-2`]: {
     id: 'cfg-2',
-    folderId: 'me',
+    folderId: 'shared',
     llmConfigurations: [
       {
         id: 'e2',
@@ -271,7 +278,7 @@ describe('<ModelPicker isCommunity>', () => {
     await user.click(await screen.findByText(/use custom model/i));
     await addMyGptThroughMyOpenAi(user);
 
-    await waitFor(() => expect(onFolderChange).toHaveBeenCalledWith('me'));
+    await waitFor(() => expect(onFolderChange).toHaveBeenCalledWith('shared'));
   });
 
   it("edits a BYO row's model in the same dialog", async () => {
@@ -378,7 +385,7 @@ describe('<ModelPicker isCommunity>', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Test and save' }));
     await waitFor(() => expect(onCustomModelSaved).toHaveBeenCalled());
-    await waitFor(() => expect(onFolderChange).toHaveBeenCalledWith('me'));
+    await waitFor(() => expect(onFolderChange).toHaveBeenCalledWith('shared'));
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });

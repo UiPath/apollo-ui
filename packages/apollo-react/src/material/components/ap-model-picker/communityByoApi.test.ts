@@ -141,7 +141,16 @@ const routeNoFoldersOrConnections = () =>
       'GET',
       `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`,
       () => ({
-        body: { PageItems: [{ Key: 'me', DisplayName: 'My Workspace', IsPersonal: true }] },
+        body: {
+          PageItems: [
+            {
+              Key: 'shared',
+              DisplayName: 'Shared',
+              FullyQualifiedName: 'Shared',
+              FolderType: 'Standard',
+            },
+          ],
+        },
       })
     ),
     on(
@@ -592,7 +601,7 @@ describe('createCommunityByoApi', () => {
     expect(calls.filter((c) => c.url.endsWith('/llm-configurations'))).toHaveLength(0);
   });
 
-  it('lists personal workspace first and keeps only the BYO connectors', async () => {
+  it('lists the folders AI Trust Layer saves connections in and keeps only the BYO connectors', async () => {
     routes.push(
       on(
         'GET',
@@ -600,8 +609,20 @@ describe('createCommunityByoApi', () => {
         () => ({
           body: {
             PageItems: [
-              { Key: 'shared', DisplayName: 'Finance', FullyQualifiedName: 'Shared/Finance' },
-              { Key: 'me', DisplayName: 'My Workspace', IsPersonal: true },
+              { Key: 'me', DisplayName: 'My Workspace', IsPersonal: true, FolderType: 'Personal' },
+              {
+                Key: 'shared',
+                DisplayName: 'Shared',
+                FullyQualifiedName: 'Shared',
+                FolderType: 'Standard',
+              },
+              { Key: 'debug', DisplayName: 'Debug', FolderType: 'DebugSolution' },
+              {
+                Key: 'finance',
+                DisplayName: 'Finance',
+                FullyQualifiedName: 'Shared/Finance',
+                FolderType: 'Standard',
+              },
               { Key: 'nope', DisplayName: 'Locked', IsSelectable: false },
             ],
           },
@@ -616,25 +637,32 @@ describe('createCommunityByoApi', () => {
               id: 'c1',
               name: 'My OpenAI',
               connector: { key: 'uipath-openai-openai' },
-              folder: { key: 'me' },
+              folder: { key: 'shared' },
             },
             {
               id: 'c2',
               name: 'Slack',
               connector: { key: 'uipath-salesforce-slack' },
-              folder: { key: 'me' },
+              folder: { key: 'shared' },
             },
             // AI Trust Layer reaches Bedrock through Amazon Web Services, never this connector.
             {
               id: 'c3',
               name: 'Old Bedrock',
               connector: { key: 'uipath-aws-bedrock' },
-              folder: { key: 'me' },
+              folder: { key: 'shared' },
             },
             {
               id: 'c4',
               name: 'My AWS',
               connector: { key: 'uipath-amazon-webservices' },
+              folder: { key: 'finance' },
+            },
+            // A model saved on this one would be saved in the personal workspace.
+            {
+              id: 'c5',
+              name: 'Personal OpenAI',
+              connector: { key: 'uipath-openai-openai' },
               folder: { key: 'me' },
             },
           ],
@@ -648,15 +676,45 @@ describe('createCommunityByoApi', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.folders).toEqual([
-      { id: 'me', label: 'My Workspace' },
-      { id: 'shared', label: 'Shared › Finance' },
+      { id: 'shared', label: 'Shared' },
+      { id: 'finance', label: 'Shared › Finance' },
     ]);
-    expect(result.value.defaultFolderId).toBe('me');
+    expect(result.value.defaultFolderId).toBe('shared');
     expect(result.value.connections).toEqual([
-      { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'me' },
-      { id: 'c4', providerId: 'bedrock', name: 'My AWS', folderId: 'me' },
+      { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'shared' },
+      { id: 'c4', providerId: 'bedrock', name: 'My AWS', folderId: 'finance' },
     ]);
     expect(result.value.takenModelNames).toEqual(['gpt-4o', 'gpt-5-2025-08-07', 'my-claude']);
+  });
+
+  it('refuses when the only folder is the personal workspace', async () => {
+    routes.push(
+      on(
+        'GET',
+        `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`,
+        () => ({
+          body: {
+            PageItems: [
+              { Key: 'me', DisplayName: 'My Workspace', IsPersonal: true, FolderType: 'Personal' },
+            ],
+          },
+        })
+      ),
+      on(
+        'GET',
+        `${TENANT}/connections_/api/v1/Connections?allFolders=true&folderDefaults=true`,
+        () => ({
+          body: [],
+        })
+      )
+    );
+    routeGatewayRules();
+
+    const result = await api().loadContext();
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.failure.title).toBe('You need a folder for your connection');
   });
 
   it('refuses to edit a connection whose authentication type the dialog does not offer', async () => {
@@ -799,7 +857,7 @@ describe('createCommunityByoApi', () => {
 
     const result = await client.testAndSave({
       providerId: 'openai',
-      connection: { id: 'conn-2', providerId: 'openai', name: 'n', folderId: 'me' },
+      connection: { id: 'conn-2', providerId: 'openai', name: 'n', folderId: 'shared' },
       modelId: 'gpt-5.1',
       name: 'renamed',
       replaces: null,
@@ -950,7 +1008,7 @@ describe('createCommunityByoApi', () => {
 
       const result = await client.testAndSave({
         providerId: 'azure-openai',
-        connection: { id: 'conn-9', providerId: 'azure-openai', name: 'n', folderId: 'me' },
+        connection: { id: 'conn-9', providerId: 'azure-openai', name: 'n', folderId: 'shared' },
         modelId: 'my-deployment',
         name: 'gpt-4.1-2025-04-14',
         replaces: 'gpt-4.1-2025-04-14',
@@ -983,7 +1041,7 @@ describe('createCommunityByoApi', () => {
         on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-r`, () => ({
           body: {
             id: 'cfg-r',
-            folderId: 'me',
+            folderId: 'shared',
             llmConfigurations: [
               {
                 desiredModel: 'gpt-5-2025-08-07',
@@ -1017,7 +1075,7 @@ describe('createCommunityByoApi', () => {
         on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-c`, () => ({
           body: {
             id: 'cfg-c',
-            folderId: 'me',
+            folderId: 'shared',
             llmConfigurations: [
               {
                 desiredModel: 'constructor',

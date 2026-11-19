@@ -28,7 +28,7 @@
   "modelPicker.community.editDescription": "Change the model, its name or the connection it uses.",
   "modelPicker.community.editTitle": "Edit your model",
   "modelPicker.community.folder": "Folder",
-  "modelPicker.community.folderHint": "Personal workspace keeps it to you; a shared folder lets teammates reuse it.",
+  "modelPicker.community.folderHint": "Teammates with access to this folder can reuse the connection.",
   "modelPicker.community.hideResponse": "Hide LLM response",
   "modelPicker.community.inUiPathCaption": "Your connection to {provider} will be saved in this folder.",
   "modelPicker.community.inUiPathTitle": "In UiPath",
