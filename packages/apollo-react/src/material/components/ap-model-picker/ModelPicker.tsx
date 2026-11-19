@@ -579,11 +579,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // A model the Community dialog saved, selected as soon as the picker offers it: a model
     // blocked by policy or left out by the host's `filter` is never selected. The user's own
     // pick cancels it, so a late catalog refresh cannot override that pick.
-    // `staleCatalog` is the catalog shown before a folder switch, whose entry for an edited
-    // model is the old one; the model is selected only from a catalog loaded since.
+    // `staleCatalog` is the catalog shown when the model was saved, whose entry for an edited
+    // model is the old one; the model is selected only from a catalog loaded since, so a
+    // refresh that failed selects nothing.
     const [pendingSelection, setPendingSelection] = React.useState<{
       model: ByoSavedModel;
-      staleCatalog: readonly DiscoveryModel[] | null;
+      staleCatalog: readonly DiscoveryModel[];
     } | null>(null);
     // Counts the user's own picks, so a save still refreshing when the user picks selects nothing.
     const userPicks = React.useRef(0);
@@ -708,7 +709,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         else if (selfFetchCtx) await refetchDiscovery();
         await onCustomModelSaved?.(model);
         if (userPicks.current === picksBefore) {
-          setPendingSelection({ model, staleCatalog: showsOtherFolder ? catalogBefore : null });
+          setPendingSelection({ model, staleCatalog: catalogBefore });
         }
       },
       [notify, i18n, folder, handleFolderChange, selfFetchCtx, refetchDiscovery, onCustomModelSaved]
