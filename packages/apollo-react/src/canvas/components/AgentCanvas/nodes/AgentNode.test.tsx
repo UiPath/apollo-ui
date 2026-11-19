@@ -430,3 +430,30 @@ describe('AgentNode - Suggestion styling', () => {
     expect(container.querySelector('[data-suggestion-type="add"]')).not.toBeNull();
   });
 });
+
+describe('AgentNode - Agent type icon', () => {
+  it.each([
+    { isConversational: false, name: 'Autonomous Agent', testId: 'autonomous-agent-icon' },
+    { isConversational: true, name: 'Conversational Agent', testId: 'conversational-agent-icon' },
+  ])('names the icon "$name"', ({ isConversational, name, testId }) => {
+    renderWithProviders(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        data={{ ...defaultNodeProps.data, definition: { metadata: { isConversational } } }}
+      />
+    );
+
+    expect(screen.getByRole('img', { name })).toBe(screen.getByTestId(testId));
+  });
+
+  it('names the icon with the translated agent type', () => {
+    renderWithProviders(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        translations={{ ...defaultTranslations, autonomousAgent: 'Agent autonome' }}
+      />
+    );
+
+    expect(screen.getByRole('img', { name: 'Agent autonome' })).toBeInTheDocument();
+  });
+});
