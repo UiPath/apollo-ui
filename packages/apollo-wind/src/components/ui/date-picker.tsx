@@ -80,6 +80,12 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
   // panel anchors to it.
   const group = useInputGroup();
   const grouped = group.inGroup;
+  const isDisabled = disabled || group.disabled;
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isDisabled) setOpen(false);
+  }, [isDisabled]);
   const validation = useControlValidation(group, {
     error,
     errorId: validationId,
@@ -99,12 +105,12 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
           : placeholder,
     'aria-labelledby': ariaLabelledBy,
     ...validation.aria,
-    disabled: disabled || group.disabled,
+    disabled: isDisabled,
   } as const;
 
   return (
     <>
-      <Popover data-slot="date-picker">
+      <Popover data-slot="date-picker" open={open && !isDisabled} onOpenChange={setOpen}>
         {grouped ? (
           <InputGroupPopoverTrigger
             ref={ref}
@@ -131,7 +137,11 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
             </Button>
           </PopoverTrigger>
         )}
-        <PopoverContent className="w-auto p-0" align={grouped ? 'start' : undefined}>
+        <PopoverContent
+          hidden={isDisabled}
+          className="w-auto p-0"
+          align={grouped ? 'start' : undefined}
+        >
           <Calendar
             mode="single"
             selected={date}
@@ -226,6 +236,12 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
     // panel anchors to it.
     const group = useInputGroup();
     const grouped = group.inGroup;
+    const isDisabled = disabled || group.disabled;
+    const [open, setOpen] = React.useState(false);
+
+    React.useEffect(() => {
+      if (isDisabled) setOpen(false);
+    }, [isDisabled]);
     const validation = useControlValidation(group, {
       error,
       errorId: validationId,
@@ -238,12 +254,12 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
       'aria-label': id || ariaLabelledBy ? undefined : computedLabel,
       'aria-labelledby': ariaLabelledBy,
       ...validation.aria,
-      disabled: disabled || group.disabled,
+      disabled: isDisabled,
     } as const;
 
     return (
       <>
-        <Popover data-slot="date-range-picker">
+        <Popover data-slot="date-range-picker" open={open && !isDisabled} onOpenChange={setOpen}>
           {grouped ? (
             <InputGroupPopoverTrigger
               ref={ref}
@@ -285,7 +301,7 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
               </Button>
             </PopoverTrigger>
           )}
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent hidden={isDisabled} className="w-auto p-0" align="start">
             <Calendar
               initialFocus
               mode="range"

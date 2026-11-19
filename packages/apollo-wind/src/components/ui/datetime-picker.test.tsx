@@ -63,6 +63,32 @@ describe('DateTimePicker', () => {
   });
 
   describe('interactions', () => {
+    it('closes the calendar when disabled after opening', async () => {
+      const user = userEvent.setup();
+      const onOpenChange = vi.fn();
+      const onValueChange = vi.fn();
+      const { rerender } = render(
+        <DateTimePicker onOpenChange={onOpenChange} onValueChange={onValueChange} />
+      );
+      const trigger = screen.getByRole('button');
+
+      await user.click(trigger);
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+
+      rerender(
+        <DateTimePicker disabled onOpenChange={onOpenChange} onValueChange={onValueChange} />
+      );
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+      expect(onValueChange).not.toHaveBeenCalled();
+
+      rerender(<DateTimePicker onOpenChange={onOpenChange} onValueChange={onValueChange} />);
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      await user.click(trigger);
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+
     it('opens the popover with a calendar on click', async () => {
       const user = userEvent.setup();
       render(<DateTimePicker />);

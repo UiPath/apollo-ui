@@ -48,6 +48,26 @@ describe('DatePicker', () => {
   });
 
   describe('interactions', () => {
+    it('closes the calendar when disabled after opening', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      const { rerender } = render(<DatePicker onValueChange={onValueChange} />);
+      const trigger = screen.getByRole('button');
+
+      await user.click(trigger);
+      expect(screen.getAllByRole('grid')).toHaveLength(1);
+
+      rerender(<DatePicker disabled onValueChange={onValueChange} />);
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(onValueChange).not.toHaveBeenCalled();
+
+      rerender(<DatePicker onValueChange={onValueChange} />);
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      await user.click(trigger);
+      expect(screen.getAllByRole('grid')).toHaveLength(1);
+    });
+
     it('opens calendar on click', async () => {
       const user = userEvent.setup();
       render(<DatePicker />);
@@ -142,6 +162,26 @@ describe('DateRangePicker', () => {
   });
 
   describe('interactions', () => {
+    it('closes the calendar when disabled after opening', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      const { rerender } = render(<DateRangePicker onValueChange={onValueChange} />);
+      const trigger = screen.getByRole('button');
+
+      await user.click(trigger);
+      expect(screen.getAllByRole('grid')).toHaveLength(2);
+
+      rerender(<DateRangePicker disabled onValueChange={onValueChange} />);
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(onValueChange).not.toHaveBeenCalled();
+
+      rerender(<DateRangePicker onValueChange={onValueChange} />);
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      await user.click(trigger);
+      expect(screen.getAllByRole('grid')).toHaveLength(2);
+    });
+
     it('opens calendar on click', async () => {
       const user = userEvent.setup();
       render(<DateRangePicker />);
