@@ -248,6 +248,18 @@ describe('ByoModelDialog', () => {
     expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
   });
 
+  it('opens the custom alias editor from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
+
+    await addCustomAlias(user, 'mine');
+    await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+    screen.getByRole('button', { name: 'Edit custom alias' }).focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('textbox', { name: 'Enter a custom alias' })).toHaveValue('mine');
+  });
+
   it('changes a custom alias in place', async () => {
     const user = userEvent.setup();
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
