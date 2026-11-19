@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.31.0...@uipath/apollo-react@7.31.1) (2026-11-19)
+
+### Bug Fixes
+
+* **apollo-react:** name the agent type icon on agent nodes [AG-916] ([d1d8abd](https://github.com/UiPath/apollo-ui/commit/d1d8abd414c866045995d63d43b7e4287e0956ed))
+
 ## [@uipath/apollo-react-v7.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.30.1...@uipath/apollo-react@7.31.0) (2026-11-18)
 
 ### Features
