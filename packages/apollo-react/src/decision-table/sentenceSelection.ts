@@ -1,4 +1,5 @@
-import type { SentenceCellId, SentenceSelection } from './sentenceTypes';
+import { stopTokensOf } from './sentenceParts';
+import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 
 /** The rule `rowId`. */
 export const ruleSelection = (rowId: string): SentenceSelection => ({ kind: 'rule', rowId });
@@ -24,3 +25,16 @@ export const sameSelection = (
   left: SentenceSelection | null,
   right: SentenceSelection | null
 ): boolean => left?.rowId === right?.rowId && selectedColumnOf(left) === selectedColumnOf(right);
+
+/** A selection as the rules now stand: kept, its rule once its cell is no stop of it, or null once its rule is gone. */
+export const liveSelection = (
+  rules: readonly SentenceRule[],
+  selected: SentenceSelection | null
+): SentenceSelection | null => {
+  const rule = selected && rules.find((candidate) => candidate.rowId === selected.rowId);
+  if (!selected || !rule) return null;
+  if (selected.kind === 'rule') return selected;
+  return stopTokensOf(rule).some((token) => token.columnId === selected.columnId)
+    ? selected
+    : ruleSelection(rule.rowId);
+};

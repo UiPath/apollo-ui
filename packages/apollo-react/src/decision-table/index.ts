@@ -108,6 +108,7 @@ export {
   sentenceSelectionOf,
 } from './sentenceGridSelection';
 export type { GlyphTone } from './sentenceMarks';
+export { liveSelection } from './sentenceSelection';
 export type {
   CitationBox,
   DecisionTextCitations,

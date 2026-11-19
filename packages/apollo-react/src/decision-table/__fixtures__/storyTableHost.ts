@@ -3,13 +3,7 @@ import type { DecisionGraphBody } from '../DecisionGraphText';
 import type { DecisionGraphDecisionNode } from '../decisionGraphTypes';
 import type { DecisionTextEdit } from '../decisionTextTypes';
 import { policyHeaderOf } from '../hitPolicyMenu';
-import { valueTokenOf } from '../sentenceParts';
-import type {
-  SentenceBandColumn,
-  SentenceCellId,
-  SentenceRule,
-  SentenceSelection,
-} from '../sentenceTypes';
+import type { SentenceBandColumn, SentenceCellId, SentenceSelection } from '../sentenceTypes';
 import type { HeldValues, OperatorOffer, RangeEnds, ValueFieldData } from '../valueTypes';
 import {
   type EditableTable,
@@ -329,17 +323,4 @@ export const storyTableProps = ({
     onChange({ ...state, hitPolicy: next });
   const onAddRule = () => addRuleAt(table.rules.length);
   return { columns: typedColumns(table, columnEdits), hitPolicy, edit, onPolicyChange, onAddRule };
-};
-
-/** The host's selection once its rule or cell is gone: the rule, or nothing. */
-export const liveSelection = (
-  rules: readonly SentenceRule[],
-  selected: SentenceSelection | null
-): SentenceSelection | null => {
-  const rule = selected && rules.find((candidate) => candidate.rowId === selected.rowId);
-  if (!selected || !rule) return null;
-  if (selected.kind === 'rule') return selected;
-  return valueTokenOf(rule, { rowId: rule.rowId, columnId: selected.columnId, index: 0 })
-    ? selected
-    : { kind: 'rule', rowId: rule.rowId };
 };
