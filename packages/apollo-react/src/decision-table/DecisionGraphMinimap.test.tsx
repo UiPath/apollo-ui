@@ -22,7 +22,6 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import { DecisionGraphMinimap } from './DecisionGraphMinimap';
 import { DecisionGraphText } from './DecisionGraphText';
-import { DecisionText } from './DecisionText';
 import type { DecisionGraphNode } from './decisionGraphTypes';
 import { WINDOW_MINIMAP_FROM } from './MinimapList';
 import { type MinimapItem, matchRange, minimapRows } from './minimapRows';
@@ -381,15 +380,15 @@ describe('DecisionGraphText minimap', () => {
       <DecisionGraphText
         nodes={nodes}
         rules={() => rules}
-        renderBody={(id, scroll) => (
-          <DecisionText
-            table={{ rules: rules, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY }}
-            hitPolicies={HIT_POLICIES}
-            columnTypes={COLUMN_TYPES}
-            ariaLabel={`Rules of ${id}`}
-            dataTestId={`text-${id}`}
-            scroll={scroll}
-            mode={{
+        renderBody={(id) => ({
+          kind: 'table',
+          text: {
+            table: { rules: rules, ...tableColumns(TABLE), hitPolicy: GRID_SENTENCE_POLICY },
+            hitPolicies: HIT_POLICIES,
+            columnTypes: COLUMN_TYPES,
+            ariaLabel: `Rules of ${id}`,
+            dataTestId: `text-${id}`,
+            mode: {
               kind: 'edit',
               selected: selected?.id === id ? selected.rule : null,
               onSelect: (rule) => setSelected(rule ? { id, rule } : null),
@@ -404,9 +403,9 @@ describe('DecisionGraphText minimap', () => {
               onAddRule: vi.fn(),
               onUndo: () => {},
               onRedo: () => {},
-            }}
-          />
-        )}
+            },
+          },
+        })}
         mode={{
           kind: 'select',
           selected: selected?.id ?? null,
@@ -504,7 +503,7 @@ describe('DecisionGraphText minimap', () => {
           children: [],
         }))}
         rules={(decisionId) => [ruleOf(decisionId === first.decisionId ? first : second)]}
-        renderBody={() => null}
+        renderBody={() => ({ kind: 'other', content: null })}
         mode={{ kind: 'select', selected: null, onReveal: onReveal }}
         dataTestId="graph"
       />

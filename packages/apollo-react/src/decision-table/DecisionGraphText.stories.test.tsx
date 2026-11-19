@@ -6,7 +6,7 @@ import * as stories from './DecisionGraphText.stories';
 
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
 
-const { Default, Errors } = composeStories(stories);
+const { Default, Editing, Errors } = composeStories(stories);
 
 beforeEach(() => {
   HTMLElement.prototype.scrollTo = () => {};
@@ -109,6 +109,27 @@ describe('DecisionGraphText stories', () => {
     if (apply) await userEvent.click(apply);
     expect(sentence('risk', 'r1')).not.toBe(before);
     expect(sentence('risk', 'r1')).toContain('review');
+  });
+
+  it('undoes and redoes an edit in a body through the host, in the Editing story', async () => {
+    render(<Editing />);
+    await userEvent.click(screen.getByTestId('graph-toggle-risk'));
+    const risk = rules('risk');
+    await userEvent.click(body('risk').getByRole('button', { name: 'Add rule' }));
+    expect(rules('risk')).toBe(risk + 1);
+    await userEvent.keyboard('{Control>}z{/Control}');
+    expect(rules('risk')).toBe(risk);
+    await userEvent.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+    expect(rules('risk')).toBe(risk + 1);
+  });
+
+  it('drops the selection of a rule an undo takes away, as the standalone story does', async () => {
+    render(<Editing />);
+    await userEvent.click(screen.getByTestId('graph-toggle-risk'));
+    await userEvent.click(body('risk').getByRole('button', { name: 'Add rule' }));
+    expect(caption()).toHaveTextContent(/Selected: risk \/ rule-/);
+    await userEvent.keyboard('{Control>}z{/Control}');
+    expect(caption()).toHaveTextContent('Selected: none');
   });
 
   it('adds a rule to the decision whose Add rule is pressed, and only to it', async () => {

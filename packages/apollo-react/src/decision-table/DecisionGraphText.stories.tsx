@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   CYCLE,
   EMPTY_GRAPH,
@@ -21,20 +21,21 @@ import {
 import { HIT_POLICIES, COLUMN_TYPES } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
+  liveSelection,
+  type StoryGraphBody,
   type StoryTable,
   storyHeadingOf,
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
 import { useStoryHistory } from './__fixtures__/useStoryHistory';
-import { DecisionGraphText, type DecisionGraphTextProps } from './DecisionGraphText';
-import { DecisionText } from './DecisionText';
+import { DecisionGraphText } from './DecisionGraphText';
 import type {
   DecisionGraphCitations,
   DecisionGraphNode,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
-import { selectedColumnOf } from './sentenceSelection';
+import { sameSelection, selectedColumnOf } from './sentenceSelection';
 import type { SentenceCitation, SentenceSelection, SentenceValueId } from './sentenceTypes';
 
 interface GraphSelection {
@@ -112,6 +113,15 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
       ])
     );
   }, [tables, nodes]);
+  useEffect(() => {
+    setSelected((current) => {
+      if (!current) return current;
+      const live = liveSelection(rulesById.get(current.decisionId) ?? [], current.selection);
+      return sameSelection(live, current.selection)
+        ? current
+        : live && { ...current, selection: live };
+    });
+  }, [rulesById]);
   const [openedCitation, setOpenedCitation] = useState<SentenceCitation | null>(null);
   const citations = useMemo((): DecisionGraphCitations => {
     if (!cited) return { kind: 'none' };
@@ -131,20 +141,23 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
   const isTableNow = (decisionId: string) =>
     model.decisions.get(decisionId)?.node.logic.kind === 'table';
 
-  const renderBody: DecisionGraphTextProps<never, never>['renderBody'] = (
-    decisionId,
-    scroll,
-    { revealDecision }
-  ) => {
+  const renderBody = (decisionId: string): StoryGraphBody => {
     const table = isTableNow(decisionId);
     const state = table ? tables[decisionId] : undefined;
     if (!state) {
       const body = graph.bodies[decisionId];
-      return (
-        <p className="m-0 px-4 py-3 text-sm text-foreground-de-emp">
-          {table ? 'Empty decision table' : typeof body === 'string' ? body : 'Literal expression'}
-        </p>
-      );
+      return {
+        kind: 'other',
+        content: (
+          <p className="m-0 px-4 py-3 text-sm text-foreground-de-emp">
+            {table
+              ? 'Empty decision table'
+              : typeof body === 'string'
+                ? body
+                : 'Literal expression'}
+          </p>
+        ),
+      };
     }
     const shown = selected?.decisionId === decisionId ? selected.selection : null;
     const onSelect = (selection: SentenceSelection | null) =>
@@ -155,17 +168,15 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
       onSelect,
       onMoreProperties: setMoreProperties,
     });
-    return (
-      <DecisionText
-        table={{ rules: rulesById.get(decisionId) ?? [], ...columns, hitPolicy }}
-        hitPolicies={HIT_POLICIES}
-        columnTypes={COLUMN_TYPES}
-        ariaLabel={`Rules of ${decisionId}`}
-        dataTestId={`text-${decisionId}`}
-        numbered
-        scroll={scroll}
-        onOpenDecision={revealDecision}
-        mode={
+    return {
+      kind: 'table',
+      text: {
+        table: { rules: rulesById.get(decisionId) ?? [], ...columns, hitPolicy },
+        hitPolicies: HIT_POLICIES,
+        columnTypes: COLUMN_TYPES,
+        ariaLabel: `Rules of ${decisionId}`,
+        dataTestId: `text-${decisionId}`,
+        mode:
           mode === 'read'
             ? { kind: 'read', selected: shown }
             : mode === 'edit'
@@ -189,10 +200,9 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
                     },
                   },
                 }
-              : { kind: 'select', selected: shown, onSelect }
-        }
-      />
-    );
+              : { kind: 'select', selected: shown, onSelect },
+      },
+    };
   };
 
   const onReveal = (target: DecisionGraphTarget) => {
@@ -309,6 +319,17 @@ export const Default: StoryObj<DefaultArgs> = {
       graph={GRAPHS[graph].graph}
       mode={mode}
       caption={GRAPHS[graph].caption}
+    />
+  ),
+};
+
+export const Editing: StoryObj = {
+  render: () => (
+    <GraphHost
+      cited={false}
+      graph={SHARED_DEPENDENCY}
+      mode="edit"
+      caption="Open a decision and edit its rules in place, as on its own: pick a value, add a rule, change the hit policy or a column; Ctrl+Z undoes and Ctrl+Shift+Z redoes."
     />
   ),
 };

@@ -28,6 +28,7 @@ import {
 } from './__fixtures__/sentences.fixtures';
 import {
   type HostMode,
+  liveSelection,
   NUMERIC_INPUTS,
   storyTableOf,
   storyTableProps,
@@ -36,8 +37,7 @@ import { useStoryHistory } from './__fixtures__/useStoryHistory';
 import type { FixtureEdit, FixtureTextProps } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
 import type { Mark, RowMark, TableMarks } from './marks';
-import { valueTokenOf } from './sentenceParts';
-import { selectedColumnOf } from './sentenceSelection';
+import { sameSelection } from './sentenceSelection';
 import type {
   DecisionTextCitations,
   SentenceCellId,
@@ -88,22 +88,6 @@ const validationMarks = (table: EditableTable): TableMarks => {
   }
   return { rows, columns: new Map() };
 };
-
-/** The host's selection once its rule or cell is gone: the rule, or nothing. */
-const liveSelection = (
-  rules: readonly SentenceRule[],
-  selected: SentenceSelection | null
-): SentenceSelection | null => {
-  const rule = selected && rules.find((candidate) => candidate.rowId === selected.rowId);
-  if (!selected || !rule) return null;
-  if (selected.kind === 'rule') return selected;
-  return valueTokenOf(rule, { rowId: rule.rowId, columnId: selected.columnId, index: 0 })
-    ? selected
-    : { kind: 'rule', rowId: rule.rowId };
-};
-
-const sameSelection = (left: SentenceSelection | null, right: SentenceSelection | null) =>
-  left?.rowId === right?.rowId && selectedColumnOf(left) === selectedColumnOf(right);
 
 interface TableHostProps {
   initialTable: EditableTable;

@@ -25,7 +25,7 @@ const graph = (
       onReveal: () => {},
       edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
     }}
-    renderBody={() => null}
+    renderBody={() => ({ kind: 'other', content: null })}
     onOpenDecision={onOpenDecision}
     dataTestId="graph"
   />
@@ -60,7 +60,7 @@ describe('DecisionGraphText actions', () => {
       <DecisionGraphText
         nodes={NODES}
         mode={{ kind: 'read', selected: null }}
-        renderBody={() => null}
+        renderBody={() => ({ kind: 'other', content: null })}
         dataTestId="graph"
       />
     );

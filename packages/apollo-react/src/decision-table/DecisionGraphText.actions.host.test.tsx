@@ -21,7 +21,7 @@ const graph = (
       onReveal: () => {},
       edit: { actions, wordRefusal: (refusal) => `Refused: ${refusal}` },
     }}
-    renderBody={renderBody}
+    renderBody={(id) => ({ kind: 'other', content: renderBody(id) })}
     dataTestId="graph"
   />
 );

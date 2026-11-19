@@ -33,7 +33,7 @@ const Host = () => {
         onReveal: () => {},
         edit: { actions: fixtureActions(model, setModel), wordRefusal: wordFixtureRefusal },
       }}
-      renderBody={() => null}
+      renderBody={() => ({ kind: 'other', content: null })}
       dataTestId="graph"
     />
   );

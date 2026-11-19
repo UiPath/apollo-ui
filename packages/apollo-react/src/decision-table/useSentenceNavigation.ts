@@ -3,7 +3,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { activeElementOf, focusStays, isFromTextField } from './gridEvents';
 import type { CellCommitMove } from './gridTypes';
 import { firstValuesOf } from './ruleCardModel';
-import { selectedColumnOf, selectionOf } from './sentenceSelection';
+import { sameSelection, selectedColumnOf, selectionOf } from './sentenceSelection';
 import { cardOf, cellOf } from './sentenceTargets';
 import type { SentenceCellId, SentenceRule, SentenceSelection } from './sentenceTypes';
 import { ARROW_DELTAS, clamp, GRID_ENTRY_KEYS } from './useGridNavigation';
@@ -32,9 +32,6 @@ const selectionAt = (
   const columnId = stopsOf(target)[stop];
   return selectionOf(target.rowId, columnId);
 };
-
-const sameSelection = (left: SentenceSelection | null, right: SentenceSelection | null): boolean =>
-  left?.rowId === right?.rowId && selectedColumnOf(left) === selectedColumnOf(right);
 
 /** A move to another row, onto `columnId` where that row has it, else onto its rule. */
 const verticalMove = (
