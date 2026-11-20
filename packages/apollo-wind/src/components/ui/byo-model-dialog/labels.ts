@@ -59,21 +59,24 @@ export interface ByoModelDialogLabels {
   nameTaken: (name: string) => string;
   nameReserved: (name: string) => string;
   useOwnName: string;
+  aliasSearch: string;
+  aliasNoMatch: (query: string) => string;
+  addCustomAlias: string;
+  editCustomAlias: string;
+  customAliasPlaceholder: string;
+  addAlias: string;
+  saveAlias: string;
   useReplacement: string;
   replacementPlaceholder: string;
   replacementHint: string;
   deprecated: string;
   retiresOn: (date: string) => string;
 
-  apiTypeStep: string;
-  apiTypePlaceholder: string;
-  apiTypeHint: string;
-  apiTypeNone: (provider: string) => string;
-
   showResponse: string;
   hideResponse: string;
 
   close: string;
+  dismiss: string;
   cancel: string;
   testAndAdd: string;
   testAndSave: string;
@@ -108,7 +111,7 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   inUiPathCaption: (provider) => `Your connection to ${provider} will be saved in this folder.`,
   connectionName: 'Connection name',
   folder: 'Folder',
-  folderHint: 'Personal workspace keeps it to you; a shared folder lets teammates reuse it.',
+  folderHint: 'Teammates with access to this folder can reuse the connection.',
   connectionNameTaken: 'You already have a connection with this name.',
   connect: 'Connect',
   connecting: 'Connecting…',
@@ -120,7 +123,7 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   cancelConnectionEdit: 'Cancel',
   connectionUpdated: 'Connection updated.',
 
-  modelStep: 'Model',
+  modelStep: 'Your model',
   modelNeedsConnection: (provider) => `Connect to list your ${provider} models`,
   modelsLoading: (provider) => `Loading your ${provider} models…`,
   modelsFailed: (provider) => `Could not list your ${provider} models`,
@@ -132,26 +135,29 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   modelIdPlaceholder: 'Model or deployment name',
   modelIdLabel: 'Model id',
 
-  nameStep: 'Name in your model list',
-  nameHint: 'Shown in the model picker. Defaults to the model id.',
+  nameStep: 'Model alias',
+  nameHint: 'Shown in the model picker.',
   nameTaken: (name) => `"${name}" is already in your model list. Pick another name.`,
   nameReserved: (name) => `"${name}" is the name of a UiPath model. Pick another name.`,
-  useOwnName: 'A name of your own',
+  useOwnName: 'Custom',
+  aliasSearch: 'Search UiPath models…',
+  aliasNoMatch: (query) => `No UiPath model matches "${query}".`,
+  addCustomAlias: 'Add custom alias',
+  editCustomAlias: 'Edit custom alias',
+  customAliasPlaceholder: 'Enter a custom alias',
+  addAlias: 'Add',
+  saveAlias: 'Save',
   useReplacement: 'Replace a UiPath model',
   replacementPlaceholder: 'Select a UiPath model',
   replacementHint: 'Calls to this UiPath model go to your model instead.',
   deprecated: 'Deprecated',
   retiresOn: (date) => `To be retired on ${date}`,
 
-  apiTypeStep: 'API type',
-  apiTypePlaceholder: 'Select an API type',
-  apiTypeHint: 'The API endpoint supported by the LLM.',
-  apiTypeNone: (provider) => `${provider} offers no API type that can serve this model.`,
-
   showResponse: 'Show LLM response',
   hideResponse: 'Hide LLM response',
 
   close: 'Close',
+  dismiss: 'Dismiss',
   cancel: 'Cancel',
   testAndAdd: 'Test and add',
   testAndSave: 'Test and save',

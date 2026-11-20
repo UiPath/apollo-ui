@@ -121,8 +121,6 @@ const AWS_REGIONS: [string, string][] = [
   ['ap-southeast-2', 'Asia Pacific (Sydney)'],
 ];
 
-const IAM_ROLE_PLACEHOLDER = 'arn:aws:iam::123456789012:role/my-role';
-
 export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
   {
     id: 'openai',
@@ -172,17 +170,15 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
     },
   },
   // AI Trust Layer reaches Bedrock through the Amazon Web Services connector, never `uipath-aws-bedrock`.
-  // Its third authentication type, a UiPath-managed cross-account role, needs onboarding by support.
+  // Only access keys are offered: an assumed role or a UiPath-managed cross-account role is set up
+  // in AI Trust Layer.
   {
     id: 'bedrock',
     name: 'Amazon Bedrock',
     connector: 'uipath-amazon-webservices',
     connectorType: 'AmazonWebServices',
     form: {
-      authTypes: [
-        { value: 'accessKey', label: 'Access key' },
-        { value: 'assumeRole', label: 'Assume role' },
-      ],
+      authTypes: [{ value: 'accessKey', label: 'Access key' }],
       defaultAuthType: 'accessKey',
       fields: [
         // The gateway calls Bedrock in the connection's region.
@@ -197,20 +193,10 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
           group: 'accessKey',
           hint: 'Only for temporary credentials.',
         }),
-        field('assume.role.aws.api.key', 'Access key ID', { group: 'assumeRole' }),
-        secret('assume.role.aws.api.secret', 'Secret access key', { group: 'assumeRole' }),
-        field('assume.role.aws.iam.role', 'IAM role ARN', {
-          group: 'assumeRole',
-          placeholder: IAM_ROLE_PLACEHOLDER,
-          hint: 'The role these credentials assume to call Bedrock.',
-        }),
-        advanced('assume.role.aws.temporary.session.token', 'Session token', {
-          secret: true,
-          group: 'assumeRole',
-          hint: 'Only for temporary credentials.',
-        }),
       ],
     },
+    // The connector serves any AWS service; the connection is for Bedrock's runtime.
+    derive: (): Record<string, string> => ({ 'default.service.name': 'bedrock-runtime' }),
   },
   {
     id: 'anthropic',
@@ -423,6 +409,8 @@ const SESSION_POLLS = 20;
 const SESSION_POLL_MS = 1500;
 const RETRY_MS = 5000;
 
+const FOLDER_PAGE = 500;
+
 const asList = (data: unknown): Record<string, unknown>[] => {
   if (Array.isArray(data)) return data;
   if (data && typeof data === 'object') {
@@ -541,6 +529,26 @@ export function createCommunityByoApi(
     return { ok: res.ok, status: res.status, statusText: res.statusText, data };
   }
 
+  /** Every folder the user can see, read page by page. */
+  async function listFolders(): Promise<CallResult> {
+    const items: Record<string, unknown>[] = [];
+    for (;;) {
+      const page = await call(
+        'GET',
+        tenantUrl(
+          `orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=${FOLDER_PAGE}&skip=${items.length}`
+        )
+      );
+      if (!page.ok) return page;
+      const batch = asList(page.data);
+      items.push(...batch);
+      const count = Number((page.data as { Count?: unknown } | null)?.Count ?? 0);
+      if (batch.length < FOLDER_PAGE || items.length >= count) {
+        return { ...page, data: { PageItems: items } };
+      }
+    }
+  }
+
   /** A provisioning session for a new connection, or for editing the saved connection `connectionId`. */
   async function session(
     provider: CommunityByoProvider,
@@ -593,12 +601,7 @@ export function createCommunityByoApi(
   const loadContext = async (): Promise<ByoResult<ByoDialogContext>> => {
     const [folders, connections, products, vendorModels, modelApiTypes, configurations] =
       await Promise.all([
-        call(
-          'GET',
-          tenantUrl(
-            'orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0'
-          )
-        ),
+        listFolders(),
         call(
           'GET',
           tenantUrl('connections_/api/v1/Connections?allFolders=true&folderDefaults=true')
@@ -652,34 +655,42 @@ export function createCommunityByoApi(
       // As in AI Trust Layer, models being retired come last.
       .sort((a, b) => Number(Boolean(a.retiresOn)) - Number(Boolean(b.retiresOn)));
 
-    const rows = asList(folders.data)
-      .filter((f) => f.IsSelectable !== false)
+    // AI Trust Layer keeps connections out of personal workspaces and solution debug folders.
+    const folderRows: ByoFolder[] = asList(folders.data)
+      .filter(
+        (f) =>
+          f.IsSelectable !== false &&
+          !f.IsPersonal &&
+          f.FolderType !== 'Personal' &&
+          f.FolderType !== 'DebugSolution'
+      )
       .map((f) => ({
-        folder: {
-          id: String(f.Key),
-          label: f.IsPersonal
-            ? String(f.DisplayName)
-            : String(f.FullyQualifiedName ?? f.DisplayName)
-                .split('/')
-                .join(' › '),
-        } satisfies ByoFolder,
-        personal: Boolean(f.IsPersonal),
+        id: String(f.Key),
+        label: String(f.FullyQualifiedName ?? f.DisplayName)
+          .split('/')
+          .join(' › '),
       }));
-    rows.sort((a, b) => Number(b.personal) - Number(a.personal));
+    if (folderRows.length === 0) {
+      return fail({
+        title: 'You need a folder for your connection',
+        detail: 'Create a folder in Orchestrator, or ask an administrator to add you to one.',
+      });
+    }
+    const folderIds = new Set(folderRows.map((f) => f.id));
     const byConnector = (key: unknown) => providers.find((p) => p.connector === key);
     const saved: ByoConnection[] = asList(connections.data).flatMap((c) => {
       const connector = (c.connector as { key?: string } | undefined)?.key;
       const provider = byConnector(connector);
       const folder = (c.folder as { key?: string } | undefined)?.key;
-      return provider && folder
+      return provider && folder && folderIds.has(folder)
         ? [{ id: String(c.id), providerId: provider.id, name: String(c.name), folderId: folder }]
         : [];
     });
     return ok({
       providers: providers.map(({ id, name }) => ({ id, name })),
       connections: saved,
-      folders: rows.map((r) => r.folder),
-      defaultFolderId: rows[0]?.folder.id ?? null,
+      folders: folderRows,
+      defaultFolderId: folderRows[0]?.id ?? null,
       takenModelNames: [...new Set([...options.takenModelNames(), ...configured])],
       replaceableModels,
       allowsNewNames: feature.modelsConfigurationOption === ADD_OWN_MODELS,

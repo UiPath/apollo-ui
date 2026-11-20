@@ -125,6 +125,19 @@ async function pick(user: ReturnType<typeof userEvent.setup>, combobox: string, 
   await user.click(await screen.findByRole('option', { name: option }));
 }
 
+async function addCustomAlias(user: ReturnType<typeof userEvent.setup>, alias: string) {
+  await user.click(await screen.findByRole('combobox', { name: 'Model alias' }));
+  await user.click(await screen.findByRole('option', { name: 'Add custom alias' }));
+  await user.type(screen.getByRole('textbox', { name: 'Enter a custom alias' }), alias);
+  await user.click(screen.getByRole('button', { name: 'Add' }));
+}
+
+/** Names the model `alias`, then picks the provider: the first two steps. */
+async function start(user: ReturnType<typeof userEvent.setup>, provider: string, alias = 'gpt-4o') {
+  await addCustomAlias(user, alias);
+  await pick(user, 'Provider', provider);
+}
+
 describe('ByoModelDialog', () => {
   it('adds a model through a saved connection', async () => {
     const user = userEvent.setup();
@@ -133,13 +146,12 @@ describe('ByoModelDialog', () => {
     const onOpenChange = vi.fn();
     render(<ByoModelDialog open onOpenChange={onOpenChange} api={api} onSaved={onSaved} />);
 
-    await pick(user, 'Provider', 'OpenAI');
+    await start(user, 'OpenAI', 'my-gpt');
     expect(screen.getByRole('combobox', { name: 'Connection' })).toHaveTextContent(
       'Saved connection: My OpenAI · My Workspace'
     );
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-    await pick(user, 'Model', 'gpt-4o');
-    expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('gpt-4o');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
 
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
@@ -147,12 +159,12 @@ describe('ByoModelDialog', () => {
       providerId: 'openai',
       connection: SAVED,
       modelId: 'gpt-4o',
-      name: 'gpt-4o',
+      name: 'my-gpt',
       replaces: null,
       apiType: 'OpenAiResponses',
       editing: undefined,
     });
-    expect(onSaved.mock.calls[0]?.[0]).toMatchObject({ name: 'gpt-4o', connectionId: 'c1' });
+    expect(onSaved.mock.calls[0]?.[0]).toMatchObject({ name: 'my-gpt', connectionId: 'c1' });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -166,16 +178,14 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'Azure OpenAI');
+    await start(user, 'Azure OpenAI');
     const connect = await screen.findByRole('button', { name: 'Connect' });
     expect(connect).toBeDisabled();
     expect(screen.getByLabelText(/Endpoint/)).toBeRequired();
     await user.type(screen.getByLabelText(/Endpoint/), 'https://res.openai.azure.com');
     await user.type(screen.getByLabelText(/API key/), 'secret');
     expect(screen.getByLabelText(/API key/)).toHaveAttribute('type', 'password');
-    expect(screen.getByRole('textbox', { name: 'Connection name' })).toHaveValue(
-      'Azure OpenAI – personal'
-    );
+    expect(screen.getByRole('textbox', { name: 'Connection name' })).toHaveValue('Azure OpenAI');
     await user.click(connect);
 
     await screen.findByText('Connected. New connection created in My Workspace.');
@@ -187,7 +197,7 @@ describe('ByoModelDialog', () => {
           'api-key': 'secret',
           apiVersion: '2023-10-01',
         },
-        name: 'Azure OpenAI – personal',
+        name: 'Azure OpenAI',
         folderId: 'me',
       })
     );
@@ -210,7 +220,7 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'Azure OpenAI');
+    await start(user, 'Azure OpenAI');
     await user.type(await screen.findByLabelText(/Endpoint/), 'https://res.openai.azure.com');
     await user.type(screen.getByLabelText(/API key/), 'wrong');
     await user.click(screen.getByRole('button', { name: 'Connect' }));
@@ -229,17 +239,40 @@ describe('ByoModelDialog', () => {
     const user = userEvent.setup();
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'OpenAI');
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-    await pick(user, 'Model', 'gpt-5.1');
-    const name = screen.getByRole('textbox', { name: 'Name in your model list' });
-    await user.clear(name);
-    await user.type(name, 'taken');
+    await addCustomAlias(user, 'taken');
 
     expect(
       screen.getByText('"taken" is already in your model list. Pick another name.')
     ).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Provider' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
+  });
+
+  it('opens the custom alias editor from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
+
+    await addCustomAlias(user, 'mine');
+    await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+    screen.getByRole('button', { name: 'Edit custom alias' }).focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('textbox', { name: 'Enter a custom alias' })).toHaveValue('mine');
+  });
+
+  it('changes a custom alias in place', async () => {
+    const user = userEvent.setup();
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
+
+    await addCustomAlias(user, 'mine');
+    await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+    await user.click(await screen.findByRole('button', { name: 'Edit custom alias' }));
+    const input = screen.getByRole('textbox', { name: 'Enter a custom alias' });
+    expect(input).toHaveValue('mine');
+    await user.clear(input);
+    await user.type(input, 'mine-2{Enter}');
+
+    expect(screen.getByRole('combobox', { name: 'Model alias' })).toHaveTextContent('mine-2');
   });
 
   it('shows a failed test without closing', async () => {
@@ -253,13 +286,66 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={onSaved} />);
 
-    await pick(user, 'Provider', 'OpenAI');
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-    await pick(user, 'Model', 'gpt-4o');
+    await start(user, 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
 
     expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
     expect(onSaved).not.toHaveBeenCalled();
+  });
+
+  it('hides a dismissed failure until the next one', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({
+      testAndSave: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'The test call failed: MISSING_TOOL_CALL' },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await start(user, 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
+    const save = screen.getByRole('button', { name: 'Test and add' });
+    await user.click(save);
+    await screen.findByText('The test call failed: MISSING_TOOL_CALL');
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    expect(screen.queryByText('The test call failed: MISSING_TOOL_CALL')).not.toBeInTheDocument();
+    await user.click(save);
+    expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
+  });
+
+  it('shows a newer failure after an older one was dismissed', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({
+      loadConnectionValues: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'Could not read the connection settings' },
+      })),
+      testAndSave: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'The test call failed: MISSING_TOOL_CALL' },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await start(user, 'OpenAI');
+    await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
+    await screen.findByText('Could not read the connection settings');
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
+    await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
+    expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    // Neither failure comes back once both were dismissed.
+    expect(screen.queryByRole('button', { name: 'Dismiss' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Could not read the connection settings')).not.toBeInTheDocument();
   });
 
   it('edits a saved model, keeping its own name', async () => {
@@ -277,16 +363,15 @@ describe('ByoModelDialog', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'Edit your model' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
     expect(api.loadModel).toHaveBeenCalledWith({ configurationId: 'cfg1', name: 'Taken' });
     expect(screen.getByRole('combobox', { name: 'Connection' })).toHaveTextContent(
       'Saved connection: My OpenAI · My Workspace'
     );
-    expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('Taken');
+    expect(screen.getByRole('combobox', { name: 'Model alias' })).toHaveTextContent('Taken');
 
-    await pick(user, 'Model', 'gpt-5.1');
-    // A name the user kept is not replaced by the new model id.
-    expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toHaveValue('Taken');
+    await pick(user, 'Your model', 'gpt-5.1');
+    expect(screen.getByRole('combobox', { name: 'Model alias' })).toHaveTextContent('Taken');
     await user.click(screen.getByRole('button', { name: 'Test and save' }));
 
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
@@ -301,6 +386,36 @@ describe('ByoModelDialog', () => {
     });
   });
 
+  it("edits a model on the provider's first connection when its own is not listed, picking its model again", async () => {
+    const api = fakeApi({
+      loadModel: vi.fn(async () => ({
+        ok: true as const,
+        value: { ...SAVED_MODEL, connectionId: 'in-a-personal-workspace' },
+      })),
+    });
+    render(
+      <ByoModelDialog
+        open
+        onOpenChange={vi.fn()}
+        api={api}
+        onSaved={vi.fn()}
+        editing={{ configurationId: 'cfg1', name: 'Taken' }}
+      />
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Connection' })).toHaveTextContent(
+        'Saved connection: My OpenAI · My Workspace'
+      )
+    );
+    expect(api.listModels).toHaveBeenCalledWith('openai', SAVED);
+    // Its model is picked again on that connection, never carried over from another account.
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Your model' })).not.toHaveTextContent('gpt-4o')
+    );
+    expect(screen.getByRole('button', { name: 'Test and save' })).toBeDisabled();
+  });
+
   it('edits a saved connection in place', async () => {
     const user = userEvent.setup();
     const api = fakeApi({
@@ -311,7 +426,7 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'OpenAI');
+    await start(user, 'OpenAI');
     await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
 
     const endpoint = await screen.findByLabelText(/Endpoint/);
@@ -337,7 +452,7 @@ describe('ByoModelDialog', () => {
         existing: SAVED,
       })
     );
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
   });
 
   it('stops editing a connection whose settings could not be read, so a save cannot clear them', async () => {
@@ -356,7 +471,7 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'OpenAI');
+    await start(user, 'OpenAI');
     await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
 
     expect(await screen.findByText('Could not read the connection settings')).toBeInTheDocument();
@@ -391,12 +506,12 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'OpenAI');
+    await start(user, 'OpenAI');
     await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
     await screen.findByText('Could not read the connection settings');
     finishFirstList();
 
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
     expect(api.listModels).toHaveBeenCalledTimes(2);
   });
 
@@ -433,7 +548,7 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'OpenAI');
+    await start(user, 'OpenAI');
     await user.click(await screen.findByRole('button', { name: 'Edit connection' }));
     const save = await screen.findByRole('button', { name: 'Save connection' });
     // The connection holds its API key, so it may stay blank.
@@ -457,7 +572,7 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'OpenAI');
+    await start(user, 'OpenAI');
 
     expect(
       await screen.findByText('Could not list your OpenAI models (HTTP 401)')
@@ -478,7 +593,7 @@ describe('ByoModelDialog', () => {
     });
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-    await pick(user, 'Provider', 'OpenAI');
+    await start(user, 'OpenAI');
     await pick(user, 'Connection', 'New connection…');
     finishForm();
 
@@ -492,9 +607,9 @@ describe('ByoModelDialog', () => {
     const onOpenChange = vi.fn();
     render(<ByoModelDialog open onOpenChange={onOpenChange} api={fakeApi()} onSaved={onSaved} />);
 
-    await pick(user, 'Provider', 'OpenAI');
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-    await pick(user, 'Model', 'gpt-4o');
+    await start(user, 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
 
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
@@ -527,9 +642,9 @@ describe('ByoModelDialog', () => {
       <ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={onSaved} />
     );
 
-    await pick(user, 'Provider', 'OpenAI');
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-    await pick(user, 'Model', 'gpt-4o');
+    await start(user, 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
     await user.click(screen.getByRole('button', { name: 'Test and add' }));
     rerender(<ByoModelDialog open={false} onOpenChange={vi.fn()} api={api} onSaved={onSaved} />);
     finishTest();
@@ -538,7 +653,7 @@ describe('ByoModelDialog', () => {
       expect(onSaved).toHaveBeenCalledWith(expect.objectContaining({ name: 'gpt-4o' }))
     );
   });
-  describe('name and API type', () => {
+  describe('model alias and API type', () => {
     const REPLACEABLE: ByoDialogContext = {
       ...CONTEXT,
       replaceableModels: [
@@ -552,31 +667,66 @@ describe('ByoModelDialog', () => {
       { value: 'OpenAiResponses', label: 'OpenAI Responses' },
       { value: 'OpenAiChatCompletions', label: 'OpenAI Chat Completions' },
     ];
+    const withReplaceable = (overrides: Partial<ByoModelDialogApi> = {}) =>
+      fakeApi({
+        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+        ...overrides,
+      });
 
-    async function connectAndPickModel(user: ReturnType<typeof userEvent.setup>, model: string) {
-      await pick(user, 'Provider', 'OpenAI');
-      await waitFor(() => expect(screen.getByRole('combobox', { name: 'Model' })).toBeEnabled());
-      await pick(user, 'Model', model);
+    async function connectAndPickModel(
+      user: ReturnType<typeof userEvent.setup>,
+      provider: string,
+      model: string
+    ) {
+      await pick(user, 'Provider', provider);
+      await waitFor(() =>
+        expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled()
+      );
+      await pick(user, 'Your model', model);
     }
+
+    it('offers a custom alias first, then the UiPath models it can replace', async () => {
+      const user = userEvent.setup();
+      render(
+        <ByoModelDialog open onOpenChange={vi.fn()} api={withReplaceable()} onSaved={vi.fn()} />
+      );
+
+      await user.click(await screen.findByRole('combobox', { name: 'Model alias' }));
+
+      // A UiPath model already replaced is not offered again.
+      expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+        'Add custom alias',
+        'gpt-4.1',
+        'gpt-4o-2024-05-13Deprecated',
+      ]);
+    });
+
+    it('keeps a custom alias and its edit action above the UiPath models', async () => {
+      const user = userEvent.setup();
+      render(
+        <ByoModelDialog open onOpenChange={vi.fn()} api={withReplaceable()} onSaved={vi.fn()} />
+      );
+
+      await addCustomAlias(user, 'mine');
+      await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+
+      expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+        'mine',
+        'gpt-4.1',
+        'gpt-4o-2024-05-13Deprecated',
+      ]);
+      expect(screen.getByRole('button', { name: 'Edit custom alias' })).toBeInTheDocument();
+    });
 
     it('replaces a UiPath model, taking its name and the first API type', async () => {
       const user = userEvent.setup();
-      const api = fakeApi({
-        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
-        apiTypes: vi.fn(() => TWO_TYPES),
-      });
+      const api = withReplaceable({ apiTypes: vi.fn(() => TWO_TYPES) });
       render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-      await connectAndPickModel(user, 'gpt-5.1');
-      await user.click(screen.getByRole('radio', { name: 'Replace a UiPath model' }));
-      await user.click(screen.getByRole('combobox', { name: 'Replace a UiPath model' }));
-      // A UiPath model already replaced is not offered again.
-      expect(screen.queryByRole('option', { name: /^gpt-5$/ })).not.toBeInTheDocument();
-      await user.click(await screen.findByRole('option', { name: 'gpt-4.1' }));
+      await pick(user, 'Model alias', 'gpt-4.1');
+      await connectAndPickModel(user, 'OpenAI', 'gpt-5.1');
 
-      expect(screen.getByRole('combobox', { name: 'API type' })).toHaveTextContent(
-        'OpenAI Responses'
-      );
+      expect(screen.queryByRole('combobox', { name: 'API type' })).not.toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Test and add' }));
       await waitFor(() =>
         expect(api.testAndSave).toHaveBeenCalledWith(
@@ -590,83 +740,90 @@ describe('ByoModelDialog', () => {
       expect(api.apiTypes).toHaveBeenCalledWith('openai', 'gpt-4.1');
     });
 
-    it('goes back to a name of your own when another provider can replace nothing', async () => {
-      const user = userEvent.setup();
-      const api = fakeApi({
-        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
-        apiTypes: vi.fn((providerId: string) => (providerId === 'openai' ? TWO_TYPES : [])),
-      });
-      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
-
-      await connectAndPickModel(user, 'gpt-5.1');
-      await user.click(screen.getByRole('radio', { name: 'Replace a UiPath model' }));
-      await pick(user, 'Provider', 'Azure OpenAI');
-
-      expect(screen.queryByRole('combobox', { name: 'Replace a UiPath model' })).toBeNull();
-      expect(screen.getByRole('textbox', { name: 'Name in your model list' })).toBeInTheDocument();
-    });
-
-    it('picks the only API type again after a switch to another provider', async () => {
-      const user = userEvent.setup();
-      render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
-
-      await pick(user, 'Provider', 'OpenAI');
-      const apiType = () => screen.getByRole('combobox', { name: 'API type' });
-      await waitFor(() => expect(apiType()).toHaveTextContent('OpenAI Responses'));
-      await pick(user, 'Provider', 'Azure OpenAI');
-
-      await waitFor(() => expect(apiType()).toHaveTextContent('OpenAI Responses'));
-    });
-
-    it('says when a replaced UiPath model is being retired', async () => {
-      const user = userEvent.setup();
-      const api = fakeApi({
-        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
-      });
-      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
-
-      await connectAndPickModel(user, 'gpt-5.1');
-      await user.click(screen.getByRole('radio', { name: 'Replace a UiPath model' }));
-      await user.click(screen.getByRole('combobox', { name: 'Replace a UiPath model' }));
-      const retiring = await screen.findByRole('option', { name: /gpt-4o-2024-05-13/ });
-      expect(retiring).toHaveTextContent('Deprecated');
-      await user.click(retiring);
-      expect(screen.getByText('To be retired on 2026-09-23')).toBeInTheDocument();
-    });
-
-    it('asks for the API type when a name of your own has several', async () => {
+    it('takes the first API type for a custom alias too', async () => {
       const user = userEvent.setup();
       const api = fakeApi({ apiTypes: vi.fn(() => TWO_TYPES) });
       render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-      await connectAndPickModel(user, 'gpt-5.1');
-      const save = screen.getByRole('button', { name: 'Test and add' });
-      expect(save).toBeDisabled();
-      await pick(user, 'API type', 'OpenAI Chat Completions');
-      expect(save).toBeEnabled();
-      await user.click(save);
+      await addCustomAlias(user, 'mine');
+      await connectAndPickModel(user, 'OpenAI', 'gpt-5.1');
+      await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
       await waitFor(() =>
         expect(api.testAndSave).toHaveBeenCalledWith(
-          expect.objectContaining({ replaces: null, apiType: 'OpenAiChatCompletions' })
+          expect.objectContaining({ name: 'mine', replaces: null, apiType: 'OpenAiResponses' })
         )
       );
     });
 
-    it('refuses a name of your own that is a UiPath model name', async () => {
+    it('takes the first API type of the new choice when the model alias changes', async () => {
       const user = userEvent.setup();
-      const api = fakeApi({
-        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+      const CHAT_ONLY = [{ value: 'OpenAiChatCompletions', label: 'OpenAI Chat Completions' }];
+      const api = withReplaceable({
+        apiTypes: vi.fn((_: string, replaces: string | null) =>
+          replaces === 'gpt-4.1' ? CHAT_ONLY : [...TWO_TYPES]
+        ),
       });
       render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-      await connectAndPickModel(user, 'gpt-4o');
+      await pick(user, 'Model alias', 'gpt-4.1');
+      await pick(user, 'Provider', 'OpenAI');
+      await pick(user, 'Model alias', 'gpt-4o-2024-05-13Deprecated');
+      await connectAndPickModel(user, 'OpenAI', 'gpt-5.1');
+      await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({ replaces: 'gpt-4o-2024-05-13', apiType: 'OpenAiResponses' })
+        )
+      );
+    });
+
+    it('offers only the providers that can serve the chosen model, and drops one that cannot', async () => {
+      const user = userEvent.setup();
+      const api = withReplaceable({
+        apiTypes: vi.fn((providerId: string, replaces: string | null) =>
+          providerId === 'azure' && replaces === 'gpt-4.1' ? [] : TWO_TYPES
+        ),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await addCustomAlias(user, 'mine');
+      await pick(user, 'Provider', 'Azure OpenAI');
+      await pick(user, 'Model alias', 'gpt-4.1');
+
+      const provider = screen.getByRole('combobox', { name: 'Provider' });
+      expect(provider).toHaveTextContent('Select a provider');
+      await user.click(provider);
+      expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['OpenAI']);
+    });
+
+    it('says when a replaced UiPath model is being retired', async () => {
+      const user = userEvent.setup();
+      render(
+        <ByoModelDialog open onOpenChange={vi.fn()} api={withReplaceable()} onSaved={vi.fn()} />
+      );
+
+      await pick(user, 'Model alias', 'gpt-4o-2024-05-13Deprecated');
+
+      expect(screen.getByText('To be retired on 2026-09-23')).toBeInTheDocument();
+    });
+
+    it('refuses a custom alias that is a UiPath model name', async () => {
+      const user = userEvent.setup();
+      render(
+        <ByoModelDialog open onOpenChange={vi.fn()} api={withReplaceable()} onSaved={vi.fn()} />
+      );
+
+      await addCustomAlias(user, 'gpt-4o');
+
       expect(
         screen.getByText('"gpt-4o" is the name of a UiPath model. Pick another name.')
       ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
+      expect(screen.getByRole('combobox', { name: 'Provider' })).toBeDisabled();
     });
 
-    it('offers only replacements when the feature takes no names of your own', async () => {
+    it('offers only replacements when the feature takes no custom aliases', async () => {
       const user = userEvent.setup();
       const api = fakeApi({
         loadContext: vi.fn(async () => ({
@@ -676,12 +833,12 @@ describe('ByoModelDialog', () => {
       });
       render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
-      await connectAndPickModel(user, 'gpt-5.1');
-      expect(screen.queryByRole('radio')).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole('textbox', { name: 'Name in your model list' })
-      ).not.toBeInTheDocument();
-      expect(screen.getByRole('combobox', { name: 'Replace a UiPath model' })).toBeInTheDocument();
+      await user.click(await screen.findByRole('combobox', { name: 'Model alias' }));
+
+      expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+        'gpt-4.1',
+        'gpt-4o-2024-05-13Deprecated',
+      ]);
     });
 
     it('edits a replacement, keeping the UiPath model it replaces and its API type', async () => {
@@ -692,8 +849,7 @@ describe('ByoModelDialog', () => {
         replaces: 'gpt-5',
         apiType: 'OpenAiChatCompletions',
       };
-      const api = fakeApi({
-        loadContext: vi.fn(async () => ({ ok: true as const, value: REPLACEABLE })),
+      const api = withReplaceable({
         loadModel: vi.fn(async () => ({ ok: true as const, value: editing })),
         apiTypes: vi.fn(() => TWO_TYPES),
       });
@@ -709,12 +865,7 @@ describe('ByoModelDialog', () => {
 
       // Its own UiPath model is offered although it is replaced, by this very model.
       await waitFor(() =>
-        expect(screen.getByRole('combobox', { name: 'Replace a UiPath model' })).toHaveTextContent(
-          'gpt-5'
-        )
-      );
-      expect(screen.getByRole('combobox', { name: 'API type' })).toHaveTextContent(
-        'OpenAI Chat Completions'
+        expect(screen.getByRole('combobox', { name: 'Model alias' })).toHaveTextContent('gpt-5')
       );
       await waitFor(() =>
         expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
