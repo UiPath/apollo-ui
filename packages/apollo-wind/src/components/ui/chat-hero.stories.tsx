@@ -140,6 +140,38 @@ export const DockedWithoutCopy: Story = {
   render: () => <DockedDemo title="" description="" />,
 };
 
+/**
+ * More welcome content than the panel has room for, with the hero itself as the scroll
+ * container. The content stays reachable: it starts at the top and scrolls, where it is
+ * otherwise held at the bottom.
+ */
+export const DockedOverflowing: Story = {
+  name: 'Docked, overflowing',
+  parameters: { layout: 'centered' },
+  render: () => (
+    <div className="flex h-[360px] w-[400px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-card">
+      <ChatHero layout="docked" className="min-h-0 overflow-y-auto p-4">
+        <ChatHeroHeader>
+          <ChatHeroLogo>
+            <span className="flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Sparkles className="size-12" />
+            </span>
+          </ChatHeroLogo>
+          <ChatHeroTitle>Welcome to Autopilot</ChatHeroTitle>
+          <ChatHeroDescription>
+            Ask me anything about your data or how to use this application. I can explain a process,
+            draft a workflow, or walk you through a failing job step by step.
+          </ChatHeroDescription>
+        </ChatHeroHeader>
+        <PromptSuggestions suggestions={SUGGESTIONS} />
+      </ChatHero>
+      <div className="p-4 pt-2">
+        <Composer />
+      </div>
+    </div>
+  ),
+};
+
 export const Playground: Story = {
   args: {
     layout: 'centered',
