@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.39.0...@uipath/apollo-react@7.40.0) (2026-11-20)
+
+### Features
+
+* **apollo-react:** show a host image on the Wind chat's first run ([83cb973](https://github.com/UiPath/apollo-ui/commit/83cb9733616476acfb02a3e2ec5164fd606d6138))
+
 ## [@uipath/apollo-react-v7.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.38.0...@uipath/apollo-react@7.39.0) (2026-11-20)
 
 ### Features

@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.95.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.95.1...@uipath/apollo-wind@2.95.2) (2026-11-20)
+
+### Bug Fixes
+
+* **apollo-wind:** keep overflowing ChatHero content reachable ([59e2576](https://github.com/UiPath/apollo-ui/commit/59e257604185f27d5a2211949e14fc68727fd79d))
+
 ## [@uipath/apollo-wind-v2.95.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.95.0...@uipath/apollo-wind@2.95.1) (2026-11-19)
 
 ### Bug Fixes
