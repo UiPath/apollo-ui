@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite';
 import { FormFieldError } from './form-field';
 import { Label } from './label';
 import { Row } from './layout';
-import { RadioGroup, RadioGroupItem } from './radio-group';
+import { RadioGroup, RadioGroupCard, RadioGroupItem } from './radio-group';
 
 const meta: Meta<typeof RadioGroup> = {
   title: 'Components/Core/Radio Group',
@@ -11,6 +11,27 @@ const meta: Meta<typeof RadioGroup> = {
 };
 
 export default meta;
+
+/** `RadioGroupCard` draws each option as a card: radio dot, title, sub-label and optional tag. */
+export const Cards = {
+  args: {},
+  render: () => (
+    <RadioGroup defaultValue="agent" aria-label="Who handles this" className="max-w-md">
+      <RadioGroupCard
+        value="agent"
+        title="Let the agent decide"
+        description="The agent resolves the case and records its reasoning."
+        tag="Agent"
+      />
+      <RadioGroupCard
+        value="me"
+        title="I will decide"
+        description="Review the details and choose an outcome yourself."
+      />
+      <RadioGroupCard value="later" title="Decide later" disabled />
+    </RadioGroup>
+  ),
+};
 
 export const Default = {
   args: {},

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { Label } from './label';
-import { RadioGroup, RadioGroupItem } from './radio-group';
+import { RadioGroup, RadioGroupCard, RadioGroupItem } from './radio-group';
 
 describe('RadioGroup', () => {
   const RadioGroupExample = ({
@@ -265,6 +265,45 @@ describe('RadioGroup', () => {
       const radio1 = screen.getByLabelText('Option 1');
       expect(radio1).toHaveFocus();
     });
+  });
+});
+
+describe('RadioGroupCard', () => {
+  const Example = ({ onValueChange = vi.fn() }: { onValueChange?: (value: string) => void }) => (
+    <RadioGroup aria-label="Handler" onValueChange={onValueChange}>
+      <RadioGroupCard value="agent" title="Agent" description="Resolves it" tag="Recommended" />
+      <RadioGroupCard value="me" title="Me" />
+    </RadioGroup>
+  );
+
+  it('names the radio by its title and describes it by the sub-label', () => {
+    render(<Example />);
+    expect(screen.getByRole('radio', { name: 'Agent' })).toHaveAccessibleDescription('Resolves it');
+    expect(screen.getByText('Recommended')).toBeInTheDocument();
+  });
+
+  it('selects on click and moves with arrow keys', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<Example onValueChange={onValueChange} />);
+    await user.click(screen.getByRole('radio', { name: 'Agent' }));
+    expect(onValueChange).toHaveBeenCalledWith('agent');
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('radio', { name: 'Me' })).toBeChecked();
+  });
+
+  it('strokes from the group invalid state', () => {
+    render(
+      <RadioGroup aria-invalid aria-label="Handler">
+        <RadioGroupCard value="agent" title="Agent" />
+      </RadioGroup>
+    );
+    expect(screen.getByRole('radio')).toHaveClass('group-aria-invalid/radio-group:border-error');
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Example />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
 

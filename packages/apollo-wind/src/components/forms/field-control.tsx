@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import type { InputGroupLayout, InputGroupProps } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupCard, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -26,6 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toDateValue } from '@/lib/date-value';
 import { joinIds } from './aria-ids';
+import { ChoiceToggleGroup } from './choice-toggle-group';
 import type { FieldMetadata, FieldOption, FieldType, SliderFieldMetadata } from './form-schema';
 import { LiteralValueContext } from './literal-value-context';
 import { StringListControl } from './string-list-field';
@@ -272,6 +273,24 @@ export function FieldControl({
       );
 
     case 'multiselect':
+      if (field.variant === 'chips') {
+        return (
+          <ChoiceToggleGroup
+            multiple
+            shape="chips"
+            id={field.name}
+            options={options}
+            value={(formField.value as string[]) || NO_SELECTION}
+            onValueChange={formField.onChange}
+            onBlur={formField.onBlur}
+            disabled={disabled}
+            aria-labelledby={`${field.name}-label`}
+            aria-invalid={invalid || undefined}
+            aria-describedby={describedById}
+            aria-errormessage={errorId}
+          />
+        );
+      }
       return (
         <MultiSelect
           id={field.name}
@@ -331,6 +350,49 @@ export function FieldControl({
       );
 
     case 'radio':
+      if (field.variant === 'segmented' || field.variant === 'chips') {
+        return (
+          <ChoiceToggleGroup
+            shape={field.variant}
+            id={field.name}
+            options={options}
+            value={formField.value as string | undefined}
+            onValueChange={formField.onChange}
+            onBlur={formField.onBlur}
+            disabled={disabled}
+            aria-labelledby={`${field.name}-label`}
+            aria-invalid={invalid || undefined}
+            aria-describedby={describedById}
+            aria-errormessage={errorId}
+          />
+        );
+      }
+      if (field.variant === 'cards') {
+        return (
+          <RadioGroup
+            aria-labelledby={`${field.name}-label`}
+            value={formField.value as string | null | undefined}
+            onValueChange={formField.onChange}
+            onBlur={formField.onBlur}
+            disabled={disabled}
+            aria-invalid={invalid || undefined}
+            aria-describedby={describedById}
+            aria-errormessage={errorId}
+          >
+            {options.map((option) => (
+              <RadioGroupCard
+                key={String(option.value)}
+                value={String(option.value)}
+                id={`${field.name}-${option.value}`}
+                disabled={'disabled' in option ? Boolean(option.disabled) : false}
+                title={option.label}
+                description={option.description}
+                tag={option.tag}
+              />
+            ))}
+          </RadioGroup>
+        );
+      }
       return (
         <RadioGroup
           aria-labelledby={`${field.name}-label`}

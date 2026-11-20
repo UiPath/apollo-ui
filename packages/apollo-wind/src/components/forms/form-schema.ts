@@ -28,6 +28,10 @@ export interface FieldOption {
   label: string;
   value: string | number | boolean;
   disabled?: boolean;
+  /** Sub-label under the label. Shown by the `cards` radio variant. */
+  description?: string;
+  /** Short badge beside the label, such as a recommendation marker. */
+  tag?: string;
 }
 
 /**
@@ -302,6 +306,8 @@ export interface SelectFieldMetadata extends BaseFieldMetadata {
 export interface MultiSelectFieldMetadata extends BaseFieldMetadata {
   type: 'multiselect';
   options?: FieldOption[];
+  /** `chips` renders the options as a row of toggleable chips instead of a searchable dropdown. */
+  variant?: 'default' | 'chips';
   maxSelected?: number;
   /** Shown when the search matches nothing (default 'No items found.'). */
   emptyMessage?: string;
@@ -312,6 +318,8 @@ export interface MultiSelectFieldMetadata extends BaseFieldMetadata {
 export interface RadioFieldMetadata extends BaseFieldMetadata {
   type: 'radio';
   options?: FieldOption[];
+  /** `segmented`, `cards` (shows option `description`) or `chips`. All keep radio semantics. */
+  variant?: 'default' | 'segmented' | 'cards' | 'chips';
 }
 
 export interface CheckboxFieldMetadata extends BaseFieldMetadata {
@@ -388,6 +396,22 @@ export interface StringListFieldMetadata extends BaseFieldMetadata {
   removeItemAriaLabel?: string;
 }
 
+/**
+ * A read-only value shown with the field's label. Reads the form value, renders no input and is
+ * never validated.
+ */
+export interface DisplayFieldMetadata extends BaseFieldMetadata {
+  type: 'display';
+  /** `markdown` renders the value as markdown. Default `text`. */
+  format?: 'text' | 'markdown';
+  /** Shows the value in a tinted callout instead of inline text. */
+  callout?: boolean;
+  /** Shown when the value is empty. Without it an empty value renders nothing. */
+  emptyText?: string;
+  /** Shows the label of the option matching the value, joined for array values. */
+  options?: FieldOption[];
+}
+
 /** Value shapes a `type: 'custom'` field can declare so metadata constraints apply to it. */
 export type CustomValueType = 'string' | 'number' | 'boolean' | 'string-array';
 
@@ -423,6 +447,7 @@ export type FieldMetadata =
   | DateTimeFieldMetadata
   | FileFieldMetadata
   | StringListFieldMetadata
+  | DisplayFieldMetadata
   | CustomFieldMetadata;
 
 /**

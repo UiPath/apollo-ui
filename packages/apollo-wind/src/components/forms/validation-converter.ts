@@ -199,6 +199,9 @@ function getBaseSchemaForType(
       // Parsed by `withDateParsing`; coercion would turn numbers and locale strings into dates.
       return z.date();
 
+    case 'display':
+      return z.any();
+
     case 'file':
       // File validation is typically handled separately by the file input
       return z.any();

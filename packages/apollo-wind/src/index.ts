@@ -72,6 +72,7 @@ export type {
   CustomValueType,
   DataSource,
   FieldCondition,
+  DisplayFieldMetadata,
   FieldMetadata,
   FieldOption,
   FieldRule,
