@@ -1,8 +1,10 @@
 import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useMemo } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
-import { selectIsConnecting } from '../../utils/NodeUtils';
+import { resolveNodeHandleAffordances, selectIsConnecting } from '../../utils/NodeUtils';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
+import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle';
 import { HANDLE_CROSS_AXIS_SIZE_PX } from '../ButtonHandle/ButtonHandleStyleUtils';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 
@@ -12,14 +14,33 @@ const StageNodeHandlesInner = ({
   selected,
   isHovered,
   isException,
+  dragging,
+  onHandleAction,
+  onHandleMouseEnter,
+  onHandleMouseLeave,
+  handleAddButtonTitle,
 }: {
   id: string;
   isReadOnly: boolean;
   selected: boolean;
   isHovered: boolean;
   isException?: boolean;
+  dragging?: boolean;
+  onHandleAction?: (event: HandleActionEvent) => void;
+  onHandleMouseEnter?: (event: HandleMouseEvent) => void;
+  onHandleMouseLeave?: (event: HandleMouseEvent) => void;
+  handleAddButtonTitle?: string;
 }) => {
   const isConnecting = useStore(selectIsConnecting);
+  const { multipleNodesSelected } = useSelectionState();
+  const { showAddButton } = resolveNodeHandleAffordances({
+    isConnecting,
+    selected,
+    hovered: isHovered,
+    dragging,
+    canEdit: !isReadOnly,
+    multipleNodesSelected,
+  });
   const connectedHandleIds = useConnectedHandles(id);
   const hasConnections = connectedHandleIds.size > 0;
   const shouldShowHandles = useMemo(() => {
@@ -82,6 +103,8 @@ const StageNodeHandlesInner = ({
                   id: `${id}____source____bottom`,
                   type: 'source',
                   handleType: 'output',
+                  // Only the right handle adds the next stage; this one re-enters.
+                  showButton: false,
                 },
               ],
               visible: selected || isHovered || isConnecting,
@@ -95,6 +118,13 @@ const StageNodeHandlesInner = ({
     shouldShowHandles,
     nodeId: id,
     selected,
+    hovered: isHovered,
+    handleAction: onHandleAction,
+    handleMouseEnter: onHandleMouseEnter,
+    handleMouseLeave: onHandleMouseLeave,
+    showAddButton,
+    isLocked: isReadOnly,
+    addButtonTitle: handleAddButtonTitle,
   });
 
   return handleElements;

@@ -3,6 +3,7 @@ import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { useIsNodeReadOnly } from '../BaseCanvas/ReadOnlyNodesContext';
+import type { HandleActionEvent } from '../ButtonHandle';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu } from '../NodeContextMenu';
 import { useSetNodeSelection } from '../NodePropertiesPanel/hooks';
@@ -40,6 +41,10 @@ const StageNodeInner = (props: StageNodeProps) => {
     onAddTaskFromToolbox,
     onTaskToolboxSearch,
     onReplaceTaskFromToolbox,
+    onHandleAction,
+    onHandleMouseEnter,
+    onHandleMouseLeave,
+    handleAddButtonTitle,
   } = props;
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
@@ -139,6 +144,19 @@ const StageNodeInner = (props: StageNodeProps) => {
     [onReplaceTaskFromToolbox]
   );
 
+  // Left undefined without a host callback so the handles render no add button.
+  const handleAction = useMemo(
+    () =>
+      onHandleAction
+        ? (event: HandleActionEvent) => {
+            // The click opens host UI over the stage, so no mouseleave follows.
+            setIsHovered(false);
+            onHandleAction(event);
+          }
+        : undefined,
+    [onHandleAction]
+  );
+
   const taskWidthStyle = useMemo(
     () =>
       taskWidth
@@ -158,7 +176,15 @@ const StageNodeInner = (props: StageNodeProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <StageContainer selected={selected} status={status} width={width} style={taskWidthStyle}>
+      <StageContainer
+        data-testid={`stage-container-${id}`}
+        selected={selected}
+        hovered={isHovered}
+        dragging={dragging}
+        status={status}
+        width={width}
+        style={taskWidthStyle}
+      >
         <StageNodeHeader
           props={props}
           isReadOnly={isReadOnly}
@@ -221,6 +247,11 @@ const StageNodeInner = (props: StageNodeProps) => {
         selected={selected}
         isHovered={isHovered}
         isException={isException}
+        dragging={dragging}
+        onHandleAction={handleAction}
+        onHandleMouseEnter={onHandleMouseEnter}
+        onHandleMouseLeave={onHandleMouseLeave}
+        handleAddButtonTitle={handleAddButtonTitle}
       />
     </div>
   );
