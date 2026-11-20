@@ -47,6 +47,7 @@ const renderDiff = (
         rules: DIFF_RULES,
         ...DIFF_COLUMNS,
         hitPolicy: DIFF_POLICY,
+        numbered: true,
         ariaLabel: 'Rules',
         dataTestId: 'nl',
         ...props,

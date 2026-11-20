@@ -91,7 +91,7 @@ export const ROW_SURFACE_CLASS = cn(
 );
 
 export const ROW_NUMBER_CLASS =
-  'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-3 items-center justify-end rounded-md border border-border-de-emp bg-background px-1 text-[11px] leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm';
+  'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm';
 
 export const LINE_CLASS = cn(
   'flex min-h-[var(--sentence-line)] items-start gap-2',

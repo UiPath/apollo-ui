@@ -197,7 +197,7 @@ export const ruleCardModel = ({
   const diff = mode.kind === 'diff' ? mode.diff : undefined;
   const editLabels = mode.kind === 'edit' ? mode.editLabels : undefined;
   const id = `${idPrefix}-${position}`;
-  const number = diff ? diff.number : numbered ? position : null;
+  const number = diff ? diff.number : position;
   const changed = (token: SentenceToken) => diff?.tokens.has(token) === true;
   const changeStatus = [
     diff?.change && labels.changeStatus(diff.change),
@@ -246,11 +246,11 @@ export const ruleCardModel = ({
     dim,
     title,
     cells,
-    number,
+    number: numbered ? number : null,
     changeStatus,
     ariaLabel: [
       changeStatus,
-      number !== null ? String(number) : '',
+      numbered && number !== null ? String(number) : '',
       shownLineText(rule.heading, labels, changed),
       shownLineText(rule.lead, labels, changed),
     ]
