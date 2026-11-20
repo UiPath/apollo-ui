@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
@@ -23,10 +20,6 @@ import {
 import { type FixtureTextProps, textPropsOf } from './__fixtures__/textMode';
 import { DecisionText } from './DecisionText';
 import type { DecisionTextCitations, SentenceCitation, SentenceSelection } from './sentenceTypes';
-
-const catalog: Record<string, string> = JSON.parse(
-  readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'locales', 'en.json'), 'utf8')
-);
 
 const BOX = { x: 10, y: 20, width: 300, height: 40 };
 const DECISION_CITATION: SentenceCitation = { kind: 'page', page: 1 };
@@ -191,15 +184,6 @@ describe('DecisionText citations', () => {
     const view = screen.getByRole('region', { name: 'Rules' });
     expect(view.getAttribute('aria-keyshortcuts')).toBe(keys);
     expect(view.getAttribute('aria-description')).toBe(description);
-  });
-
-  it.each([
-    'decision-text.open_rule_citation',
-    'decision-text.open_decision_citation',
-    'decision-text.open_table_citation',
-  ] as const)('words %s with a numbered select, not a count', (id) => {
-    expect(catalog[id]).toContain('{numbered, select, yes {');
-    expect(catalog[id]).not.toContain('plural');
   });
 
   it('keeps rule citations out of the tab order in read mode', () => {

@@ -64,7 +64,6 @@ const withHint = (host: string | undefined, hint: string | false): string | unde
   [host, hint].filter(Boolean).join(' ') || undefined;
 
 /** How the view is used: read, select rules and cells the host keeps, edit them in the host's operators, hit policies, column types and refusals, or read what changed. */
-
 export type DecisionTextMode<Op, Policy, Total, Type, Refusal> =
   | { kind: 'read'; selected: SentenceSelection | null }
   | { kind: 'select'; selected: SentenceSelection | null; onSelect: SelectHandler }
