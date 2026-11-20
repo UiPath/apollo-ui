@@ -343,6 +343,115 @@ export const SectionVariants: Story = {
   },
 };
 
+const choiceVariantsSchema: FormSchema = {
+  id: 'choice-variants-demo',
+  title: 'Review request',
+  actions: [],
+  initialData: {
+    request: 'Vendor onboarding for Northwind Traders',
+    reasoning:
+      'The **vendor** passed the sanctions check, but the bank account country differs from the registered address.\n\n- Check the bank letter\n- Confirm the tax ID',
+    priority: 'normal',
+    handler: 'agent',
+    flagged: ['bank', 'tax'],
+    reasons: ['bank'],
+  },
+  sections: [
+    {
+      id: 'context',
+      title: 'Context',
+      fields: [
+        { name: 'request', type: 'display', label: 'Request', badge: 'New' },
+        {
+          name: 'reasoning',
+          type: 'display',
+          label: 'Agent reasoning',
+          format: 'markdown',
+          callout: true,
+          badge: '95% confident',
+        },
+        {
+          name: 'flagged',
+          type: 'display',
+          label: 'Flagged reasons',
+          options: [
+            { label: 'Bank mismatch', value: 'bank' },
+            { label: 'Missing tax ID', value: 'tax' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'decision',
+      title: 'Your decision',
+      fields: [
+        {
+          name: 'priority',
+          type: 'radio',
+          label: 'Priority',
+          variant: 'segmented',
+          options: [
+            { label: 'Low', value: 'low' },
+            { label: 'Normal', value: 'normal' },
+            { label: 'High', value: 'high' },
+          ],
+        },
+        {
+          name: 'handler',
+          type: 'radio',
+          label: 'Who handles this',
+          variant: 'cards',
+          validation: { required: true },
+          options: [
+            {
+              label: 'Let the agent decide',
+              value: 'agent',
+              description: 'The agent resolves the case and records its reasoning.',
+              tag: 'Agent',
+            },
+            {
+              label: 'I will decide',
+              value: 'me',
+              description: 'Review the details and choose an outcome yourself.',
+            },
+          ],
+        },
+        {
+          name: 'outcome',
+          type: 'radio',
+          label: 'Outcome',
+          variant: 'chips',
+          options: [
+            { label: 'Approve', value: 'approve', tag: 'Agent' },
+            { label: 'Reject', value: 'reject' },
+            { label: 'Escalate', value: 'escalate' },
+          ],
+        },
+        {
+          name: 'reasons',
+          type: 'multiselect',
+          label: 'Reasons',
+          variant: 'chips',
+          options: [
+            { label: 'Bank mismatch', value: 'bank' },
+            { label: 'Missing tax ID', value: 'tax' },
+            { label: 'Duplicate vendor', value: 'duplicate' },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+/** Radio and multiselect `variant` values, option `description` and `tag`, and `display` fields. */
+export const ChoiceVariants: Story = {
+  render: (args) => (
+    <div className="max-w-xl">
+      <MetadataForm {...args} schema={choiceVariantsSchema} />
+    </div>
+  ),
+};
+
 /**
  * `steps` with the default stepper: step descriptions, Previous / Next / Submit, `initialData`,
  * and a field rule inside a step.

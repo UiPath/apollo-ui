@@ -24,6 +24,7 @@ import type {
   SliderFieldMetadata,
 } from './form-schema';
 import { hasOptions, isCustomField } from './form-schema';
+import { DisplayValue } from './display-value';
 import { ModeAwareField } from './mode-aware-field';
 import { RulesEngine } from './rules-engine';
 import { StringListField } from './string-list-field';
@@ -286,7 +287,10 @@ export function FormFieldRenderer({
   ) : null;
 
   // Value modes or field actions: the field anatomy, custom fields included.
-  if (field.valueModes || field.headerActions || field.menuActions || field.badge) {
+  if (
+    field.type !== 'display' &&
+    (field.valueModes || field.headerActions || field.menuActions || field.badge)
+  ) {
     return (
       <div {...wrapperProps}>
         {changedNote}
@@ -478,6 +482,21 @@ function BuiltInField({
         />
       );
 
+    case 'display':
+      return (
+        <FormField>
+          <FormFieldLabel
+            id={`${field.name}-label`}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
+          <DisplayValue field={field} value={formField.value} />
+          <FormFieldDescription>{field.description}</FormFieldDescription>
+        </FormField>
+      );
+
     case 'custom':
       return null;
 
@@ -488,7 +507,10 @@ function BuiltInField({
               name themselves from the label's id instead. The option labels name individual radios;
               without this the group itself has no accessible name. */}
           <FormFieldLabel
-            {...(field.type === 'radio' || field.type === 'boolean' || field.type === 'datetime'
+            {...(field.type === 'radio' ||
+            field.type === 'boolean' ||
+            field.type === 'datetime' ||
+            (field.type === 'multiselect' && field.variant === 'chips')
               ? { id: `${field.name}-label` }
               : { htmlFor: field.name })}
             required={required}

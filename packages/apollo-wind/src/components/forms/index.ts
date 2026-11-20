@@ -68,6 +68,7 @@ export type {
   CustomFieldComponentProps,
   CustomValueType,
   DataSource,
+  DisplayFieldMetadata,
   FieldCondition,
   FieldMetadata,
   FieldOption,
