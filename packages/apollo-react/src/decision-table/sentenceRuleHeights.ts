@@ -48,8 +48,8 @@ export const SENTENCE_LIST_STYLE: SentenceListStyle = {
   '--sentence-row-gap': `${SENTENCE_RULE_GAP_PX}px`,
 };
 
-/** The list's geometry, and in a diff the width of the rule numbers its cards show. */
-export const sentenceListStyle = (diff: boolean, ruleCount: number): SentenceListStyle =>
-  diff
+/** The list's geometry, and the width of its rule numbers when they show. */
+export const sentenceListStyle = (numbered: boolean, ruleCount: number): SentenceListStyle =>
+  numbered
     ? { ...SENTENCE_LIST_STYLE, '--sentence-number-digits': String(ruleCount).length }
     : SENTENCE_LIST_STYLE;
