@@ -17,7 +17,7 @@ export const DECISION_TEXT_FRAME_CLASS = cn(
 export const DECISION_TEXT_INLINE_FRAME_CLASS = DECISION_TEXT_SURFACE_CLASS;
 
 export const DECISION_TEXT_HEADER_CLASS =
-  'group/header sticky top-0 z-2 flex flex-wrap items-baseline gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
+  'group/header sticky top-0 z-2 flex flex-wrap items-center gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
 
 export const HEADER_LABEL_CLASS = 'font-semibold';
 
@@ -32,6 +32,17 @@ export const BAND_CAPTION_CLASS =
   'pt-1 text-[10px] leading-4 font-bold tracking-[0.4px] whitespace-nowrap text-foreground-de-emp uppercase';
 
 export const BAND_COLUMNS_CLASS = 'flex min-h-6 min-w-0 flex-wrap items-start gap-1.5';
+
+export const BAND_MORE_LINK_CLASS =
+  'inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-md px-1 text-xs leading-4 font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary';
+
+export const BAND_ADD_BUTTON_CLASS =
+  'inline-flex size-6 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent p-0 text-foreground-de-emp hover:bg-background-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary';
+
+export const BAND_MORE_DOT_CLASS = 'size-1.5 rounded-full bg-[var(--color-error-icon)]';
+
+export const BAND_MORE_LIST_CLASS =
+  'flex min-h-0 max-h-72 flex-col items-start gap-1.5 overflow-y-auto p-2';
 
 export const MARKED_CHIP_CLASS = cn(
   'group-data-[dim=true]/row:text-foreground-de-emp',
@@ -87,7 +98,7 @@ export const ROW_SURFACE_CLASS = cn(
   'forced-colors:group-data-[tone]/row:border-s-4',
   'group-data-[dim=true]/row:text-foreground-de-emp',
   STOP_RING_CLASS,
-  'data-[selected=true]:outline-2 group-focus-visible/row:outline-2 group-focus-visible/row:ring-2 group-focus-visible/row:ring-ring'
+  'data-[selected=true]:outline-2 data-[row-selected=true]:outline-2 group-focus-visible/row:outline-2'
 );
 
 export const ROW_NUMBER_CLASS =
@@ -146,12 +157,13 @@ export const TOKEN_KIND_CLASS = {
 } as const;
 
 export const EDITABLE_VALUE_CLASS =
-  'group-data-[editable=true]/row:underline group-data-[editable=true]/row:decoration-wavy group-data-[editable=true]/row:decoration-1 group-data-[editable=true]/row:underline-offset-[3px] group-data-[editable=true]/row:decoration-[var(--color-warning-icon)]';
+  'data-[tone=warning]:underline data-[tone=warning]:decoration-wavy data-[tone=warning]:decoration-1 data-[tone=warning]:underline-offset-[3px] data-[tone=warning]:decoration-[var(--color-warning-icon)]';
 
 export const OUTPUT_VALUE_CLASS =
   'inline-flex items-center rounded-md border border-[color-mix(in_srgb,var(--sentence-output-hue)_35%,transparent)] bg-[color-mix(in_srgb,var(--sentence-output-hue)_8%,var(--color-background))] px-1.5 text-sm leading-[calc(var(--sentence-line)-4px)] font-medium text-[var(--sentence-output-hue)] hover:border-[var(--sentence-output-hue)]';
 
-export const EMPTY_OUTPUT_VALUE_CLASS = '-mx-1 px-1 py-0.5 italic text-foreground-de-emp';
+export const EMPTY_OUTPUT_VALUE_CLASS =
+  'inline-flex items-center rounded-md border border-dashed border-border px-1.5 text-sm leading-[calc(var(--sentence-line)-4px)] text-foreground-de-emp';
 
 export const LINE_MARK_CLASS = 'inline-flex h-[var(--sentence-line)] shrink-0 items-center';
 
@@ -234,7 +246,10 @@ export const HEADING_ACTIONS_SPACE_CLASS = 'pe-18';
 export const RULE_ACTIONS_CLASS =
   'absolute end-2 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center gap-0.5';
 
-export const RULE_ACTION_CLASS = 'size-6 text-foreground-de-emp hover:text-foreground';
+export const RULE_ACTION_CLASS = cn(
+  'size-6 text-foreground-de-emp hover:text-foreground',
+  'opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100'
+);
 
 /** Hidden until its card is hovered or holds the selection, or it has keyboard focus. */
 export const REVEALED_ACTION_CLASS =
@@ -249,7 +264,7 @@ export const CITED_LINES_CLASS = 'flex flex-wrap items-end gap-x-2';
 
 export const CITED_LINE_CLASS = 'grow';
 
-export const HEADER_CITATIONS_CLASS = 'ms-auto flex gap-1 self-center';
+export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
 
 export const HEADER_CITATION_REVEAL_CLASS =
   'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
@@ -260,10 +275,13 @@ export const DELETE_RULE_CLASS = cn(
   REVEALED_ACTION_CLASS
 );
 
-export const REMOVE_CONDITION_CLASS = cn(
-  'mt-0.5 size-5 shrink-0 text-foreground-de-emp hover:text-foreground',
-  REVEALED_ACTION_CLASS
-);
+export const CLAUSE_CLASS = 'group/clause relative pe-7';
+
+export const REMOVE_CONDITIONS_CLASS =
+  'absolute end-0 top-0.5 flex opacity-0 group-hover/clause:opacity-100 group-has-[[data-selected]]/row:opacity-100 group-focus-within/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
+
+export const REMOVE_CONDITION_CLASS =
+  'size-5 shrink-0 text-foreground-disable hover:text-foreground';
 
 export const ADD_RULE_LINK_CLASS = 'h-auto w-fit gap-1 rounded-md px-2 py-1.5 [&_svg]:size-3.5';
 
@@ -271,7 +289,7 @@ export const ADD_RULE_FOOTER_CLASS = cn('pb-4', GUTTER_CLASS);
 
 export const POLICY_TRIGGER_CLASS = cn(
   HEADER_LABEL_CLASS,
-  '-my-0.5 -ms-1 gap-1 text-foreground-de-emp future:text-foreground-de-emp'
+  '-my-0.5 -ms-1 gap-1 rounded bg-background-hover px-1.5 text-foreground-de-emp future:text-foreground-de-emp'
 );
 
 export const POLICY_CODE_CLASS = 'font-mono text-foreground';

@@ -13,12 +13,9 @@ import {
 } from './sentences.fixtures';
 
 /** The view's props in the fixtures' operators, hit policies, column types and refusals. */
-export type FixtureTextProps = DecisionTextProps<
-  FixtureOperator,
-  FixturePolicy,
-  FixtureTotal,
-  FixtureType,
-  FixtureRefusal
+export type FixtureTextProps = Omit<
+  DecisionTextProps<FixtureOperator, FixturePolicy, FixtureTotal, FixtureType, FixtureRefusal>,
+  'name'
 >;
 
 /** A graph body in the fixtures' operators, hit policies, column types and refusals. */

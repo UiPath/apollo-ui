@@ -18,6 +18,7 @@ import {
   CHANGE_SIGN_CLASS,
   CITED_LINE_CLASS,
   CITED_LINES_CLASS,
+  CLAUSE_CLASS,
   HEADING_ACTIONS_SPACE_CLASS,
   INLINE_LINE_CLASS,
   LINES_CLASS,
@@ -170,6 +171,7 @@ export const RuleCard = memo<RuleCardProps>(
         <div
           className={cn(ROW_SURFACE_CLASS, diff && ROW_CHANGE_CLASS)}
           data-selected={ruleSelected || undefined}
+          data-row-selected={rowSelected || undefined}
         >
           {(card.number !== null || card.changeStatus) && (
             <span className={cn(ROW_NUMBER_CLASS, diff && ROW_NUMBER_CHANGE_CLASS)}>
@@ -187,24 +189,33 @@ export const RuleCard = memo<RuleCardProps>(
               )}
               data-sentence
             >
-              <RuleLine
-                heading
-                parts={rule.heading}
-                title={card.title}
-                badge={card.badges.heading}
-                removals={NO_REMOVALS}
-                unworded={diff?.removedOutcomes}
-                className={INLINE_LINE_CLASS}
-                {...lineProps}
-              />{' '}
-              <RuleLine
-                verdicts
-                className={INLINE_LINE_CLASS}
-                parts={rule.lead}
-                badge={card.badges.lead}
-                removals={[...card.removals.heading, ...card.removals.lead]}
-                {...lineProps}
-              />
+              <div
+                className={CLAUSE_CLASS}
+                style={
+                  card.removals.lead.length > 1
+                    ? { paddingInlineEnd: `calc(${card.removals.lead.length} * 1.25rem + 0.5rem)` }
+                    : undefined
+                }
+              >
+                <RuleLine
+                  heading
+                  parts={rule.heading}
+                  title={card.title}
+                  badge={card.badges.heading}
+                  removals={NO_REMOVALS}
+                  unworded={diff?.removedOutcomes}
+                  className={INLINE_LINE_CLASS}
+                  {...lineProps}
+                />{' '}
+                <RuleLine
+                  verdicts
+                  className={INLINE_LINE_CLASS}
+                  parts={rule.lead}
+                  badge={card.badges.lead}
+                  removals={card.removals.lead}
+                  {...lineProps}
+                />
+              </div>
             </div>
           </CitedLine>
           {lined && (

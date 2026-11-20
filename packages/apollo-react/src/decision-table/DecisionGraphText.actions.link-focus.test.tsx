@@ -67,6 +67,7 @@ const linkToX = (
     token={{ kind: 'input', columnId: 'c1', text: 'X', producedBy: 'x' }}
     mark={undefined}
     output={false}
+    emptyText=""
     selected={false}
     stop={undefined}
     link={{ decisionId: 'x', label: 'Open X', tabbable: true }}

@@ -15,6 +15,7 @@ import {
 import {
   EDITABLE_TABLE,
   type EditableTable,
+  tableWithNewInput,
   EMPTY_TABLE,
   manyRulesTable,
   wordedRules,
@@ -145,6 +146,7 @@ const TableHost = ({
   return (
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
       <DecisionText
+        name="Discount"
         table={{ rules, ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -165,6 +167,24 @@ const TableHost = ({
                   edit,
                   onPolicyChange,
                   onAddRule,
+                  onAddColumn: (kind) =>
+                    setHost((current) => ({
+                      ...current,
+                      table:
+                        kind === 'input'
+                          ? tableWithNewInput(current.table)[0]
+                          : {
+                              ...current.table,
+                              nextId: current.table.nextId + 1,
+                              outputs: [
+                                ...current.table.outputs,
+                                {
+                                  id: `output-${current.table.nextId}`,
+                                  name: `Output ${current.table.outputs.length + 1}`,
+                                },
+                              ],
+                            },
+                    })),
                   onUndo,
                   onRedo,
                 }
@@ -364,6 +384,28 @@ export const Errors: StoryObj = {
   ),
 };
 
+const MANY_INPUTS_TABLE: EditableTable = {
+  ...EDITABLE_TABLE,
+  inputs: [
+    ...EDITABLE_TABLE.inputs,
+    { id: 'region', name: 'region' },
+    { id: 'tenure', name: 'tenure' },
+  ],
+};
+
+export const ManyInputs: StoryObj = {
+  render: () => (
+    <TableHost
+      initialTable={MANY_INPUTS_TABLE}
+      marks={{
+        rows: new Map(),
+        columns: new Map([['tenure', { tone: 'error', glyph: true, title: 'tenure has no type' }]]),
+      }}
+      caption="Five inputs: two fold into +2 more, whose red dot marks the hidden error; + adds an input or output."
+    />
+  ),
+};
+
 const citationOf = (page: number, index: number): SentenceCitation => {
   const box = { x: 72, y: 96 + index * 40, width: 420, height: 32 };
   if (index % 3 === 0) return { kind: 'block', page, blockId: index, box };
@@ -399,6 +441,7 @@ const CitedHost: React.FC = () => {
   return (
     <div className="flex h-[600px] flex-col gap-2">
       <DecisionText
+        name="Discount"
         citations={citations}
         table={{ rules, ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
@@ -504,6 +547,7 @@ const DiffHost = ({ mode, scenario }: DiffArgs) => {
   return (
     <div className="flex h-[640px] flex-col gap-2">
       <DecisionText
+        name="Discount"
         key={scenario}
         table={{ rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
@@ -552,6 +596,7 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
           data-testid={`stacked-${id}`}
         >
           <DecisionText
+            name="Discount"
             table={{
               rules: STACKED_RULES,
               ...MULTI_SENTENCE_COLUMNS,

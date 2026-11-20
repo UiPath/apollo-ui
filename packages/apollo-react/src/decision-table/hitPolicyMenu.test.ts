@@ -154,10 +154,12 @@ describe('policyHeaderOf', () => {
     expect(policyHeaderOf(CATALOG, { kind: 'total', policy: 'all', total: 'sum' })).toEqual({
       label: 'Sum',
       hint: 'Adds.',
+      code: 'A+',
     });
     expect(policyHeaderOf(CATALOG, { kind: 'total', policy: 'one', total: 'sum' })).toEqual({
       label: '',
       hint: '',
+      code: '',
     });
   });
 });

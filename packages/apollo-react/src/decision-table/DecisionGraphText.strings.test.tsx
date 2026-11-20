@@ -37,7 +37,6 @@ const CALLS: Omit<Calls<DecisionGraphLabels>, 'markStatus' | 'openCitation' | 'c
   deleteTitle: [['Risk']],
   inputsTitle: [['Risk']],
   usersTitle: [['Risk']],
-  noteTitle: [['Risk']],
 };
 
 const providerFor =

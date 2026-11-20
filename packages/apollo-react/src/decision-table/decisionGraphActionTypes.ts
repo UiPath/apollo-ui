@@ -37,8 +37,7 @@ export type DecisionGraphAction<Refusal, Logic> =
       kind: 'changeLogic';
       logicOptions: (decisionId: string) => readonly DecisionGraphLogicOption<Logic>[];
       onChangeLogic: (decisionId: string, logic: Logic) => Refusal | void;
-    }
-  | { kind: 'addNote'; onAddNote: (decisionId: string, text: string) => Refusal | void };
+    };
 
 export type DecisionGraphActionKind = DecisionGraphAction<unknown, unknown>['kind'];
 
@@ -72,7 +71,6 @@ export interface DecisionGraphActionLabels {
   rename: string;
   /** The rename field's name, e.g. "Name of Risk". */
   nameField: (name: string) => string;
-  addNote: string;
   /** A logic switch, e.g. "Change logic to Literal expression". */
   changeLogicTo: (logic: string) => string;
   addDecision: string;
@@ -80,7 +78,7 @@ export interface DecisionGraphActionLabels {
   addDecisionAfter: string;
   addRequiredInput: string;
   chooseInputs: string;
-  chooseUsers: string;
+  usedByMenu: string;
   /** e.g. "Stop using in Eligibility". */
   stopUsingIn: (name: string) => string;
   moveUp: string;
@@ -89,6 +87,8 @@ export interface DecisionGraphActionLabels {
   moveUnder: (name: string) => string;
   /** e.g. "Move out of Eligibility". */
   moveOutOf: (name: string) => string;
+  makeTopLevel: string;
+  deleteDecision: string;
   delete: string;
   /** The delete dialog's title, e.g. "Delete Risk?". */
   deleteTitle: (name: string) => string;
@@ -102,6 +102,4 @@ export interface DecisionGraphActionLabels {
   /** The users dialog's title, e.g. "Decisions that use Risk". */
   usersTitle: (name: string) => string;
   noOtherDecisions: string;
-  /** The note dialog's title, e.g. "Note on Risk". */
-  noteTitle: (name: string) => string;
 }

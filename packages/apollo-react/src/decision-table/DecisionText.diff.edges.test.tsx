@@ -17,6 +17,7 @@ import type { SentencePart, SentenceRule } from './sentenceTypes';
 const renderDiff = (diff: FixtureDiff, props: Partial<Pick<FlatTextProps, 'rules'>> = {}) =>
   render(
     <DecisionText
+      name="Discount"
       {...textPropsOf({
         rules: DIFF_RULES,
         ...DIFF_COLUMNS,
@@ -105,6 +106,7 @@ describe('DecisionText diff edges', () => {
     };
     rerender(
       <DecisionText
+        name="Discount"
         table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -133,6 +135,7 @@ describe('DecisionText diff review edges', () => {
   it('shows no hit-policy picker on a diff', () => {
     render(
       <DecisionText
+        name="Discount"
         table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}

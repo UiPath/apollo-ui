@@ -43,6 +43,7 @@ const renderDiff = (
 ) =>
   render(
     <DecisionText
+      name="Discount"
       {...textPropsOf({
         rules: DIFF_RULES,
         ...DIFF_COLUMNS,
@@ -402,9 +403,12 @@ describe('DecisionText diff', () => {
   it('shows the hit policy before, struck, then after', () => {
     renderDiff(full);
     const header = screen.getByTestId('nl-header');
-    expect(within(header).getByText('First', { selector: 'del' })).toHaveTextContent('was First');
-    expect(within(header).getByText('Unique')).toHaveAttribute('data-change', 'update');
-    expect(header).toHaveTextContent('was First→now Unique');
+    const before = header.querySelector('del');
+    const after = header.querySelector('[data-change="update"]');
+    expect(before).toHaveTextContent('was FFirst');
+    expect(after).toHaveTextContent('now UUnique');
+    expect(before?.querySelector('[aria-hidden]')).toHaveTextContent('F');
+    expect(after?.querySelector('[aria-hidden]')).toHaveTextContent('U');
   });
 
   it("layers a value's change over its validation mark: both paint and the glyph still reads", () => {

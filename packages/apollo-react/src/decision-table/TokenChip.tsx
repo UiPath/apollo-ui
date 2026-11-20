@@ -58,6 +58,8 @@ export interface TokenChipProps {
   token: SentenceToken;
   mark: Mark | undefined;
   output: boolean;
+  /** An empty output value's text. */
+  emptyText: string;
   selected: boolean;
   stop: CellStop | undefined;
   link: DecisionLink | undefined;
@@ -70,6 +72,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
   token,
   mark,
   output,
+  emptyText,
   selected,
   stop,
   link,
@@ -98,7 +101,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
         data-kind={token.kind}
         data-column-id={token.columnId}
       >
-        {tokenText(token)}
+        {output ? tokenText(token, emptyText) : tokenText(token)}
       </button>
     );
   }
@@ -127,7 +130,7 @@ export const TokenChip: React.FC<TokenChipProps> = ({
       data-mark-title={title}
       data-mark-matched={matched}
     >
-      {tokenText(token)}
+      {output ? tokenText(token, emptyText) : tokenText(token)}
     </span>
   );
 };

@@ -13,7 +13,6 @@ export type FixtureRefusal = 'duplicateName' | 'loop';
 interface FixtureDecision {
   node: Pick<DecisionGraphDecisionNode, 'label' | 'logic' | 'mark'>;
   inputs: readonly string[];
-  notes: readonly string[];
 }
 
 /** A host's graph as the decisions it holds, each with its inputs, and its top-level order. */
@@ -31,7 +30,6 @@ export const graphOf = (nodes: readonly DecisionGraphNode[]): FixtureGraph => {
     decisions.set(node.id, {
       node: { label, logic, mark },
       inputs: node.children.map(decisionIdOf),
-      notes: [],
     });
     for (const child of node.children) visit(child);
   };
@@ -175,7 +173,6 @@ export const fixtureActions = (
         const decisions = new Map(graph.decisions).set(id, {
           node: { label: `New decision ${added}`, logic: { kind: 'other' } },
           inputs: [],
-          notes: [],
         });
         const next = { ...graph, decisions, added };
         update(withList(next, place, inserted(listAt(next, place), id, place.index)));
@@ -243,16 +240,6 @@ export const fixtureActions = (
                   ? { kind: 'table', hitPolicy: 'Unique', ruleCount: 0 }
                   : { kind: 'other' },
             },
-          }))
-        ),
-    },
-    {
-      kind: 'addNote',
-      onAddNote: (decisionId, text) =>
-        update(
-          withDecision(graph, decisionId, (decision) => ({
-            ...decision,
-            notes: [...decision.notes, text],
           }))
         ),
     },
