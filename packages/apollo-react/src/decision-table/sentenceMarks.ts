@@ -62,6 +62,10 @@ export const lineMarksOf = (
   return first ? [first, ...rest] : null;
 };
 
+/** How severe a mark's glyph is; 0 when it shows none. */
+export const markSeverity = (mark: Mark | undefined): number =>
+  isLineMark(mark) ? SEVERITY[mark.tone] : 0;
+
 /** The tone a line's glyph shows: the most severe of its marks. */
 export const worstTone = ([first, ...rest]: LineMarks): GlyphTone =>
   rest.reduce<GlyphTone>(

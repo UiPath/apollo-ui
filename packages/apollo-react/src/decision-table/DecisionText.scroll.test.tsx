@@ -35,6 +35,7 @@ const RULES = manySentenceRules(400);
 
 const text = (props: Partial<FlatTextProps>) => (
   <DecisionText
+    name="Discount"
     {...textPropsOf({
       rules: RULES,
       ...MULTI_SENTENCE_COLUMNS,
@@ -216,6 +217,33 @@ describe('DecisionText scroll', () => {
     expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
     expect(screen.getByTestId('nl-row-row-300')).toBeInTheDocument();
     page.scrollTop = 0;
+  });
+
+  it('watches the reopened rule cards for height changes after a collapse', () => {
+    const watched = new Set<Element>();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        targets = new Set<Element>();
+        observe(target: Element) {
+          this.targets.add(target);
+          watched.add(target);
+        }
+        unobserve(target: Element) {
+          this.targets.delete(target);
+          watched.delete(target);
+        }
+        disconnect() {
+          for (const target of this.targets) watched.delete(target);
+          this.targets.clear();
+        }
+      }
+    );
+    render(text({}));
+    const toggle = screen.getByTestId('nl-toggle');
+    fireEvent.click(toggle);
+    fireEvent.click(toggle);
+    expect(watched.has(screen.getByTestId('nl-row-row-0'))).toBe(true);
   });
 
   it('windows its rules against the window height when only the height changes', () => {
@@ -685,6 +713,7 @@ describe('DecisionText mark clicks', () => {
     render(
       <div data-testid="scroller" style={{ overflowY: 'auto', height: 600 }}>
         <DecisionText
+          name="Discount"
           table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
           hitPolicies={HIT_POLICIES}
           columnTypes={COLUMN_TYPES}

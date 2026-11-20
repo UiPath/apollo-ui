@@ -14,7 +14,7 @@ const groupsWith = (code: string): PolicyGroup[] => [
 
 describe('PolicyPicker trigger', () => {
   it.each([
-    ['its code before its label', 'X', 'X·Ex'],
+    ['only its code', 'X', 'X'],
     ['only its label for an empty code', '', 'Ex'],
   ])('shows the picked option with %s', (_, code, text) => {
     render(

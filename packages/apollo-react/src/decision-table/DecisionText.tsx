@@ -12,6 +12,7 @@ import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
 import {
   type HitPolicyCatalog,
+  type HitPolicyLabels,
   type HitPolicyPick,
   policyHeaderOf,
   policyMenuOf,
@@ -44,6 +45,11 @@ import {
   type TextHistory,
   useContainerHandlers,
 } from './useContainerHandlers';
+import { useDecisionGraphLabels } from './useDecisionGraphStrings';
+import {
+  type DecisionTextDecisionActions,
+  useDecisionTextHeaderActions,
+} from './useDecisionTextHeaderActions';
 import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionTextStrings';
 import { useHostValueEdit } from './useHostValueEdit';
 import { usePendingCondition } from './usePendingCondition';
@@ -63,6 +69,37 @@ const NO_CITATIONS: DecisionTextCitations = { kind: 'none' };
 const withHint = (host: string | undefined, hint: string | false): string | undefined =>
   [host, hint].filter(Boolean).join(' ') || undefined;
 
+/** The hit policy chip's content for a table in a mode: the picker while editing, its change in a diff, else its label; `fallback` stands in for a pick the catalog lacks. */
+export const policyTitleOf = <Op, Policy, Total, Type, Refusal>(
+  hitPolicies: HitPolicyCatalog<Policy, Total>,
+  pick: HitPolicyPick<Policy, Total>,
+  mode: DecisionTextMode<Op, Policy, Total, Type, Refusal>,
+  labels: HitPolicyLabels,
+  fallback: string
+): DecisionTextHeaderProps['title'] => {
+  const shown = (picked: HitPolicyPick<Policy, Total>) => {
+    const { code, label } = policyHeaderOf(hitPolicies, picked);
+    return { code, label: label || fallback };
+  };
+  if (mode.kind === 'edit') {
+    const policy = policyMenuOf(hitPolicies, pick, mode.onPolicyChange, labels);
+    return policy.value === ''
+      ? {
+          kind: 'picker',
+          policy: { ...policy, value: fallback, label: labels.policyName(fallback) },
+        }
+      : { kind: 'picker', policy };
+  }
+  if (mode.kind === 'diff' && mode.diff.hitPolicy) {
+    return {
+      kind: 'change',
+      before: shown(mode.diff.hitPolicy.before),
+      after: shown(mode.diff.hitPolicy.after),
+    };
+  }
+  return { kind: 'label', ...shown(pick) };
+};
+
 /** How the view is used: read, select rules and cells the host keeps, edit them in the host's operators, hit policies, column types and refusals, or read what changed. */
 export type DecisionTextMode<Op, Policy, Total, Type, Refusal> =
   | { kind: 'read'; selected: SentenceSelection | null }
@@ -74,6 +111,10 @@ export type DecisionTextMode<Op, Policy, Total, Type, Refusal> =
       edit: DecisionTextEdit<Op, Type, Refusal>;
       onPolicyChange: (picked: HitPolicyPick<Policy, Total>) => void;
       onAddRule: () => void;
+      /** Adds an input or output column; no add button on the bands when omitted. */
+      onAddColumn?: (kind: SentenceNameToken['kind']) => void;
+      /** The header menu's Rename and Delete, each offered only when given, and the words of their refusals; neither when omitted. */
+      decisionActions?: DecisionTextDecisionActions<Refusal>;
     })
   | {
       kind: 'diff';
@@ -102,11 +143,13 @@ export interface DecisionTextProps<Op, Policy, Total, Type, Refusal> {
   onOpenDecision?: ContainerHandlersParams['onOpenDecision'];
   /** `{ container }` sizes the view to its rules and windows them against `container`, the page's scrolling element when it is null or omitted, whose `scroll-padding-top` covers what sticks over it; `self` by default. */
   scroll?: DecisionTextScroll;
+  /** The decision's name, before the hit policy. */
+  name: string;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Spread onto the scroll container: its handlers run after the view's and its className is added to the view's; a `data-testid` here overrides `dataTestId`. */
   containerProps?: DecisionTextContainerProps;
-  /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-live`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
+  /** Container testid; derived ids: `-header`, `-toggle`, `-name`, `-bands`, `-empty`, `-live`, `-row-{rowId}`, `-row-spacer`, `-value-editor`, `-mark-tooltip`, `-editor` (and its `-operator`, `-low`, `-high`, `-add`, `-expression`, `-clear`, `-cancel`, `-apply`), `-column-editor`, `-column` (and its `-label`, `-binding`, `-type`, `-allowed-values`, `-more`, `-cancel`, `-apply`), `-context-menu`. */
   dataTestId: string;
   /** Overlays rendered inside the scroll container (menus, notes, dialogs). */
   children?: React.ReactNode;
@@ -128,8 +171,8 @@ const nameTokensOf = (bands: readonly SentenceBand[]) => {
     names.get(columnId) ?? { kind: 'input', columnId, text: columnId };
 };
 
-/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's operators, hit policies, column types and refusals. */
-export const DecisionText = <Op, Policy, Total, Type, Refusal>({
+/** The view with its own header line, or without it inside a graph card that shows the policy. */
+export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   table,
   mode,
   hitPolicies,
@@ -141,17 +184,23 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   headerMark,
   onOpenDecision,
   scroll = 'self',
+  header,
   ariaLabel,
   containerProps,
   dataTestId,
   children,
-}: DecisionTextProps<Op, Policy, Total, Type, Refusal>): React.JSX.Element => {
+}: Omit<DecisionTextProps<Op, Policy, Total, Type, Refusal>, 'name'> & {
+  header: { kind: 'own'; name: string } | { kind: 'card' };
+}): React.JSX.Element => {
   const { rules, inputs, outputs } = table;
   const selected = mode.kind === 'diff' ? null : mode.selected;
   const onSelect = mode.kind === 'select' || mode.kind === 'edit' ? mode.onSelect : undefined;
   const diff = mode.kind === 'diff' ? mode.diff : undefined;
   const idPrefix = useId();
+  const bodyId = useId();
+  const [open, setOpen] = useState(true);
   const labels = useDecisionTextLabels();
+  const graphLabels = useDecisionGraphLabels();
   const announcements = useTextAnnouncements(labels, dataTestId);
   const { edit, refusal } = useHostValueEdit(
     mode.kind === 'edit' ? mode.edit : undefined,
@@ -162,19 +211,22 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   const addRule =
     mode.kind === 'edit' ? { label: labels.addRule, onAdd: mode.onAddRule } : undefined;
   const policyHeader = policyHeaderOf(hitPolicies, table.hitPolicy);
-  const title: DecisionTextHeaderProps['title'] =
-    mode.kind === 'edit'
-      ? {
-          kind: 'picker',
-          policy: policyMenuOf(hitPolicies, table.hitPolicy, mode.onPolicyChange, labels),
-        }
-      : diff?.hitPolicy
-        ? {
-            kind: 'change',
-            before: policyHeaderOf(hitPolicies, diff.hitPolicy.before).label,
-            after: policyHeaderOf(hitPolicies, diff.hitPolicy.after).label,
-          }
-        : { kind: 'label', label: policyHeader.label };
+  const title = policyTitleOf(hitPolicies, table.hitPolicy, mode, labels, '');
+  const addColumn = mode.kind === 'edit' ? mode.onAddColumn : undefined;
+  const addsColumns = addColumn !== undefined;
+  const headerActions = useDecisionTextHeaderActions({
+    name: header.kind === 'own' ? header.name : '',
+    host: {
+      onAddColumn: addColumn,
+      decision: mode.kind === 'edit' ? (mode.decisionActions ?? null) : null,
+    },
+    announce: announcements.announce,
+    labels,
+    graphLabels,
+    toggle: () =>
+      ruleWindow.headerRef.current?.querySelector<HTMLElement>('[data-text-toggle]') ?? null,
+    dataTestId,
+  });
   const columns = useMemo(
     () => diff && diffColumnsOf(inputs, outputs, diff),
     [inputs, outputs, diff]
@@ -185,9 +237,10 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
         columns?.inputs ?? inputs,
         columns?.outputs ?? outputs,
         (type) => glyphOf(columnTypes, type),
-        labels
+        labels,
+        addsColumns
       ),
-    [columns, inputs, outputs, columnTypes, labels]
+    [columns, inputs, outputs, columnTypes, labels, addsColumns]
   );
   const [folds, setFolds] = useState({ diff, expanded: NO_FOLDS });
   const expanded = folds.diff === diff ? folds.expanded : NO_FOLDS;
@@ -285,72 +338,95 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
         sectionProps.className
       )}
     >
-      <div className={TEXT_COLUMN_CLASS} data-testid={`${dataTestId}-column`}>
-        <DecisionTextHeader
-          ref={ruleWindow.headerRef}
-          title={title}
-          hint={policyHeader.hint}
-          mark={headerMark}
-          citations={
-            citations.kind === 'cited' && citations.decision.length > 0
-              ? { citations: citations.decision, onOpen: citations.onOpenCitation }
-              : null
-          }
-          labels={labels}
-          sticky={scroll === 'self'}
-          dataTestId={dataTestId}
-        />
-        {bands.length > 0 && (
-          <SentenceBands
-            bands={bands}
-            marks={bandMarks}
-            style={listStyle}
-            idPrefix={idPrefix}
-            dataTestId={dataTestId}
-            labels={labels}
-            mode={
-              columns
-                ? { kind: 'diff', changes: columns.changes }
-                : columnEditing.kind === 'edit'
-                  ? { kind: 'edit', ...columnEditing.pills, editorId: columnEditorId }
-                  : { kind: 'read' }
+      <div
+        className={cn(
+          TEXT_COLUMN_CLASS,
+          header.kind === 'own' &&
+            'my-4 overflow-clip rounded-[10px] border border-border-de-emp bg-background',
+          header.kind === 'own' && headerMark?.tone === 'error' && 'border-error-icon'
+        )}
+        data-testid={`${dataTestId}-column`}
+      >
+        {header.kind === 'own' && (
+          <DecisionTextHeader
+            ref={ruleWindow.headerRef}
+            name={header.name}
+            fold={{ open, bodyId, onToggle: () => setOpen((was) => !was) }}
+            title={title}
+            hint={policyHeader.hint}
+            mark={headerMark}
+            citations={
+              citations.kind === 'cited' && citations.decision.length > 0
+                ? { citations: citations.decision, onOpen: citations.onOpenCitation }
+                : null
             }
+            ruleCount={graphLabels.ruleCount(rules.length)}
+            actions={headerActions.actions}
+            labels={labels}
+            sticky={scroll === 'self'}
+            dataTestId={dataTestId}
           />
         )}
-        {listed.length === 0 ? (
-          <EmptyRules title={labels.emptyRules} addRule={addRuleAction} dataTestId={dataTestId} />
-        ) : (
-          <RuleList
-            ref={ruleWindow.listRef}
-            rules={listed}
-            mode={
-              diffRows
-                ? { kind: 'diff', diffRows: diffRows.rows, onExpandFold }
-                : edit
-                  ? {
-                      kind: 'edit',
-                      editLabels: edit.labels,
-                      openMenu: ruleMenus.state,
-                      pending: shown.pending,
-                    }
-                  : { kind: 'read' }
-            }
-            segments={ruleWindow.segments}
-            numbered={numbered}
-            marks={rowMarks}
-            selectedRow={ruleWindow.selectedRow}
-            selectedColumnId={navigation.selectedColumnId}
-            selectable={selectable}
-            decisionLinks={onOpenDecision !== undefined}
-            citations={citations}
-            style={listStyle}
-            idPrefix={idPrefix}
-            dataTestId={dataTestId}
-            labels={labels}
-          />
-        )}
-        {addRuleAction && rules.length > 0 && (
-          <AddRuleFooter addRule={addRuleAction} style={listStyle} />
+        {open && (
+          <div id={bodyId} className="contents">
+            {bands.length > 0 && (
+              <SentenceBands
+                bands={bands}
+                marks={bandMarks}
+                style={listStyle}
+                idPrefix={idPrefix}
+                dataTestId={dataTestId}
+                labels={labels}
+                onAddColumn={mode.kind === 'edit' ? (mode.onAddColumn ?? null) : null}
+                mode={
+                  columns
+                    ? { kind: 'diff', changes: columns.changes }
+                    : columnEditing.kind === 'edit'
+                      ? { kind: 'edit', ...columnEditing.pills, editorId: columnEditorId }
+                      : { kind: 'read' }
+                }
+              />
+            )}
+            {listed.length === 0 ? (
+              <EmptyRules
+                title={labels.emptyRules}
+                addRule={addRuleAction}
+                dataTestId={dataTestId}
+              />
+            ) : (
+              <RuleList
+                ref={ruleWindow.attachList}
+                rules={listed}
+                mode={
+                  diffRows
+                    ? { kind: 'diff', diffRows: diffRows.rows, onExpandFold }
+                    : edit
+                      ? {
+                          kind: 'edit',
+                          editLabels: edit.labels,
+                          openMenu: ruleMenus.state,
+                          pending: shown.pending,
+                        }
+                      : { kind: 'read' }
+                }
+                segments={ruleWindow.segments}
+                numbered={numbered}
+                marks={rowMarks}
+                selectedRow={ruleWindow.selectedRow}
+                selectedColumnId={navigation.selectedColumnId}
+                selectable={selectable}
+                decisionLinks={onOpenDecision !== undefined}
+                citations={citations}
+                style={listStyle}
+                idPrefix={idPrefix}
+                dataTestId={dataTestId}
+                labels={labels}
+              />
+            )}
+            {addRuleAction && rules.length > 0 && (
+              <AddRuleFooter addRule={addRuleAction} style={listStyle} />
+            )}
+          </div>
         )}
       </div>
       {valueEditing.editor && edit && (
@@ -384,8 +460,17 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
         entries={ruleMenus.entries}
         onClose={ruleMenus.onClose}
       />
+      {headerActions.dialog}
       {announcements.region}
       {children}
     </section>
   );
 };
+
+/** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks, in the host's operators, hit policies, column types and refusals. */
+export const DecisionText = <Op, Policy, Total, Type, Refusal>({
+  name,
+  ...props
+}: DecisionTextProps<Op, Policy, Total, Type, Refusal>): React.ReactElement => (
+  <DecisionTextView {...props} header={{ kind: 'own', name }} />
+);

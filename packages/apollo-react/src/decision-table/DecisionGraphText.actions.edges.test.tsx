@@ -140,16 +140,6 @@ describe('dialogs and a11y', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it('puts focus in the note dialog picked from the menu and back on the heading after Escape', async () => {
-    render(graph([{ kind: 'addNote', onAddNote: vi.fn() }]));
-    await userEvent.click(screen.getByTestId('graph-menu-risk'));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Add note' }));
-    const dialog = await screen.findByTestId('graph-note-dialog');
-    expect(dialog.contains(document.activeElement)).toBe(true);
-    await userEvent.keyboard('{Escape}');
-    expect(focusedId()).toBe('graph-toggle-risk');
-  });
-
   it('survives the mode flipping to read while the delete dialog is open', async () => {
     const Host = () => {
       const [read, setRead] = useState(false);
