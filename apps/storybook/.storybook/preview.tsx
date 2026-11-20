@@ -16,7 +16,10 @@ import React, { useEffect } from 'react';
 import { SAMPLE_DATE_PICKER_STRINGS } from '../../../packages/apollo-wind/.storybook/sample-date-picker-strings';
 import { ApolloDocsContainer } from './DocsContainer';
 import { GlobalStyles } from './GlobalStyles';
+import { installSearchPreviewBridge } from './search/preview';
 import { ALL_THEMES, clampThemeForMaterial, DEFAULT_THEME, type ThemeMode } from './themes';
+
+installSearchPreviewBridge();
 
 // The react-scan devtools hook is installed via previewBody in main.ts
 // (must happen before React initializes). Here we configure the overlay/canvas
