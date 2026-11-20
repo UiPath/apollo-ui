@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.38.0...@uipath/apollo-react@7.39.0) (2026-11-20)
+
+### Features
+
+* **apollo-react:** show configurable info links in the chat footer ([9ab9f2b](https://github.com/UiPath/apollo-ui/commit/9ab9f2be8ee0172081ec3d142f2b0aa20f084559))
+
+### Bug Fixes
+
+* **apollo-react:** preview complete HTML blocks by default in the Wind chat ([b486591](https://github.com/UiPath/apollo-ui/commit/b4865918aa18eecafdfeced142b03d3defcf8ba2))
+
 ## [@uipath/apollo-react-v7.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.37.1...@uipath/apollo-react@7.38.0) (2026-11-20)
 
 ### Features
