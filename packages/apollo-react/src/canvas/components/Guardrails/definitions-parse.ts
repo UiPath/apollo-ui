@@ -119,6 +119,7 @@ const parameterSchema = z.discriminatedUnion('type', [
 
 const definitionSchema = z.object({
   validator: nonBlankString,
+  // No Standalone: no definition allows it, since an agent never applies a guardrail there.
   allowedScopes: z.array(z.enum(['Agent', 'Llm', 'Tool'])).min(1),
   parameters: z.array(parameterSchema).default([]),
   status: z.enum(['Available', 'FeatureDisabled', 'Unauthorised', 'Disabled']),

@@ -10,7 +10,13 @@ import { type GuardrailScopeSelectorLabels, useGuardrailScopeSelectorLabels } fr
 import { FieldShell } from './field-shell';
 import { GuardrailChip } from './guardrail-chip';
 
-const ALL_SCOPES: GuardrailScope[] = ['Agent', 'Llm', 'Tool'];
+// The scopes a person picks here. The host sets Standalone, for a check outside any agent.
+type SelectableScope = Exclude<GuardrailScope, 'Standalone'>;
+
+const ALL_SCOPES: SelectableScope[] = ['Agent', 'Llm', 'Tool'];
+
+const isSelectableScope = (scope: GuardrailScope): scope is SelectableScope =>
+  scope !== 'Standalone';
 
 export interface GuardrailScopeSelectorProps {
   selector: GuardrailSelector;
@@ -54,7 +60,7 @@ export function GuardrailScopeSelector({
   // Namespaced per instance: two builders can share a document (inline panels).
   const uid = useId();
 
-  const scopeLabels = useMemo<Record<GuardrailScope, string>>(
+  const scopeLabels = useMemo<Record<SelectableScope, string>>(
     () => ({
       Agent: labels.scopeAgentLabel,
       Llm: labels.scopeLlmLabel,
@@ -72,7 +78,7 @@ export function GuardrailScopeSelector({
   const isScopeLocked =
     isSingleScopeLock && selectedScopes.length === 1 && selectedScopes[0] === onlyAllowedScope;
   const visibleScopes = useMemo(() => {
-    const scopes = allowedScopes ?? ALL_SCOPES;
+    const scopes = allowedScopes?.filter(isSelectableScope) ?? ALL_SCOPES;
     return hasTools ? scopes : scopes.filter((s) => s !== 'Tool');
   }, [allowedScopes, hasTools]);
 

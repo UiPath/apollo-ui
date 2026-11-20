@@ -7,7 +7,11 @@ import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '
  * host side (see the Flow adapter's type-assertion file).
  */
 
-export type GuardrailScope = 'Agent' | 'Llm' | 'Tool';
+/**
+ * Where a guardrail applies. `Standalone` is a check outside any agent, such as Flow's Guardrail
+ * node: the host sets it, the scope selector never offers it, and no definition allows it.
+ */
+export type GuardrailScope = 'Agent' | 'Llm' | 'Tool' | 'Standalone';
 
 export interface GuardrailSelector {
   scopes: GuardrailScope[];

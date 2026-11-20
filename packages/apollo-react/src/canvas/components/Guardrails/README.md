@@ -1358,6 +1358,8 @@ const [selector, setSelector] = useState<GuardrailSelector>({ scopes: ['Agent'] 
   whose tool list loads asynchronously should mount the selector once the list is known.
 - **`allowedScopes` narrows what is offered**, typically to a definition's `allowedScopes`. It
   filters the chips only: a scope already in the value stays there.
+- **`Standalone` is never offered.** It marks a check outside any agent, such as Flow's
+  Guardrail node, which sets it itself and shows no selector. No definition allows it.
 - **`lockSingleScope` locks a lone allowed scope** once the value is exactly that scope, as
   Agents' legacy builder does; without it the chip toggles off and nothing is left to save.
   While the value also holds a scope the definition no longer allows, the chip stays clickable

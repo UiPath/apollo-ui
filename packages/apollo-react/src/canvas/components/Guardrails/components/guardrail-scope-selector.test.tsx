@@ -70,6 +70,12 @@ describe('GuardrailScopeSelector', () => {
     expect(screen.getByText('Tools')).toBeInTheDocument();
   });
 
+  it('never offers the Standalone scope', () => {
+    render(<GuardrailScopeSelector {...defaultProps} allowedScopes={['Llm', 'Standalone']} />);
+
+    expect(screen.getAllByRole('button').map((chip) => chip.textContent)).toEqual(['LLM calls']);
+  });
+
   it('calls onChange when toggling a scope on', () => {
     const onChange = vi.fn();
     render(<GuardrailScopeSelector {...defaultProps} onChange={onChange} />);
