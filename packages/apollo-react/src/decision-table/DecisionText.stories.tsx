@@ -150,6 +150,7 @@ const TableHost = ({
         columnTypes={COLUMN_TYPES}
         ariaLabel="Rules"
         dataTestId="decision-text"
+        numbered
         marks={marks}
         headerMark={headerMark}
         onCellHover={setHovered}
@@ -404,6 +405,7 @@ const CitedHost: React.FC = () => {
         columnTypes={COLUMN_TYPES}
         ariaLabel="Rules"
         dataTestId="decision-text"
+        numbered
         mode={{ kind: 'select', selected, onSelect: setSelected }}
       />
       <StoryCaption>
@@ -506,6 +508,7 @@ const DiffHost = ({ mode, scenario }: DiffArgs) => {
         table={{ rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
+        numbered
         marks={marks}
         ariaLabel="Rules"
         dataTestId="diff"
@@ -558,6 +561,7 @@ const StackedHost = ({ scroll }: ScrollingArgs) => {
             columnTypes={COLUMN_TYPES}
             ariaLabel={`Rules of ${id}`}
             dataTestId={`text-${id}`}
+            numbered
             scroll={scroll === 'container' ? { container } : 'self'}
             mode={{
               kind: 'select',

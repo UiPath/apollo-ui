@@ -18,6 +18,7 @@ export interface OpenRuleMenu {
 export interface RuleListProps {
   rules: readonly SentenceRule[];
   segments: readonly AxisSegment[];
+  numbered: boolean;
   marks: TableMarks['rows'];
   selectedRow: number | null;
   /** The selected row's cell, or null for its rule. */
@@ -51,6 +52,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
     {
       rules,
       segments,
+      numbered,
       marks,
       selectedRow,
       selectedColumnId,
@@ -112,6 +114,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                 rule={rule}
                 position={segment.from + offset + 1}
                 setSize={rules.length}
+                numbered={numbered}
                 mark={marks.get(rule.rowId)}
                 selectedColumnId={
                   segment.from + offset === selectedRow ? selectedColumnId : undefined

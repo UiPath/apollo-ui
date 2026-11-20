@@ -459,10 +459,10 @@ describe('DecisionText', () => {
 
   describe('accessibility', () => {
     it('names each row by its heading and lead, and counts it among all rules', () => {
-      renderView();
+      renderView({ numbered: true });
       const row = card('m3');
       expect(row).toHaveAccessibleName(
-        'Decision is "decline" · Credit Limit is 0 · Reason is "low score" when Credit Score is less than 600 and Channel is not "branch"'
+        '3 Decision is "decline" · Credit Limit is 0 · Reason is "low score" when Credit Score is less than 600 and Channel is not "branch"'
       );
       expect(row).toHaveAttribute('aria-posinset', '3');
       expect(row).toHaveAttribute('aria-setsize', '5');
@@ -479,14 +479,14 @@ describe('DecisionText', () => {
       );
     });
 
-    it('counts a rule deep in the list by its place among all rules, with no number chip', () => {
+    it('numbers and counts a rule deep in the list by its place among all rules', () => {
       const rules = manySentenceRules(2000);
-      renderView({ rules });
+      renderView({ rules, numbered: true });
       act(() => scrollTo(sentenceRuleOffsets(rules)[500] ?? 0));
       const row = card('row-500');
       expect(row).toHaveAttribute('aria-posinset', '501');
       expect(row).toHaveAttribute('aria-setsize', '2000');
-      expect(within(row).queryByText(/^501$/)).toBeNull();
+      expect(row.firstElementChild?.firstElementChild).toHaveTextContent(/^501$/);
     });
 
     it("adds the host's class to the view's own, keeping the view's name and tab stop", () => {
@@ -1647,17 +1647,19 @@ describe('DecisionText', () => {
       expect(valueChip('r2', 'income')).not.toHaveAttribute('data-selected');
     });
 
-    it('selects the rule from a name token or an operator word', () => {
-      const { onSelect } = renderSelectable();
+    it('selects the rule from a name token, an operator word or the row number', () => {
+      const { onSelect } = renderSelectable({ numbered: true });
       const name = card('r2').querySelector('[data-kind="input"]');
       const word = within(card('r1')).getByText('when');
+      const number = within(card('r3')).getByText('3');
       if (!name) throw new Error('name token');
-      for (const target of [name, word]) fireEvent.click(target);
+      for (const target of [name, word, number]) fireEvent.click(target);
       expect(onSelect.mock.calls).toEqual([
         [{ kind: 'rule', rowId: 'r2' }],
         [{ kind: 'rule', rowId: 'r1' }],
+        [{ kind: 'rule', rowId: 'r3' }],
       ]);
-      expect(focusedStop()).toBe('r1');
+      expect(focusedStop()).toBe('r3');
     });
 
     it('selects nothing from the header or a band column', () => {

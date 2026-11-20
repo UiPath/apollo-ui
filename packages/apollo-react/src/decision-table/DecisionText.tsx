@@ -91,6 +91,8 @@ export interface DecisionTextProps<Op, Policy, Total, Type, Refusal> {
   columnTypes: readonly ColumnTypeOption<Type>[];
   /** Where the decision and its rules were read from, each opened by the host; none when omitted. */
   citations?: DecisionTextCitations;
+  /** Shows each rule's 1-based position before its heading. */
+  numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
@@ -134,6 +136,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
   hitPolicies,
   columnTypes,
   citations = NO_CITATIONS,
+  numbered = false,
   marks = EMPTY_MARKS,
   onCellHover,
   headerMark,
@@ -257,7 +260,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     container: ruleWindow.container,
   });
   const columnEditorId = `${idPrefix}-column-editor`;
-  const listStyle = sentenceListStyle(diff !== undefined, rules.length);
+  const listStyle = sentenceListStyle(numbered || diff !== undefined, rules.length);
   const onExpandFold = useCallback(
     (firstRowId: string) =>
       setFolds((current) => ({
@@ -334,6 +337,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
                   : { kind: 'read' }
             }
             segments={ruleWindow.segments}
+            numbered={numbered}
             marks={rowMarks}
             selectedRow={ruleWindow.selectedRow}
             selectedColumnId={navigation.selectedColumnId}
