@@ -3,13 +3,19 @@ import type React from 'react';
 import { useLayoutEffect, useRef } from 'react';
 import { CellTextEditor } from './CellTextEditor';
 import { showTitleIfClipped } from './clippedTitle';
+import { EMPTY_VALUE_DASH } from './constants';
 import {
   BODY_CELL_CLASS,
+  CELL_CHANGE_CLASS,
   CELL_MARK_CLASS,
+  CELL_NOTE_CLASS,
   CELL_SURFACE_CLASS,
   IN_RANGE_CLASS,
+  LINKED_STICKY_CELL_CLASS,
   MONO_CELL_TEXT_CLASS,
   OMIT_BORDER_CLASS,
+  PREVIOUS_CELL_TEXT_CLASS,
+  TWO_LINE_CELL_SURFACE_CLASS,
 } from './gridStyles';
 import type { CellCommitMove, CellEdge, GridCellEditorContext } from './gridTypes';
 import { MarkGlyph } from './MarkGlyph';
@@ -111,6 +117,11 @@ export const GridCell: React.FC<GridCellProps> = ({
 }) => {
   const settledByKeyRef = useRef(false);
   const isEditing = editing && !readOnly;
+  const review = mark?.review;
+  // An updated cell's old value, or a note under its text: two lines in the one-line row.
+  const previous = review?.change === 'update' ? review.previous : undefined;
+  const note = review?.change === undefined ? review?.note : undefined;
+  const twoLines = previous !== undefined || note !== undefined;
   // While editing the editor holds focus, so the cell itself leaves the tab order; while resting,
   // only the grid's single roving tab stop is reachable by Tab (the rest are focusable by script).
   const restingTabIndex = isEditing || !tabStop ? -1 : 0;
@@ -143,9 +154,12 @@ export const GridCell: React.FC<GridCellProps> = ({
         // turned it off for the range gesture.
         isEditing && 'select-text',
         inRange && IN_RANGE_CLASS,
-        pinnedLeft !== undefined && 'sticky z-1 bg-background',
+        pinnedLeft !== undefined && cn('sticky z-1 bg-background', LINKED_STICKY_CELL_CLASS),
         className,
-        CELL_MARK_CLASS
+        CELL_MARK_CLASS,
+        CELL_CHANGE_CLASS,
+        // Out of the row's baseline alignment: two lines would set a baseline the one-line cells drop the row to meet.
+        twoLines && 'align-top'
       )}
       style={pinnedLeft !== undefined ? { left: pinnedLeft } : undefined}
       data-menu-target="cell"
@@ -153,6 +167,7 @@ export const GridCell: React.FC<GridCellProps> = ({
       data-col={col}
       data-testid={dataTestId}
       data-tone={mark?.tone}
+      data-change={review?.change}
       // An editing cell drops its hover: the editor lints the draft live, and the title describes the committed text.
       data-mark-title={isEditing ? undefined : mark?.title}
       data-mark-group={markGroup}
@@ -199,13 +214,32 @@ export const GridCell: React.FC<GridCellProps> = ({
       }
     >
       {!isEditing && (
-        <div className={cn(CELL_SURFACE_CLASS, 'flex items-center')}>
-          <span className="min-w-0 truncate" onMouseEnter={showTitleIfClipped}>
-            {renderRestingCellContent(restingValue ?? value, placeholder)}
-            {suffix}
-          </span>
-          {/* Trails the text as the header and gutter glyphs do, outside the truncation so clipping never hides it. */}
-          {mark?.glyph && <MarkGlyph tone={mark.tone} className="ml-1" />}
+        <div
+          className={cn(
+            CELL_SURFACE_CLASS,
+            'flex items-center',
+            twoLines && TWO_LINE_CELL_SURFACE_CLASS
+          )}
+        >
+          {previous !== undefined && (
+            // An empty old value is the dash: a placeholder such as "Any" is not what the cell held.
+            <del className={PREVIOUS_CELL_TEXT_CLASS}>{previous || EMPTY_VALUE_DASH}</del>
+          )}
+          {/* One line with its glyph, so a second line above or below never pushes the glyph to a third. */}
+          <div className="flex min-w-0 max-w-full items-center">
+            <span className="min-w-0 truncate" onMouseEnter={showTitleIfClipped}>
+              {renderRestingCellContent(restingValue ?? value, placeholder)}
+              {suffix}
+            </span>
+            {/* Trails the text as the header and gutter glyphs do, outside the truncation so clipping never hides it. */}
+            {mark?.glyph && <MarkGlyph tone={mark.tone} className="ml-1" />}
+          </div>
+          {note !== undefined && (
+            <span className={CELL_NOTE_CLASS}>
+              {/* Inline-block, so a deleted row's strike-through does not reach it: the note is about the change, not old content. */}
+              <span className="inline-block max-w-full truncate align-top">{note}</span>
+            </span>
+          )}
         </div>
       )}
       {isEditing &&

@@ -243,25 +243,114 @@ export const FROZEN_RIGHT_CELL_CLASS = cn(
 
 /**
  * A marked cell's wash, from its own `data-tone` or its row's. The `:not([data-tone])` guard makes
- * the two selectors disjoint, so every cell matches exactly one of them. The hue is an apollo-core
+ * the two selectors disjoint, so every cell matches exactly one of them. A change under review takes
+ * the wash instead (`CELL_CHANGE_CLASS`): the guard also skips a cell with a change of its own, or in
+ * a rule added or deleted whole, and the tone keeps its glyph and title. The hue is an apollo-core
  * `--color-*-icon`, which resolves on every element under the theme class.
  */
 export const CELL_MARK_CLASS = [
-  'group-data-[tone=success]/row:[&:not([data-tone])]:bg-[color-mix(in_srgb,var(--color-success-icon)_15%,var(--color-background))]',
-  'group-data-[tone=error]/row:[&:not([data-tone])]:bg-[color-mix(in_srgb,var(--color-error-icon)_5%,var(--color-background))]',
-  'group-data-[tone=warning]/row:[&:not([data-tone])]:bg-[color-mix(in_srgb,var(--color-warning-icon)_5%,var(--color-background))]',
+  'group-data-[tone=success]/row:[&:not([data-tone],[data-change],[data-change=add]_*,[data-change=delete]_*)]:bg-[color-mix(in_srgb,var(--color-success-icon)_15%,var(--color-background))]',
+  'group-data-[tone=error]/row:[&:not([data-tone],[data-change],[data-change=add]_*,[data-change=delete]_*)]:bg-[color-mix(in_srgb,var(--color-error-icon)_5%,var(--color-background))]',
+  'group-data-[tone=warning]/row:[&:not([data-tone],[data-change],[data-change=add]_*,[data-change=delete]_*)]:bg-[color-mix(in_srgb,var(--color-warning-icon)_5%,var(--color-background))]',
   'group-data-[dim=true]/row:text-foreground-de-emp',
-  'data-[tone=success]:bg-[color-mix(in_srgb,var(--color-success-icon)_10%,var(--color-background))]',
-  'data-[tone=error]:bg-[color-mix(in_srgb,var(--color-error-icon)_10%,var(--color-background))]',
-  'data-[tone=warning]:bg-[color-mix(in_srgb,var(--color-warning-icon)_10%,var(--color-background))]',
+  'data-[tone=success]:[&:not([data-change],[data-change=add]_*,[data-change=delete]_*)]:bg-[color-mix(in_srgb,var(--color-success-icon)_10%,var(--color-background))]',
+  'data-[tone=error]:[&:not([data-change],[data-change=add]_*,[data-change=delete]_*)]:bg-[color-mix(in_srgb,var(--color-error-icon)_10%,var(--color-background))]',
+  'data-[tone=warning]:[&:not([data-change],[data-change=add]_*,[data-change=delete]_*)]:bg-[color-mix(in_srgb,var(--color-warning-icon)_10%,var(--color-background))]',
 ].join(' ');
 
-/** A marked row's rail and number, in the gutter beside it. */
+/**
+ * A change under review, from the cell's own `data-change` or its row's: green for an added rule or
+ * column, red and struck through for a deleted one, amber for each cell an update rewrote. The row's
+ * selectors skip a cell with a change of its own, so the two are disjoint as `CELL_MARK_CLASS`'s are
+ * and the cell's own wins by rule, not by the order Tailwind emits them. The hues are the text view's
+ * (`CHANGED_CHIP_CLASS`, `ROW_CHANGE_CLASS`), which a test holds them to.
+ */
+export const CELL_CHANGE_CLASS = [
+  'data-[change=add]:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'data-[change=update]:bg-[color-mix(in_srgb,var(--color-warning-icon)_18%,var(--color-background))]',
+  'data-[change=delete]:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]',
+  'data-[change=delete]:text-foreground-de-emp data-[change=delete]:line-through',
+  'group-data-[change=add]/row:not-data-[change]:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'group-data-[change=delete]/row:not-data-[change]:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]',
+  'group-data-[change=delete]/row:not-data-[change]:text-foreground-de-emp group-data-[change=delete]/row:not-data-[change]:line-through',
+  // A replaced rule's old and new halves read as one block, with no grid line between them.
+  'group-data-[pair=old]/row:border-b-transparent',
+].join(' ');
+
+/**
+ * A row under review, on the consumer's `<tr>`: a moved rule and the row for the place it left,
+ * outlined together while either is hovered (`data-link-hover`), in grey, as blue means selected.
+ * An outline on the row runs unbroken past every cell's grid line and closes at both ends, where
+ * one drawn per cell would stop at each.
+ */
+export const LINKED_ROW_CLASS =
+  'data-[link-hover]:outline-1 data-[link-hover]:-outline-offset-1 data-[link-hover]:outline-foreground-de-emp';
+
+/**
+ * The linked row's outline across a sticky cell, a pinned column's or the gutter: a positioned, opaque
+ * cell paints over its row's outline, so it draws the outline's top and bottom over itself, out to its
+ * own grid lines so they meet the row's. On a pseudo-element, so the cell's own hover, selection and
+ * range shadows stay as they are. GridCell carries it when pinned; a consumer's own sticky cells add it.
+ */
+export const LINKED_STICKY_CELL_CLASS = [
+  "group-data-[link-hover]/row:after:pointer-events-none group-data-[link-hover]/row:after:absolute group-data-[link-hover]/row:after:content-['']",
+  'group-data-[link-hover]/row:after:top-0 group-data-[link-hover]/row:after:-right-px group-data-[link-hover]/row:after:-bottom-px group-data-[link-hover]/row:after:left-0',
+  'group-data-[link-hover]/row:after:border-y group-data-[link-hover]/row:after:border-foreground-de-emp',
+  // The table's last row has no bottom grid line to reach over (`TABLE_EDGE_CLASS`), so its line stays in the cell.
+  'group-data-[link-hover]/row:group-last/row:after:bottom-0',
+].join(' ');
+
+/**
+ * A changed column's header, in the same hues as its cells. A deleted one needs only the strike: every
+ * header's text is already muted, as a deleted cell's turns.
+ */
+export const HEADER_CHANGE_CLASS = [
+  'data-[change=add]:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'data-[change=update]:bg-[color-mix(in_srgb,var(--color-warning-icon)_18%,var(--color-background))]',
+  'data-[change=delete]:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))] data-[change=delete]:line-through',
+].join(' ');
+
+/**
+ * A changed row's gutter: its wash, rail and number, coloured as the text view's are, and the left end
+ * of a linked row's outline. Complete without `CELL_CHANGE_CLASS`, whose muted deleted text would grey
+ * the number. A change wins over a tone's rail.
+ */
+export const ROW_GUTTER_CHANGE_CLASS = [
+  'group-data-[change=add]/row:bg-[color-mix(in_srgb,var(--color-success-icon)_12%,var(--color-background))]',
+  'group-data-[change=delete]/row:bg-[color-mix(in_srgb,var(--color-error-icon)_8%,var(--color-background))]',
+  'group-data-[change]/row:border-l-2 group-data-[change]/row:font-semibold',
+  'group-data-[change=add]/row:border-l-success group-data-[change=add]/row:text-success',
+  'group-data-[change=update]/row:border-l-warning-icon group-data-[change=update]/row:text-warning-text',
+  'group-data-[change=delete]/row:border-l-error group-data-[change=delete]/row:text-error group-data-[change=delete]/row:line-through',
+  'group-data-[pair=old]/row:border-b-transparent',
+  LINKED_STICKY_CELL_CLASS,
+  'group-data-[link-hover]/row:after:border-l',
+].join(' ');
+
+/** A short note under a cell's text, such as how far its rule moved, as small as a column's old name. */
+export const CELL_NOTE_CLASS =
+  'block max-w-full truncate text-xs leading-4 font-normal text-foreground-de-emp';
+
+/** A changed column's old name or subtitle, struck through above the one it has now. */
+export const PREVIOUS_HEADER_TEXT_CLASS =
+  'block truncate text-xs font-normal text-foreground-de-emp line-through decoration-foreground-de-emp';
+
+/**
+ * A cell with a second line, its old value or a note, in the one-line row's height: two 17px lines
+ * need 34px, so the default 40px row fits them and a row under 35px clips them.
+ */
+export const TWO_LINE_CELL_SURFACE_CLASS = 'flex-col items-start justify-center py-0';
+
+/** The text an updated cell held, struck through above what it holds now, at the cell's own size. */
+export const PREVIOUS_CELL_TEXT_CLASS =
+  'block max-w-full truncate text-sm leading-[17px] font-normal text-foreground-de-emp line-through decoration-foreground-de-emp';
+
+/** A marked row's rail and number, in the gutter beside it; a change under review takes the rail instead. */
 export const ROW_GUTTER_MARK_CLASS = [
-  'group-data-[tone=success]/row:border-l-2 group-data-[tone=success]/row:border-l-success',
-  'group-data-[tone=success]/row:font-semibold group-data-[tone=success]/row:text-success',
-  'group-data-[tone=error]/row:border-l-2 group-data-[tone=error]/row:border-l-error group-data-[tone=error]/row:text-error',
-  'group-data-[tone=warning]/row:border-l-2 group-data-[tone=warning]/row:border-l-warning group-data-[tone=warning]/row:text-warning',
+  'group-data-[tone=success]/row:group-not-data-[change]/row:border-l-2 group-data-[tone=success]/row:group-not-data-[change]/row:border-l-success',
+  'group-data-[tone=success]/row:group-not-data-[change]/row:font-semibold group-data-[tone=success]/row:group-not-data-[change]/row:text-success',
+  'group-data-[tone=error]/row:group-not-data-[change]/row:border-l-2 group-data-[tone=error]/row:group-not-data-[change]/row:border-l-error group-data-[tone=error]/row:group-not-data-[change]/row:text-error',
+  'group-data-[tone=warning]/row:group-not-data-[change]/row:border-l-2 group-data-[tone=warning]/row:group-not-data-[change]/row:border-l-warning group-data-[tone=warning]/row:group-not-data-[change]/row:text-warning',
   'group-data-[dim=true]/row:text-foreground-de-emp',
 ].join(' ');
 

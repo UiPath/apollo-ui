@@ -46,6 +46,8 @@ const cardMark = (mark: RowMark | undefined) =>
     title: mark?.title,
     glyph: mark?.glyph,
     cells: mark?.cells,
+    // The grid's review marks; the text view words a diff from its own `DiffRows` instead.
+    review: undefined,
   }) satisfies MarkFields<RowMark>;
 
 /** A cell's stop token and the parts of its line. */
