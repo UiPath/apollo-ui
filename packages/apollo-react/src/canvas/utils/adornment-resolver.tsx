@@ -24,20 +24,30 @@ export function BreakpointIndicator({ isActive = true }: BreakpointIndicatorProp
 
 interface ExecutionStartPointIndicatorProps {
   isActive?: boolean;
+  /** Default entry point renders solid; a secondary trigger renders as an outline. */
+  filled?: boolean;
 }
 
 export function ExecutionStartPointIndicator({
   isActive = true,
+  filled = true,
 }: ExecutionStartPointIndicatorProps) {
   if (!isActive) {
     return null;
   }
 
   return (
-    <div
-      className="w-4 h-4 rounded-full bg-blue-500 border border-blue-600 shadow-sm"
-      title="Execution Start Point"
-    />
+    <CanvasTooltip content={filled ? 'Default trigger' : 'Secondary trigger'} placement="bottom">
+      <span style={{ display: 'inline-flex' }}>
+        <CanvasIcon
+          icon="zap"
+          size={16}
+          color="var(--color-foreground-emp)"
+          // lucide applies `color` to stroke only; fill needs the token too
+          fill={filled ? 'var(--color-foreground-emp)' : undefined}
+        />
+      </span>
+    </CanvasTooltip>
   );
 }
 
@@ -94,6 +104,9 @@ const getDefaultAdornments = (
   const hasBreakpoint = typeof executionState === 'object' && executionState?.debug;
   const isExecutionStartPoint =
     typeof executionState === 'object' && executionState?.isExecutionStartPoint;
+  const isSecondaryStartPoint =
+    typeof executionState === 'object' &&
+    executionState?.executionStartPointVariant === 'secondary';
 
   const hasValidationError =
     context.validationState?.validationStatus === ValidationErrorSeverity.ERROR ||
@@ -120,7 +133,9 @@ const getDefaultAdornments = (
   return {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
     topRight: getTopRight(),
-    bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
+    bottomLeft: isExecutionStartPoint ? (
+      <ExecutionStartPointIndicator filled={!isSecondaryStartPoint} />
+    ) : undefined,
     bottomRight: undefined,
   };
 };
