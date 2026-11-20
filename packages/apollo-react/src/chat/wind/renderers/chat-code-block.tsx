@@ -56,7 +56,7 @@ function HtmlPreviewFrame({
 /**
  * A fenced code block with Material's header actions: for HTML when enabled, a toggle between the
  * source and a sandboxed preview in place, and an expand to a large view of whichever is shown.
- * The preview may run scripts but never shares the host's origin, and only renders once asked.
+ * The preview may run scripts but never shares the host's origin.
  */
 export function ChatCodeBlock({
   block,
@@ -67,15 +67,10 @@ export function ChatCodeBlock({
   const { _ } = useLingui();
   const dialogContainer = useDialogContainer();
   const previewable = htmlPreview && block.language?.trim().toLowerCase() === 'html';
-  // Unlike Material, the preview waits for the reader: the frame runs the snippet's scripts, so
-  // model output never executes unasked. The click consents to this code only; react-markdown
-  // reuses the block by position, so new code in it (replaced or streamed again) needs a new
-  // click, and so does turning the flag back on.
-  const [previewedCode, setPreviewedCode] = React.useState<string | null>(null);
-  if (!previewable && previewedCode !== null) {
-    setPreviewedCode(null);
-  }
-  const showPreview = previewable && !streaming && previewedCode === block.code;
+  // As in Material, a complete block previews by itself; a streaming one shows its source, since
+  // the code may be cut off. The host opts in through `disabledFeatures.htmlPreview`.
+  const [showSource, setShowSource] = React.useState(false);
+  const showPreview = previewable && !streaming && !showSource;
   // One live frame at a time: the inline one gives way while the dialog shows the preview.
   const [expanded, setExpanded] = React.useState(false);
   const codeLabel = _(msg({ id: 'autopilot-chat.message.code-block-code', message: `Show code` }));
@@ -99,7 +94,7 @@ export function ChatCodeBlock({
           aria-label={toggleLabel}
           title={toggleLabel}
           disabled={streaming}
-          onClick={() => setPreviewedCode(showPreview ? null : block.code)}
+          onClick={() => setShowSource(showPreview)}
         >
           {showPreview ? <Code aria-hidden /> : <Eye aria-hidden />}
         </Button>
