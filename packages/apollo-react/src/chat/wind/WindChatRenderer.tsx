@@ -3,7 +3,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 
 import { type ChatLayout, resolveChatLayout } from '../headless/layout/chat-layout';
-import { useChatState } from '../headless/providers/chat-state-provider';
+import { resolveChatDensity, useChatState } from '../headless/providers/chat-state-provider';
 import { useChatWidth } from '../headless/providers/chat-width-provider';
 import { useTheme } from '../headless/providers/theme-provider';
 import { AutopilotChatMode, CHAT_CONTAINER_ANIMATION_DURATION } from '../service';
@@ -60,7 +60,8 @@ export function WindChatRenderer() {
   // `ApChatTheme` values are the apollo-core / apollo-wind theme class names (future-light and
   // future-dark included), so the chat themes itself whatever the host's body class.
   const themeClass = theme;
-  const density = spacing.compactMode ? 'compact' : undefined;
+  // From the rendered mode, so a full-screen chat keeps its type size while it fades out.
+  const density = resolveChatDensity(spacing.requestedDensity, renderedMode);
   const rootRef = React.useRef<HTMLDivElement>(null);
 
   // Not focusable or clickable while it fades out; Material hides instantly.

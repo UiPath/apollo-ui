@@ -30,6 +30,7 @@ const baseProps = (): ChatPlaygroundProps => ({
   mode: AutopilotChatMode.Embedded,
   locale: 'en',
   compactMode: false,
+  density: 'auto',
   readOnly: false,
   allowFeedbackChange: false,
   disableClose: 'unset',

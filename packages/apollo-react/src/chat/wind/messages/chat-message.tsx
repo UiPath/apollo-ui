@@ -89,7 +89,7 @@ function ChatMessageComponent({
             </Bubble>
           ) : (
             // Material leaves 32px beside a reply.
-            <div className="min-w-0 pr-8 text-sm leading-relaxed">
+            <div className="min-w-0 pr-8 text-body">
               <Body message={message} />
             </div>
           ))

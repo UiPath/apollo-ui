@@ -4,6 +4,7 @@ import React from 'react';
 import {
   type AutopilotChatAllowedAttachments,
   type AutopilotChatConfiguration,
+  type AutopilotChatDensity,
   type AutopilotChatDisabledFeatures,
   AutopilotChatEvent,
   AutopilotChatInterceptableEvent,
@@ -47,7 +48,10 @@ interface AutopilotChatStateContextType {
   allowedAttachments: AutopilotChatAllowedAttachments;
   hasMessages: boolean;
   setHasMessages: (hasMessages: boolean) => void;
-  spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
+  /** `density` is resolved for the current mode; `requestedDensity` is the host's, if any. */
+  spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>> & {
+    requestedDensity?: AutopilotChatDensity;
+  };
   theming?: AutopilotChatConfiguration['theming'];
   portalContainer?: HTMLElement;
   readOnly: boolean;
@@ -87,24 +91,60 @@ interface AutopilotChatStateProviderProps {
   portalContainer?: HTMLElement;
 }
 
-const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) => {
-  const compactMode = chatSpacing?.compactMode ?? false;
+/** The host's density: `density`, else `compactMode`. */
+const requestedChatDensity = (
+  chatSpacing: AutopilotChatConfiguration['spacing']
+): AutopilotChatDensity | undefined =>
+  chatSpacing?.density ?? (chatSpacing?.compactMode ? 'compact' : undefined);
+
+/** The host's density, else spacious in full screen, where the column is wide enough to read at 16px. */
+export const resolveChatDensity = (
+  requested: AutopilotChatDensity | undefined,
+  mode: AutopilotChatMode
+): AutopilotChatDensity =>
+  requested ?? (mode === AutopilotChatMode.FullScreen ? 'spacious' : 'comfortable');
+
+const calculateSpacing = (
+  chatSpacing: AutopilotChatConfiguration['spacing'],
+  chatMode: AutopilotChatMode
+) => {
+  const requestedDensity = requestedChatDensity(chatSpacing);
+  const density = resolveChatDensity(requestedDensity, chatMode);
+  const compactMode = density === 'compact';
+  // One value per density; spacious steps the reading text up and leaves spacing as comfortable.
+  const byDensity = <T,>(values: Record<AutopilotChatDensity, T>) => values[density];
+  const body = byDensity({
+    compact: FontVariantToken.fontSizeS,
+    comfortable: FontVariantToken.fontSizeM,
+    spacious: FontVariantToken.fontSizeL,
+  });
+  const bodyBold = byDensity({
+    compact: FontVariantToken.fontSizeSBold,
+    comfortable: FontVariantToken.fontSizeMBold,
+    spacious: FontVariantToken.fontSizeLBold,
+  });
+  const majorHeading = compactMode
+    ? FontVariantToken.fontSizeH4Bold
+    : FontVariantToken.fontSizeH3Bold;
+  const minorHeading = compactMode
+    ? FontVariantToken.fontSizeMBold
+    : FontVariantToken.fontSizeLBold;
 
   const markdownTokens = {
-    li: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-    p: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-    h1: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
-    h2: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
-    h3: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
-    h4: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
-    h5: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
-    h6: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
-    th: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-    td: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-    em: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-    del: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-    strong: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-    link: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    li: body,
+    p: body,
+    h1: majorHeading,
+    h2: majorHeading,
+    h3: majorHeading,
+    h4: minorHeading,
+    h5: minorHeading,
+    h6: minorHeading,
+    th: body,
+    td: body,
+    em: body,
+    del: body,
+    strong: body,
+    link: body,
     citation: compactMode ? FontVariantToken.fontSizeXs : FontVariantToken.fontSizeM,
   };
 
@@ -117,10 +157,8 @@ const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) =>
   const messageGroupGap = compactMode
     ? CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP
     : CHAT_MESSAGE_GROUP_GAP;
-  const primaryFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
-  const primaryBoldFontToken = compactMode
-    ? FontVariantToken.fontSizeSBold
-    : FontVariantToken.fontSizeMBold;
+  const primaryFontToken = body;
+  const primaryBoldFontToken = bodyBold;
   const titleFontToken = FontVariantToken.fontSizeH4;
   const suggestionSpacing = CHAT_SUGGESTION_SPACING;
   const suggestionFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
@@ -128,6 +166,8 @@ const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) =>
     ? `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingXs}`
     : `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase}`;
   return {
+    density,
+    requestedDensity,
     compactMode,
     promptBox: {
       minRows: chatSpacing?.promptBox?.minRows ?? promptBox.minRows,
@@ -206,7 +246,12 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     () => (chatService?.getConversation?.().length ?? 0) > 0
   );
   const [readOnly, setReadOnly] = React.useState(chatService?.getReadOnly() ?? false);
-  const [spacing, setSpacing] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
+  const [spacingConfig, setSpacingConfig] = React.useState(chatService?.getConfig()?.spacing);
+  // Follows the mode: full screen defaults to spacious.
+  const spacing = React.useMemo(
+    () => calculateSpacing(spacingConfig, chatMode),
+    [spacingConfig, chatMode]
+  );
   const [theming, setTheming] = React.useState(chatService?.getConfig()?.theming);
   const [allowFeedbackChange, setAllowFeedbackChange] = React.useState(
     chatService?.getConfig()?.allowFeedbackChange ?? false
@@ -281,8 +326,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
 
     const unsubscribeSpacing = chatInternalService.on(
       AutopilotChatInternalEvent.SetSpacing,
-      (spacingConfig: AutopilotChatConfiguration['spacing']) => {
-        setSpacing(calculateSpacing(spacingConfig));
+      (config: AutopilotChatConfiguration['spacing']) => {
+        setSpacingConfig(config);
       }
     );
 

@@ -11,6 +11,7 @@ import { ApChat } from '../index';
 import {
   type ApChatTheme,
   type AutopilotChatCustomHeaderAction,
+  type AutopilotChatDensity,
   type AutopilotChatDisabledFeatures,
   AutopilotChatEvent,
   type AutopilotChatMessage,
@@ -85,11 +86,23 @@ export type FeatureFlagArgs = { [F in FeatureFlag as `disable${Capitalize<F>}`]:
 export const featureArgName = (flag: FeatureFlag) =>
   `disable${flag.charAt(0).toUpperCase()}${flag.slice(1)}` as keyof FeatureFlagArgs;
 
+export type PlaygroundDensity = 'auto' | AutopilotChatDensity;
+
+const spacingFrom = ({
+  compactMode,
+  density,
+}: Pick<PlaygroundArgs, 'compactMode' | 'density'>) => ({
+  compactMode,
+  density: density === 'auto' ? undefined : density,
+});
+
 export interface PlaygroundArgs extends FeatureFlagArgs {
   renderer: PlaygroundRenderer;
   mode: PlaygroundMode;
   locale: SupportedLocale;
   compactMode: boolean;
+  /** `auto` leaves it to the mode: spacious in full screen, else comfortable. */
+  density: PlaygroundDensity;
   readOnly: boolean;
   allowFeedbackChange: boolean;
   disableClose: PlaygroundCloseFlag;
@@ -232,7 +245,7 @@ function createSlotService(
       disabledFeatures: disabledFeaturesFrom(args),
       overrideLabels: overrideLabelsFrom(args),
       firstRunExperience: firstRunExperienceFor(args.firstRunExperience),
-      spacing: { compactMode: args.compactMode },
+      spacing: spacingFrom(args),
       preHooks: preHooksFrom(args.preHooks),
       models: STORY_MODELS,
       selectedModel: STORY_MODELS[0],
@@ -458,8 +471,8 @@ function ChatSlot({
   useOnChange(`${args.title}\n${args.inputPlaceholder}\n${args.footerDisclaimer}`, () =>
     service.setOverrideLabels(overrideLabelsFrom(argsRef.current))
   );
-  useOnChange(args.compactMode, (compactMode) =>
-    patchConfigInPlace(service, { spacing: { compactMode } })
+  useOnChange(`${args.compactMode}\n${args.density}`, () =>
+    patchConfigInPlace(service, { spacing: spacingFrom(argsRef.current) })
   );
   useOnChange(args.firstRunExperience, (enabled) =>
     service.setFirstRunExperience(firstRunExperienceFor(enabled))

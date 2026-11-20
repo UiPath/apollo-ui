@@ -58,13 +58,31 @@ describe('WindChatRenderer', () => {
     const service = createService();
     render(<ApChat chatServiceInstance={service} />);
 
-    expect(getRoot()).not.toHaveAttribute('data-density');
+    // The tests' default mode is full screen.
+    expect(getRoot()).toHaveAttribute('data-density', 'spacious');
     expect(screen.getByRole('banner')).toHaveClass('py-4');
 
     act(() => service.patchConfig({ spacing: { compactMode: true } }));
 
     expect(getRoot()).toHaveAttribute('data-density', 'compact');
     expect(screen.getByRole('banner')).toHaveClass('py-2');
+  });
+
+  it('is spacious in full screen unless the host sets a density', () => {
+    const service = createService({ mode: AutopilotChatMode.FullScreen });
+    render(<ApChat chatServiceInstance={service} />);
+
+    expect(getRoot()).toHaveAttribute('data-density', 'spacious');
+
+    act(() => service.patchConfig({ spacing: { compactMode: true } }));
+    expect(getRoot()).toHaveAttribute('data-density', 'compact');
+
+    act(() => service.patchConfig({ spacing: { density: 'comfortable' } }));
+    expect(getRoot()).toHaveAttribute('data-density', 'comfortable');
+
+    act(() => service.setChatMode(AutopilotChatMode.Embedded));
+    act(() => service.patchConfig({ spacing: {} }));
+    expect(getRoot()).toHaveAttribute('data-density', 'comfortable');
   });
 
   it('renders the title, preview badge and override labels', () => {

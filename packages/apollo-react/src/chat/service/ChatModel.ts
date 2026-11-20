@@ -20,6 +20,12 @@ export enum AutopilotChatMode {
   Embedded = 'embedded',
 }
 
+/**
+ * How dense the chat renders: `compact` steps text and spacing down, `spacious` steps text up for
+ * a wide reading column. Without one, full screen is `spacious` and the other modes `comfortable`.
+ */
+export type AutopilotChatDensity = 'compact' | 'comfortable' | 'spacious';
+
 export enum AutopilotChatFileType {
   Word = 'Word',
   PowerPoint = 'PowerPoint',
@@ -590,6 +596,8 @@ export interface AutopilotChatConfiguration {
     };
   };
   spacing?: {
+    /** Overrides the mode's default density, and `compactMode` when both are set. */
+    density?: AutopilotChatDensity;
     compactMode?: boolean;
     promptBox?: {
       minRows?: number;

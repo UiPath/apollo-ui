@@ -93,7 +93,7 @@ const chatService = AutopilotChatService.Instantiate({
 - **Styles**: Wind is styled by Tailwind classes; MUI's theme does not reach it. Add the Wind CSS (see [Styles](#styles)).
 - **Theme**: the chat root carries the chat theme as a class (`light`, `dark`, `light-hc`, `dark-hc`, `future-light`, `future-dark`) from the `theme` prop or `setTheme`, so it themes itself whatever the host's body class. Menus, tooltips and popovers stay inside that root; modal dialogs portal to a themed node in `portalContainer`, or else `document.body`, at z-index 1300.
 - **`enableInternalThemeProvider`** (set by the web component) wraps Material in its own MUI theme; Wind ignores it.
-- **Configuration Wind ignores**: `theming.scrollBar` (Wind uses the apollo-wind scrollbars), `theming.chatMenu.groupItemTooltipPlacement`, and in `spacing` everything but `compactMode`, `promptBox`, `messageSpacing` and `messageGroupGap` (the `*FontToken` fields, `markdownTokens`, `suggestionSpacing` and `suggestionPadding`). Density is `spacing.compactMode`.
+- **Configuration Wind ignores**: `theming.scrollBar` (Wind uses the apollo-wind scrollbars), `theming.chatMenu.groupItemTooltipPlacement`, and in `spacing` everything but `density`, `compactMode`, `promptBox`, `messageSpacing` and `messageGroupGap` (the `*FontToken` fields, `markdownTokens`, `suggestionSpacing` and `suggestionPadding`). Density is `spacing.density`, else `spacing.compactMode` (see [Density](#density)).
 - **Icons**: Wind takes lucide names where Material takes Material Icons names (see [Icons](#icons)), so a host that sets icons gives each renderer its own set.
 - **`<ap-chat>`**: the web component stays Material in this release; a service with `renderer: 'wind'` is rendered with Material there, with a console warning.
 
@@ -3017,6 +3017,18 @@ When `compactMode` is enabled, the following defaults are applied:
   - Primary font: `FontVariantToken.fontSizeS` (from `fontSizeM`)
   - Headers: Scale down proportionally (h1-h3 use `fontSizeH4Bold`, h4-h6 use `fontSizeMBold`)
   - Markdown elements: All use smaller font variants
+
+### Density
+
+`spacing.density` picks one of three densities: `compact`, `comfortable` or `spacious`. Without it, `compactMode: true` means `compact`; otherwise FullScreen is `spacious` and the other modes are `comfortable`. `spacious` steps the reading text up one level (16px body, `FontVariantToken.fontSizeL`) for the wide FullScreen column and keeps comfortable spacing. Explicit `*FontToken` and `markdownTokens` values still win.
+
+```typescript
+// Keep FullScreen at the panel's text size
+chatService.initialize({
+  mode: AutopilotChatMode.FullScreen,
+  spacing: { density: 'comfortable' },
+});
+```
 
 ### Custom Spacing Configuration
 
