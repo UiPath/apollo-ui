@@ -151,7 +151,6 @@ Wind matches Material's behaviour and the service contract. These are the intend
 - Copy writes the group's text twice (the action bar's own write and the shared Copy handler), with identical content.
 - Sources list all of a group's citations once expanded; Material shows two and a "Show more" button.
 - The drop overlay lists the limits as allowed types, size, then count; Material lists count, size, then types.
-- An HTML block shows its source until the reader clicks Preview; Material renders the preview by itself once the block is complete. The preview frame runs the snippet's scripts, so model output does not execute without a user action.
 - The HTML preview document gets a CSP (`default-src 'none'`, inline styles and scripts, data and https images and fonts) as well as `no-referrer`; Material's gets `no-referrer` only.
 - The cited-range highlight is not applied while a message streams.
 - Suggestions set with `setSuggestions` belong to the user turn they were set in and are left behind by the next user message; Material keeps showing them while the conversation is non-empty.
