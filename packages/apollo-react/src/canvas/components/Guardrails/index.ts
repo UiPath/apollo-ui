@@ -1,4 +1,5 @@
 export type {
+  AgentGuardrailScope,
   GuardrailAction,
   GuardrailActionErrors,
   GuardrailAppPickerContext,

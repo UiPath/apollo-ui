@@ -1,4 +1,4 @@
-import type { GuardrailDefinitionStatus, GuardrailScope } from './builder-types';
+import type { AgentGuardrailScope, GuardrailDefinitionStatus } from './builder-types';
 
 /**
  * Hand-written mirrors of the `GET /api/execution/guardrails/definitions` payload, so hosts
@@ -73,7 +73,8 @@ export type GuardrailParameterDefinitionWire =
 /** One guardrail validator definition as the backend returns it. */
 export interface GuardrailDefinitionWire {
   validator: string;
-  allowedScopes: GuardrailScope[];
+  /** Never Standalone: an agent never applies a guardrail there. */
+  allowedScopes: AgentGuardrailScope[];
   parameters: GuardrailParameterDefinitionWire[];
   status: GuardrailDefinitionStatus;
   /** Why a `Disabled` definition is disabled. See `GuardrailDefinition.disabledReason`. */

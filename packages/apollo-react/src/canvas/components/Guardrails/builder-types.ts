@@ -13,6 +13,9 @@ import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '
  */
 export type GuardrailScope = 'Agent' | 'Llm' | 'Tool' | 'Standalone';
 
+/** The scopes an agent applies guardrails at: the only ones a definition allows or a person picks. */
+export type AgentGuardrailScope = Exclude<GuardrailScope, 'Standalone'>;
+
 export interface GuardrailSelector {
   scopes: GuardrailScope[];
   matchNames?: string[];

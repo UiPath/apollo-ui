@@ -2,6 +2,7 @@ import { cn, FormField, FormFieldError, Label, RequiredIndicator } from '@uipath
 import { Check, Plus } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo } from 'react';
 import type {
+  AgentGuardrailScope,
   GuardrailScope,
   GuardrailScopeSelectorErrors,
   GuardrailSelector,
@@ -10,12 +11,10 @@ import { type GuardrailScopeSelectorLabels, useGuardrailScopeSelectorLabels } fr
 import { FieldShell } from './field-shell';
 import { GuardrailChip } from './guardrail-chip';
 
-// The scopes a person picks here. The host sets Standalone, for a check outside any agent.
-type SelectableScope = Exclude<GuardrailScope, 'Standalone'>;
+// The host sets Standalone, for a check outside any agent; a person never picks it here.
+const ALL_SCOPES: AgentGuardrailScope[] = ['Agent', 'Llm', 'Tool'];
 
-const ALL_SCOPES: SelectableScope[] = ['Agent', 'Llm', 'Tool'];
-
-const isSelectableScope = (scope: GuardrailScope): scope is SelectableScope =>
+const isAgentScope = (scope: GuardrailScope): scope is AgentGuardrailScope =>
   scope !== 'Standalone';
 
 export interface GuardrailScopeSelectorProps {
@@ -60,7 +59,7 @@ export function GuardrailScopeSelector({
   // Namespaced per instance: two builders can share a document (inline panels).
   const uid = useId();
 
-  const scopeLabels = useMemo<Record<SelectableScope, string>>(
+  const scopeLabels = useMemo<Record<AgentGuardrailScope, string>>(
     () => ({
       Agent: labels.scopeAgentLabel,
       Llm: labels.scopeLlmLabel,
@@ -78,7 +77,7 @@ export function GuardrailScopeSelector({
   const isScopeLocked =
     isSingleScopeLock && selectedScopes.length === 1 && selectedScopes[0] === onlyAllowedScope;
   const visibleScopes = useMemo(() => {
-    const scopes = allowedScopes?.filter(isSelectableScope) ?? ALL_SCOPES;
+    const scopes = allowedScopes?.filter(isAgentScope) ?? ALL_SCOPES;
     return hasTools ? scopes : scopes.filter((s) => s !== 'Tool');
   }, [allowedScopes, hasTools]);
 
