@@ -35,11 +35,16 @@ const ChatHeroContext = React.createContext<ChatHeroContextValue>({
   density: 'comfortable',
 });
 
+// Safe alignment keeps content taller than a scrolling hero reachable: it starts at the top
+// and scrolls, where centered or bottom-aligned content overflows above the scroll range.
+// Behind @supports so a browser without it keeps the plain alignment.
 const chatHeroVariants = cva('flex w-full min-w-0 flex-1 flex-col', {
   variants: {
     layout: {
-      centered: 'mx-auto max-w-[800px] items-center justify-center',
-      docked: 'justify-end gap-6 text-start',
+      centered:
+        'mx-auto max-w-[800px] items-center justify-center supports-[justify-content:safe_center]:justify-center-safe',
+      docked:
+        'justify-end gap-6 text-start supports-[justify-content:safe_flex-end]:justify-end-safe',
     },
     density: {
       comfortable: '',
@@ -61,7 +66,11 @@ export interface ChatHeroProps extends React.HTMLAttributes<HTMLDivElement> {
   density?: ChatHeroDensity;
 }
 
-/** Fills its flex parent, so the parent decides the height that `centered` centers within. */
+/**
+ * Fills its flex parent, so the parent decides the height that `centered` centers within. To
+ * scroll content that does not fit, put it in a scroll container or make it one itself
+ * (`min-h-0 overflow-y-auto`).
+ */
 const ChatHero = React.forwardRef<HTMLDivElement, ChatHeroProps>(
   ({ className, layout, density, ...props }, ref) => {
     const context = React.useMemo<ChatHeroContextValue>(

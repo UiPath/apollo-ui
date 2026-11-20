@@ -85,6 +85,33 @@ describe('ChatHero', () => {
     expect(hero).toHaveAttribute('data-density', 'compact');
   });
 
+  // Layout itself is not testable here: this only pins the classes the safe alignment relies on.
+  it('aligns safely where supported, keeping the plain alignment as the fallback', () => {
+    const { container, rerender } = render(<Example />);
+    const hero = container.querySelector('[data-slot="chat-hero"]');
+    expect(hero).toHaveClass(
+      'justify-center',
+      'supports-[justify-content:safe_center]:justify-center-safe'
+    );
+
+    rerender(<Example layout="docked" />);
+    expect(hero).toHaveClass(
+      'justify-end',
+      'supports-[justify-content:safe_flex-end]:justify-end-safe'
+    );
+    expect(hero).not.toHaveClass('justify-center');
+  });
+
+  it('keeps both alignment classes beside a consumer class that makes it scroll', () => {
+    const { container } = render(<Example layout="docked" className="min-h-0 overflow-y-auto" />);
+    expect(container.querySelector('[data-slot="chat-hero"]')).toHaveClass(
+      'justify-end',
+      'supports-[justify-content:safe_flex-end]:justify-end-safe',
+      'min-h-0',
+      'overflow-y-auto'
+    );
+  });
+
   it('renders nothing for empty title and description', () => {
     const { container } = render(
       <ChatHero layout="docked">
