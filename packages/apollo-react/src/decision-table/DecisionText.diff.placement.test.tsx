@@ -161,6 +161,7 @@ describe('values of a removed column', () => {
         table={{ rules: DIFF_RULES, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
+        numbered
         ariaLabel="Rules"
         dataTestId="nl"
         mode={{ kind: 'diff', diff: removedFee }}
@@ -183,6 +184,7 @@ const renderDiff = (diff: FixtureDiff, rules: readonly SentenceRule[] = DIFF_RUL
       table={{ rules: rules, ...DIFF_COLUMNS, hitPolicy: DIFF_POLICY }}
       hitPolicies={HIT_POLICIES}
       columnTypes={COLUMN_TYPES}
+      numbered
       ariaLabel="Rules"
       dataTestId="nl"
       mode={{ kind: 'diff', diff }}

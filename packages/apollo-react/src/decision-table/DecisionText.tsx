@@ -254,7 +254,7 @@ export const DecisionText = <Op, Policy, Total, Type, Refusal>({
     container: ruleWindow.container,
   });
   const columnEditorId = `${idPrefix}-column-editor`;
-  const listStyle = sentenceListStyle(numbered || diff !== undefined, rules.length);
+  const listStyle = sentenceListStyle(numbered, rules.length);
   const onExpandFold = useCallback(
     (firstRowId: string) =>
       setFolds((current) => ({
