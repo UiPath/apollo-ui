@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v7.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.37.1...@uipath/apollo-react@7.38.0) (2026-11-20)
+
+### Features
+
+* **apollo-react:** keep the rule number chip in the Text views [ECS-2218] ([25edb11](https://github.com/UiPath/apollo-ui/commit/25edb110dd3d8f9a15ab27492862366529abff53))
+* **apollo-react:** match the Text views' styling to the Studio Web design [ECS-2218] ([9bc570f](https://github.com/UiPath/apollo-ui/commit/9bc570faae5cba322702d6b02bd3db8632c6d8bf))
+
+### Bug Fixes
+
+* **apollo-react:** show rule numbers only when numbered, as on main [ECS-2218] ([d9f922d](https://github.com/UiPath/apollo-ui/commit/d9f922dc7386d7e89d03984ddc81964af6ff44c1))
+* **apollo-react:** test citation names by behaviour [ECS-2220] ([645a418](https://github.com/UiPath/apollo-ui/commit/645a41848183b51a24eb4082c6e9f11beaece03d))
+
 ## [@uipath/apollo-react-v7.37.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.37.0...@uipath/apollo-react@7.37.1) (2026-11-20)
 
 ### Bug Fixes
