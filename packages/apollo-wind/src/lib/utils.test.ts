@@ -13,6 +13,9 @@ describe('cn utility', () => {
       )
     ).toBe('text-xs leading-4');
     expect(cn('h-(--citation-size,1.125rem)', 'h-5')).toBe('h-5');
+    // Density roles are font sizes, so a colour keeps them and a size replaces them.
+    expect(cn('text-body', 'text-foreground')).toBe('text-body text-foreground');
+    expect(cn('text-heading-1', 'text-xs')).toBe('text-xs');
   });
 
   it('merges class names', () => {

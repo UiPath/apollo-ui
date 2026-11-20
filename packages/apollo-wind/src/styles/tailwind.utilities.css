@@ -572,3 +572,85 @@
     animation: none;
   }
 }
+
+/* ============================================================================
+ * Density type roles
+ *
+ * Text sizes that follow the nearest `data-density` ancestor: `compact`, the
+ * default `comfortable`, or `spacious` (a full-screen chat on a wide display).
+ * A surface changes one attribute instead of every primitive carrying a
+ * variant per density.
+ *
+ *   text-body         prose: markdown, message bubbles (relaxed leading)
+ *   text-ui           labels and message chrome (tight leading)
+ *   text-heading-1..4 markdown headings; h5 and h6 use heading-4
+ *
+ * Comfortable and compact match the Tailwind steps the chat primitives used
+ * before; spacious is one step up from comfortable. A nested `comfortable`
+ * resets the roles, so the nearest density wins.
+ * ============================================================================ */
+
+@layer base {
+  :root,
+  [data-density="comfortable"] {
+    --density-body: 0.875rem;
+    --density-body-leading: 1.625;
+    --density-ui: 0.875rem;
+    --density-ui-leading: 1.25rem;
+    --density-heading-1: 1.25rem;
+    --density-heading-1-leading: 1.75rem;
+    --density-heading-2: 1.125rem;
+    --density-heading-2-leading: 1.75rem;
+    --density-heading-3: 1rem;
+    --density-heading-3-leading: 1.5rem;
+    --density-heading-4: 0.875rem;
+    --density-heading-4-leading: 1.25rem;
+  }
+
+  [data-density="compact"] {
+    --density-body: 0.75rem;
+    --density-body-leading: 1.5;
+    --density-ui: 0.75rem;
+    --density-ui-leading: 1rem;
+    --density-heading-1: 1.125rem;
+    --density-heading-1-leading: 1.75rem;
+    --density-heading-2: 1rem;
+    --density-heading-2-leading: 1.5rem;
+    --density-heading-3: 0.875rem;
+    --density-heading-3-leading: 1.25rem;
+    --density-heading-4: 0.75rem;
+    --density-heading-4-leading: 1rem;
+  }
+
+  [data-density="spacious"] {
+    --density-body: 1rem;
+    --density-body-leading: 1.625;
+    --density-ui: 1rem;
+    --density-ui-leading: 1.5rem;
+    --density-heading-1: 1.5rem;
+    --density-heading-1-leading: 2rem;
+    --density-heading-2: 1.25rem;
+    --density-heading-2-leading: 1.75rem;
+    --density-heading-3: 1.125rem;
+    --density-heading-3-leading: 1.75rem;
+    --density-heading-4: 1rem;
+    --density-heading-4-leading: 1.5rem;
+  }
+}
+
+/* Inline, so each utility reads the variable on its own element and a density
+   ancestor's override reaches it. */
+@theme inline {
+  --text-body: var(--density-body);
+  --text-body--line-height: var(--density-body-leading);
+  --text-ui: var(--density-ui);
+  --text-ui--line-height: var(--density-ui-leading);
+  --text-heading-1: var(--density-heading-1);
+  --text-heading-1--line-height: var(--density-heading-1-leading);
+  --text-heading-2: var(--density-heading-2);
+  --text-heading-2--line-height: var(--density-heading-2-leading);
+  --text-heading-3: var(--density-heading-3);
+  --text-heading-3--line-height: var(--density-heading-3-leading);
+  --text-heading-4: var(--density-heading-4);
+  --text-heading-4--line-height: var(--density-heading-4-leading);
+}

@@ -26,13 +26,15 @@ import { cn } from '@/lib';
  * Raw HTML in the source is shown as text (except `<br>`, which becomes a line break), and unsafe
  * link protocols are dropped by react-markdown. Links open in a new tab, except in-page anchors.
  *
- * Compact density: inside an ancestor with `data-density="compact"` the text, headings and lists
- * drop one size step (body 12px), as Material's `compactMode` does. Two choices are Wind's own:
- * the body keeps the comfortable leading's ratio to Material's (18px, not Material's 16px), and
- * block, list and quote spacing tightens (Material keeps its 24px).
+ * Density: the text and headings are the `text-body` and `text-heading-*` roles, so they follow
+ * the nearest `data-density` ancestor. Compact drops one size step (body 12px), as Material's
+ * `compactMode` does; spacious goes one step up (body 16px) for a full-screen reading column.
+ * Two compact choices are Wind's own: the body keeps the comfortable leading's ratio to
+ * Material's (18px, not Material's 16px), and block, list and quote spacing tightens (Material
+ * keeps its 24px).
  * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
- * Compact sets CSS variables the base classes read, so a host className on the root wins in
- * both densities.
+ * Density sets CSS variables the base classes read, so a host className on the root wins in
+ * every density.
  */
 
 type HastNode = {
@@ -516,49 +518,22 @@ function MarkdownPre({ node, children, ...rest }: React.ComponentProps<'pre'> & 
 
 const BUILT_IN_COMPONENTS: Components = {
   h1: ({ node: _node, className, ...rest }) => (
-    <h1
-      className={cn(
-        'text-xl font-semibold tracking-tight in-data-[density=compact]:text-lg',
-        className
-      )}
-      {...rest}
-    />
+    <h1 className={cn('text-heading-1 font-semibold tracking-tight', className)} {...rest} />
   ),
   h2: ({ node: _node, className, ...rest }) => (
-    <h2
-      className={cn(
-        'text-lg font-semibold tracking-tight in-data-[density=compact]:text-base',
-        className
-      )}
-      {...rest}
-    />
+    <h2 className={cn('text-heading-2 font-semibold tracking-tight', className)} {...rest} />
   ),
   h3: ({ node: _node, className, ...rest }) => (
-    <h3
-      className={cn('text-base font-semibold in-data-[density=compact]:text-sm', className)}
-      {...rest}
-    />
+    <h3 className={cn('text-heading-3 font-semibold', className)} {...rest} />
   ),
   h4: ({ node: _node, className, ...rest }) => (
-    <h4
-      className={cn('text-sm font-semibold in-data-[density=compact]:text-xs', className)}
-      {...rest}
-    />
+    <h4 className={cn('text-heading-4 font-semibold', className)} {...rest} />
   ),
   h5: ({ node: _node, className, ...rest }) => (
-    <h5
-      className={cn('text-sm font-semibold in-data-[density=compact]:text-xs', className)}
-      {...rest}
-    />
+    <h5 className={cn('text-heading-4 font-semibold', className)} {...rest} />
   ),
   h6: ({ node: _node, className, ...rest }) => (
-    <h6
-      className={cn(
-        'text-sm font-semibold text-muted-foreground in-data-[density=compact]:text-xs',
-        className
-      )}
-      {...rest}
-    />
+    <h6 className={cn('text-heading-4 font-semibold text-muted-foreground', className)} {...rest} />
   ),
   p: ({ node: _node, ...rest }) => <p {...rest} />,
   a: MarkdownLink,
@@ -730,7 +705,7 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
         data-streaming={streaming || undefined}
         aria-busy={streaming || undefined}
         className={cn(
-          'flex min-w-0 flex-col gap-(--markdown-gap,0.75rem) text-(length:--markdown-font-size,0.875rem) leading-(--markdown-leading,1.625) break-words text-foreground [&_math]:text-[1.15em] [&>.katex]:overflow-x-auto [&>.katex]:overflow-y-hidden [&>.katex]:py-1 in-data-[density=compact]:[--markdown-gap:0.5rem] in-data-[density=compact]:[--markdown-font-size:0.75rem] in-data-[density=compact]:[--markdown-leading:1.5]',
+          'flex min-w-0 flex-col gap-(--markdown-gap,0.75rem) text-body break-words text-foreground [&_math]:text-[1.15em] [&>.katex]:overflow-x-auto [&>.katex]:overflow-y-hidden [&>.katex]:py-1 in-data-[density=compact]:[--markdown-gap:0.5rem]',
           className
         )}
         {...props}

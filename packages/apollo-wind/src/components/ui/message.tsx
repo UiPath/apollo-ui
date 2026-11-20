@@ -8,12 +8,12 @@ import { cn } from '@/lib';
  * A `MessageActions` bar goes inside `MessageContent` after the body, so it takes the same
  * alignment as the bubble.
  *
- * Compact density: inside an ancestor with `data-density="compact"` the text drops to 12px and
- * the gaps between a group's messages and between a message's parts halve, as Material's
- * `compactMode` does.
+ * Density: the text is the `text-ui` role, so it follows the nearest `data-density` ancestor
+ * (12px compact, 14px comfortable, 16px spacious). Compact also halves the gaps between a
+ * group's messages and between a message's parts, as Material's `compactMode` does.
  * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
- * Compact sets CSS variables the base classes read, so a host className on the root wins in
- * both densities.
+ * Density sets CSS variables the base classes read, so a host className on the root wins in
+ * every density.
  */
 
 const MessageGroup = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -43,7 +43,7 @@ const Message = React.forwardRef<HTMLDivElement, MessageProps>(
       data-slot="message"
       data-align={align}
       className={cn(
-        'group/message relative flex w-full min-w-0 gap-2 text-(length:--message-font-size,0.875rem) leading-(--message-leading,1.25rem) data-[align=end]:flex-row-reverse in-data-[density=compact]:[--message-font-size:0.75rem] in-data-[density=compact]:[--message-leading:1rem]',
+        'group/message relative flex w-full min-w-0 gap-2 text-ui data-[align=end]:flex-row-reverse',
         className
       )}
       {...props}

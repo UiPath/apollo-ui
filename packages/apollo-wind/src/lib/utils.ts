@@ -1,6 +1,13 @@
 import { type ClassValue, clsx } from 'clsx';
 import type * as React from 'react';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
+
+// The density type roles are font sizes; unregistered, `text-body` would merge as a text colour.
+const twMerge = extendTailwindMerge({
+  extend: {
+    theme: { text: ['body', 'ui', 'heading-1', 'heading-2', 'heading-3', 'heading-4'] },
+  },
+});
 
 /**
  * Utility function to merge Tailwind CSS classes with proper precedence

@@ -147,7 +147,7 @@ describe('Markdown', () => {
     expect(root).toHaveClass('[&>.katex]:overflow-x-auto', '[&>.katex]:overflow-y-hidden');
   });
 
-  it('steps type and spacing down inside a compact ancestor', async () => {
+  it('reads density roles for type and steps spacing down inside a compact ancestor', async () => {
     const { container } = render(
       <div data-density="compact">
         <Markdown>{'# Title\n\n### Section\n\nSome text.\n\n- one\n- two'}</Markdown>
@@ -162,28 +162,27 @@ describe('Markdown', () => {
     ];
     const css = await buildTailwind(parts.flatMap((node) => Array.from(node?.classList ?? [])));
     const rule = (utility: string) => ruleBody(css, `.${CSS.escape(utility)}`);
-    // The root reads variables whose fallbacks are the comfortable values (14px on 22.75px, 12px gap).
-    expect(rule('text-(length:--markdown-font-size,0.875rem)')).toContain(
-      'font-size: var(--markdown-font-size,0.875rem)'
-    );
-    expect(rule('leading-(--markdown-leading,1.625)')).toContain(
-      'line-height: var(--markdown-leading,1.625)'
+    // Text sizes are density roles; spacing reads variables whose fallbacks are comfortable.
+    expect(rule('text-body')).toContain('font-size: var(--density-body)');
+    expect(rule('text-body')).toContain(
+      'line-height: var(--tw-leading, var(--density-body-leading))'
     );
     expect(rule('gap-(--markdown-gap,0.75rem)')).toContain('gap: var(--markdown-gap,0.75rem)');
-    // A compact ancestor sets them.
+    // A compact ancestor sets the spacing variables.
     const compact = (utility: string, declaration: string) => {
       const body = rule(`in-data-[density=compact]:${utility}`);
       expect(body).toContain(':where(*[data-density="compact"]) &');
       expect(body).toContain(declaration);
     };
-    compact('[--markdown-font-size:0.75rem]', '--markdown-font-size: 0.75rem');
-    compact('[--markdown-leading:1.5]', '--markdown-leading: 1.5');
     compact('[--markdown-gap:0.5rem]', '--markdown-gap: 0.5rem');
-    // Nested elements keep their own variants.
-    compact('text-lg', 'font-size: var(--text-lg)');
-    compact('text-sm', 'font-size: var(--text-sm)');
     compact('gap-0.5', 'gap: calc(var(--spacing) * 0.5)');
-    expect(root.querySelector('h1')).toHaveClass('text-xl', 'in-data-[density=compact]:text-lg');
+    // The density attribute swaps the role values.
+    expect(ruleBody(css, '[data-density="compact"] {')).toContain('--density-body: 0.75rem');
+    expect(ruleBody(css, '[data-density="compact"] {')).toContain('--density-heading-1: 1.125rem');
+    expect(ruleBody(css, '[data-density="spacious"] {')).toContain('--density-body: 1rem');
+    expect(root).toHaveClass('text-body');
+    expect(root.querySelector('h1')).toHaveClass('text-heading-1');
+    expect(root.querySelector('h3')).toHaveClass('text-heading-3');
   });
 
   it('lets a host className on the root win in compact too', () => {
@@ -196,6 +195,7 @@ describe('Markdown', () => {
     expect(root).toHaveClass('gap-1', 'text-xs', 'leading-4');
     // The variable-reading classes are replaced, so the compact variables have nothing to change.
     expect(root.className).not.toMatch(/gap-\(|text-\(|leading-\(/);
+    expect(root).not.toHaveClass('text-body');
   });
 
   it('keeps single dollar signs literal', () => {

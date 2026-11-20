@@ -81,10 +81,7 @@ describe('Message', () => {
       'gap-(--message-group-gap,0.5rem)',
       'in-data-[density=compact]:[--message-group-gap:0.25rem]'
     );
-    expect(slot('message')).toHaveClass(
-      'text-(length:--message-font-size,0.875rem)',
-      'in-data-[density=compact]:[--message-font-size:0.75rem]'
-    );
+    expect(slot('message')).toHaveClass('text-ui');
     expect(slot('message-content')).toHaveClass(
       'gap-(--message-content-gap,0.625rem)',
       'in-data-[density=compact]:[--message-content-gap:0.3125rem]'
@@ -94,8 +91,7 @@ describe('Message', () => {
       'py-(--bubble-padding-y,0.5rem)',
       'in-data-[density=compact]:[--bubble-padding-x:0.625rem]',
       'in-data-[density=compact]:[--bubble-padding-y:0.375rem]',
-      'text-(length:--bubble-font-size,0.875rem)',
-      'in-data-[density=compact]:[--bubble-font-size:0.75rem]'
+      'text-body'
     );
   });
 
