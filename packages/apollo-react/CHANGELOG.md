@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v7.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.36.0...@uipath/apollo-react@7.37.0) (2026-11-19)
+
+### Features
+
+* **apollo-react:** edit DecisionText cards inside DecisionGraphText [ECS-2217] ([347a474](https://github.com/UiPath/apollo-ui/commit/347a474b1b06a50fff5120e4552b2691ef59dcf5))
+* **apollo-react:** optional citations, out of the read-view tab order, named apart [ECS-2150] ([e498203](https://github.com/UiPath/apollo-ui/commit/e498203ea18dc1de9728b0914ac4b86a0b9e75de))
+* **apollo-react:** show source citations in DecisionText and DecisionGraphText [ECS-2150] ([e9df2ae](https://github.com/UiPath/apollo-ui/commit/e9df2aeb6c9e5ec99808397dd44fc3d2727002b4))
+
+### Bug Fixes
+
+* **apollo-react:** export liveSelection so graph hosts drop stale selections [ECS-2217] ([e20ca9b](https://github.com/UiPath/apollo-ui/commit/e20ca9b1fbf391f542400513660e68880911744f))
+* **apollo-react:** reuse hasStop in liveSelection [ECS-2217] ([7aedcbc](https://github.com/UiPath/apollo-ui/commit/7aedcbc4307c2068badf17ee5929848794391d00))
+
 ## [@uipath/apollo-react-v7.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.35.0...@uipath/apollo-react@7.36.0) (2026-11-19)
 
 ### Features
