@@ -138,6 +138,10 @@ Wind matches Material's behaviour and the service contract. These are the intend
 - `SideBySide` mode (Wind shows a placeholder) and the expand/collapse header action.
 - The model picker, agent mode selector, `@` resource picker and audio input. Resource tokens in messages do render.
 
+**Not in Material**
+
+- `welcomeContent` and the composer lock (`composerLocked`, `setComposerLocked`). Material ignores both: it renders no welcome content and its composer stays usable while the service reports it locked. See [Welcome Content Slot and Composer Lock](#welcome-content-slot-and-composer-lock).
+
 **Layout and surfaces**
 
 - History is a popover under the header's history button in both modes, sized as Material's but kept inside the panel. It is not modal, so a host dialog opened from a rename or delete pre-hook stays usable; Material's is modal.
@@ -450,6 +454,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetSelectedAgentMode`: Emitted when the agent mode is selected
 - `CustomHeaderActionClicked`: Emitted when a custom header action is selected by the user (see [AutopilotChatCustomHeaderAction](#autopilotchatcustomheaderaction))
 - `SetResourceManager`: Emitted when a resource manager is set for the @ mention picker (see [Resource Picker](#resource-picker))
+- `SetComposerLocked`: Emitted when the composer lock changes. Payload is the new state (boolean). (see [Welcome Content Slot and Composer Lock](#welcome-content-slot-and-composer-lock))
 - `SpeechToTextToggle`: Emitted when the STT dictate button is clicked. Payload is the new active state (boolean). Consumers listen to drive their recognizer.
 - `SetSpeechToTextState`: Emitted whenever the STT active state changes (from either `publishSpeechToTextToggle()` or `setSpeechToTextState()`). Payload is a boolean.
 
@@ -556,6 +561,97 @@ chatService.toggleSettings(true); // History panel closes automatically
 // Opening history will close settings if it's open
 chatService.toggleHistory(true); // Settings panel closes automatically
 ```
+
+## Welcome Content Slot and Composer Lock
+
+Wind renderer only. Material ignores both (see [Renderer differences](#renderer-differences)).
+
+A host can put its own content into the [first-run experience](#first-run-experience) and keep the composer locked until that content is dealt with. The typical case is a form for an agent's required inputs: the user reads the welcome text, fills in the form, and only then can send a message. The two parts are independent: the slot works without the lock, and the lock without the slot.
+
+| Member                                                    | Description                                                                                                  |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `welcomeContent?: (container) => void \| (() => void)`    | Configuration. Renders host content into the first-run experience and may return a cleanup function          |
+| `composerLocked?: boolean`                                | Configuration. The lock to start with (defaults to `false`)                                                  |
+| `setComposerLocked(locked: boolean)`                      | Locks or unlocks the composer                                                                                |
+| `getComposerLocked()`                                     | Returns whether the composer is locked                                                                       |
+| `AutopilotChatEvent.SetComposerLocked`                    | Published with the new state each time the lock changes                                                      |
+
+### Welcome Content
+
+`welcomeContent` is a DOM slot like `settingsRenderer`: the chat owns a container element and hands it to your function, and you render into it.
+
+```typescript
+import { createRoot } from 'react-dom/client';
+
+chatService.initialize({
+  mode: AutopilotChatMode.FullScreen,
+  firstRunExperience: { title: 'Invoice agent', description: 'Tell me which customer to look at.' },
+  composerLocked: true,
+  welcomeContent: (container) => {
+    const root = createRoot(container);
+    root.render(<AgentInputsForm onSubmit={() => chatService.setComposerLocked(false)} />);
+    // Runs before the chat empties the container.
+    return () => root.unmount();
+  },
+});
+```
+
+Where it shows: under the welcome title and description and above the first-run suggestions, at the full width of the first-run experience. In FullScreen that is the centered column above the composer; in Embedded it is the docked first-run experience above the composer, which scrolls when the content is taller than the panel. `welcomeContent` alone is enough to show the first-run experience in an empty chat, without a title, description or suggestions.
+
+Lifecycle:
+
+- The function is called once each time the first-run experience shows, always with the same container element.
+- When the first-run experience hides (the first message, a conversation that is opened or set, the loading skeleton while a conversation loads, the chat closing or unmounting, `welcomeContent` being removed), the cleanup function you returned runs, then the container is emptied. Both happen right after the chat's render, not during it, so the cleanup can unmount a React root.
+- The next display (for example after `newChat()`, or when a conversation that was opened turns out to be empty) calls the function again with the same, empty container. What the previous display rendered is gone, so keep form state in your own code if it has to survive. A `newChat()` in a chat that is already empty is not a new display.
+- Switching between Embedded and FullScreen, or remounting `ApChat` on the same service, moves the container with its content. Your function is not called again and a half-filled form keeps its state.
+- Only setting or removing `welcomeContent` updates a first-run experience that is showing. Passing another function (for example a new closure with every `patchConfig`) does not render again; the latest function is used on the next display. To change what is shown, update your own content, for example by rendering into your React root again.
+- An exception from your function or its cleanup is swallowed, and the container is emptied.
+- In read-only mode the welcome content still shows, without a composer under it.
+- With two `ApChat`s on one service, the one mounted last shows the content.
+
+### Composer Lock
+
+```typescript
+// Lock, for example until the inputs form is submitted
+chatService.setComposerLocked(true);
+
+// Unlock
+chatService.setComposerLocked(false);
+
+chatService.getComposerLocked(); // false
+
+chatService.on(AutopilotChatEvent.SetComposerLocked, (locked: boolean) => {
+  // Published only when the value changes
+});
+```
+
+While the composer is locked:
+
+- The input is disabled and shows its placeholder. Use `overrideLabels.inputPlaceholder` to say why, for example "Fill in the form above to start".
+- Nothing is sent by the send button or Enter, and nothing can be typed or pasted.
+- Files cannot be added by the attach button, a drop or a paste. A file dropped on the chat is still caught, so the browser does not open it.
+- The first-run suggestions are hidden and come back when the composer is unlocked. Suggestions under a reply (`setSuggestions`) stay visible but disabled.
+- The draft and its attachments are kept: attachments cannot be removed either. `setPrompt` still changes the draft.
+- A reply that is awaited or streaming can still be stopped.
+- `sendRequest` is not held back: the lock is for the user, not for the host.
+
+The lock is a UI state, not a guarantee. Anything that must hold before a message is processed (required inputs, for example) has to be checked where the request is handled.
+
+When the composer is unlocked while focus is inside the welcome content (a form's submit button, for example), the composer takes focus, since that control usually goes away. Otherwise focus stays where it is.
+
+The lock belongs to the host. It is not cleared by `newChat()` or by sending a message, and `patchConfig` keeps a lock set with `setComposerLocked`. `initialize` applies `composerLocked` from the configuration it is given, so initializing again without it unlocks the composer.
+
+### Composer Lock vs Read-only
+
+|                                        | `setReadOnly(true)`                  | `setComposerLocked(true)`                 |
+| -------------------------------------- | ------------------------------------ | ----------------------------------------- |
+| Meant for                              | Viewing a conversation that is over  | A temporary gate before the user may send |
+| Composer                               | Removed                              | Visible, disabled, draft kept             |
+| New chat, history and settings actions | Hidden                               | Unchanged                                 |
+| Feedback on replies                    | Hidden                               | Unchanged                                 |
+| Renderers                              | Wind and Material                    | Wind                                      |
+
+With both set, read-only wins: there is no composer to lock.
 
 ## Interactive Features
 
@@ -3200,6 +3296,8 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * @property paginatedResources - Flag to determine if resource fetching uses pagination
  * @property resourceManager - The resource manager for the @ mention picker
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
+ * @property welcomeContent - Wind renderer only. Renders host content into the first-run experience, under the welcome text. May return a cleanup function.
+ * @property composerLocked - Wind renderer only. Whether the composer is locked: visible, but nothing can be typed, attached or sent (defaults to false)
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
  * @property theming - The theming of the chat (scrollbar appearance, etc)
  */
@@ -3231,6 +3329,8 @@ export interface AutopilotChatConfiguration {
   paginatedResources?: boolean;
   resourceManager?: AutopilotChatResourceManager;
   settingsRenderer?: (container: HTMLElement) => void;
+  welcomeContent?: (container: HTMLElement) => void | (() => void);
+  composerLocked?: boolean;
   theming?: {
     scrollBar?: {
       scrollThumbColor?: string;

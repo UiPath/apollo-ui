@@ -59,7 +59,7 @@ function ComposerErrorText({ message }: { message: string }) {
  */
 export function WindChatComposer() {
   const chatService = useChatService();
-  const { disabledFeatures, spacing, allowedAttachments } = useChatState();
+  const { disabledFeatures, spacing, allowedAttachments, composerLocked } = useChatState();
   const { inputPlaceholder } = useChatLabels();
   const { skeletonLoader } = useLoading();
   const { error, clearError } = useError();
@@ -70,6 +70,7 @@ export function WindChatComposer() {
   const limits = useAttachmentLimits(allowedAttachments);
   const textarea = React.useRef<HTMLTextAreaElement>(null);
   const [value, setValue] = React.useState(() => promptText(chatService?.getPrompt?.()));
+  const focusOnUnlock = React.useRef(false);
 
   React.useEffect(() => {
     if (!chatService) {
@@ -85,11 +86,28 @@ export function WindChatComposer() {
           if (focused) textarea.current?.focus();
         }
       ),
+      // Read as the host unlocks, before its own render can remove the focused control.
+      chatService.on(AutopilotChatEvent.SetComposerLocked, (locked: boolean) => {
+        focusOnUnlock.current =
+          !locked &&
+          !!textarea.current?.ownerDocument.activeElement?.closest(
+            '[data-slot=chat-welcome-content]'
+          );
+      }),
     ];
     return () => {
       for (const unsubscribe of unsubscribes) unsubscribe();
     };
   }, [chatService]);
+
+  // Unlocking from the host's welcome content hands focus to the composer: the control that
+  // unlocked it (a form's submit button) usually goes away.
+  React.useEffect(() => {
+    if (!composerLocked && focusOnUnlock.current) {
+      focusOnUnlock.current = false;
+      textarea.current?.focus();
+    }
+  }, [composerLocked]);
 
   // As in Material: an empty or whitespace-only draft clears the service prompt.
   const changeValue = (next: string) => {
@@ -132,12 +150,18 @@ export function WindChatComposer() {
       }}
       status={isResponseInFlight ? 'streaming' : 'idle'}
       onStop={canStopResponse ? stop : undefined}
-      submitDisabled={skeletonLoader}
+      // Locked part by part rather than with `disabled`, which would also disable stop.
+      submitDisabled={skeletonLoader || composerLocked}
       attachments={items}
-      onRemoveAttachment={(item) => {
-        const index = items.findIndex(({ id }) => id === item.id);
-        if (index >= 0) removeAttachment(item.name, index);
-      }}
+      // No remove action while locked: the draft is kept as it is.
+      onRemoveAttachment={
+        composerLocked
+          ? undefined
+          : (item) => {
+              const index = items.findIndex(({ id }) => id === item.id);
+              if (index >= 0) removeAttachment(item.name, index);
+            }
+      }
       strings={strings}
     >
       {error && (
@@ -157,6 +181,7 @@ export function WindChatComposer() {
         <ChatComposerAttachments className="gap-2 [&_[data-slot=attachment-action]]:size-5 [&_[data-slot=attachment-media]]:rounded-sm [&_[data-slot=attachment-media]]:bg-transparent [&_[data-slot=attachment]]:min-w-0 [&_[data-slot=attachment]]:max-w-[calc(50%-4px)] [&_[data-slot=attachment]]:gap-1.5 [&_[data-slot=attachment]]:rounded-lg [&_[data-slot=attachment][data-size=sm]]:p-1 [&_[data-slot=attachment][data-size=sm]_[data-slot=attachment-media]]:w-5" />
         <ChatComposerTextarea
           ref={textarea}
+          disabled={composerLocked}
           minRows={spacing.promptBox.minRows}
           maxRows={spacing.promptBox.maxRows}
         />
@@ -171,6 +196,7 @@ export function WindChatComposer() {
                     // `maxCount: 0` means no limit, as in Material.
                     maxFiles={allowedAttachments.maxCount || undefined}
                     multiple={allowedAttachments.multiple}
+                    disabled={composerLocked}
                     aria-describedby={limitsId}
                     onFiles={(accepted, rejected) => {
                       void takeFiles(accepted, rejected);

@@ -16,7 +16,7 @@ const carriesFiles = (data: DataTransfer | null) => Array.from(data?.types ?? []
 /**
  * The whole panel as a drop and paste target for attachments, checked against
  * `allowedAttachments` and taken in as Material's dropzone takes them. While it cannot take files
- * (attachments disabled, no composer, chat closing) a file dropped on the panel is still caught,
+ * (attachments disabled, no composer, composer locked, chat closing) a file dropped on the panel is still caught,
  * so the browser does not open it in the tab.
  */
 export function WindChatDropzone({
@@ -27,10 +27,10 @@ export function WindChatDropzone({
   children: React.ReactNode;
 }) {
   const { _ } = useLingui();
-  const { disabledFeatures, allowedAttachments } = useChatState();
+  const { disabledFeatures, allowedAttachments, composerLocked } = useChatState();
   const { attachments } = useAttachments();
   const takeFiles = useAttachmentIntake();
-  const inactive = disabled || !!disabledFeatures.attachments;
+  const inactive = disabled || composerLocked || !!disabledFeatures.attachments;
   const accept = React.useMemo(
     () => getAcceptedFileTypes(allowedAttachments.types),
     [allowedAttachments.types]

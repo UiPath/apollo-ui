@@ -52,6 +52,7 @@ import {
   streamChunks,
 } from './chat-story-scenarios';
 import { createStoryReactSettingsRenderer } from './chat-story-settings';
+import { createStoryWelcomeContent } from './chat-story-welcome';
 
 export type PlaygroundRenderer = AutopilotChatRenderer | 'both';
 export type PlaygroundMode = AutopilotChatMode.Embedded | AutopilotChatMode.FullScreen;
@@ -111,6 +112,10 @@ export interface PlaygroundArgs extends FeatureFlagArgs {
   preHooks: boolean;
   /** `toggleAutoScroll`: follow new content while at the end. */
   autoScroll: boolean;
+  /** Sets a `welcomeContent` that mounts an inputs form into the first-run experience. */
+  welcomeContent: boolean;
+  /** `setComposerLocked` */
+  composerLocked: boolean;
   scenario: ChatStoryScenarioId;
   autoReply: PlaygroundAutoReply;
   streamDelayMs: number;
@@ -250,7 +255,9 @@ function createSlotService(
   embeddedContainer: HTMLElement,
   seedFrom?: AutopilotChatService
 ) {
-  const service = AutopilotChatService.Instantiate({
+  // One renderer per chat for its whole life; the control sets or removes it.
+  const welcomeContent = createStoryWelcomeContent(() => service);
+  const service: AutopilotChatService = AutopilotChatService.Instantiate({
     instanceName,
     config: {
       mode: args.mode,
@@ -270,6 +277,8 @@ function createSlotService(
       selectedAgentMode: STORY_AGENT_MODES[0],
       settingsRenderer: createStoryReactSettingsRenderer(),
       resourceManager: createStoryResourceManager(),
+      welcomeContent: args.welcomeContent ? welcomeContent : undefined,
+      composerLocked: args.composerLocked,
     },
   });
 
@@ -285,7 +294,7 @@ function createSlotService(
     service.setSuggestions(seedFrom.getSuggestions(), seedFrom.__suggestions__.sendOnClick);
   }
 
-  return service;
+  return { service, welcomeContent };
 }
 
 interface ChatSlotProps {
@@ -325,7 +334,7 @@ function ChatSlot({
     element.style.height = '100%';
     return element;
   });
-  const [service] = React.useState(() =>
+  const [{ service, welcomeContent }] = React.useState(() =>
     createSlotService(
       `storybook-chat-playground-${instanceKey}-${id}`,
       renderer,
@@ -502,6 +511,10 @@ function ChatSlot({
     service.setCustomHeaderActions(customActionsFor(renderer, enabled))
   );
   useOnChange(args.autoScroll, (enabled) => service.toggleAutoScroll(enabled));
+  useOnChange(args.welcomeContent, (enabled) =>
+    patchConfigInPlace(service, { welcomeContent: enabled ? welcomeContent : undefined })
+  );
+  useOnChange(args.composerLocked, (locked) => service.setComposerLocked(locked));
   useOnChange(args.preHooks, (enabled) => {
     for (const action of PRE_HOOK_ACTIONS) {
       service.setPreHook(action, enabled ? confirmPreHook(action) : allowPreHook);

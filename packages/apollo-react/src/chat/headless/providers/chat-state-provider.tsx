@@ -51,6 +51,10 @@ interface AutopilotChatStateContextType {
   theming?: AutopilotChatConfiguration['theming'];
   portalContainer?: HTMLElement;
   readOnly: boolean;
+  /** The composer is locked by the host (`setComposerLocked`): visible, but not usable. */
+  composerLocked: boolean;
+  /** The host set `welcomeContent`, to render into the first-run experience. */
+  hasWelcomeContent: boolean;
   /** A rating can be changed after it is given (Wind only). Off, a rating is final. */
   allowFeedbackChange: boolean;
   /** The first-run experience shows: it has content and the conversation is empty. */
@@ -206,6 +210,12 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     () => (chatService?.getConversation?.().length ?? 0) > 0
   );
   const [readOnly, setReadOnly] = React.useState(chatService?.getReadOnly() ?? false);
+  const [composerLocked, setComposerLocked] = React.useState(
+    chatService?.getComposerLocked?.() ?? false
+  );
+  const [hasWelcomeContent, setHasWelcomeContent] = React.useState(
+    !!chatService?.getConfig()?.welcomeContent
+  );
   const [spacing, setSpacing] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
   const [theming, setTheming] = React.useState(chatService?.getConfig()?.theming);
   const [allowFeedbackChange, setAllowFeedbackChange] = React.useState(
@@ -279,6 +289,20 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       }
     );
 
+    const unsubscribeComposerLocked = chatService.on(
+      AutopilotChatEvent.SetComposerLocked,
+      (locked: boolean) => {
+        setComposerLocked(locked);
+      }
+    );
+
+    const unsubscribeWelcomeContent = chatInternalService.on(
+      AutopilotChatInternalEvent.SetWelcomeContent,
+      (isSet: boolean) => {
+        setHasWelcomeContent(isSet);
+      }
+    );
+
     const unsubscribeSpacing = chatInternalService.on(
       AutopilotChatInternalEvent.SetSpacing,
       (spacingConfig: AutopilotChatConfiguration['spacing']) => {
@@ -306,6 +330,10 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     );
     // Set between the first render and this subscription.
     setSuggestionsSnapshot(chatService.__suggestions__);
+    // As above: a host that locks from `welcomeContent` does so in a child's effect, before
+    // this one subscribes.
+    setComposerLocked(chatService.getComposerLocked());
+    setHasWelcomeContent(!!chatService.getConfig().welcomeContent);
 
     const unsubscribes = [
       chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
@@ -328,6 +356,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       unsubscribeOverrideLabels();
       unsubscribeFirstRunExperience();
       unsubscribeReadOnly();
+      unsubscribeComposerLocked();
+      unsubscribeWelcomeContent();
       unsubscribeAllowedAttachments();
       unsubscribeSpacing();
       unsubscribeTheming();
@@ -365,6 +395,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       theming,
       portalContainer,
       readOnly,
+      composerLocked,
+      hasWelcomeContent,
       allowFeedbackChange,
       firstRunVisible,
       suggestions,
@@ -388,6 +420,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       theming,
       portalContainer,
       readOnly,
+      composerLocked,
+      hasWelcomeContent,
       allowFeedbackChange,
       firstRunVisible,
       suggestions,

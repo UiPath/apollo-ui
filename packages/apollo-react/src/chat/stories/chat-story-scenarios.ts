@@ -47,6 +47,7 @@ import {
   WIND_RESPONSE_ACTIONS,
   withResourceIcons,
 } from './chat-story-fixtures';
+import { createStoryWelcomeContent } from './chat-story-welcome';
 
 export interface ScenarioContext {
   service: AutopilotChatService;
@@ -176,6 +177,36 @@ export const CHAT_STORY_SCENARIOS = {
       'Starts a new chat so the first-run experience shows (the firstRunExperience arg must be on). FullScreen centers it around the composer, with the suggestions in a row under the welcome text; Embedded docks it above the composer. Picking a suggestion fills the composer. Sending a message switches to the transcript; the composer stays in place, though sending clears the draft as it always does.',
     emptyTranscript: true,
     run: () => {},
+  },
+  'welcome-form': {
+    label: 'Welcome form with a locked composer',
+    description:
+      'Wind only. Starts a new chat, sets welcomeContent to a host form under the welcome text and locks the composer (setComposerLocked), with a placeholder that says why. The first-run suggestions are hidden while it is locked. Submitting the form unlocks the composer, which takes focus, and Edit inputs locks it again. Sending a message hides the first-run experience: the form is unmounted and its container emptied, and a new chat mounts it again. Material ignores both, so its composer stays usable. Changing scenario unlocks the composer and restores the welcomeContent and inputPlaceholder controls.',
+    emptyTranscript: true,
+    run: (context) => {
+      const { service } = context;
+      const { welcomeContent, overrideLabels } = service.getConfig();
+      const wasLocked = service.getComposerLocked();
+      // Material shows neither the form nor the lock, so its placeholder stays.
+      const placeholder = (locked: boolean) =>
+        service.setOverrideLabels({
+          inputPlaceholder:
+            locked && context.renderer === 'wind'
+              ? 'Fill in the form above to start'
+              : overrideLabels?.inputPlaceholder,
+        });
+      const unsubscribe = service.on(AutopilotChatEvent.SetComposerLocked, placeholder);
+      patchConfigInPlace(service, {
+        welcomeContent: welcomeContent ?? createStoryWelcomeContent(() => service),
+        composerLocked: true,
+      });
+      placeholder(true);
+      context.onCleanup(() => {
+        unsubscribe();
+        patchConfigInPlace(service, { welcomeContent, composerLocked: wasLocked });
+        placeholder(wasLocked);
+      });
+    },
   },
   suggestions: {
     label: 'Suggestions',

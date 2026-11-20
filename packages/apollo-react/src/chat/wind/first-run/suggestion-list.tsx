@@ -16,7 +16,7 @@ export function SuggestionList({
   sendOnClick: boolean;
 } & Omit<PromptSuggestionsProps, 'suggestions' | 'onSelect' | 'density' | 'strings'>) {
   const { _ } = useLingui();
-  const { spacing } = useChatState();
+  const { spacing, composerLocked } = useChatState();
   const select = useSuggestionSelect();
 
   return (
@@ -25,6 +25,7 @@ export function SuggestionList({
       suggestions={suggestions}
       density={spacing.compactMode ? 'compact' : 'comfortable'}
       onSelect={({ label, prompt }) => select({ label, prompt: prompt ?? label }, sendOnClick)}
+      disabled={composerLocked}
       strings={{
         label: _(msg({ id: 'autopilot-chat.message.suggestions-title', message: `Suggestions` })),
       }}

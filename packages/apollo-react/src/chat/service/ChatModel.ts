@@ -237,6 +237,7 @@ export interface AutopilotChatError {
  * @property {string} HistorySearch - Emitted when the history search is triggered (search for a conversation in the history list)
  * @property {string} SetResourceManager - Emitted when a resource manager is set for the variable picker
  * @property {string} SetReadOnly - Emitted when the read-only mode is set
+ * @property {string} SetComposerLocked - Emitted when the composer lock changes (payload: boolean)
  * @property {string} ResourceItemSelected - Emitted when a resource item is selected from the variable picker
  * @property {string} SpeechToTextToggle - Emitted when the STT dictate button is clicked (payload: boolean — new active state)
  * @property {string} SetSpeechToTextState - Emitted when the STT active state changes (payload: boolean)
@@ -280,6 +281,7 @@ export enum AutopilotChatEvent {
   SetCustomHeaderActions = 'setCustomHeaderActions',
   CustomHeaderActionClicked = 'customHeaderActionClicked',
   SetReadOnly = 'setReadOnly',
+  SetComposerLocked = 'setComposerLocked',
   SetResourceManager = 'setResourceManager',
   ResourceItemSelected = 'resourceItemSelected',
   SpeechToTextToggle = 'speechToTextToggle',
@@ -307,6 +309,8 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} ScrollToBottom - Emitted when the chat is scrolled to the bottom
  * @property {string} ToggleHistory - Emitted when the history is opened
  * @property {string} ToggleSettings - Emitted when the settings is opened
+ * @property {string} SetWelcomeContent - Emitted when `welcomeContent` is set or removed
+ *                                         (payload: whether it is set)
  * @property {string} UseLocalHistory - Emitted when the chat uses local history
  * @property {string} SetAllowedAttachments - Emitted when the allowed attachments are set
  * @property {string} ToggleAutoScroll - Emitted when the auto scroll is toggled
@@ -334,6 +338,7 @@ export enum AutopilotChatInternalEvent {
   ScrollToBottom = 'scrollToBottom',
   ToggleHistory = 'toggleHistory',
   ToggleSettings = 'toggleSettings',
+  SetWelcomeContent = 'setWelcomeContent',
   UseLocalHistory = 'useLocalHistory',
   SetAllowedAttachments = 'setAllowedAttachments',
   ToggleAutoScroll = 'toggleAutoScroll',
@@ -561,6 +566,10 @@ export enum AutopilotChatPreHookAction {
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to
  *                               render the settings page in the chat.
+ * @property welcomeContent - Wind renderer only. Renders host content into the first-run
+ *                            experience, under the welcome text.
+ * @property composerLocked - Wind renderer only. Whether the composer is locked: visible, but
+ *                            nothing can be typed, attached or sent.
  * @property paginatedHistory - Flag to determine if the chat history is paginated
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
  * @property theming - The theming of the chat (scroll appearance, chat menu, etc)
@@ -614,6 +623,20 @@ export interface AutopilotChatConfiguration {
   paginatedMessages?: boolean;
   paginatedHistory?: boolean;
   settingsRenderer?: (container: HTMLElement) => void;
+  /**
+   * Wind renderer only. Renders host content into the first-run experience, under the welcome
+   * text. Called with the same container each time the first-run experience shows; the container
+   * is emptied when it hides. May return a cleanup function, which runs before the container is
+   * emptied (unmount a React root there). Only setting or removing it updates a first-run
+   * experience that is showing; passing another function does not render again.
+   */
+  welcomeContent?: (container: HTMLElement) => void | (() => void);
+  /**
+   * Wind renderer only. Locks the composer: nothing can be typed, attached, picked from the
+   * suggestions or sent until it is unlocked, and the draft is kept. Unlike `readOnly`, the
+   * composer stays visible and the rest of the chat is unchanged. See `setComposerLocked`.
+   */
+  composerLocked?: boolean;
   paginatedResources?: boolean;
   resourceManager?: AutopilotChatResourceManager;
   theming?: {

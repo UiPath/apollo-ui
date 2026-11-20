@@ -96,6 +96,7 @@ export class AutopilotChatService {
   private _history: AutopilotChatHistory[] = [];
   private _historyOpen: boolean = false;
   private _settingsOpen: boolean = false;
+  private _composerLocked: boolean = false;
   private _activeConversationId: string | null = null;
   // Kept so a chat mounted after `setSuggestions` still shows them.
   private _suggestions: ChatSuggestionsSnapshot = NO_SUGGESTIONS_SNAPSHOT;
@@ -187,6 +188,8 @@ export class AutopilotChatService {
     this.getResourceManager = this.getResourceManager.bind(this);
     this.setReadOnly = this.setReadOnly.bind(this);
     this.getReadOnly = this.getReadOnly.bind(this);
+    this.setComposerLocked = this.setComposerLocked.bind(this);
+    this.getComposerLocked = this.getComposerLocked.bind(this);
   }
 
   static Instantiate({
@@ -336,6 +339,17 @@ export class AutopilotChatService {
     if (config.readOnly !== undefined) {
       this.setReadOnly(config.readOnly);
     }
+
+    // Presence only: the renderer itself is read when the first-run experience shows, so a host
+    // that passes a new function with every patch does not render its content again.
+    this._internalService.publish(
+      AutopilotChatInternalEvent.SetWelcomeContent,
+      !!config.welcomeContent
+    );
+
+    // The configuration decides the lock; `patchConfig` carries the one set by the setter. Read
+    // from the current configuration: a listener to the events above may have set it since.
+    this._applyComposerLocked(this._config.composerLocked ?? false);
 
     messageRenderers.forEach((renderer) => this.injectMessageRenderer(renderer));
   }
@@ -1273,6 +1287,38 @@ export class AutopilotChatService {
    */
   getReadOnly() {
     return this._config.readOnly ?? false;
+  }
+
+  /**
+   * Locks or unlocks the composer (Wind renderer only). While locked the composer stays visible
+   * but nothing can be typed, attached, picked from the suggestions or sent from the chat; the
+   * draft and its attachments are kept. `sendRequest` and `setPrompt` still work, and a reply can
+   * still be stopped. The lock stays until it is cleared, also across `newChat`.
+   * Publishes `SetComposerLocked` when the value changes.
+   *
+   * @param locked - Whether to lock the composer
+   */
+  setComposerLocked(locked: boolean) {
+    this._config.composerLocked = locked;
+    this._applyComposerLocked(locked);
+  }
+
+  /**
+   * Gets whether the composer is locked
+   *
+   * @returns Whether the composer is locked
+   */
+  getComposerLocked() {
+    return this._composerLocked;
+  }
+
+  private _applyComposerLocked(locked: boolean) {
+    if (this._composerLocked === locked) {
+      return;
+    }
+
+    this._composerLocked = locked;
+    this._eventBus.publish(AutopilotChatEvent.SetComposerLocked, locked);
   }
 
   /**

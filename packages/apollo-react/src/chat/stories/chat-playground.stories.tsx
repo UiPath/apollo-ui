@@ -44,9 +44,9 @@ const featureArgTypes = Object.fromEntries(
 const ARG_BEHAVIOUR = `
 Controls apply to the running chat through the service setters, without a new chat or a remount:
 
-- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), \`allowFeedbackChange\` (patchConfig), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`infoLinks\` (setInfoLinks), \`compactMode\` (patchConfig spacing), \`firstRunExperience\`, \`branding\`, \`brandingHeight\` and \`brandingImageOnly\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`autoScroll\` (toggleAutoScroll), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
+- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), \`allowFeedbackChange\` (patchConfig), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`infoLinks\` (setInfoLinks), \`compactMode\` (patchConfig spacing), \`firstRunExperience\`, \`branding\`, \`brandingHeight\` and \`brandingImageOnly\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`autoScroll\` (toggleAutoScroll), \`welcomeContent\` (patchConfig), \`composerLocked\` (setComposerLocked), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
 - **In place, with a chat added or removed**: \`renderer\`. Switching between wind and material calls setRenderer on the same service and keeps the transcript. Choosing both adds a Material chat on its own service that copies the current transcript; leaving both removes it.
-- **Appends**: \`scenario\` scripts its traffic into the current transcript. Scenarios that need an empty transcript start a new chat first and say so: First-run experience, Long history with pagination. Changing scenario stops whatever the previous one still had scheduled (for example the rest of a stream).
+- **Appends**: \`scenario\` scripts its traffic into the current transcript. Scenarios that need an empty transcript start a new chat first and say so: First-run experience, Welcome form with a locked composer, Long history with pagination. Changing scenario stops whatever the previous one still had scheduled (for example the rest of a stream).
 - **Remounts**: nothing driven by a control. Storybook's Remount button and the locale toolbar (which remounts every story) are the full reset: the chat keeps its service instance and starts it over from the story's controls.
 
 Closing a chat leaves an **Open chat** button where the host would put its launcher; it reopens in the selected \`mode\`.
@@ -155,6 +155,18 @@ const meta = {
         'Passes an empty title, description and suggestions, so the first run is the image alone. With no image, or one that cannot be shown, no first run shows.',
       table: { category: 'Branding' },
     },
+    welcomeContent: {
+      control: 'boolean',
+      description:
+        'Wind only. Sets a welcomeContent that mounts a host form (a React root) under the welcome text of the first-run experience. Submitting the form unlocks the composer on the service; this page does not write that back to the composerLocked control.',
+      table: { category: 'Welcome slot' },
+    },
+    composerLocked: {
+      control: 'boolean',
+      description:
+        'Wind only. setComposerLocked: the composer stays visible but nothing can be typed, attached, picked from the suggestions or sent. The draft is kept.',
+      table: { category: 'Welcome slot' },
+    },
     title: { control: 'text', table: { category: 'Labels' } },
     inputPlaceholder: { control: 'text', table: { category: 'Labels' } },
     footerDisclaimer: { control: 'text', table: { category: 'Labels' } },
@@ -204,6 +216,8 @@ const meta = {
     branding: 'none',
     brandingHeight: 0,
     brandingImageOnly: false,
+    welcomeContent: false,
+    composerLocked: false,
     disableClose: 'unset',
     ...featureArgs,
     title: '',
@@ -253,6 +267,17 @@ export const InfoLinks: Story = {
       { label: 'Chat history policy', url: 'https://example.com/chat-history' },
     ],
   },
+  parameters: { sbdiff: { delayMs: 1500 } },
+};
+
+/**
+ * A host form in the first-run experience with the composer locked until it is submitted. Wind
+ * renders both; Material ignores them.
+ */
+export const WelcomeForm: Story = {
+  name: 'Welcome form',
+  args: { renderer: 'both', scenario: 'welcome-form' },
+  // Material mounts after the story reports rendered.
   parameters: { sbdiff: { delayMs: 1500 } },
 };
 

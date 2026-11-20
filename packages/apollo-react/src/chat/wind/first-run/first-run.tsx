@@ -13,17 +13,21 @@ import { useLoading } from '../../headless/providers/loading-provider';
 import { ThinkingRow } from '../messages/thinking-row';
 import { HeroBranding, useHeroImage } from './hero-branding';
 import { SuggestionList } from './suggestion-list';
+import { WelcomeContent } from './welcome-content';
 
 /**
  * Whether the first-run experience shows in Wind: the shared selector, or an image the hero can
- * show on an empty conversation, but not while a conversation is loading, where the skeleton
- * shows instead.
+ * show or host `welcomeContent` on an empty conversation, but not while a conversation is
+ * loading, where the skeleton shows instead.
  */
 export function useFirstRunShown() {
-  const { firstRunVisible, firstRunExperience, hasMessages } = useChatState();
+  const { firstRunVisible, firstRunExperience, hasWelcomeContent, hasMessages } = useChatState();
   const { skeletonLoader } = useLoading();
   const image = useHeroImage(firstRunExperience?.image);
-  return (firstRunVisible || (!hasMessages && image !== undefined)) && !skeletonLoader;
+  return (
+    (firstRunVisible || (!hasMessages && (image !== undefined || hasWelcomeContent))) &&
+    !skeletonLoader
+  );
 }
 
 // Keeps the chip that takes keyboard focus in view inside the sideways-scrolling row.
@@ -52,7 +56,7 @@ export function FirstRun({
   wrapperClassName?: string;
   children?: React.ReactNode;
 }) {
-  const { firstRunExperience, spacing } = useChatState();
+  const { firstRunExperience, spacing, composerLocked } = useChatState();
   const { showLoading } = useLoading();
   const shown = useFirstRunShown();
   const density = spacing.compactMode ? 'compact' : 'comfortable';
@@ -73,7 +77,9 @@ export function FirstRun({
           <ChatHeroDescription>{firstRunExperience?.description}</ChatHeroDescription>
         </ChatHeroHeader>
       )}
-      {shown && suggestions.length > 0 && (
+      {shown && <WelcomeContent />}
+      {/* Hidden while the composer is locked: they return once the host unlocks it. */}
+      {shown && !composerLocked && suggestions.length > 0 && (
         <SuggestionList
           suggestions={suggestions}
           sendOnClick={firstRunExperience?.sendOnClick ?? false}

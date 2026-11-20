@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { publishChatEvent } from '../headless/utils/publish-chat-event';
@@ -44,6 +45,8 @@ const baseProps = (): ChatPlaygroundProps => ({
   customHeaderActions: false,
   preHooks: false,
   autoScroll: true,
+  welcomeContent: false,
+  composerLocked: false,
   scenario: 'none',
   autoReply: 'off',
   streamDelayMs: 1,
@@ -239,6 +242,27 @@ describe('ChatPlayground', () => {
       expect(firstRun?.description).toBe('');
       expect(firstRun?.suggestions).toEqual([]);
     }
+  });
+
+  it('mounts a form in the welcome content and unlocks the composer on submit', async () => {
+    render(<ChatPlayground {...baseProps()} firstRunExperience scenario="welcome-form" />);
+    await flush();
+    const service = slotService('primary');
+    const composer = () => screen.getByRole('textbox', { name: 'Message' });
+
+    expect(service?.getComposerLocked()).toBe(true);
+    expect(composer()).toBeDisabled();
+    expect(composer()).toHaveAttribute('placeholder', 'Fill in the form above to start');
+
+    const form = screen.getByRole('form', { name: 'Agent inputs' });
+    await userEvent.type(within(form).getByRole('textbox', { name: 'Customer' }), 'Contoso');
+    await userEvent.click(within(form).getByRole('button', { name: 'Start' }));
+    await flush();
+
+    expect(service?.getComposerLocked()).toBe(false);
+    expect(composer()).toBeEnabled();
+    expect(composer()).toHaveFocus();
+    expect(screen.queryByRole('form', { name: 'Agent inputs' })).toBeNull();
   });
 
   it('reuses its service across remounts and starts it over', async () => {
