@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.37.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.37.0...@uipath/apollo-react@7.37.1) (2026-11-20)
+
+### Bug Fixes
+
+* **apollo-react:** hint the read view's citation keys and word citation names as a select [ECS-2220] ([d6c47b6](https://github.com/UiPath/apollo-ui/commit/d6c47b628deee2d6ef728a504cf640211ddfba57))
+
 ## [@uipath/apollo-react-v7.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.36.0...@uipath/apollo-react@7.37.0) (2026-11-19)
 
 ### Features
