@@ -453,6 +453,21 @@ describe('DecisionText', () => {
       );
     });
 
+    it("opens a named rule's card with its name as a bold title, and a blank name with none", () => {
+      const names = ['Terminal: confirmed sanctions match', '  ', ''];
+      renderView({
+        rules: MULTI_SENTENCE_RULES.map((rule, index) => ({ ...rule, name: names[index] })),
+      });
+      const title = card('m1').querySelector('[data-rule-title]');
+      expect(title).toHaveTextContent('Terminal: confirmed sanctions match');
+      expect(title).toHaveClass('font-semibold');
+      const surface = card('m1').firstElementChild;
+      expect([...(surface?.children ?? [])].find((child) => child.tagName !== 'SPAN')).toBe(title);
+      expect(card('m2').querySelector('[data-rule-title]')).toBeNull();
+      expect(card('m3').querySelector('[data-rule-title]')).toBeNull();
+      expect(card('m4').querySelector('[data-rule-title]')).toBeNull();
+    });
+
     it('shows an empty output as a value to set', () => {
       renderView();
       expect(valueChip('m2', 'reason')).toHaveTextContent('Set a value');

@@ -9,6 +9,9 @@ import type {
 } from './sentenceTypes';
 
 /** Most value tokens one line renders before the rest collapse into a count. */
+/** A rule's name as its card's title, or `null` when it is blank. */
+export const ruleTitleOf = (rule: SentenceRule): string | null => rule.name?.trim() || null;
+
 export const SENTENCE_LINE_VALUE_LIMIT = 20;
 
 /** Values a clamped line keeps shown on each side of a changed value. */
