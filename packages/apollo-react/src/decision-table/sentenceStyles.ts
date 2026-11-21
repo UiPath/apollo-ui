@@ -8,6 +8,8 @@ const DECISION_TEXT_SURFACE_CLASS = cn(
 
 export const TEXT_COLUMN_CLASS = 'mx-auto w-full max-w-3xl';
 
+export const NUMBER_MARGIN_CLASS = 'px-[calc(var(--sentence-number-digits,1)*1ch+1.75rem)]';
+
 export const DECISION_TEXT_FRAME_CLASS = cn(
   'min-h-0 flex-1 overflow-auto',
   DECISION_TEXT_SURFACE_CLASS
@@ -17,14 +19,14 @@ export const DECISION_TEXT_FRAME_CLASS = cn(
 export const DECISION_TEXT_INLINE_FRAME_CLASS = DECISION_TEXT_SURFACE_CLASS;
 
 export const DECISION_TEXT_HEADER_CLASS =
-  'group/header sticky top-0 z-2 flex flex-wrap items-center gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
+  'group/header sticky top-0 z-2 flex flex-wrap items-center gap-x-2 rounded-t-[9px] border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
 
 export const HEADER_LABEL_CLASS = 'font-semibold';
 
-export const GUTTER_CLASS = 'pe-8 ps-[max(2rem,calc(var(--sentence-number-digits,0)*1ch+1.25rem))]';
+export const GUTTER_CLASS = 'px-[var(--sentence-gutter,0.875rem)]';
 
 export const DECISION_TEXT_BANDS_CLASS = cn(
-  'grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-x-2 gap-y-2 pt-3 pb-6',
+  'grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-x-2 gap-y-2 pt-3.5 pb-4',
   GUTTER_CLASS
 );
 
@@ -102,7 +104,7 @@ export const ROW_SURFACE_CLASS = cn(
 );
 
 export const ROW_NUMBER_CLASS =
-  'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm';
+  'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100';
 
 export const LINE_CLASS = cn(
   'flex min-h-[var(--sentence-line)] items-start gap-2',
@@ -158,8 +160,10 @@ export const TOKEN_KIND_CLASS = {
   value: 'rounded font-medium text-foreground not-data-[tone]:hover:bg-background-hover',
 } as const;
 
-export const EDITABLE_VALUE_CLASS =
-  'data-[tone=warning]:underline data-[tone=warning]:decoration-wavy data-[tone=warning]:decoration-1 data-[tone=warning]:underline-offset-[3px] data-[tone=warning]:decoration-[var(--color-warning-icon)]';
+export const EDITABLE_VALUE_CLASS = cn(
+  'data-[tone=warning]:underline data-[tone=warning]:decoration-wavy data-[tone=warning]:decoration-1 data-[tone=warning]:underline-offset-[3px] data-[tone=warning]:decoration-[var(--color-warning-icon)]',
+  'group-data-[editable=true]/row:underline group-data-[editable=true]/row:decoration-wavy group-data-[editable=true]/row:decoration-1 group-data-[editable=true]/row:underline-offset-[3px] group-data-[editable=true]/row:decoration-[var(--color-warning-icon)]'
+);
 
 export const OUTPUT_VALUE_CLASS =
   'inline-flex items-center rounded-md border border-[color-mix(in_srgb,var(--sentence-output-hue)_35%,transparent)] bg-[color-mix(in_srgb,var(--sentence-output-hue)_8%,var(--color-background))] px-1.5 text-sm leading-[calc(var(--sentence-line)-4px)] font-medium text-[var(--sentence-output-hue)] hover:border-[var(--sentence-output-hue)]';
@@ -283,7 +287,7 @@ export const REMOVE_CONDITIONS_CLASS =
   'absolute end-0 top-0.5 flex opacity-0 group-hover/clause:opacity-100 group-has-[[data-selected]]/row:opacity-100 group-focus-within/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
 export const REMOVE_CONDITION_CLASS =
-  'size-5 shrink-0 text-foreground-disable hover:text-foreground';
+  'size-5 shrink-0 text-foreground-de-emp hover:text-foreground';
 
 export const ADD_RULE_LINK_CLASS = 'h-auto w-fit gap-1 rounded-md px-2 py-1.5 [&_svg]:size-3.5';
 

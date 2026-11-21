@@ -252,9 +252,12 @@ describe('DecisionGraphText', () => {
     );
   });
 
-  it("clips an open body to its card's rounded bottom", () => {
+  it("rounds an open body to its card's bottom without clipping the rule numbers beside its cards", () => {
     render(graph({ expansion: held(new Set(['risk'])) }));
-    expect(body('risk')).toHaveClass('overflow-clip', 'rounded-b-[9px]');
+    expect(body('risk')).toHaveClass('rounded-b-[9px]');
+    expect(body('risk')).not.toHaveClass('overflow-clip');
+    expect(body('risk')?.querySelector('[class*="--sentence-gutter:0px"]')).not.toBeNull();
+    expect(body('risk')?.querySelector('[class*="sentence-number-digits,1"]')).toBeNull();
   });
 
   it.each([

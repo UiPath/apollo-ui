@@ -11,6 +11,7 @@ import {
   columnNameOf,
   isOutcome,
   partsText,
+  ruleTitleOf,
   SENTENCE_LINE_VALUE_LIMIT,
   stopTokensOf,
 } from './sentenceParts';
@@ -245,6 +246,7 @@ export const ruleCardModel = ({
     number: numbered ? number : null,
     changeStatus,
     ariaLabel: [
+      ruleTitleOf(rule) ?? '',
       changeStatus,
       numbered && number !== null ? String(number) : '',
       shownLineText(rule.heading, labels, changed),

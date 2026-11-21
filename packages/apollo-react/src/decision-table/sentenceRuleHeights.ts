@@ -49,9 +49,3 @@ export const SENTENCE_LIST_STYLE: SentenceListStyle = {
   '--sentence-lines-gap': `${SENTENCE_LINES_GAP_PX}px`,
   '--sentence-row-gap': `${SENTENCE_RULE_GAP_PX}px`,
 };
-
-/** The list's geometry, and the width of its rule numbers when they show. */
-export const sentenceListStyle = (numbered: boolean, ruleCount: number): SentenceListStyle =>
-  numbered
-    ? { ...SENTENCE_LIST_STYLE, '--sentence-number-digits': String(ruleCount).length }
-    : SENTENCE_LIST_STYLE;

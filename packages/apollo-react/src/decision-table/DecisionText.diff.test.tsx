@@ -427,14 +427,6 @@ describe('DecisionText diff', () => {
     expect(card).toHaveAccessibleDescription('Warning: Overlaps rule 4');
   });
 
-  it('widens the start gutter for three-digit rule numbers in a diff, so their chips stay inside the view', () => {
-    const { rules, diff } = largeDiffTable(300);
-    renderDiff({ mode: 'compact', ...diff }, { rules });
-    expect(screen.getByTestId('nl-bands').style.getPropertyValue('--sentence-number-digits')).toBe(
-      '3'
-    );
-  });
-
   it('folds unchanged rules in compact mode and opens a fold by mouse, keeping each number', async () => {
     const user = userEvent.setup();
     const { rules, diff } = largeDiffTable(300);

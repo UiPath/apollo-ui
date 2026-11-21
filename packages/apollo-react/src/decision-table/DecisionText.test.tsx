@@ -463,6 +463,10 @@ describe('DecisionText', () => {
       expect(title).toHaveClass('font-semibold');
       const surface = card('m1').firstElementChild;
       expect([...(surface?.children ?? [])].find((child) => child.tagName !== 'SPAN')).toBe(title);
+      expect(card('m1')).toHaveAccessibleName(
+        expect.stringMatching(/^Terminal: confirmed sanctions match Decision is "approve"/)
+      );
+      expect(card('m2')).toHaveAccessibleName(expect.stringMatching(/^Decision is /));
       expect(card('m2').querySelector('[data-rule-title]')).toBeNull();
       expect(card('m3').querySelector('[data-rule-title]')).toBeNull();
       expect(card('m4').querySelector('[data-rule-title]')).toBeNull();
@@ -1767,7 +1771,7 @@ describe('DecisionText', () => {
   });
 
   describe('band lists', () => {
-    it('underlines every input and output name with a wave, and values only on a warning', () => {
+    it('underlines every input and output name with a wave, and values while editable or on a warning', () => {
       const waved = (kind: string) =>
         [...document.querySelectorAll(`[data-kind="${kind}"]`)].map(
           (token) =>
@@ -1789,8 +1793,11 @@ describe('DecisionText', () => {
       }
       expect(Math.max(...perCell.values())).toBeGreaterThan(1);
       expect(
-        conditionValues.every((value) =>
-          value.classList.contains('data-[tone=warning]:decoration-wavy')
+        conditionValues.every(
+          (value) =>
+            value.classList.contains('data-[tone=warning]:decoration-wavy') &&
+            value.classList.contains('group-data-[editable=true]/row:decoration-wavy') &&
+            value.closest('[data-editable="true"]') !== null
         )
       ).toBe(true);
       expect(document.querySelectorAll('[data-editable="true"]').length).toBeGreaterThan(0);
@@ -1801,11 +1808,40 @@ describe('DecisionText', () => {
       expect(document.querySelectorAll('[data-editable]')).toHaveLength(0);
     });
 
-    it('keeps the start gutter at its minimum outside a diff, with no rule numbers to fit', () => {
-      renderView({ rules: manySentenceRules(300) });
-      expect(
-        screen.getByTestId('nl-bands').style.getPropertyValue('--sentence-number-digits')
-      ).toBe('');
+    it("shows a rule's number beside its card only while the card is hovered or focused, with no grip", () => {
+      renderView({ numbered: true, edit: editWith(), selected: null, onSelect: vi.fn() });
+      const number = card('m3').firstElementChild?.firstElementChild;
+      expect(number).toHaveTextContent(/^3$/);
+      expect(number).toHaveClass(
+        'opacity-0',
+        'group-hover/row:opacity-100',
+        'group-focus-within/row:opacity-100'
+      );
+      expect(document.querySelector('.lucide-grip-vertical, [data-grip]')).toBeNull();
+    });
+
+    it('pads its scroll frame by the widest rule number, so every number beside a card stays inside it', () => {
+      renderView({ rules: manySentenceRules(300), numbered: true });
+      const frame = screen.getByTestId('nl');
+      expect(frame.style.getPropertyValue('--sentence-number-digits')).toBe('3');
+      expect(frame).toHaveClass('px-[calc(var(--sentence-number-digits,1)*1ch+1.75rem)]');
+    });
+
+    it('keeps that margin when an ancestor scrolls it', () => {
+      renderView({
+        rules: manySentenceRules(300),
+        numbered: true,
+        scroll: { container: document.createElement('div') },
+      });
+      const frame = screen.getByTestId('nl');
+      expect(frame.style.getPropertyValue('--sentence-number-digits')).toBe('3');
+      expect(frame).toHaveClass('px-[calc(var(--sentence-number-digits,1)*1ch+1.75rem)]');
+    });
+
+    it('lines the rule cards up with the band captions, the graph card owning the side margin', () => {
+      renderView({ numbered: true });
+      expect(screen.getByTestId('nl-bands')).toHaveClass('px-[var(--sentence-gutter,0.875rem)]');
+      expect(card('m3').parentElement).toHaveClass('px-[var(--sentence-gutter,0.875rem)]');
     });
 
     it('draws band column chips 24px tall in extra-small text', () => {
@@ -5095,7 +5131,7 @@ describe('DecisionText', () => {
         expect(reveal?.className).toContain('group-hover/clause:opacity-100');
         expect(reveal?.className).toContain('group-has-[[data-selected]]/row:opacity-100');
         expect(reveal?.className).not.toContain('group-hover/row');
-        expect(removes[0]).toHaveClass('text-foreground-disable');
+        expect(removes[0]).toHaveClass('text-foreground-de-emp');
         expect(reveal?.closest('.group\\/clause')).toBe(line);
       }
     });
