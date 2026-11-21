@@ -33,7 +33,7 @@ const leaf = (id: string, label: string): DecisionGraphNode => ({
 const NODES = [leaf('a', 'A'), leaf('b', 'B')];
 const move: Action = { kind: 'move', onMove: () => {} };
 const rename: Action = { kind: 'rename', onRename: () => {} };
-const note: Action = { kind: 'addNote', onAddNote: () => {} };
+const inputs: Action = { kind: 'chooseInputs', onChooseInputs: () => {} };
 
 const activeTestId = () => document.activeElement?.getAttribute('data-testid') ?? null;
 
@@ -49,11 +49,11 @@ describe('controls', () => {
     await userEvent.keyboard('{Escape}');
     expect(activeTestId()).toBe('graph-toggle-a');
   });
-  it('cancelling the note dialog returns focus to the heading', async () => {
-    render(graph(editMode([note, move]), NODES));
+  it('cancelling the links dialog returns focus to the heading', async () => {
+    render(graph(editMode([inputs, move]), NODES));
     await userEvent.click(screen.getByTestId('graph-menu-a'));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Add note' }));
-    await userEvent.click(await screen.findByTestId('graph-note-dialog-cancel'));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Choose inputs' }));
+    await userEvent.click(await screen.findByTestId('graph-links-dialog-cancel'));
     expect(activeTestId()).toBe('graph-toggle-a');
   });
 });

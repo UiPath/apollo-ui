@@ -80,7 +80,7 @@ export interface DecisionGraphTextProps<Refusal, Logic, Op, Policy, Total, Type,
   onOpenDecision?: (decisionId: string) => void;
   /** A table's rules as its body words them, which the minimap lists and searches by outputs and conditions; read only while it is open, and without it the minimap lists decisions alone. */
   rules?: DecisionGraphMinimapSlotProps['rules'];
-  /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-menu-{id}`, `-reference-menu-{id}`, `-name-{id}-input`, `-add-decision`, `-delete-dialog`, `-links-dialog`, `-note-dialog`, `-live`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-decision-{id}`, `-row-rule-{id}-{rowId}`, `-row-reference-{id}`, `-no-match`). */
+  /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-menu-{id}`, `-reference-menu-{id}`, `-name-{id}-input`, `-add-decision`, `-delete-dialog`, `-links-dialog`, `-live`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-decision-{id}`, `-row-rule-{id}-{rowId}`, `-row-reference-{id}`, `-no-match`). */
   dataTestId: string;
 }
 

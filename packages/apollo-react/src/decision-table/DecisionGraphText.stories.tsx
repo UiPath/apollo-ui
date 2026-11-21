@@ -135,7 +135,6 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
     if (second) decisions.set(second, [{ kind: 'box', page: 3, box }]);
     return { kind: 'cited', decisions, onOpenCitation: setOpenedCitation };
   }, [cited, nodes]);
-  const notes = [...model.decisions.values()].reduce((count, { notes }) => count + notes.length, 0);
 
   const isTableNow = (decisionId: string) =>
     model.decisions.get(decisionId)?.node.logic.kind === 'table';
@@ -252,8 +251,8 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
         {revealed
           ? `${revealed.decisionId} / ${revealed.kind === 'rule' ? revealed.rowId : 'decision'}`
           : 'none'}{' '}
-        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'} · Notes: {notes}{' '}
-        · Source: {openedCitation ? `page ${openedCitation.page}` : 'none'}
+        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'} · Source:{' '}
+        {openedCitation ? `page ${openedCitation.page}` : 'none'}
       </p>
       <p className="text-xs text-foreground-de-emp">{caption}</p>
       <p className="text-xs text-foreground-de-emp">

@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
   Label,
-  Textarea,
 } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useId, useState } from 'react';
@@ -162,61 +161,6 @@ export const DecisionGraphLinksDialog: React.FC<DecisionGraphLinksDialogProps> =
             {labels.cancel}
           </Button>
           <Button onClick={save} data-testid={`${dataTestId}-save`}>
-            {labels.save}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-export interface DecisionGraphNoteDialogProps extends DialogBase {
-  name: string;
-  onSave: (text: string) => void;
-}
-
-/** Writes a note on a decision. */
-export const DecisionGraphNoteDialog: React.FC<DecisionGraphNoteDialogProps> = ({
-  labels,
-  refusal,
-  onClose,
-  onCloseAutoFocus,
-  name,
-  onSave,
-  dataTestId,
-}) => {
-  const idPrefix = useId();
-  const [text, setText] = useState('');
-  const title = labels.noteTitle(name);
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        showCloseButton={false}
-        onCloseAutoFocus={onCloseAutoFocus}
-        aria-describedby={undefined}
-        data-testid={dataTestId}
-      >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <Textarea
-          aria-label={title}
-          aria-invalid={refusal !== null || undefined}
-          aria-describedby={refusal === null ? undefined : `${idPrefix}-refusal`}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          data-testid={`${dataTestId}-text`}
-        />
-        <Refusal refusal={refusal} id={`${idPrefix}-refusal`} />
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} data-testid={`${dataTestId}-cancel`}>
-            {labels.cancel}
-          </Button>
-          <Button
-            disabled={text.trim() === ''}
-            onClick={() => onSave(text.trim())}
-            data-testid={`${dataTestId}-save`}
-          >
             {labels.save}
           </Button>
         </DialogFooter>

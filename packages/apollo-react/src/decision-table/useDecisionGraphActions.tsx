@@ -2,11 +2,7 @@ import type React from 'react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { NEAREST } from './constants';
 import type { DecisionGraphCardActions, DecisionGraphNodeActions } from './DecisionGraphCard';
-import {
-  DecisionGraphDeleteDialog,
-  DecisionGraphLinksDialog,
-  DecisionGraphNoteDialog,
-} from './DecisionGraphDialogs';
+import { DecisionGraphDeleteDialog, DecisionGraphLinksDialog } from './DecisionGraphDialogs';
 import type {
   DecisionGraphActionKind,
   DecisionGraphActionLabels,
@@ -63,15 +59,14 @@ type Surface =
       links: DecisionGraphLinkKind;
       decisionId: string;
       refusal: string | null;
-    }
-  | { kind: 'note'; decisionId: string; refusal: string | null };
+    };
 
 const NONE: Surface = { kind: 'none' };
 
 /** The action an open surface proposes through. */
 const kindOf = (surface: Exclude<Surface, { kind: 'none' }>): DecisionGraphActionKind => {
   if (surface.kind === 'links') return surface.links;
-  return surface.kind === 'note' ? 'addNote' : surface.kind;
+  return surface.kind;
 };
 
 export interface DecisionGraphActionsParams<Refusal, Logic> {
@@ -273,7 +268,6 @@ export const useDecisionGraphActions = <Refusal, Logic>({
       confirmDelete: () =>
         setSurface({ kind: 'delete', decisionId, neighbour: neighbourOf(position), refusal: null }),
       chooseLinks: (links) => setSurface({ kind: 'links', links, decisionId, refusal: null }),
-      writeNote: () => setSurface({ kind: 'note', decisionId, refusal: null }),
       changeLogic: actionOf(actions, 'changeLogic'),
     };
   };
@@ -410,22 +404,6 @@ export const useDecisionGraphActions = <Refusal, Logic>({
             else refuse(refusal);
           }}
           dataTestId={`${dataTestId}-delete-dialog`}
-        />
-      );
-    }
-    if (surface.kind === 'note') {
-      const note = actionOf(actions, 'addNote');
-      return (
-        <DecisionGraphNoteDialog
-          {...base}
-          name={open.label}
-          onSave={(text) => {
-            if (!note) return;
-            const refusal = tried(note.onAddNote(decisionId, text));
-            if (refusal === null) close();
-            else refuse(refusal);
-          }}
-          dataTestId={`${dataTestId}-note-dialog`}
         />
       );
     }

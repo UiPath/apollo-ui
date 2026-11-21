@@ -436,19 +436,6 @@ describe('DecisionGraphText actions', () => {
     expect(onChangeLogic).toHaveBeenCalledWith('risk', 'literal');
   });
 
-  it('adds a note once it has text', async () => {
-    const onAddNote = vi.fn();
-    render(graph([{ kind: 'addNote', onAddNote }]));
-    await openMenu('graph-menu-risk');
-    await pick('Add note');
-    const save = await screen.findByTestId('graph-note-dialog-save');
-    expect(save).toBeDisabled();
-    await userEvent.type(screen.getByTestId('graph-note-dialog-text'), '  Checked in March ');
-    await userEvent.click(save);
-    expect(onAddNote).toHaveBeenCalledWith('risk', 'Checked in March');
-    expect(screen.queryByTestId('graph-note-dialog')).toBeNull();
-  });
-
   it('lists the keys a heading answers to', () => {
     render(
       graph(
@@ -476,7 +463,6 @@ describe('DecisionGraphText actions', () => {
       { kind: 'chooseUsers', onChooseUsers: vi.fn() },
       { kind: 'stopUsing', onStopUsing: vi.fn() },
       { kind: 'move', onMove: vi.fn() },
-      { kind: 'addNote', onAddNote: vi.fn() },
     ];
     const { container } = render(graph(actions));
     expect(await axe(container)).toHaveNoViolations();

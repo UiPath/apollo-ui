@@ -46,7 +46,6 @@ export interface DecisionGraphMenuHandlers<Refusal, Logic> {
   startRename: () => void;
   confirmDelete: () => void;
   chooseLinks: (kind: DecisionGraphLinkKind) => void;
-  writeNote: () => void;
   changeLogic: Extract<DecisionGraphAction<Refusal, Logic>, { kind: 'changeLogic' }> | undefined;
 }
 
@@ -165,7 +164,6 @@ const addEntriesOf = <Refusal, Logic>(
 
 const CARD_KINDS: readonly DecisionGraphActionKind[] = [
   'rename',
-  'addNote',
   'add',
   'chooseInputs',
   'chooseUsers',
@@ -212,7 +210,7 @@ export const hasReferenceEntries = <Refusal, Logic>(
   offersStopUsing(actions, position) ||
   canMove(actions, node, position, false);
 
-/** A decision card's menu: open, rename, note and logic; then add; then links; then moves; then delete. */
+/** A decision card's menu: open, rename and logic; then add; then links; then moves; then delete. */
 export const decisionEntriesOf = <Refusal, Logic>(
   actions: readonly DecisionGraphAction<Refusal, Logic>[],
   labels: DecisionGraphActionLabels,
@@ -236,7 +234,6 @@ export const decisionEntriesOf = <Refusal, Logic>(
             },
           ]
         : []),
-      ...(has('addNote') ? [{ label: labels.addNote, onClick: handlers.writeNote }] : []),
       ...(changeLogic
         ? changeLogic.logicOptions(decisionId).map((option) => ({
             label: labels.changeLogicTo(option.label),

@@ -48,19 +48,6 @@ describe('host withdraws the action of an open surface', () => {
     expect(screen.queryByTestId('graph-delete-dialog')).toBeNull();
   });
 
-  it('closes the note dialog once the host no longer offers notes', async () => {
-    const { rerender } = render(graph([{ kind: 'addNote', onAddNote: () => {} }, move], NODES));
-    await userEvent.click(screen.getByTestId('graph-menu-a'));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Add note' }));
-    expect(await screen.findByTestId('graph-note-dialog')).toBeTruthy();
-    rerender(graph([move], NODES));
-    const text = screen.queryByTestId('graph-note-dialog-text');
-    if (text) await userEvent.type(text, 'hello');
-    const save = screen.queryByTestId('graph-note-dialog-save');
-    if (save) await userEvent.click(save);
-    expect(screen.queryByTestId('graph-note-dialog')).toBeNull();
-  });
-
   it('does not reopen a withdrawn rename field when the host offers rename again', async () => {
     const rename: Action = { kind: 'rename', onRename: () => {} };
     const { rerender } = render(graph([rename, move], NODES));

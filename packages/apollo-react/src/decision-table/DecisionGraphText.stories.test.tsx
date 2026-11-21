@@ -286,7 +286,6 @@ describe('DecisionGraphText stories', () => {
 
     it.each([
       ['Choose inputs', 'dialog'],
-      ['Add note', 'dialog'],
       ['Delete', 'alertdialog'],
     ] as const)('moves focus into the dialog %s opens from the menu, and back to the heading', async (name, role) => {
       render(<Default />);

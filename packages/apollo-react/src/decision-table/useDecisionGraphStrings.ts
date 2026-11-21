@@ -92,7 +92,6 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
       rename: _({ id: 'decision-graph.rename', message: 'Rename' }),
       nameField: (name) =>
         _({ id: 'decision-graph.name_field', message: 'Name of {name}', values: { name } }),
-      addNote: _({ id: 'decision-graph.add_note', message: 'Add note' }),
       changeLogicTo: (logic) =>
         _({
           id: 'decision-graph.change_logic_to',
@@ -148,8 +147,6 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
         id: 'decision-graph.no_other_decisions',
         message: 'No other decisions',
       }),
-      noteTitle: (name) =>
-        _({ id: 'decision-graph.note_title', message: 'Note on {name}', values: { name } }),
     }),
     [_, markStatus, openCitation, citationPage]
   );

@@ -34,7 +34,6 @@ const leaf = (id: string, label: string): DecisionGraphNode => ({
 const NODES = [leaf('a', 'A'), leaf('b', 'B')];
 const move: Action = { kind: 'move', onMove: () => {} };
 const rename: Action = { kind: 'rename', onRename: () => {} };
-const note: Action = { kind: 'addNote', onAddNote: () => {} };
 const inputs: Action = { kind: 'chooseInputs', onChooseInputs: () => {} };
 
 const activeTestId = () => document.activeElement?.getAttribute('data-testid') ?? null;
@@ -86,18 +85,6 @@ describe('focus when the host takes away what holds it', () => {
     expect(document.activeElement).not.toBe(document.body);
   });
 
-  it('keeps focus in the graph when the host deletes the decision of an open note dialog', async () => {
-    const { rerender } = render(graph(editMode([note, move]), NODES));
-    await userEvent.click(screen.getByTestId('graph-menu-a'));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Add note' }));
-    expect(await screen.findByTestId('graph-note-dialog')).toBeTruthy();
-    act(() => {
-      rerender(graph(editMode([note, move]), [leaf('b', 'B')]));
-    });
-    expect(screen.queryByTestId('graph-note-dialog')).toBeNull();
-    expect(document.activeElement).not.toBe(document.body);
-  });
-
   it('keeps focus in the graph when the host deletes the decision of an open links dialog', async () => {
     const { rerender } = render(graph(editMode([inputs, move]), NODES));
     await userEvent.click(screen.getByTestId('graph-menu-a'));
@@ -111,9 +98,9 @@ describe('focus when the host takes away what holds it', () => {
   });
 
   it('keeps focus in the graph when the host withdraws every action while a card menu is open', async () => {
-    const { rerender } = render(graph(editMode([note, move]), NODES));
+    const { rerender } = render(graph(editMode([inputs, move]), NODES));
     await userEvent.click(screen.getByTestId('graph-menu-a'));
-    expect(await screen.findByRole('menuitem', { name: 'Add note' })).toBeTruthy();
+    expect(await screen.findByRole('menuitem', { name: 'Choose inputs' })).toBeTruthy();
     act(() => {
       rerender(graph({ kind: 'read', selected: null }, NODES));
     });
