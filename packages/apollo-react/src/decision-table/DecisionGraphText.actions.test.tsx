@@ -82,7 +82,46 @@ describe('DecisionGraphText actions', () => {
 
   it('lists only the items whose callbacks the host passes', async () => {
     render(graph([{ kind: 'delete', onDelete: vi.fn() }]));
-    expect(itemNames(await openMenu('graph-menu-risk'))).toEqual(['DeleteDelete']);
+    expect(itemNames(await openMenu('graph-menu-risk'))).toEqual(['Delete decisionDelete']);
+  });
+
+  it('orders a nested decision menu as the design does', async () => {
+    render(
+      graph(
+        [
+          { kind: 'delete', onDelete: vi.fn() },
+          { kind: 'move', onMove: vi.fn() },
+          { kind: 'stopUsing', onStopUsing: vi.fn() },
+          { kind: 'chooseUsers', onChooseUsers: vi.fn() },
+          { kind: 'chooseInputs', onChooseInputs: vi.fn() },
+          { kind: 'add', onAdd: vi.fn() },
+          {
+            kind: 'changeLogic',
+            logicOptions: () => [{ logic: 'literal', label: 'Literal expression' }],
+            onChangeLogic: vi.fn(),
+          },
+          { kind: 'rename', onRename: vi.fn() },
+        ],
+        NODES,
+        vi.fn()
+      )
+    );
+    expect(itemNames(await openMenu('graph-menu-net-income'))).toEqual([
+      'Open decision',
+      'RenameF2',
+      'Change logic to Literal expression',
+      'Add decision before',
+      'Add decision after',
+      'Add required input',
+      'Choose inputs',
+      'Move upAlt+Shift+↑',
+      'Move downAlt+Shift+↓',
+      'Move under RiskAlt+Shift+→',
+      'Make top-levelAlt+Shift+←',
+      'Used by…',
+      'Stop using in Eligibility',
+      'Delete decisionDelete',
+    ]);
   });
 
   it('opens a decision from its menu', async () => {
@@ -318,7 +357,7 @@ describe('DecisionGraphText actions', () => {
         'Move upAlt+Shift+↑',
         'Move downAlt+Shift+↓',
         'Move under RiskAlt+Shift+→',
-        'Move out of EligibilityAlt+Shift+←',
+        'Make top-levelAlt+Shift+←',
       ]);
       expect(within(menu).getByRole('menuitem', { name: /Move down/ })).toHaveAttribute(
         'aria-disabled',
@@ -376,7 +415,7 @@ describe('DecisionGraphText actions', () => {
           { kind: 'delete', onDelete: vi.fn() },
         ])
       );
-      expect(itemNames(await openMenu('graph-menu-pricing'))).toEqual(['DeleteDelete']);
+      expect(itemNames(await openMenu('graph-menu-pricing'))).toEqual(['Delete decisionDelete']);
     });
 
     it('bounds the list of choices to the viewport so the buttons stay on screen', async () => {
@@ -410,13 +449,13 @@ describe('DecisionGraphText actions', () => {
       const onChooseUsers = vi.fn(() => 'loop');
       render(graph([{ kind: 'chooseUsers', onChooseUsers }]));
       await openMenu('graph-menu-risk');
-      await pick('Choose users');
+      await pick('Used by…');
       expect(screen.getByTestId('graph-links-dialog-option-eligibility')).toBeChecked();
       expect(screen.getByTestId('graph-links-dialog-option-pricing')).toBeChecked();
       await userEvent.click(screen.getByTestId('graph-links-dialog-save'));
       expect(onChooseUsers).not.toHaveBeenCalled();
       await openMenu('graph-menu-risk');
-      await pick('Choose users');
+      await pick('Used by…');
       await userEvent.click(screen.getByTestId('graph-links-dialog-option-net-income'));
       await userEvent.click(screen.getByTestId('graph-links-dialog-save'));
       expect(onChooseUsers).toHaveBeenCalledWith('risk', ['eligibility', 'pricing', 'net-income']);
@@ -434,19 +473,6 @@ describe('DecisionGraphText actions', () => {
     await pick('Change logic to Literal expression');
     expect(logicOptions).toHaveBeenCalledWith('risk');
     expect(onChangeLogic).toHaveBeenCalledWith('risk', 'literal');
-  });
-
-  it('adds a note once it has text', async () => {
-    const onAddNote = vi.fn();
-    render(graph([{ kind: 'addNote', onAddNote }]));
-    await openMenu('graph-menu-risk');
-    await pick('Add note');
-    const save = await screen.findByTestId('graph-note-dialog-save');
-    expect(save).toBeDisabled();
-    await userEvent.type(screen.getByTestId('graph-note-dialog-text'), '  Checked in March ');
-    await userEvent.click(save);
-    expect(onAddNote).toHaveBeenCalledWith('risk', 'Checked in March');
-    expect(screen.queryByTestId('graph-note-dialog')).toBeNull();
   });
 
   it('lists the keys a heading answers to', () => {
@@ -476,7 +502,6 @@ describe('DecisionGraphText actions', () => {
       { kind: 'chooseUsers', onChooseUsers: vi.fn() },
       { kind: 'stopUsing', onStopUsing: vi.fn() },
       { kind: 'move', onMove: vi.fn() },
-      { kind: 'addNote', onAddNote: vi.fn() },
     ];
     const { container } = render(graph(actions));
     expect(await axe(container)).toHaveNoViolations();

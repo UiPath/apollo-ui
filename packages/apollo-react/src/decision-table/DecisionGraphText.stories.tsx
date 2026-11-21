@@ -11,7 +11,11 @@ import {
   SHARED_DEPENDENCY,
   SINGLE_DECISION,
 } from './__fixtures__/decisionGraph.fixtures';
-import { type EditableTable, wordedRules } from './__fixtures__/editableSentences.fixtures';
+import {
+  type EditableTable,
+  RULE_KINDS_TABLE,
+  wordedRules,
+} from './__fixtures__/editableSentences.fixtures';
 import {
   fixtureActions,
   graphOf,
@@ -135,7 +139,6 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
     if (second) decisions.set(second, [{ kind: 'box', page: 3, box }]);
     return { kind: 'cited', decisions, onOpenCitation: setOpenedCitation };
   }, [cited, nodes]);
-  const notes = [...model.decisions.values()].reduce((count, { notes }) => count + notes.length, 0);
 
   const isTableNow = (decisionId: string) =>
     model.decisions.get(decisionId)?.node.logic.kind === 'table';
@@ -252,8 +255,8 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
         {revealed
           ? `${revealed.decisionId} / ${revealed.kind === 'rule' ? revealed.rowId : 'decision'}`
           : 'none'}{' '}
-        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'} · Notes: {notes}{' '}
-        · Source: {openedCitation ? `page ${openedCitation.page}` : 'none'}
+        · Opened: {opened ?? 'none'} · More properties: {moreProperties ?? 'none'} · Source:{' '}
+        {openedCitation ? `page ${openedCitation.page}` : 'none'}
       </p>
       <p className="text-xs text-foreground-de-emp">{caption}</p>
       <p className="text-xs text-foreground-de-emp">
@@ -287,6 +290,10 @@ const GRAPHS = {
   'not a table': {
     graph: NOT_A_TABLE,
     caption: "Discount rate is a literal expression, so its body is the host's own text.",
+  },
+  'rule kinds': {
+    graph: { nodes: SINGLE_DECISION.nodes, bodies: { risk: RULE_KINDS_TABLE } },
+    caption: 'A rule, a rule whose risk is not set yet, and a rule with no conditions.',
   },
   empty: { graph: EMPTY_GRAPH, caption: 'A graph with no decisions.' },
 } as const;

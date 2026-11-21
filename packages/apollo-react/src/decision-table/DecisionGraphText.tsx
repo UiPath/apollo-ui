@@ -11,7 +11,8 @@ import {
   DecisionGraphMinimapSlot,
   type DecisionGraphMinimapSlotProps,
 } from './DecisionGraphMinimapSlot';
-import { DecisionText, type DecisionTextProps } from './DecisionText';
+import { type DecisionTextProps, DecisionTextView, policyTitleOf } from './DecisionText';
+import { HitPolicyChip } from './DecisionTextHeader';
 import type { DecisionGraphMode } from './decisionGraphActionTypes';
 import {
   childPositionsOf,
@@ -40,7 +41,10 @@ import type {
   DecisionGraphNode,
   DecisionGraphTarget,
 } from './decisionGraphTypes';
+import { isComposing, isRedoKey, isUndoKey } from './gridEvents';
+import { policyHeaderOf } from './hitPolicyMenu';
 import { revealIn } from './revealIn';
+import { markSeverity } from './sentenceMarks';
 import { SENTENCE_MIN_RULE_HEIGHT_PX } from './sentenceRuleHeights';
 import { useDecisionGraphActions } from './useDecisionGraphActions';
 import { useDecisionGraphLabels } from './useDecisionGraphStrings';
@@ -55,7 +59,7 @@ export type DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> =
       kind: 'table';
       text: Omit<
         DecisionTextProps<Op, Policy, Total, Type, TextRefusal>,
-        'scroll' | 'onOpenDecision'
+        'scroll' | 'onOpenDecision' | 'name'
       >;
     }
   | { kind: 'other'; content: React.ReactNode };
@@ -199,7 +203,8 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
 >): React.ReactElement => {
   const labels = useDecisionGraphLabels();
   const { selected } = mode;
-  const { announce, region } = useTextAnnouncements(useDecisionTextLabels(), dataTestId);
+  const textLabels = useDecisionTextLabels();
+  const { announce, region } = useTextAnnouncements(textLabels, dataTestId);
   const idPrefix = useId();
   const [ownExpanded, setOwnExpanded] = useState(NO_EXPANDED);
   const expanded = expansion?.expanded ?? ownExpanded;
@@ -326,7 +331,11 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
   }, [scroller]);
 
   const perRuleHeight = perRuleHeightOf(heightsRef.current, ruleCounts);
-  const bodyOf = (decisionId: string, scrollContainer: HTMLElement): React.ReactNode => {
+  const bodyOf = (
+    decisionId: string,
+    scrollContainer: HTMLElement,
+    built: DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> | null
+  ): React.ReactNode => {
     const mounted =
       near === null ||
       near.has(decisionId) ||
@@ -334,11 +343,12 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
       decisionId === revealed ||
       decisionId === focused;
     if (mounted) {
-      const body = renderBody(decisionId, bodyContext);
+      const body = built ?? renderBody(decisionId, bodyContext);
       return body.kind === 'table' ? (
-        <DecisionText
+        <DecisionTextView
           {...body.text}
           scroll={{ container: scrollContainer }}
+          header={{ kind: 'card' }}
           onOpenDecision={bodyContext.revealDecision}
         />
       ) : (
@@ -349,6 +359,49 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
       heightsRef.current.get(decisionId) ??
       Math.max(1, ruleCounts.get(decisionId) ?? 1) * perRuleHeight;
     return <div aria-hidden data-graph-placeholder style={{ height }} />;
+  };
+  const tableTextOf = (body: DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> | null) =>
+    body?.kind === 'table' ? body.text : null;
+  const policyOf = (
+    decisionId: string,
+    text: ReturnType<typeof tableTextOf>,
+    hitPolicy: string
+  ): React.ReactNode => {
+    if (!text) return hitPolicy;
+    const { table, hitPolicies, mode: textMode } = text;
+    const hintId = `${idPrefix}-hint-${encodeURIComponent(decisionId)}`;
+    const chip = (
+      <>
+        <HitPolicyChip
+          title={policyTitleOf(hitPolicies, table.hitPolicy, textMode, textLabels, hitPolicy)}
+          describedBy={hintId}
+          labels={textLabels}
+          dataTestId={`${dataTestId}-${decisionId}`}
+        />
+        <span id={hintId} className="sr-only">
+          {policyHeaderOf(hitPolicies, table.hitPolicy).hint}
+        </span>
+      </>
+    );
+    if (textMode.kind !== 'edit') return chip;
+    return (
+      <span
+        className="contents"
+        onKeyDown={(event) => {
+          if (event.defaultPrevented || isComposing(event)) return;
+          const step = isRedoKey(event)
+            ? textMode.onRedo
+            : isUndoKey(event)
+              ? textMode.onUndo
+              : null;
+          if (!step) return;
+          event.preventDefault();
+          step();
+        }}
+      >
+        {chip}
+      </span>
+    );
   };
   const onFocus = (event: React.FocusEvent<HTMLElement>) => {
     const card = event.target instanceof Element ? event.target.closest('[data-graph-card]') : null;
@@ -420,27 +473,43 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
       );
     }
     const open = expanded.has(node.id);
+    const built = node.logic.kind === 'table' ? renderBody(node.id, bodyContext) : null;
+    const text = tableTextOf(built);
+    const textCitations = text?.citations;
+    const textMark = text?.headerMark;
+    const shown: DecisionGraphDecisionNode =
+      textMark && (!node.mark || markSeverity(textMark) > markSeverity(node.mark.mark))
+        ? { ...node, mark: { kind: 'decision', mark: textMark } }
+        : node;
     return (
       <>
         <DecisionGraphCard
-          node={node}
+          node={shown}
           depth={depth}
           open={open}
           active={selected === node.id}
           usedBy={(users.get(node.id) ?? []).map((user) => user.label)}
           bodyId={`${idPrefix}-${encodeURIComponent(node.id)}`}
-          body={open && scroller ? bodyOf(node.id, scroller) : null}
+          body={open && scroller ? bodyOf(node.id, scroller, built) : null}
+          policy={
+            node.logic.kind === 'table' ? policyOf(node.id, text, node.logic.hitPolicy) : null
+          }
           labels={labels}
           onToggle={() => toggle(node.id)}
           onShowProblem={(byKey) =>
             reveal({
-              ...markTargetOf(node),
+              ...markTargetOf(shown),
               mode: byKey ? { kind: 'navigate', focus: true, flash: true } : { kind: 'inPlace' },
             })
           }
           onOpen={openOf(node.id)}
           actions={actions.cardOf(node, position)}
-          citations={citationOf(citations, node.id)}
+          citations={
+            citationOf(citations, node.id) ??
+            (textCitations?.kind === 'cited' && textCitations.decision.length > 0
+              ? { citations: textCitations.decision, onOpen: textCitations.onOpenCitation }
+              : null)
+          }
           cardRef={cardRef(node.id)}
           dataTestId={dataTestId}
         />

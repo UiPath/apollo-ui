@@ -34,6 +34,8 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
           values: { from, to },
         }),
       addRule: _({ id: 'decision-text.add_rule', message: 'Add rule' }),
+      bandAddInput: _({ id: 'decision-text.band_add_input', message: 'Add input' }),
+      bandAddOutput: _({ id: 'decision-text.band_add_output', message: 'Add output' }),
       inputs: _({ id: 'decision-text.band_inputs', message: 'Inputs' }),
       outputs: _({ id: 'decision-text.band_outputs', message: 'Outputs' }),
       markStatus: (tone, message) =>
@@ -50,6 +52,33 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
           message: '{count, plural, other {+# more}}',
           values: { count },
         }),
+      searchInputs: (count) =>
+        _({
+          id: 'decision-text.search_inputs',
+          message: '{count, plural, one {Search # input} other {Search # inputs}}',
+          values: { count },
+        }),
+      searchOutputs: (count) =>
+        _({
+          id: 'decision-text.search_outputs',
+          message: '{count, plural, one {Search # output} other {Search # outputs}}',
+          values: { count },
+        }),
+      clearBandSearch: _({ id: 'decision-text.clear_band_search', message: 'Clear search' }),
+      moreWithErrors: (count) =>
+        _({
+          id: 'decision-text.more_with_errors',
+          message: '{count, plural, other {+# more, with errors}}',
+          values: { count },
+        }),
+      noMatchingInputs: _({
+        id: 'decision-text.no_matching_inputs',
+        message: 'No matching inputs',
+      }),
+      noMatchingOutputs: _({
+        id: 'decision-text.no_matching_outputs',
+        message: 'No matching outputs',
+      }),
       conditionVerdict: (isMatched) => (isMatched ? matched : notMatched),
       cell: (column, values, position) =>
         _({
@@ -58,6 +87,7 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
           values: { cell: [column, values].filter(Boolean).join(' '), position },
         }),
       emptyValue: _({ id: 'decision-text.empty_value', message: 'empty' }),
+      unsetOutput: _({ id: 'decision-text.unset_output', message: 'Set a value' }),
       pressEnterForSources: _({
         id: 'decision-text.press_enter_for_sources',
         message: "Press Enter to reach the rules' sources",
@@ -135,12 +165,6 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
         _({
           id: 'decision-text.remove_condition',
           message: 'Remove {column} from rule {position}',
-          values: { column, position },
-        }),
-      clearOutcome: (column, position) =>
-        _({
-          id: 'decision-text.clear_outcome',
-          message: 'Clear {column} in rule {position}',
           values: { column, position },
         }),
       ruleActions: (position) =>

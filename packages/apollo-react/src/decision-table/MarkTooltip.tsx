@@ -7,6 +7,7 @@ import {
 } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { scrollRootsOf } from './renderedTree';
 import {
   MARK_TOOLTIP_ANCHOR_CLASS,
@@ -78,9 +79,12 @@ export interface MarkTooltipProps {
 /** One tooltip for the view: the message of the mark the pointer is on, else of the one focus is on, as the host changes it, until Escape, a scroll or another element. */
 export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId }) => {
   const [shown, setShown] = useState<ShownMark | null>(null);
+  const [anchorRoot, setAnchorRoot] = useState<Element | ShadowRoot | null>(null);
   useEffect(() => {
     const section = container();
     if (!section) return;
+    const root = section.getRootNode();
+    setAnchorRoot(root instanceof ShadowRoot ? root : section.ownerDocument.body);
     let current: HTMLElement | null = null;
     let pointed: Element | null = null;
     let hovered: HTMLElement | null = null;
@@ -183,7 +187,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       for (const root of scrollRoots) root.removeEventListener('scroll', onScroll, true);
     };
   }, [container]);
-  return (
+  const tooltip = (
     <TooltipProvider>
       <Tooltip open={shown !== null}>
         <TooltipTrigger asChild>
@@ -207,4 +211,5 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       </Tooltip>
     </TooltipProvider>
   );
+  return anchorRoot ? createPortal(tooltip, anchorRoot) : null;
 };

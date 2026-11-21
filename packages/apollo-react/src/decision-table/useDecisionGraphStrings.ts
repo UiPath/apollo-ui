@@ -92,7 +92,6 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
       rename: _({ id: 'decision-graph.rename', message: 'Rename' }),
       nameField: (name) =>
         _({ id: 'decision-graph.name_field', message: 'Name of {name}', values: { name } }),
-      addNote: _({ id: 'decision-graph.add_note', message: 'Add note' }),
       changeLogicTo: (logic) =>
         _({
           id: 'decision-graph.change_logic_to',
@@ -113,7 +112,7 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
         message: 'Add required input',
       }),
       chooseInputs: _({ id: 'decision-graph.choose_inputs', message: 'Choose inputs' }),
-      chooseUsers: _({ id: 'decision-graph.choose_users', message: 'Choose users' }),
+      usedByMenu: _({ id: 'decision-graph.used_by_menu', message: 'Used by…' }),
       stopUsingIn: (name) =>
         _({
           id: 'decision-graph.stop_using_in',
@@ -126,6 +125,8 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
         _({ id: 'decision-graph.move_under', message: 'Move under {name}', values: { name } }),
       moveOutOf: (name) =>
         _({ id: 'decision-graph.move_out_of', message: 'Move out of {name}', values: { name } }),
+      makeTopLevel: _({ id: 'decision-graph.make_top_level', message: 'Make top-level' }),
+      deleteDecision: _({ id: 'decision-graph.delete_decision', message: 'Delete decision' }),
       delete: _({ id: 'decision-graph.delete', message: 'Delete' }),
       deleteTitle: (name) =>
         _({ id: 'decision-graph.delete_title', message: 'Delete {name}?', values: { name } }),
@@ -148,8 +149,6 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
         id: 'decision-graph.no_other_decisions',
         message: 'No other decisions',
       }),
-      noteTitle: (name) =>
-        _({ id: 'decision-graph.note_title', message: 'Note on {name}', values: { name } }),
     }),
     [_, markStatus, openCitation, citationPage]
   );

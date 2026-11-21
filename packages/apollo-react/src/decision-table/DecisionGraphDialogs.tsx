@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
   Label,
-  Textarea,
 } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useId, useState } from 'react';
@@ -43,8 +42,10 @@ const Refusal = ({ refusal, id }: { refusal: string | null; id: string }) =>
 
 export interface DecisionGraphDeleteDialogProps extends DialogBase {
   name: string;
-  /** The decisions that use it. */
-  usedBy: readonly Pick<DecisionGraphDecisionNode, 'id' | 'label'>[];
+  /** The decisions that use it, or unknown to a view that does not see the graph. */
+  users:
+    | { kind: 'known'; usedBy: readonly Pick<DecisionGraphDecisionNode, 'id' | 'label'>[] }
+    | { kind: 'unknown' };
   onConfirm: () => void;
 }
 
@@ -55,19 +56,26 @@ export const DecisionGraphDeleteDialog: React.FC<DecisionGraphDeleteDialogProps>
   onClose,
   onCloseAutoFocus,
   name,
-  usedBy,
+  users,
   onConfirm,
   dataTestId,
 }) => {
   const refusalId = useId();
+  const usedBy = users.kind === 'known' ? users.usedBy : [];
   return (
     <AlertDialog open onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus} data-testid={dataTestId}>
+      <AlertDialogContent
+        onCloseAutoFocus={onCloseAutoFocus}
+        {...(users.kind === 'unknown' ? { 'aria-describedby': undefined } : {})}
+        data-testid={dataTestId}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{labels.deleteTitle(name)}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {usedBy.length > 0 ? labels.deleteUsedBy : labels.deleteUnused}
-          </AlertDialogDescription>
+          {users.kind === 'known' && (
+            <AlertDialogDescription>
+              {usedBy.length > 0 ? labels.deleteUsedBy : labels.deleteUnused}
+            </AlertDialogDescription>
+          )}
         </AlertDialogHeader>
         {usedBy.length > 0 && (
           <ul
@@ -162,61 +170,6 @@ export const DecisionGraphLinksDialog: React.FC<DecisionGraphLinksDialogProps> =
             {labels.cancel}
           </Button>
           <Button onClick={save} data-testid={`${dataTestId}-save`}>
-            {labels.save}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-export interface DecisionGraphNoteDialogProps extends DialogBase {
-  name: string;
-  onSave: (text: string) => void;
-}
-
-/** Writes a note on a decision. */
-export const DecisionGraphNoteDialog: React.FC<DecisionGraphNoteDialogProps> = ({
-  labels,
-  refusal,
-  onClose,
-  onCloseAutoFocus,
-  name,
-  onSave,
-  dataTestId,
-}) => {
-  const idPrefix = useId();
-  const [text, setText] = useState('');
-  const title = labels.noteTitle(name);
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        showCloseButton={false}
-        onCloseAutoFocus={onCloseAutoFocus}
-        aria-describedby={undefined}
-        data-testid={dataTestId}
-      >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <Textarea
-          aria-label={title}
-          aria-invalid={refusal !== null || undefined}
-          aria-describedby={refusal === null ? undefined : `${idPrefix}-refusal`}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          data-testid={`${dataTestId}-text`}
-        />
-        <Refusal refusal={refusal} id={`${idPrefix}-refusal`} />
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} data-testid={`${dataTestId}-cancel`}>
-            {labels.cancel}
-          </Button>
-          <Button
-            disabled={text.trim() === ''}
-            onClick={() => onSave(text.trim())}
-            data-testid={`${dataTestId}-save`}
-          >
             {labels.save}
           </Button>
         </DialogFooter>

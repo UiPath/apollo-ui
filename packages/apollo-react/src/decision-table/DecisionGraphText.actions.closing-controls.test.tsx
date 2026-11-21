@@ -33,7 +33,6 @@ const leaf = (id: string, label: string): DecisionGraphNode => ({
 const NODES = [leaf('a', 'A'), leaf('b', 'B')];
 const move: Action = { kind: 'move', onMove: () => {} };
 const rename: Action = { kind: 'rename', onRename: () => {} };
-const note: Action = { kind: 'addNote', onAddNote: () => {} };
 
 const activeTestId = () => document.activeElement?.getAttribute('data-testid') ?? null;
 
@@ -47,13 +46,6 @@ describe('controls', () => {
     screen.getByTestId('graph-toggle-a').focus();
     await userEvent.keyboard('{F2}');
     await userEvent.keyboard('{Escape}');
-    expect(activeTestId()).toBe('graph-toggle-a');
-  });
-  it('cancelling the note dialog returns focus to the heading', async () => {
-    render(graph(editMode([note, move]), NODES));
-    await userEvent.click(screen.getByTestId('graph-menu-a'));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Add note' }));
-    await userEvent.click(await screen.findByTestId('graph-note-dialog-cancel'));
     expect(activeTestId()).toBe('graph-toggle-a');
   });
 });

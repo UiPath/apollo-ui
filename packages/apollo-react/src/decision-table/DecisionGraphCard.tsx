@@ -65,6 +65,8 @@ export interface DecisionGraphCardProps {
   usedBy: readonly string[];
   bodyId: string;
   body: React.ReactNode;
+  /** The hit policy chip after the name of a table decision. */
+  policy: React.ReactNode;
   labels: DecisionGraphLabels;
   onToggle: () => void;
   /** `byKey` when the mark was pressed from the keyboard rather than clicked. */
@@ -107,24 +109,27 @@ const onNodeKeyDown =
     if (!event.defaultPrevented) actions?.onKeyDown(event);
   };
 
-const NodeMenu = ({
+/** The ⋯ button that opens a decision's menu. */
+export const NodeMenu = ({
   actions,
+  className,
   dataTestId,
 }: {
-  actions: DecisionGraphNodeActions;
+  actions: Pick<DecisionGraphNodeActions, 'menuLabel' | 'entries'>;
+  className: string;
   dataTestId: string;
 }) => (
   <GridMenuButton
     label={actions.menuLabel}
     entries={actions.entries}
-    className={GRAPH_MENU_BUTTON_CLASS}
+    className={className}
     dataTestId={dataTestId}
   >
     <Ellipsis aria-hidden className="size-4" />
   </GridMenuButton>
 );
 
-const NameField = ({
+export const NameField = ({
   field,
   label,
   dataTestId,
@@ -194,6 +199,7 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
   usedBy,
   bodyId,
   body,
+  policy,
   labels,
   onToggle,
   onShowProblem,
@@ -254,34 +260,21 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
             dataTestId={`${dataTestId}-name-${node.id}`}
           />
         )}
-        {usedBy.length > 0 && <span className="sr-only">{labels.usedBy(usedBy.join(', '))}</span>}
         {logic.kind === 'table' && (
           <span
             className={GRAPH_HIT_POLICY_CLASS}
             data-testid={`${dataTestId}-hit-policy-${node.id}`}
           >
-            {logic.hitPolicy}
+            {policy}
           </span>
         )}
+        {usedBy.length > 0 && <span className="sr-only">{labels.usedBy(usedBy.join(', '))}</span>}
         <span
           className={cn(GRAPH_RULE_COUNT_CLASS, logic.kind !== 'table' && 'invisible')}
           data-testid={`${dataTestId}-rule-count-${node.id}`}
         >
           {logic.kind === 'table' && labels.ruleCount(logic.ruleCount)}
         </span>
-        {mark && (
-          <button
-            type="button"
-            className={GRAPH_MARK_BUTTON_CLASS}
-            title={mark.title}
-            aria-label={labels.showProblem(labels.markStatus(mark.tone, mark.title))}
-            data-tone={mark.tone}
-            onClick={(event) => onShowProblem(event.detail === 0)}
-            data-testid={`${dataTestId}-mark-${node.id}`}
-          >
-            <MarkGlyph tone={mark.tone} className="size-3.5" />
-          </button>
-        )}
         {citations && (
           <CitationButtons
             citations={citations.citations}
@@ -298,7 +291,26 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
             dataTestId={`${dataTestId}-citation-${node.id}`}
           />
         )}
-        {actions && <NodeMenu actions={actions} dataTestId={`${dataTestId}-menu-${node.id}`} />}
+        {actions && (
+          <NodeMenu
+            actions={actions}
+            className={GRAPH_MENU_BUTTON_CLASS}
+            dataTestId={`${dataTestId}-menu-${node.id}`}
+          />
+        )}
+        {mark && (
+          <button
+            type="button"
+            className={GRAPH_MARK_BUTTON_CLASS}
+            title={mark.title}
+            aria-label={labels.showProblem(labels.markStatus(mark.tone, mark.title))}
+            data-tone={mark.tone}
+            onClick={(event) => onShowProblem(event.detail === 0)}
+            data-testid={`${dataTestId}-mark-${node.id}`}
+          >
+            <MarkGlyph tone={mark.tone} className="size-3.5" />
+          </button>
+        )}
       </Heading>
       {open && (
         <div
@@ -366,7 +378,11 @@ export const DecisionGraphReference: React.FC<DecisionGraphReferenceProps> = ({
       </span>
       {actions && (
         <span className="ms-auto" data-graph-menu>
-          <NodeMenu actions={actions} dataTestId={`${dataTestId}-reference-menu-${node.id}`} />
+          <NodeMenu
+            actions={actions}
+            className={GRAPH_MENU_BUTTON_CLASS}
+            dataTestId={`${dataTestId}-reference-menu-${node.id}`}
+          />
         </span>
       )}
     </div>

@@ -45,24 +45,23 @@ export const GRAPH_HIT_POLICY_CLASS = cn(
   GRAPH_REVEAL_CLASS
 );
 
-export const GRAPH_RULE_COUNT_CLASS = cn(
-  'ms-auto shrink-0 text-xs text-foreground-de-emp',
-  GRAPH_REVEAL_CLASS
-);
+export const RULE_COUNT_CLASS = 'ms-auto shrink-0 text-xs text-foreground-de-emp';
+
+export const GRAPH_RULE_COUNT_CLASS = cn(RULE_COUNT_CLASS, GRAPH_REVEAL_CLASS);
 
 export const GRAPH_MARK_BUTTON_CLASS =
   'inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
 
-export const GRAPH_MENU_BUTTON_CLASS = cn(
-  'inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 text-foreground-de-emp hover:bg-background-hover focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-background-hover data-[state=open]:opacity-100 [@media(hover:none)]:opacity-100',
-  GRAPH_REVEAL_CLASS
-);
+export const MENU_BUTTON_CLASS =
+  'inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 text-foreground-de-emp hover:bg-background-hover focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-background-hover data-[state=open]:opacity-100 [@media(hover:none)]:opacity-100';
+
+export const GRAPH_MENU_BUTTON_CLASS = cn(MENU_BUTTON_CLASS, GRAPH_REVEAL_CLASS);
 
 export const GRAPH_ADD_DECISION_CLASS =
-  'flex h-10 cursor-pointer items-center gap-2 rounded-[10px] border border-dashed border-border-de-emp bg-transparent px-3 text-start text-sm text-foreground-de-emp hover:bg-background-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-4';
+  'flex w-fit cursor-pointer items-center gap-1 rounded-md border-0 bg-transparent px-2 py-1.5 text-start text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-3.5';
 
 export const GRAPH_BODY_CLASS =
-  'flex flex-col gap-3 overflow-clip rounded-b-[9px] bg-background-secondary px-3.5 pt-3.5 pb-4 future:bg-background';
+  'flex flex-col gap-3 rounded-b-[9px] bg-background-secondary px-3.5 pt-3.5 pb-4 future:bg-background';
 
 export const GRAPH_NEST_CLASS = 'ms-[22px] flex flex-col gap-3 pt-3 ps-6';
 

@@ -11,6 +11,7 @@ import {
   columnNameOf,
   isOutcome,
   partsText,
+  ruleTitleOf,
   SENTENCE_LINE_VALUE_LIMIT,
   stopTokensOf,
 } from './sentenceParts';
@@ -34,8 +35,6 @@ export interface RuleCardLabels
 export interface RuleRemovalLabels {
   /** A condition's remove action, e.g. "Remove age from rule 2". */
   removeCondition: (column: string, position: number) => string;
-  /** An outcome's clear action, e.g. "Clear risk in rule 2"; the output stays, its value empty. */
-  clearOutcome: (column: string, position: number) => string;
 }
 
 /** The `RowMark` fields a card paints; a field added to `RowMark` fails to compile here until the card decides on it. */
@@ -84,14 +83,15 @@ const shownValuesOf = (
   parts: readonly SentencePart[],
   columnId: string,
   labels: RuleCardLabels,
-  changed: (token: SentenceToken) => boolean
+  changed: (token: SentenceToken) => boolean,
+  emptyText: string
 ): string => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT, changed);
   const isCell = (part: SentencePart): boolean =>
     typeof part !== 'string' && part.kind === 'value' && part.columnId === columnId;
   const indexes = shown.flatMap((part, index) => (isCell(part) ? [index] : []));
   if (indexes.length === 0) return '';
-  const text = partsText(shown.slice(indexes[0], (indexes.at(-1) ?? 0) + 1), labels.emptyValue);
+  const text = partsText(shown.slice(indexes[0], (indexes.at(-1) ?? 0) + 1), emptyText);
   const hidden = clamped.reduce(
     (count, run) => (run.hidden.some(isCell) ? count + run.hiddenValues : count),
     0
@@ -125,7 +125,6 @@ interface RuleBadges {
 
 /** The clear actions of a card's heading, per outcome with a value, and the remove actions of its lead, per input it words, and of each condition line. */
 interface RuleRemovals {
-  heading: RemoveConditionButtonProps[];
   lead: RemoveConditionButtonProps[];
   lines: (RemoveConditionButtonProps | null)[];
 }
@@ -166,14 +165,6 @@ interface RuleCardModel
   removals: RuleRemovals;
 }
 
-const filledColumnIds = (parts: readonly SentencePart[]): string[] => [
-  ...new Set(
-    parts.flatMap((part) =>
-      typeof part !== 'string' && part.kind === 'value' && part.text !== '' ? [part.columnId] : []
-    )
-  ),
-];
-
 const inputColumnIds = (parts: readonly SentencePart[]): string[] => [
   ...new Set(
     parts.flatMap((part) =>
@@ -213,7 +204,13 @@ export const ruleCardModel = ({
         label: [
           labels.cell(
             columnNameOf(rule, columnId),
-            shownValuesOf(parts, columnId, labels, changed),
+            shownValuesOf(
+              parts,
+              columnId,
+              labels,
+              changed,
+              parts === rule.heading ? labels.unsetOutput : labels.emptyValue
+            ),
             position
           ),
           verdictOf(rule, columnId, cells, labels),
@@ -249,6 +246,7 @@ export const ruleCardModel = ({
     number: numbered ? number : null,
     changeStatus,
     ariaLabel: [
+      ruleTitleOf(rule) ?? '',
       changeStatus,
       numbered && number !== null ? String(number) : '',
       shownLineText(rule.heading, labels, changed),
@@ -273,12 +271,6 @@ export const ruleCardModel = ({
         : undefined,
     badges,
     removals: {
-      heading: editLabels
-        ? filledColumnIds(rule.heading).map((columnId) => ({
-            columnId,
-            label: editLabels.clearOutcome(columnNameOf(rule, columnId), position),
-          }))
-        : [],
       lead: inputColumnIds(rule.lead).flatMap((columnId) => removalOf(columnId) ?? []),
       lines: rule.lines.map((line) => removalOf(line.columnId)),
     },

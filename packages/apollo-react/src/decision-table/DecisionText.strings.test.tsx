@@ -24,6 +24,9 @@ const VIEW_CALLS: Calls<DecisionTextLabels> = {
     ['warning', undefined],
   ],
   moreValues: [[9980]],
+  searchInputs: [[1], [12]],
+  searchOutputs: [[1], [12]],
+  moreWithErrors: [[13]],
   conditionVerdict: [[true], [false]],
   cell: [
     ['age', '25 and 60', 2],
@@ -48,7 +51,6 @@ const VIEW_CALLS: Calls<DecisionTextLabels> = {
 const EDIT_CALLS: Calls<DecisionTextEditLabels> = {
   addCondition: [[2]],
   removeCondition: [['age', 2]],
-  clearOutcome: [['risk', 2]],
   ruleActions: [[2]],
   deleteRule: [[2]],
   newCondition: [['income', 3]],

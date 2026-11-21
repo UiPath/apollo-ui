@@ -167,6 +167,18 @@ export const useContainerHandlers = ({
     if (focusWithinRef.current && view && hasLostFocus(view)) view.focus();
   });
   useEffect(() => () => stopPressRef.current?.(), []);
+  const forwardTabRef = useRef(false);
+  useEffect(() => {
+    const onDocumentKey = (event: KeyboardEvent) => {
+      forwardTabRef.current = event.type === 'keydown' && event.key === 'Tab' && !event.shiftKey;
+    };
+    document.addEventListener('keydown', onDocumentKey, true);
+    document.addEventListener('keyup', onDocumentKey, true);
+    return () => {
+      document.removeEventListener('keydown', onDocumentKey, true);
+      document.removeEventListener('keyup', onDocumentKey, true);
+    };
+  }, []);
   useEffect(() => {
     focusPendingCitation();
   });
@@ -273,7 +285,11 @@ export const useContainerHandlers = ({
     focusWithinRef.current = true;
     setFocusInside(true);
     focusRow(rowIdOf(event.target));
-    if (entered && stopTabbable && !pressedRef.current) navigation.refocus();
+    if (entered && stopTabbable && !pressedRef.current) {
+      const toggle = event.currentTarget.querySelector<HTMLElement>('[data-text-toggle]');
+      if (toggle && forwardTabRef.current) toggle.focus();
+      else navigation.refocus();
+    }
     consumerFocus?.(event);
   };
   const onBlur = (event: React.FocusEvent<HTMLElement>) => {

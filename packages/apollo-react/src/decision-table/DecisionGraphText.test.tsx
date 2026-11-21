@@ -252,9 +252,86 @@ describe('DecisionGraphText', () => {
     );
   });
 
-  it("clips an open body to its card's rounded bottom", () => {
+  it("rounds an open body to its card's bottom without clipping the rule numbers beside its cards", () => {
     render(graph({ expansion: held(new Set(['risk'])) }));
-    expect(body('risk')).toHaveClass('overflow-clip', 'rounded-b-[9px]');
+    expect(body('risk')).toHaveClass('rounded-b-[9px]');
+    expect(body('risk')).not.toHaveClass('overflow-clip');
+    expect(body('risk')?.querySelector('[class*="--sentence-gutter:0px"]')).not.toBeNull();
+    expect(body('risk')?.querySelector('[class*="sentence-number-digits,1"]')).toBeNull();
+  });
+
+  it.each([
+    ['reading', false],
+    ['editing', true],
+  ])("falls back to the node's hit policy label when the catalog has no matching option, %s", (_, editing) => {
+    render(
+      graph({
+        renderBody: (id) => {
+          const body = textBody(id);
+          return body.kind === 'table'
+            ? {
+                ...body,
+                text: {
+                  ...body.text,
+                  hitPolicies: [],
+                  ...(editing ? { mode: modeOf({ selected: null, onPolicyChange: vi.fn() }) } : {}),
+                },
+              }
+            : body;
+        },
+      })
+    );
+    if (editing) {
+      expect(screen.getByTestId('graph-risk-policy')).toHaveAccessibleName(/Unique/);
+    }
+    expect(screen.getByTestId('graph-hit-policy-risk')).toHaveTextContent('Unique');
+  });
+
+  it("describes a read-only card's policy chip by the policy's hint", () => {
+    render(graph());
+    expect(
+      screen.getByTestId('graph-hit-policy-risk').querySelector('[aria-describedby]')
+    ).toHaveAccessibleDescription('Exactly one rule may match. Overlaps are errors.');
+  });
+
+  it('shows a policy-only diff on the card heading, before and after', () => {
+    render(
+      graph({
+        renderBody: (id) => {
+          const body = textBody(id);
+          return body.kind === 'table'
+            ? {
+                ...body,
+                text: {
+                  ...body.text,
+                  mode: {
+                    kind: 'diff',
+                    diff: {
+                      mode: 'full',
+                      hitPolicy: {
+                        before: { kind: 'policy', policy: 'first' },
+                        after: GRID_SENTENCE_POLICY,
+                      },
+                    },
+                  },
+                },
+              }
+            : body;
+        },
+      })
+    );
+    const heading = screen.getByTestId('graph-hit-policy-risk');
+    expect(heading.querySelector('del')).toHaveTextContent('FFirst');
+    expect(heading).toHaveTextContent(/now UUnique/);
+  });
+
+  it('builds each table body once per render, an open one included', async () => {
+    const renderBody = vi.fn((id: string) => textBody(id));
+    render(graph({ renderBody, expansion: held(new Set(['risk'])) }));
+    const counts = new Map<string, number>();
+    for (const [id] of renderBody.mock.calls) counts.set(id, (counts.get(id) ?? 0) + 1);
+    expect(counts.has('risk')).toBe(true);
+    expect(new Set(counts.values()).size).toBe(1);
   });
 
   it('shows what the host gives for a decision that is not a table', async () => {
@@ -581,6 +658,30 @@ describe('DecisionGraphText open', () => {
     onOpenDecision.mockClear();
     await userEvent.dblClick(screen.getByTestId('graph-rule-count-pricing'));
     expect(onOpenDecision).toHaveBeenCalledWith('pricing');
+  });
+
+  it('opens nothing on a double-click inside the policy picker menu or its totals submenu', async () => {
+    const onOpenDecision = vi.fn();
+    render(
+      graph({
+        onOpenDecision,
+        renderBody: (id) => {
+          const body = textBody(id);
+          return body.kind === 'table'
+            ? {
+                ...body,
+                text: { ...body.text, mode: modeOf({ selected: null, onPolicyChange: vi.fn() }) },
+              }
+            : body;
+        },
+      })
+    );
+    await userEvent.click(screen.getByTestId('graph-risk-policy'));
+    const menu = await screen.findByTestId('graph-risk-policy-menu');
+    await userEvent.dblClick(menu);
+    const totals = within(menu).getByRole('menuitem', { name: /Collect and total/ });
+    await userEvent.dblClick(totals);
+    expect(onOpenDecision).not.toHaveBeenCalled();
   });
 
   it('opens nothing on a double-click inside a body, and leaves the double-click to the body', async () => {

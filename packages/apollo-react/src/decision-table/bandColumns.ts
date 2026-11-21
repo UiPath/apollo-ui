@@ -6,18 +6,19 @@ export interface BandLabels {
   outputs: string;
 }
 
-/** The inputs' and outputs' bands, each column with its type's glyph; an empty one is left out. */
+/** The inputs' and outputs' bands, each column with its type's glyph; an empty one is left out unless `keepEmpty`. */
 export const bandsOf = <Type>(
   inputs: readonly SentenceBandColumn<Type>[],
   outputs: readonly SentenceBandColumn<Type>[],
   iconOf: (type: Type) => BandColumnView['icon'],
-  labels: BandLabels
+  labels: BandLabels,
+  keepEmpty: boolean
 ): SentenceBand[] =>
   [
     { id: 'inputs', label: labels.inputs, columns: inputs },
     { id: 'outputs', label: labels.outputs, columns: outputs },
   ]
-    .filter((band) => band.columns.length > 0)
+    .filter((band) => keepEmpty || band.columns.length > 0)
     .map(({ id, label, columns }) => ({
       id,
       label,

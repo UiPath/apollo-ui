@@ -55,8 +55,11 @@ export const useColumnEditing = <Type>({
     const columnId = refocusRef.current;
     if (openId !== null || columnId === null) return;
     refocusRef.current = null;
-    pillOf(container(), columnId)?.focus();
-  }, [openId, container]);
+    const section = container();
+    const bandId = bands.find((band) => band.columns.some((item) => item.id === columnId))?.id;
+    const more = section?.querySelector<HTMLElement>(`[data-band-id="${bandId}"] [data-band-more]`);
+    (pillOf(section, columnId) ?? more)?.focus();
+  }, [openId, container, bands]);
 
   const close = (columnId: string, refocus: boolean) => {
     refocusRef.current = refocus ? columnId : null;
