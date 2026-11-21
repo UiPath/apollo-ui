@@ -23,8 +23,9 @@ const POSITIONER_POSITION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', str
 };
 
 /** Extra displacement (px) applied to clear a colliding handle affordance. */
-const TOOLBAR_OFFSET: Record<'button' | 'label', number> = {
+const TOOLBAR_OFFSET: Record<'button' | 'button-only' | 'label', number> = {
   button: 48, // Clears the add button + its label + gaps
+  'button-only': 36, // Clears an add button that has no label
   label: 24, // 1.5rem — clears a label-only handle
 };
 
@@ -103,7 +104,7 @@ const NodeToolbarComponent = ({
   const align = config.align || 'center';
 
   // Normalize the offset prop: `true` is a back-compat alias for 'button'.
-  const offsetMode: 'button' | 'label' | undefined =
+  const offsetMode: 'button' | 'button-only' | 'label' | number | undefined =
     offsetToolbar === true ? 'button' : offsetToolbar || undefined;
 
   const positionerClassName = useMemo(
@@ -130,7 +131,8 @@ const NodeToolbarComponent = ({
 
   const offsetStyle = useMemo(() => {
     if (!offsetMode) return undefined;
-    return { '--toolbar-offset': `${TOOLBAR_OFFSET[offsetMode]}px` } as React.CSSProperties;
+    const offset = typeof offsetMode === 'number' ? offsetMode : TOOLBAR_OFFSET[offsetMode];
+    return { '--toolbar-offset': `${offset}px` } as React.CSSProperties;
   }, [offsetMode]);
 
   const toolbarAnimationVariants = useMemo(() => {
@@ -162,7 +164,7 @@ const NodeToolbarComponent = ({
     <AnimatePresence>
       {displayState !== 'hidden' && (
         <div className={positionerClassName} style={offsetStyle}>
-          {offsetMode !== 'button' && (
+          {offsetMode !== 'button' && offsetMode !== 'button-only' && (
             <div
               aria-hidden
               data-testid="node-toolbar-hover-bridge"

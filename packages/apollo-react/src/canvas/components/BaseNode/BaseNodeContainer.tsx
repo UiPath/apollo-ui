@@ -4,7 +4,7 @@ import { isOutlineDrawnShape, isWideNodeShape, type NodeShape } from '../../sche
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
-import { BaseNodeOutline } from './BaseNodeOutline';
+import { BaseNodeOutline, type NodeOutlinePath } from './BaseNodeOutline';
 
 export const getStatusBorder = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType
@@ -48,6 +48,13 @@ interface BaseContainerProps {
   background?: string;
   loading?: boolean;
   shadow?: boolean;
+  /**
+   * Draws the node's fill and outline from a host-supplied path instead of the container's own
+   * border, for shapes a border-radius cannot express (a diamond, a folded-corner document).
+   */
+  outlinePath?: NodeOutlinePath;
+  /** `dashed` is BPMN's non-interrupting event and event sub-process border. */
+  borderStyle?: 'solid' | 'dashed';
   children: React.ReactNode;
 }
 
@@ -64,6 +71,8 @@ export const BaseContainer = ({
   background,
   loading,
   shadow = true,
+  outlinePath,
+  borderStyle,
   children,
 }: BaseContainerProps) => {
   const activeStatus = suggestionType ?? validationStatus ?? executionStatus;
@@ -76,7 +85,7 @@ export const BaseContainer = ({
 
     // A outline shape draws its own fill and outline, so the container drops both rather than
     // showing a rectangle behind the SVG.
-    const drawnByOutline = isOutlineDrawnShape(shape);
+    const drawnByOutline = !!outlinePath || isOutlineDrawnShape(shape);
 
     return cn(
       'relative flex items-center cursor-pointer',
@@ -84,6 +93,7 @@ export const BaseContainer = ({
         ? 'bg-transparent border-0'
         : cn(
             'bg-surface-overlay border border-border',
+            borderStyle === 'dashed' && 'border-dashed',
             shape === 'pill' ? 'rounded-full' : 'rounded-(--node-radius)'
           ),
       'w-(--node-w) h-(--node-h)',
@@ -106,7 +116,18 @@ export const BaseContainer = ({
       isStacked &&
         'before:content-[""] before:absolute before:inset-x-0 before:top-0 before:h-full before:rounded-[inherit] before:bg-surface-overlay before:border before:border-brand before:translate-y-[6px] before:-z-10 before:pointer-events-none'
     );
-  }, [shape, hasFooter, activeStatus, isSelected, isHovered, isStacked, interactionState, shadow]);
+  }, [
+    shape,
+    hasFooter,
+    activeStatus,
+    isSelected,
+    isHovered,
+    isStacked,
+    interactionState,
+    shadow,
+    outlinePath,
+    borderStyle,
+  ]);
 
   return (
     <div
@@ -120,9 +141,10 @@ export const BaseContainer = ({
       style={background ? { background } : undefined}
       aria-busy={loading || undefined}
     >
-      {isOutlineDrawnShape(shape) && (
+      {(outlinePath || isOutlineDrawnShape(shape)) && (
         <BaseNodeOutline
-          shape={shape}
+          shape={isOutlineDrawnShape(shape) ? shape : undefined}
+          path={outlinePath}
           isSelected={isSelected}
           isHovered={isHovered}
           isDragging={interactionState === 'drag'}

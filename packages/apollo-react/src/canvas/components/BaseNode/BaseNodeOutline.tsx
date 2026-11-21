@@ -95,8 +95,13 @@ const outlineShadow = (isDragging?: boolean, isHovered?: boolean) => {
     : '[filter:var(--canvas-node-filter-rest)]';
 };
 
+/** Builds an outline in the node's own pixel space, as `pathFor` does for the built-in shapes. */
+export type NodeOutlinePath = (width: number, height: number) => string;
+
 interface BaseNodeOutlineProps {
-  shape: OutlineDrawnNodeShape;
+  shape?: OutlineDrawnNodeShape;
+  /** A host-drawn outline. Takes precedence over `shape`. */
+  path?: NodeOutlinePath;
   isSelected?: boolean;
   isHovered?: boolean;
   isDragging?: boolean;
@@ -113,7 +118,7 @@ interface BaseNodeOutlineProps {
  * have to be drawn here too.
  */
 export const BaseNodeOutline = memo(
-  ({ shape, isSelected, isHovered, isDragging, shadow, status }: BaseNodeOutlineProps) => {
+  ({ shape, path, isSelected, isHovered, isDragging, shadow, status }: BaseNodeOutlineProps) => {
     const ref = useRef<SVGSVGElement>(null);
     // Seeded with the wide-card default so the shape is drawn even before it is measured, and in
     // any environment without a ResizeObserver. Measurement refines it.
@@ -156,7 +161,9 @@ export const BaseNodeOutline = memo(
         viewBox={`0 0 ${box.width} ${box.height}`}
       >
         <path
-          d={pathFor(shape, box.width, box.height)}
+          d={
+            path ? path(box.width, box.height) : shape ? pathFor(shape, box.width, box.height) : ''
+          }
           className={cn(
             'fill-surface-overlay transition-[stroke,stroke-width] duration-150',
             statusStroke ||

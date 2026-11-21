@@ -23,6 +23,8 @@ export type EdgePathProps = {
    */
   animated?: boolean;
   strokeStyle?: EdgeStrokeStyle;
+  /** A custom `stroke-dasharray`, for patterns beyond `strokeStyle` (a dotted association). */
+  dasharray?: string;
   isReadOnly?: boolean;
   /** Optional ref for the visible path element. */
   pathRef?: React.Ref<SVGPathElement>;
@@ -50,6 +52,7 @@ export const EdgePath = memo(function EdgePath(props: EdgePathProps) {
     selected,
     animated,
     strokeStyle,
+    dasharray: customDasharray,
     isReadOnly,
     pathRef,
     id,
@@ -59,9 +62,11 @@ export const EdgePath = memo(function EdgePath(props: EdgePathProps) {
 
   const dasharray = animated
     ? undefined
-    : strokeStyle === 'dashed'
-      ? EDGE_DASHARRAY.dashed
-      : EDGE_DASHARRAY.solid;
+    : customDasharray
+      ? customDasharray
+      : strokeStyle === 'dashed'
+        ? EDGE_DASHARRAY.dashed
+        : EDGE_DASHARRAY.solid;
   const strokeWidth =
     (style?.strokeWidth as number | undefined) ?? (selected ? SELECTED_STROKE_WIDTH : STROKE_WIDTH);
 

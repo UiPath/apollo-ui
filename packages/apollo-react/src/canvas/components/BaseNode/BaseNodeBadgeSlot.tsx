@@ -5,11 +5,13 @@ import type { NodeShape } from '../../schema';
 interface BaseBadgeSlotProps {
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   shape?: NodeShape;
+  /** Distance from the corner. Defaults to the inset for `shape`. */
+  inset?: number;
   children: React.ReactNode;
 }
 
-export const BaseBadgeSlot = memo(({ position, shape, children }: BaseBadgeSlotProps) => {
-  const offset = shape === 'circle' ? NODE_BADGE_INSET_CIRCLE : NODE_BADGE_INSET_SQUARE;
+export const BaseBadgeSlot = memo(({ position, shape, inset, children }: BaseBadgeSlotProps) => {
+  const offset = inset ?? (shape === 'circle' ? NODE_BADGE_INSET_CIRCLE : NODE_BADGE_INSET_SQUARE);
   const style: React.CSSProperties = { width: NODE_BADGE_SIZE, height: NODE_BADGE_SIZE };
   switch (position) {
     case 'top-left':
