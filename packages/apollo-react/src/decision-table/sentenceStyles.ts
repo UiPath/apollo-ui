@@ -111,6 +111,8 @@ export const LINE_CLASS = cn(
 
 export const SENTENCE_CLASS = 'min-h-[var(--sentence-line)]';
 
+export const RULE_TITLE_CLASS = 'min-h-[var(--sentence-line)] font-semibold';
+
 export const INLINE_LINE_CLASS = 'inline';
 
 export const LINES_CLASS = 'mt-[var(--sentence-lines-gap)]';

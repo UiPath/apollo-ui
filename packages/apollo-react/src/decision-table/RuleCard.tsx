@@ -14,6 +14,7 @@ import {
   ruleCardModel,
 } from './ruleCardModel';
 import { StopLabels } from './StopLabels';
+import { ruleTitleOf } from './sentenceParts';
 import {
   CHANGE_SIGN_CLASS,
   CITED_LINE_CLASS,
@@ -30,6 +31,7 @@ import {
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
   RULE_CITATIONS_CLASS,
+  RULE_TITLE_CLASS,
   SENTENCE_CLASS,
 } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
@@ -136,6 +138,7 @@ export const RuleCard = memo<RuleCardProps>(
     const rowSelected = selectedColumnId !== undefined;
     const cited = citations.kind === 'cited' ? (citations.rules.get(rule.rowId) ?? []) : [];
     const lined = rule.lines.length + removedLines.length > 0;
+    const title = ruleTitleOf(rule);
     const citationButtons =
       citations.kind === 'cited' && cited.length > 0 ? (
         <div className={RULE_CITATIONS_CLASS}>
@@ -179,6 +182,14 @@ export const RuleCard = memo<RuleCardProps>(
               {card.number}
               {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
             </span>
+          )}
+          {title !== null && (
+            <div
+              className={cn(RULE_TITLE_CLASS, edit && HEADING_ACTIONS_SPACE_CLASS)}
+              data-rule-title
+            >
+              {title}
+            </div>
           )}
           <CitedLine citations={lined ? null : citationButtons}>
             <div
