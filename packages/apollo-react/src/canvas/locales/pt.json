@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "Tem submenu",
   "toolbox.search": "Pesquisar",
   "toolbox.search.clear": "Limpar pesquisa",
-  "toolbox.search.pending": "A pesquisar"
+  "toolbox.search.noResults": "Não foram encontrados nós correspondentes",
+  "toolbox.search.pending": "A pesquisar",
+  "toolbox.search.results": "Resultados: {count}"
 }

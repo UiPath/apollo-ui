@@ -336,6 +336,7 @@
   "theme_editor": "テーマ エディター",
   "theme_preview_description": "これは、指定したカスタム テーマを適用したカード コンポーネントのプレビューです。",
   "thinking": "考えています。",
+  "to_recipients": "宛先: {{recipients}}",
   "toggle_columns": "列を切り替え",
   "toggle_sidebar": "サイドバーを切り替え",
   "toggle_theme": "テーマを切り替え",

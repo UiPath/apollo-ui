@@ -1,1 +1,6 @@
-{}
+{
+  "decision-table.drag_column": "拖動以重新排序整欄",
+  "decision-table.drag_row": "拖動以重新排序整列",
+  "decision-table.insert_column_left": "在左側插入欄",
+  "decision-table.insert_row_above": "在上方插入列"
+}

@@ -336,6 +336,7 @@
   "theme_editor": "Éditeur de thème",
   "theme_preview_description": "Ceci est un aperçu du composant de carte avec votre thème personnalisé.",
   "thinking": "Réflexion",
+  "to_recipients": "À {{recipients}}",
   "toggle_columns": "Activer/désactiver les colonnes",
   "toggle_sidebar": "Activer/désactiver la barre latérale",
   "toggle_theme": "Activer/désactiver le thème",

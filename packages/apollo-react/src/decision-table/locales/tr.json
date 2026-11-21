@@ -1,1 +1,6 @@
-{}
+{
+  "decision-table.drag_column": "Tüm sütunu yeniden sıralamak için sürükle",
+  "decision-table.drag_row": "Tüm satırı yeniden sıralamak için sürükleyin",
+  "decision-table.insert_column_left": "Sola sütun ekle",
+  "decision-table.insert_row_above": "Yukarı satır ekle"
+}

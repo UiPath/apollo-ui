@@ -1,1 +1,6 @@
-{}
+{
+  "decision-table.drag_column": "Faites glisser pour réorganiser toute la colonne",
+  "decision-table.drag_row": "Faire glisser pour réorganiser toute la ligne",
+  "decision-table.insert_column_left": "Insérer la colonne à gauche",
+  "decision-table.insert_row_above": "Insérer la ligne ci-dessus"
+}

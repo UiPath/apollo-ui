@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "有子功能表",
   "toolbox.search": "搜尋",
   "toolbox.search.clear": "清除搜索",
-  "toolbox.search.pending": "正在搜尋"
+  "toolbox.search.noResults": "找不到相符的節點",
+  "toolbox.search.pending": "正在搜尋",
+  "toolbox.search.results": "結果：{count}"
 }

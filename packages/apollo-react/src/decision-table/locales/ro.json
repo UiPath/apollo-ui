@@ -1,1 +1,6 @@
-{}
+{
+  "decision-table.drag_column": "Glisați pentru a reordona întreaga coloană",
+  "decision-table.drag_row": "Glisați pentru a reordona întregul rând",
+  "decision-table.insert_column_left": "Inserați coloana la stânga",
+  "decision-table.insert_row_above": "Introduceți un rând deasupra"
+}

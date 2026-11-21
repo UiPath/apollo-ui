@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "Are submeniu",
   "toolbox.search": "Căutare",
   "toolbox.search.clear": "Șterge căutarea",
-  "toolbox.search.pending": "Se caută"
+  "toolbox.search.noResults": "Nu s-au găsit noduri corespunzătoare",
+  "toolbox.search.pending": "Se caută",
+  "toolbox.search.results": "Rezultate: {count}"
 }

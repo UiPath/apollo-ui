@@ -336,6 +336,7 @@
   "theme_editor": "主題編輯器",
   "theme_preview_description": "這是具有自訂主題的卡片元件預覽。",
   "thinking": "正在思考",
+  "to_recipients": "寄給 {{recipients}}",
   "toggle_columns": "切換欄",
   "toggle_sidebar": "切換側邊欄",
   "toggle_theme": "切換主題",

@@ -1,1 +1,6 @@
-{}
+{
+  "decision-table.drag_column": "Gesamte Spalte durch Ziehen neu anordnen",
+  "decision-table.drag_row": "Gesamte Zeile durch Ziehen neu anordnen",
+  "decision-table.insert_column_left": "Spalte links einfügen",
+  "decision-table.insert_row_above": "Zeile oben einfügen"
+}
