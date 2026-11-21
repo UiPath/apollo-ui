@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "하위 메뉴 있음",
   "toolbox.search": "검색",
   "toolbox.search.clear": "검색 지우기",
-  "toolbox.search.pending": "검색 중"
+  "toolbox.search.noResults": "일치하는 노드가 없습니다",
+  "toolbox.search.pending": "검색 중",
+  "toolbox.search.results": "결과: {count}"
 }

@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "Hat Untermenü",
   "toolbox.search": "Suchen",
   "toolbox.search.clear": "Suche löschen",
-  "toolbox.search.pending": "Suche"
+  "toolbox.search.noResults": "Keine übereinstimmenden Knoten gefunden",
+  "toolbox.search.pending": "Suche",
+  "toolbox.search.results": "Ergebnisse: {count}"
 }

@@ -1,1 +1,6 @@
-{}
+{
+  "decision-table.drag_column": "ドラッグして列全体を並べ替え",
+  "decision-table.drag_row": "ドラッグして行全体を並べ替え",
+  "decision-table.insert_column_left": "列を左に挿入",
+  "decision-table.insert_row_above": "行を上に追加"
+}

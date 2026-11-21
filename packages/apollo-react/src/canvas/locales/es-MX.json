@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "Tiene submenú",
   "toolbox.search": "Buscar",
   "toolbox.search.clear": "Borrar búsqueda",
-  "toolbox.search.pending": "Buscando"
+  "toolbox.search.noResults": "No se encontraron nodos coincidentes",
+  "toolbox.search.pending": "Buscando",
+  "toolbox.search.results": "Resultados: {count}"
 }

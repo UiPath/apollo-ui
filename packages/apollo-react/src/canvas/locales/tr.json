@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "Alt menüsü var",
   "toolbox.search": "Ara",
   "toolbox.search.clear": "Aramayı temizle",
-  "toolbox.search.pending": "Aranıyor"
+  "toolbox.search.noResults": "Eşleşen düğüm bulunamadı",
+  "toolbox.search.pending": "Aranıyor",
+  "toolbox.search.results": "Sonuçlar: {count}"
 }
