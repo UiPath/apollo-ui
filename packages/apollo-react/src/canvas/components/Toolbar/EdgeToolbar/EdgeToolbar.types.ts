@@ -34,6 +34,11 @@ export interface EdgeToolbarProps {
   visible: boolean;
   positioning: EdgeToolbarPositionData;
   config: EdgeToolbarConfig;
+  /**
+   * `along-path` stacks the buttons vertically when the toolbar sits beside a vertical run, so a
+   * multi-button toolbar does not cover the edge. Defaults to `row`.
+   */
+  layout?: 'row' | 'along-path';
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }

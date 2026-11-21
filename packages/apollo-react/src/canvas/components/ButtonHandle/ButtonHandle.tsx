@@ -64,6 +64,26 @@ type ButtonHandleProps = {
   nodeWidth?: number;
   nodeHeight?: number;
   portalAction?: boolean;
+  /**
+   * `outer` starts a connection only from the half of the handle outside the node, so small
+   * nodes stay draggable by their body. Defaults to `full`.
+   */
+  hitArea?: 'full' | 'outer';
+  /**
+   * `expand-on-hover` makes the "+" the handle itself: a small button against the node in place
+   * of the notch, growing outward to full size while the pointer is over it or the node is
+   * selected. Defaults to `always` (notch plus a full-size button beyond it).
+   */
+  buttonReveal?: 'always' | 'expand-on-hover';
+  /** With `expand-on-hover`: `circle` centres the small button on the node's edge like a notch. */
+  buttonShape?: 'rounded' | 'circle';
+};
+
+const OUTER_HIT_AREA: Record<Position, string> = {
+  [Position.Top]: 'inset-x-0 top-0 h-1/2',
+  [Position.Bottom]: 'inset-x-0 bottom-0 h-1/2',
+  [Position.Left]: 'inset-y-0 left-0 w-1/2',
+  [Position.Right]: 'inset-y-0 right-0 w-1/2',
 };
 
 const ButtonHandleBase = ({
@@ -92,6 +112,9 @@ const ButtonHandleBase = ({
   nodeWidth,
   nodeHeight,
   portalAction = false,
+  hitArea = 'full',
+  buttonReveal = 'always',
+  buttonShape = 'rounded',
 }: ButtonHandleProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -168,8 +191,20 @@ const ButtonHandleBase = ({
     [connectionPosition, id, nodeId, handleType, onAction]
   );
 
-  const markAsHovered = useCallback(() => setIsHovered(true), []);
-  const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
+  // Separate from `isHovered`, which mousedown clears: collapsing the button mid-click would
+  // move it out from under the pointer.
+  const [isPointerOver, setIsPointerOver] = useState(false);
+  const markAsHovered = useCallback(() => {
+    setIsHovered(true);
+    setIsPointerOver(true);
+  }, []);
+  const unmarkAsHovered = useCallback(() => {
+    setIsHovered(false);
+    setIsPointerOver(false);
+  }, []);
+  const clearHoverOnMouseDown = useCallback(() => setIsHovered(false), []);
+  const buttonIsHandle = buttonReveal === 'expand-on-hover';
+  const compactButton = buttonIsHandle ? !(isPointerOver || selected) : undefined;
   const showActionButton = !!onAction && type === 'source';
 
   // Label visibility defaults to the handle's own visibility (current behavior).
@@ -279,10 +314,12 @@ const ButtonHandleBase = ({
       id={id}
       onMouseEnter={markAsHovered}
       onMouseLeave={unmarkAsHovered}
-      onMouseDown={unmarkAsHovered}
+      onMouseDown={clearHoverOnMouseDown}
       className={cx(
         'flex! items-center! justify-center! border-0! rounded-none! bg-transparent!',
-        visible ? 'opacity-100' : 'pointer-events-none! opacity-0'
+        visible ? 'opacity-100' : 'pointer-events-none! opacity-0',
+        // z-20 keeps the outer strip above the node toolbar's hover bridge.
+        hitArea === 'outer' && 'pointer-events-none! z-20'
       )}
       style={{
         width: handleWidth,
@@ -294,12 +331,17 @@ const ButtonHandleBase = ({
         transform,
       }}
     >
+      {hitArea === 'outer' && visible && (
+        <span className={cx('absolute pointer-events-auto', OUTER_HIT_AREA[position])} />
+      )}
       <HandleNotch
         handleType={handleType}
         isVertical={isVertical}
         selected={selected}
         hovered={isHovered}
-        showNotch={showNotches}
+        // The button stands in for the notch. Also hidden while the handle is, or the notch
+        // would fade out visibly as the handle appears.
+        showNotch={showNotches && !(buttonIsHandle && showActionButton && (showButton || !visible))}
       />
       {showActionButton ? (
         <HandleButton
@@ -315,6 +357,8 @@ const ButtonHandleBase = ({
           labelIcon={labelIcon}
           labelBackgroundColor={labelBackgroundColor}
           portal={portal}
+          compact={compactButton}
+          shape={buttonShape}
         />
       ) : (
         label && (

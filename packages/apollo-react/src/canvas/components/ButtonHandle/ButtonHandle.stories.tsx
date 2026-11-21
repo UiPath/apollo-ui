@@ -25,7 +25,13 @@ import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from './ButtonHandle';
+import {
+  ButtonHandle,
+  type ButtonHandleConfig,
+  ButtonHandles,
+  type HandleActionEvent,
+} from './ButtonHandle';
+import { HandleHoverBridge } from './HandleButton';
 
 // ============================================================================
 // Meta Configuration
@@ -711,6 +717,91 @@ function LogicFlowStory() {
 }
 
 // ============================================================================
+// Expanding add button (opt-in)
+// ============================================================================
+
+const EXPANDING_SIDES = [Position.Top, Position.Right, Position.Bottom, Position.Left];
+
+type ExpandingNodeData = { label: string; buttonShape: 'rounded' | 'circle' };
+
+/**
+ * A small host-rendered node: the "+" stands in for the handle notch, and only the half of the
+ * handle outside the node starts a connection, so the body stays draggable.
+ */
+function ExpandingNode({
+  id,
+  data,
+  selected,
+}: {
+  id: string;
+  data: ExpandingNodeData;
+  selected: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const active = hovered || selected;
+
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: hover only reveals the handles
+    <div
+      className="relative flex h-20 w-25 items-center justify-center rounded-xl border border-border bg-surface-overlay text-xs font-semibold text-foreground"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {data.label}
+      {EXPANDING_SIDES.map((side) => (
+        <HandleHoverBridge key={`bridge-${side}`} position={side} visible={active} />
+      ))}
+      {EXPANDING_SIDES.map((side) => (
+        <ButtonHandle
+          key={side}
+          id={side}
+          nodeId={id}
+          type="source"
+          handleType="output"
+          position={side}
+          visible={active}
+          showButton={active}
+          selected={selected}
+          hitArea="outer"
+          buttonReveal="expand-on-hover"
+          buttonShape={data.buttonShape}
+          onAction={handleAction}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ExpandingButtonStory() {
+  const nodeTypes = useMemo(() => ({ expandingNode: ExpandingNode }), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes: [
+      {
+        id: 'circle',
+        type: 'expandingNode',
+        position: { x: 200, y: 160 },
+        data: { label: 'Circle', buttonShape: 'circle' },
+      },
+      {
+        id: 'rounded',
+        type: 'expandingNode',
+        position: { x: 440, y: 160 },
+        data: { label: 'Rounded', buttonShape: 'rounded' },
+      },
+    ],
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
+      <StoryInfoPanel
+        title="Expanding add button"
+        description='Opt-in: buttonReveal="expand-on-hover" with hitArea="outer". Hover a node for the small buttons, hover a handle to expand it, select the node to expand them all.'
+      />
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
 // Exported Stories
 // ============================================================================
 
@@ -729,4 +820,9 @@ export const HandleConfiguration: Story = {
 export const LogicFlow: Story = {
   name: 'Logic flow',
   render: () => <LogicFlowStory />,
+};
+
+export const ExpandingAddButton: Story = {
+  name: 'Expanding add button',
+  render: () => <ExpandingButtonStory />,
 };

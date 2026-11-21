@@ -18,9 +18,11 @@ export interface NodeToolbarProps {
    * Push the toolbar further from the node to clear a colliding handle affordance.
    * `'button'` clears a source add button (larger offset); `'label'` clears a
    * label-only handle (smaller offset). Omit/`false` for no offset.
+   * `'button-only'` clears an add button whose handle has no label.
+   * A number is an explicit offset in px, for hosts whose handle affordances have other sizes.
    * `true` is accepted as a back-compat alias for `'button'`.
    */
-  offsetToolbar?: boolean | 'button' | 'label';
+  offsetToolbar?: boolean | 'button' | 'button-only' | 'label' | number;
   /** Render the toolbar in the node overlay layer instead of inside the node wrapper. */
   portalToNodeOverlay?: boolean;
 }

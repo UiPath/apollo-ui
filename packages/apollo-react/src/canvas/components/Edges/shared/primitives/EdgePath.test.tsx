@@ -24,6 +24,14 @@ function renderPath(props: Partial<React.ComponentProps<typeof EdgePath>> = {}) 
  * through silently.
  */
 describe('EdgePath', () => {
+  it('uses a custom dasharray over strokeStyle, except while animated', () => {
+    expect(renderPath({ dasharray: '2,5' }).visible.style.strokeDasharray).toBe('2,5');
+    expect(
+      renderPath({ dasharray: '2,5', strokeStyle: 'dashed' }).visible.style.strokeDasharray
+    ).toBe('2,5');
+    expect(renderPath({ dasharray: '2,5', animated: true }).visible.style.strokeDasharray).toBe('');
+  });
+
   it('renders solid by default and dashed for strokeStyle="dashed"', () => {
     expect(renderPath().visible.style.strokeDasharray).toBe('0');
     expect(renderPath({ strokeStyle: 'dashed' }).visible.style.strokeDasharray).toBe('5,5');

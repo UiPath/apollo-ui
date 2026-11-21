@@ -496,6 +496,20 @@ describe('NodeToolbar', () => {
       expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('48px');
     });
 
+    it('applies a smaller offset for an add button that has no label', () => {
+      render(<NodeToolbar {...defaultProps} offsetToolbar="button-only" />);
+
+      expect(bridge()).not.toBeInTheDocument();
+      expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('36px');
+    });
+
+    it('applies an explicit pixel offset and keeps the hover bridge', () => {
+      render(<NodeToolbar {...defaultProps} offsetToolbar={16} />);
+
+      expect(bridge()).toBeInTheDocument();
+      expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('16px');
+    });
+
     it('does not render the hover bridge when the toolbar is hidden', () => {
       render(<NodeToolbar {...defaultProps} expanded={false} />);
 

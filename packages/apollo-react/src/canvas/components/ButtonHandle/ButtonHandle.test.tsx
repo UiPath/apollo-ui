@@ -4,7 +4,7 @@ import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import type { ButtonHandleConfig, HandleMouseEvent } from './ButtonHandle';
-import { ButtonHandles } from './ButtonHandle';
+import { ButtonHandle, ButtonHandles } from './ButtonHandle';
 
 // Mock @xyflow/react Handle component
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
@@ -628,6 +628,100 @@ describe('ButtonHandles', () => {
 
       unsubscribeEnter();
       unsubscribeLeave();
+    });
+  });
+});
+
+describe('ButtonHandle opt-in interaction options', () => {
+  const renderHandle = (props: Partial<React.ComponentProps<typeof ButtonHandle>> = {}) =>
+    render(
+      <ButtonHandle
+        id="handle1"
+        nodeId="test-node"
+        type="source"
+        handleType="output"
+        position={Position.Right}
+        onAction={vi.fn()}
+        {...props}
+      />
+    );
+  const notch = () => screen.getByTestId('handle').querySelector('.border-2');
+
+  it('keeps the whole handle grabbable and the button full size by default', () => {
+    renderHandle();
+
+    expect(screen.getByTestId('handle')).not.toHaveClass('pointer-events-none!');
+    expect(screen.getByRole('button')).not.toHaveClass('h-4');
+    expect(notch()).toHaveClass('opacity-100');
+  });
+
+  it('limits the grab zone to the half outside the node for hitArea="outer"', () => {
+    renderHandle({ hitArea: 'outer' });
+
+    const handle = screen.getByTestId('handle');
+    expect(handle).toHaveClass('pointer-events-none!');
+    expect(handle.querySelector('span.pointer-events-auto')).toHaveClass('right-0', 'w-1/2');
+  });
+
+  it('drops the outer grab zone while the handle is hidden', () => {
+    renderHandle({ hitArea: 'outer', visible: false });
+
+    expect(screen.getByTestId('handle').querySelector('span.pointer-events-auto')).toBeNull();
+  });
+
+  describe('buttonReveal="expand-on-hover"', () => {
+    it('shows a small button in place of the notch until the handle is hovered', async () => {
+      const user = userEvent.setup();
+      renderHandle({ buttonReveal: 'expand-on-hover' });
+
+      expect(screen.getByRole('button')).toHaveClass('h-4', 'w-4');
+      expect(notch()).toHaveClass('opacity-0');
+
+      await user.hover(screen.getByRole('button'));
+      expect(screen.getByRole('button')).not.toHaveClass('h-4');
+
+      await user.unhover(screen.getByRole('button'));
+      expect(screen.getByRole('button')).toHaveClass('h-4');
+    });
+
+    it('stays expanded through mouse down so a click still lands on the button', async () => {
+      const user = userEvent.setup();
+      const onAction = vi.fn();
+      renderHandle({ buttonReveal: 'expand-on-hover', onAction });
+
+      await user.pointer([
+        { target: screen.getByRole('button') },
+        { keys: '[MouseLeft>]', target: screen.getByRole('button') },
+      ]);
+      expect(screen.getByRole('button')).not.toHaveClass('h-4');
+
+      await user.pointer({ keys: '[/MouseLeft]' });
+      expect(onAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('expands every button of a selected node', () => {
+      renderHandle({ buttonReveal: 'expand-on-hover', selected: true });
+
+      expect(screen.getByRole('button')).not.toHaveClass('h-4');
+    });
+
+    it('shows the notch when the button is not, as when connecting', () => {
+      renderHandle({ buttonReveal: 'expand-on-hover', showButton: false });
+
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(notch()).toHaveClass('opacity-100');
+    });
+
+    it('hides the notch along with a hidden handle so it cannot flash on reveal', () => {
+      renderHandle({ buttonReveal: 'expand-on-hover', showButton: false, visible: false });
+
+      expect(notch()).toHaveClass('opacity-0');
+    });
+
+    it('renders a circular button for buttonShape="circle"', () => {
+      renderHandle({ buttonReveal: 'expand-on-hover', buttonShape: 'circle' });
+
+      expect(screen.getByRole('button')).toHaveClass('rounded-full');
     });
   });
 });

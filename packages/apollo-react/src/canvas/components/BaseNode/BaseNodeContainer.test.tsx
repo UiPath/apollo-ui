@@ -310,3 +310,34 @@ describe('BaseContainer cancel status treatment', () => {
     expect(outline).not.toHaveClass('stroke-error');
   });
 });
+
+describe('host-drawn outlines and border style', () => {
+  it('draws the host path as the outline instead of a bordered box', () => {
+    const outlinePath = (width: number, height: number) => `M0,0 L${width},${height}`;
+    render(
+      <BaseContainer shape="square" outlinePath={outlinePath}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const path = screen.getByTestId('base-node-outline').querySelector('path');
+    expect(path?.getAttribute('d')).toMatch(/^M0,0 L/);
+    expect(screen.getByTestId('base-container')).not.toHaveClass('border');
+  });
+
+  it('dashes the border for borderStyle="dashed" and leaves it solid by default', () => {
+    const { rerender } = render(
+      <BaseContainer borderStyle="dashed">
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(screen.getByTestId('base-container')).toHaveClass('border-dashed');
+
+    rerender(
+      <BaseContainer>
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(screen.getByTestId('base-container')).not.toHaveClass('border-dashed');
+  });
+});

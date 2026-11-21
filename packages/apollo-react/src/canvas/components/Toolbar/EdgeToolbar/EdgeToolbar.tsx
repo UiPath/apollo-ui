@@ -9,6 +9,7 @@ const EdgeToolbarComponent = ({
   visible,
   positioning,
   config,
+  layout = 'row',
   onMouseEnter,
   onMouseLeave,
 }: EdgeToolbarProps) => {
@@ -18,13 +19,22 @@ const EdgeToolbarComponent = ({
     [positioning.offsetPosition]
   );
 
+  // The toolbar sits beside the path, offset along its normal. Laying the buttons out along the
+  // path keeps a multi-button toolbar from growing back across the edge on vertical runs.
+  const besideVerticalRun =
+    layout === 'along-path' &&
+    Math.abs(positioning.offsetPosition.x - positioning.pathPosition.x) >
+      Math.abs(positioning.offsetPosition.y - positioning.pathPosition.y);
+
   return (
     <EdgeLabelRenderer>
       <AnimatePresence>
         {visible && (
           <motion.div
             key={`edge-toolbar-${edgeId}`}
-            className="nodrag nopan absolute top-0 left-0 z-1004 pointer-events-auto flex flex-row items-center gap-1"
+            className={`nodrag nopan absolute top-0 left-0 z-1004 pointer-events-auto flex items-center gap-1 ${
+              besideVerticalRun ? 'flex-col' : 'flex-row'
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
