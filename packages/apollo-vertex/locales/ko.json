@@ -336,6 +336,7 @@
   "theme_editor": "테마 편집기",
   "theme_preview_description": "사용자 지정 테마가 적용된 카드 컴포넌트의 미리 보기입니다.",
   "thinking": "생각하는 중",
+  "to_recipients": "{{recipients}}에게",
   "toggle_columns": "열 토글",
   "toggle_sidebar": "사이드바 토글",
   "toggle_theme": "테마 토글",

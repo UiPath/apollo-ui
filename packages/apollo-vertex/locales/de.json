@@ -336,6 +336,7 @@
   "theme_editor": "Design-Editor",
   "theme_preview_description": "Das ist eine Vorschau der Kartenkomponente mit Ihrem benutzerdefinierten Design.",
   "thinking": "Denken",
+  "to_recipients": "An {{recipients}}",
   "toggle_columns": "Spalten umschalten",
   "toggle_sidebar": "Seitenleiste umschalten",
   "toggle_theme": "Design umschalten",

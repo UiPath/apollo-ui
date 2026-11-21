@@ -729,5 +729,7 @@
   "toolbox.item.submenu": "有子菜单",
   "toolbox.search": "搜索",
   "toolbox.search.clear": "清除搜索",
-  "toolbox.search.pending": "正在搜索"
+  "toolbox.search.noResults": "未找到匹配节点",
+  "toolbox.search.pending": "正在搜索",
+  "toolbox.search.results": "结果：{count}"
 }

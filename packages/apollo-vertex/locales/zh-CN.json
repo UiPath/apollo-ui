@@ -336,6 +336,7 @@
   "theme_editor": "主题编辑器",
   "theme_preview_description": "这是您的自定义主题下卡片组件的预览。",
   "thinking": "想法",
+  "to_recipients": "发送给 {{recipients}}",
   "toggle_columns": "切换列",
   "toggle_sidebar": "切换侧边栏",
   "toggle_theme": "切换主题",

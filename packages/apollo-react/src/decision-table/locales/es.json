@@ -1,1 +1,6 @@
-{}
+{
+  "decision-table.drag_column": "Arrastre para reordenar toda la columna",
+  "decision-table.drag_row": "Arrastre para reordenar toda la fila",
+  "decision-table.insert_column_left": "Insertar columna a la izquierda",
+  "decision-table.insert_row_above": "Insertar fila arriba"
+}

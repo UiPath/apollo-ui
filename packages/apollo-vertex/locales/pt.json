@@ -336,6 +336,7 @@
   "theme_editor": "Editor de Temas",
   "theme_preview_description": "Esta é uma pré-visualização do componente de cartão com o seu tema personalizado.",
   "thinking": "A pensar",
+  "to_recipients": "para {{recipients}}",
   "toggle_columns": "Alternar colunas",
   "toggle_sidebar": "Alternar Barra Lateral",
   "toggle_theme": "Alternar tema",
