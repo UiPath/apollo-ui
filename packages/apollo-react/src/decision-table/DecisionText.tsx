@@ -22,10 +22,11 @@ import { EMPTY_MARKS, type TableMarks } from './marks';
 import { RuleList } from './RuleList';
 import { SentenceBands } from './SentenceBands';
 import { tableMarks } from './sentenceMarks';
-import { sentenceListStyle } from './sentenceRuleHeights';
+import { SENTENCE_LIST_STYLE, type SentenceListStyle } from './sentenceRuleHeights';
 import {
   DECISION_TEXT_FRAME_CLASS,
   DECISION_TEXT_INLINE_FRAME_CLASS,
+  NUMBER_MARGIN_CLASS,
   TEXT_COLUMN_CLASS,
 } from './sentenceStyles';
 import type {
@@ -312,7 +313,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
     container: ruleWindow.container,
   });
   const columnEditorId = `${idPrefix}-column-editor`;
-  const listStyle = sentenceListStyle(numbered, rules.length);
   const onExpandFold = useCallback(
     (firstRowId: string) =>
       setFolds((current) => ({
@@ -322,11 +322,15 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
     [diff]
   );
 
+  const digits: SentenceListStyle = { '--sentence-number-digits': String(rules.length).length };
+  const frameStyle = numbered ? { ...sectionProps.style, ...digits } : sectionProps.style;
+
   return (
     <section
       ref={ruleWindow.attachSection}
       data-testid={dataTestId}
       {...sectionProps}
+      style={frameStyle}
       aria-label={ariaLabel}
       aria-keyshortcuts={withHint(sectionProps['aria-keyshortcuts'], citationKeysHinted && 'Enter')}
       aria-description={withHint(
@@ -335,14 +339,16 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
       )}
       className={cn(
         scroll === 'self' ? DECISION_TEXT_FRAME_CLASS : DECISION_TEXT_INLINE_FRAME_CLASS,
+        header.kind === 'own' && NUMBER_MARGIN_CLASS,
         sectionProps.className
       )}
     >
       <div
         className={cn(
           TEXT_COLUMN_CLASS,
-          header.kind === 'own' &&
-            'my-4 overflow-clip rounded-[10px] border border-border-de-emp bg-background',
+          header.kind === 'own'
+            ? 'my-4 rounded-[10px] border border-border-de-emp bg-background'
+            : '[--sentence-gutter:0px]',
           header.kind === 'own' && headerMark?.tone === 'error' && 'border-error-icon'
         )}
         data-testid={`${dataTestId}-column`}
@@ -373,7 +379,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
               <SentenceBands
                 bands={bands}
                 marks={bandMarks}
-                style={listStyle}
+                style={SENTENCE_LIST_STYLE}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
                 labels={labels}
@@ -417,14 +423,14 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
                 selectable={selectable}
                 decisionLinks={onOpenDecision !== undefined}
                 citations={citations}
-                style={listStyle}
+                style={SENTENCE_LIST_STYLE}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
                 labels={labels}
               />
             )}
             {addRuleAction && rules.length > 0 && (
-              <AddRuleFooter addRule={addRuleAction} style={listStyle} />
+              <AddRuleFooter addRule={addRuleAction} style={SENTENCE_LIST_STYLE} />
             )}
           </div>
         )}

@@ -61,7 +61,7 @@ export const GRAPH_ADD_DECISION_CLASS =
   'flex w-fit cursor-pointer items-center gap-1 rounded-md border-0 bg-transparent px-2 py-1.5 text-start text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-3.5';
 
 export const GRAPH_BODY_CLASS =
-  'flex flex-col gap-3 overflow-clip rounded-b-[9px] bg-background-secondary px-3.5 pt-3.5 pb-4 future:bg-background';
+  'flex flex-col gap-3 rounded-b-[9px] bg-background-secondary px-3.5 pt-3.5 pb-4 future:bg-background';
 
 export const GRAPH_NEST_CLASS = 'ms-[22px] flex flex-col gap-3 pt-3 ps-6';
 
