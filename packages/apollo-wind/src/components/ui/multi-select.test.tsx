@@ -199,7 +199,10 @@ describe('MultiSelect', () => {
     expect(combobox).toBeDisabled();
   });
 
-  it.each(['control', 'group'])('closes and clears a search when disabled by %s', async (source) => {
+  it.each([
+    'control',
+    'group',
+  ])('closes and clears a search when disabled by %s', async (source) => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onBlur = vi.fn();
