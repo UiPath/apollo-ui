@@ -83,9 +83,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
   const isDisabled = disabled || group.disabled;
   const [open, setOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    if (isDisabled) setOpen(false);
-  }, [isDisabled]);
+  if (isDisabled && open) setOpen(false);
   const validation = useControlValidation(group, {
     error,
     errorId: validationId,
@@ -239,9 +237,7 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
     const isDisabled = disabled || group.disabled;
     const [open, setOpen] = React.useState(false);
 
-    React.useEffect(() => {
-      if (isDisabled) setOpen(false);
-    }, [isDisabled]);
+    if (isDisabled && open) setOpen(false);
     const validation = useControlValidation(group, {
       error,
       errorId: validationId,

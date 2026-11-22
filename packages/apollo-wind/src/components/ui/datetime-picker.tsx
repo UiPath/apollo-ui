@@ -74,14 +74,15 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     },
     ref
   ) {
-    const [open, setOpenState] = React.useState(false);
-    const setOpen = React.useCallback(
-      (next: boolean) => {
-        setOpenState(next);
-        onOpenChange?.(next);
-      },
-      [onOpenChange]
-    );
+    const [open, setOpen] = React.useState(false);
+    const previousOpen = React.useRef(open);
+    // Notify the owner after the open state commits, including a close caused by disabling.
+    React.useEffect(() => {
+      if (previousOpen.current !== open) {
+        previousOpen.current = open;
+        onOpenChange?.(open);
+      }
+    }, [open, onOpenChange]);
     const generatedId = React.useId();
     const baseId = id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`;
     const validationId = errorId ?? `${baseId}-error`;
@@ -147,9 +148,7 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     const grouped = group.inGroup;
     const isDisabled = disabled || group.disabled;
 
-    React.useEffect(() => {
-      if (isDisabled && open) setOpen(false);
-    }, [isDisabled, open, setOpen]);
+    if (isDisabled && open) setOpen(false);
     const validation = useControlValidation(group, {
       error,
       errorId: validationId,
