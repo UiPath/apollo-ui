@@ -238,6 +238,9 @@ describe('ByoModelDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Show LLM response' }));
     expect(screen.getByText('{"code":401}')).toBeInTheDocument();
     expect(screen.getByLabelText(/API key/)).toBeEnabled();
+    // Connect is what tries again, so the failure names it rather than offering its own retry.
+    expect(screen.getByText('Check the details above, then Connect again.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
   });
 
   it('refuses a name already in the model list', async () => {
@@ -590,6 +593,10 @@ describe('ByoModelDialog', () => {
       expect(screen.getByRole('checkbox', { name: CHANGE.agreement })).not.toBeChecked();
       expect(screen.getByRole('button', { name: 'Switch connection' })).toBeDisabled();
       expect(api.listModels).not.toHaveBeenCalled();
+      expect(
+        screen.getByText('Switch connection again, or create a separate connection instead.')
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
     });
 
     it('leaves the connection as it is for a separate one', async () => {
@@ -978,6 +985,20 @@ describe('ByoModelDialog', () => {
       expect(await screen.findByRole('combobox', { name: 'Model alias' })).toBeInTheDocument();
     });
 
+    it('offers nothing to try again when asking again gives the same answer', async () => {
+      const api = fakeApi();
+      vi.mocked(api.loadContext).mockResolvedValue({
+        ok: false,
+        failure: { title: 'This feature does not take models of your own', final: true },
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      expect(
+        await screen.findByText('This feature does not take models of your own')
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    });
+
     it('leaves a failed test to its own button', async () => {
       const user = userEvent.setup();
       const api = fakeApi({
@@ -993,6 +1014,9 @@ describe('ByoModelDialog', () => {
 
       expect(await screen.findByText('The model did not answer')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+      expect(
+        screen.getByText('Pick another model or fix its connection, then Test and add again.')
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Test and add' })).toBeEnabled();
     });
   });

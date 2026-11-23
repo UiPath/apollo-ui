@@ -161,6 +161,8 @@ function DialogBody({
   // The connector form depends only on the provider, so it has its own counter: switching
   // connection must not drop a form that is still loading.
   const formLoad = React.useRef(0);
+  // Failures that stopped a connection edit before anything was sent: Connect does not retry them.
+  const stoppedEdits = React.useRef(new WeakSet<ByoFailure>());
   // The folder the form last loaded for, which Try again loads it for again.
   const formFolder = React.useRef('');
   React.useEffect(
@@ -420,7 +422,9 @@ function DialogBody({
   const failConnectionEdit = (failure: ByoFailure) => {
     setEditingConnection(false);
     resetFormValues();
-    setConnect({ status: 'error', failure: { ...failure } });
+    const stopped = { ...failure };
+    stoppedEdits.current.add(stopped);
+    setConnect({ status: 'error', failure: stopped });
     loadModels(providerId, connection, generation.current);
   };
 
@@ -765,6 +769,17 @@ function DialogBody({
   })();
 
   const modelsFailure = modelsState.status === 'error' ? (modelsState.failure ?? null) : null;
+  // The button that gets past a failed action, named so it is found without searching.
+  const failureHint = (f: ByoFailure) => {
+    if (f.final) return undefined;
+    if (connect.status === 'error' && f === connect.failure) {
+      if (stoppedEdits.current.has(f)) return undefined;
+      return labels.retryConnect(editingConnection ? labels.saveConnection : labels.connect);
+    }
+    if (test.status === 'error' && f === test.failure) return labels.retryTest(saveLabel);
+    if (modelsState.status === 'change' && f === modelsState.failure) return labels.retrySwitch;
+    return undefined;
+  };
   // A dismissed failure stays hidden, and does not hide one that came after it.
   const failure =
     [
@@ -1157,6 +1172,7 @@ function DialogBody({
                 ? () => loadModels(providerId, connection, generation.current)
                 : undefined
             }
+            hint={failureHint(failure)}
           />
         </div>
       )}
@@ -1350,11 +1366,15 @@ function FailureAlert({
   labels,
   onDismiss,
   onRetry,
+  hint,
 }: {
   failure: ByoFailure;
   labels: ByoModelDialogLabels;
   onDismiss?: () => void;
+  /** Offered only for a failure that asking again can change. */
   onRetry?: () => void;
+  /** The step that gets past the failure, when a button of the dialog's own is it. */
+  hint?: string;
 }) {
   const [showRaw, setShowRaw] = React.useState(false);
   return (
@@ -1394,7 +1414,8 @@ function FailureAlert({
       {!failure.detail && failure.message && (
         <AlertDescription className="break-words">{failure.message}</AlertDescription>
       )}
-      {onRetry && (
+      {hint && <AlertDescription className="text-foreground-muted">{hint}</AlertDescription>}
+      {onRetry && !failure.final && (
         <AlertDescription>
           <Button variant="link" size="2xs" className="mt-1 h-auto p-0 text-xs" onClick={onRetry}>
             {labels.tryAgain}

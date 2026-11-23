@@ -82,6 +82,11 @@ export interface ByoModelDialogLabels {
   close: string;
   dismiss: string;
   tryAgain: string;
+  /** What to do after Connect or Save connection failed; `button` is the one that failed. */
+  retryConnect: (button: string) => string;
+  /** What to do after Test and add or Test and save failed; `button` is the one that failed. */
+  retryTest: (button: string) => string;
+  retrySwitch: string;
   cancel: string;
   testAndAdd: string;
   testAndSave: string;
@@ -168,6 +173,9 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   close: 'Close',
   dismiss: 'Dismiss',
   tryAgain: 'Try again',
+  retryConnect: (button) => `Check the details above, then ${button} again.`,
+  retryTest: (button) => `Pick another model or fix its connection, then ${button} again.`,
+  retrySwitch: 'Switch connection again, or create a separate connection instead.',
   cancel: 'Cancel',
   testAndAdd: 'Test and add',
   testAndSave: 'Test and save',

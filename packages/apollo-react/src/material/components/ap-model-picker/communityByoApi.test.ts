@@ -1183,12 +1183,15 @@ describe('createCommunityByoApi', () => {
     it('refuses a feature whose models are configured together, or one that takes no own models', async () => {
       const all = await loaded(featureWith({ modelsConfigurationOption: 'AllModels' }));
       expect(all.context.ok).toBe(false);
+      expect(!all.context.ok && all.context.failure.final).toBe(true);
       routes = [];
       const none = await loaded({ agents: {} });
       expect(none.context.ok).toBe(false);
       expect(!none.context.ok && none.context.failure.title).toBe(
         'This feature does not take models of your own'
       );
+      // Asking again gives the same answer.
+      expect(!none.context.ok && none.context.failure.final).toBe(true);
     });
 
     it('saves a replacement under the UiPath model name, tested in replace mode', async () => {
