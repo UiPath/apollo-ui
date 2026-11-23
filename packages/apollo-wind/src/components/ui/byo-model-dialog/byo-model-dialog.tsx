@@ -472,7 +472,10 @@ function DialogBody({
         setModelsState({ ...pending, failure: { ...result.failure } });
         return;
       }
-      loadModels(providerId, result.value, gen);
+      // What the host answered is the connection from now on, for Test and add too.
+      const switched = result.value;
+      setConnections((prev) => prev.map((c) => (c.id === switched.id ? switched : c)));
+      loadModels(providerId, switched, gen);
     } catch (err) {
       if (gen === generation.current) {
         setChangeAgreed(false);

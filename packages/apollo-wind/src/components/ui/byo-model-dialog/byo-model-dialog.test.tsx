@@ -574,6 +574,34 @@ describe('ByoModelDialog', () => {
       expect(await screen.findByText('Select one of 2 models')).toBeInTheDocument();
     });
 
+    it('adds the model through the connection as the switch left it', async () => {
+      const user = userEvent.setup();
+      const switched: ByoConnection = { ...SAVED, name: 'My OpenAI (switched)' };
+      const api = fakeApi({
+        checkConnection: vi
+          .fn()
+          .mockResolvedValueOnce({ ok: true, value: CHANGE })
+          .mockResolvedValueOnce({ ok: true, value: null }),
+        applyConnectionChange: vi.fn(async () => ({ ok: true as const, value: switched })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+      await start(user, 'OpenAI', 'my-gpt');
+
+      await user.click(await screen.findByRole('checkbox', { name: CHANGE.agreement }));
+      await user.click(screen.getByRole('button', { name: 'Switch connection' }));
+      await pick(user, 'Your model', 'gpt-5.1');
+      await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({ connection: switched })
+        )
+      );
+      expect(screen.getByRole('combobox', { name: 'Connection' })).toHaveTextContent(
+        'My OpenAI (switched)'
+      );
+    });
+
     it('shows why the change failed and asks again', async () => {
       const user = userEvent.setup();
       const api = fakeApi({
