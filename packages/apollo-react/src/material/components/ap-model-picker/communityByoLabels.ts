@@ -196,6 +196,18 @@ const M = {
   close: msg({ id: 'modelPicker.community.close', message: 'Close' }),
   dismiss: msg({ id: 'modelPicker.community.dismiss', message: 'Dismiss' }),
   tryAgain: msg({ id: 'modelPicker.community.tryAgain', message: 'Try again' }),
+  retryConnect: msg({
+    id: 'modelPicker.community.retryConnect',
+    message: 'Check the details above, then {button} again.',
+  }),
+  retryTest: msg({
+    id: 'modelPicker.community.retryTest',
+    message: 'Pick another model or fix its connection, then {button} again.',
+  }),
+  retrySwitch: msg({
+    id: 'modelPicker.community.retrySwitch',
+    message: 'Switch connection again, or create a separate connection instead.',
+  }),
   cancel: msg({ id: 'modelPicker.community.cancel', message: 'Cancel' }),
   testAndAdd: msg({ id: 'modelPicker.community.testAndAdd', message: 'Test and add' }),
   testAndSave: msg({ id: 'modelPicker.community.testAndSave', message: 'Test and save' }),
@@ -306,6 +318,9 @@ export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLa
     close: t(M.close),
     dismiss: t(M.dismiss),
     tryAgain: t(M.tryAgain),
+    retryConnect: (button) => t(M.retryConnect, { button }),
+    retryTest: (button) => t(M.retryTest, { button }),
+    retrySwitch: t(M.retrySwitch),
     cancel: t(M.cancel),
     testAndAdd: t(M.testAndAdd),
     testAndSave: t(M.testAndSave),

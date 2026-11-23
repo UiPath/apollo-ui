@@ -98,6 +98,8 @@ export interface ByoFailure {
   title: string;
   message?: string;
   detail?: string;
+  /** Asking again gives the same answer, so the dialog offers no Try again. */
+  final?: boolean;
 }
 
 export type ByoResult<T> = { ok: true; value: T } | { ok: false; failure: ByoFailure };

@@ -665,11 +665,15 @@ export function createCommunityByoApi(
       return fail({
         title: 'This feature does not take models of your own',
         detail: `No BYO configuration for ${product} / ${operationGroupName}.`,
+        final: true,
       });
     }
     // Every model of such a feature is configured at once, which only AI Trust Layer offers.
     if (feature.modelsConfigurationOption === 'AllModels') {
-      return fail({ title: 'This feature’s models are configured together in AI Trust Layer' });
+      return fail({
+        title: 'This feature’s models are configured together in AI Trust Layer',
+        final: true,
+      });
     }
     rules = {
       feature,
@@ -807,6 +811,7 @@ export function createCommunityByoApi(
       return fail({
         title: `${name} cannot be edited here`,
         detail: JSON.stringify(saved, null, 2),
+        final: true,
       });
     }
     const savedName = entry.desiredModel ?? name;
@@ -825,7 +830,8 @@ export function createCommunityByoApi(
 
   const loadForm: ByoModelDialogApi['loadForm'] = async (providerId) => {
     const provider = byId(providerId);
-    if (!provider) return fail<ByoConnectionForm>({ title: `Unknown provider ${providerId}` });
+    if (!provider)
+      return fail<ByoConnectionForm>({ title: `Unknown provider ${providerId}`, final: true });
     return ok(provider.form);
   };
 
@@ -834,7 +840,7 @@ export function createCommunityByoApi(
     connection
   ) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     const { form } = provider;
 
     // The same session Connect then submits the changes through.
@@ -879,7 +885,7 @@ export function createCommunityByoApi(
     existing,
   }) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     // An empty field is left out, so the connector's default applies. Editing, an emptied
     // setting is sent empty so it is cleared, while an empty secret is left out so IS keeps it.
     const entered: Record<string, string> = {};
@@ -1022,7 +1028,7 @@ export function createCommunityByoApi(
 
   const checkConnection: ByoModelDialogApi['checkConnection'] = async (providerId, connection) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     if (!provider.requires) return ok(null);
     const read = await currentSettings(provider, connection);
     if (!read.ok) return read;
@@ -1035,7 +1041,7 @@ export function createCommunityByoApi(
     connection
   ) => {
     const provider = byId(providerId);
-    if (!provider?.requires) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider?.requires) return fail({ title: `Unknown provider ${providerId}`, final: true });
     const read = await currentSettings(provider, connection);
     if (!read.ok) return read;
     const { sid, sfd } = read.value;
@@ -1051,7 +1057,7 @@ export function createCommunityByoApi(
 
   const listModels: ByoModelDialogApi['listModels'] = async (providerId, connection) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     const { result: r } = await whileNewConnectionInvisible(connection.id, () =>
       call('POST', buildGatewayUrl(ctx, 'api/byom/available-models'), {
         body: {
@@ -1127,7 +1133,7 @@ export function createCommunityByoApi(
     editing,
   }) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     if (!ctx.organizationId || !ctx.tenantId) {
       return fail({ title: 'The picker needs organizationId and tenantId to add a model.' });
     }
