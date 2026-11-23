@@ -108,7 +108,7 @@ const M = {
   }),
   modelSelect: msg({
     id: 'modelPicker.community.modelSelect',
-    message: 'Select a model · {count} can be used',
+    message: 'Select one of {count} models',
   }),
   modelSearch: msg({ id: 'modelPicker.community.modelSearch', message: 'Search {count} models…' }),
   modelNoMatch: msg({
