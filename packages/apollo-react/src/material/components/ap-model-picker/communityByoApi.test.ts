@@ -964,6 +964,43 @@ describe('createCommunityByoApi', () => {
       expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
     });
 
+    it('sends nothing when it is already for the Bedrock runtime by the time it is switched', async () => {
+      routeSession({
+        'authentication.type': 'assumeRole',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      const result = await api().applyConnectionChange?.('bedrock', saved);
+
+      expect(result).toEqual({ ok: true, value: saved });
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is not saved by Connect once its authentication is one the dialog does not offer', async () => {
+      routeSession({
+        'authentication.type': 'assumeRole',
+        'default.service.name': 'bedrock-runtime',
+      });
+      const client = api();
+      const form = await client.loadForm('bedrock', null);
+      if (!form.ok) throw new Error('no form');
+
+      const result = await client.connect({
+        providerId: 'bedrock',
+        form: form.value,
+        authType: 'accessKey',
+        values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': '' },
+        name: 'AWS',
+        folderId: 'f',
+        existing: saved,
+      });
+
+      expect(!result.ok && result.failure.message).toContain(
+        'It uses an authentication type this dialog does not offer (assumeRole).'
+      );
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
     it('is edited here when it is set up for the Bedrock runtime', async () => {
       routeSession({
         'authentication.type': 'accessKey',
