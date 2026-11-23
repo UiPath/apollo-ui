@@ -186,6 +186,8 @@ function DialogBody({
   const [name, setName] = React.useState('');
   // A name of the user's own, or the UiPath model the model replaces, whose name it then takes.
   const [useAs, setUseAs] = React.useState<'own' | 'replacement'>('replacement');
+  // Kept by identity: each failure the dialog shows is its own copy, so an adapter that answers
+  // a retry with the same object still shows it again.
   const [dismissedFailures, setDismissedFailures] = React.useState<ByoFailure[]>([]);
   const [replaces, setReplaces] = React.useState('');
   const [apiType, setApiType] = React.useState('');
@@ -219,7 +221,7 @@ function DialogBody({
       if (result.ok) {
         setModelsState({ status: 'ok', models: result.value });
       } else {
-        setModelsState({ ...NO_MODELS, status: 'error', failure: result.failure });
+        setModelsState({ ...NO_MODELS, status: 'error', failure: { ...result.failure } });
       }
     } catch (err) {
       if (gen === generation.current) {
@@ -374,7 +376,7 @@ function DialogBody({
   const failConnectionEdit = (failure: ByoFailure) => {
     setEditingConnection(false);
     resetFormValues();
-    setConnect({ status: 'error', failure });
+    setConnect({ status: 'error', failure: { ...failure } });
     loadModels(providerId, connection, generation.current);
   };
 
@@ -474,7 +476,7 @@ function DialogBody({
     }
     if (gen !== generation.current) return;
     if (!result.ok) {
-      setConnect({ status: 'error', failure: result.failure });
+      setConnect({ status: 'error', failure: { ...result.failure } });
       return;
     }
 
@@ -580,7 +582,7 @@ function DialogBody({
     }
     const stillOpen = gen === generation.current;
     if (!result.ok) {
-      if (stillOpen) setTest({ status: 'error', failure: result.failure });
+      if (stillOpen) setTest({ status: 'error', failure: { ...result.failure } });
       return;
     }
 
