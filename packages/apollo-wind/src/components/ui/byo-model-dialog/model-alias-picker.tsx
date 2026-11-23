@@ -119,6 +119,12 @@ export function ModelAliasPicker({
           e.preventDefault();
           searchRef.current?.focus();
         }}
+        onEscapeKeyDown={(e) => {
+          // In the custom alias editor, back to the list rather than closing it.
+          if (!adding) return;
+          e.preventDefault();
+          setAdding(false);
+        }}
       >
         {adding ? (
           <div className="flex flex-col gap-2 p-2">
@@ -132,11 +138,6 @@ export function ModelAliasPicker({
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   confirmCustom();
-                } else if (e.key === 'Escape') {
-                  // Back to the list rather than closing it.
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setAdding(false);
                 }
               }}
             />
