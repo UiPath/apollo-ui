@@ -270,7 +270,20 @@ describe('ByoModelDialog', () => {
     await user.keyboard('{Escape}');
 
     expect(screen.getByRole('option', { name: 'Add custom alias' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search UiPath models…')).toHaveFocus();
     expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('keeps focus in the alias list after cancelling the custom alias editor', async () => {
+    const user = userEvent.setup();
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
+
+    await user.click(await screen.findByRole('combobox', { name: 'Model alias' }));
+    await user.click(await screen.findByRole('option', { name: 'Add custom alias' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.getByRole('option', { name: 'Add custom alias' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search UiPath models…')).toHaveFocus();
   });
 
   it('changes a custom alias in place', async () => {
