@@ -199,8 +199,8 @@ describe('NodeVariablesPanel', () => {
     // Manual trigger has none, like the empty Outputs section.
     expect(screen.getAllByRole('img', { name: 'Outputs: 0' })).toHaveLength(2);
 
-    await user.click(screen.getByRole('button', { name: 'Expand messageReceivedInSlack1' }));
-    await user.click(screen.getByRole('button', { name: 'Expand output' }));
+    await user.click(screen.getByTitle('Expand messageReceivedInSlack1'));
+    await user.click(screen.getByTitle('Expand output'));
     expect(screen.getByText('channel_name')).toBeInTheDocument();
   });
 
@@ -262,7 +262,7 @@ describe('NodeVariablesPanel', () => {
     // userEvent.setup() installs a clipboard stub, so read the copy back from it.
     await waitFor(async () => expect(await navigator.clipboard.readText()).toBe('$vars.flowTest'));
 
-    await user.click(screen.getByRole('button', { name: 'Expand messageReceivedInSlack1' }));
+    await user.click(screen.getByTitle('Expand messageReceivedInSlack1'));
     await user.click(
       screen.getByRole('button', { name: 'Copy path for $vars.messageReceivedInSlack1.output' })
     );
@@ -288,7 +288,7 @@ describe('NodeVariablesPanel', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: 'Expand node-1' }));
+    await user.click(screen.getByTitle('Expand node-1'));
     await user.click(screen.getByRole('button', { name: 'Copy path for $vars["node-1"].body' }));
 
     await waitFor(async () =>
@@ -333,13 +333,11 @@ describe('NodeVariablesPanel', () => {
       />
     );
 
-    await user.click(within(section('Inputs')).getByRole('button', { name: 'Expand webhook1' }));
+    await user.click(within(section('Inputs')).getByTitle('Expand webhook1'));
 
     expect(within(section('Inputs')).getByText('body')).toBeInTheDocument();
     expect(within(section('Nodes')).queryByText('body')).toBeNull();
-    expect(
-      within(section('Nodes')).getByRole('button', { name: 'Expand webhook1' })
-    ).toBeInTheDocument();
+    expect(within(section('Nodes')).getByTitle('Expand webhook1')).toBeInTheDocument();
   });
 
   it('keeps the declared type of a schema-only scalar node', () => {
@@ -686,7 +684,7 @@ describe('NodeVariablesPanel', () => {
 
     expect(onDeleteVariable).toHaveBeenCalledWith(variableRow('flowConfig'));
     // Nested fields aren't variables, so they have no delete action.
-    await user.click(screen.getByRole('button', { name: 'Expand flowConfig' }));
+    await user.click(screen.getByTitle('Expand flowConfig'));
     expect(screen.queryByRole('button', { name: 'Delete region' })).toBeNull();
   });
 
@@ -796,7 +794,7 @@ describe('NodeVariablesPanel', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: 'Expand constructor' }));
+    await user.click(screen.getByTitle('Expand constructor'));
     expect(screen.getByText('name')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Edit toString' }));
@@ -923,7 +921,7 @@ describe('NodeVariablesPanel', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Expand settings' })).toBeInTheDocument();
+    expect(screen.getByTitle('Expand settings')).toBeInTheDocument();
     expect(screen.queryByText('region')).not.toBeInTheDocument();
   });
 
@@ -937,7 +935,7 @@ describe('NodeVariablesPanel', () => {
     expect(screen.getByText('region')).toBeInTheDocument();
 
     // Matches can be collapsed, rows and sections alike.
-    await user.click(screen.getByRole('button', { name: 'Collapse flowConfig' }));
+    await user.click(screen.getByTitle('Collapse flowConfig'));
     expect(screen.queryByText('region')).not.toBeInTheDocument();
     await user.click(sectionToggle('Variables'));
     expect(sectionToggle('Variables')).toHaveAttribute('aria-expanded', 'false');
@@ -1083,8 +1081,8 @@ describe('NodeVariablesPanel', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: 'Expand trigger1' }));
-    await user.click(screen.getByRole('button', { name: 'Expand output' }));
+    await user.click(screen.getByTitle('Expand trigger1'));
+    await user.click(screen.getByTitle('Expand output'));
     expect(screen.queryByRole('button', { name: 'Delete output' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Delete invoiceId' }));
     expect(onDeleteVariable).toHaveBeenCalledWith(
@@ -1224,7 +1222,7 @@ describe('NodeVariablesPanel', () => {
     await waitFor(async () =>
       expect(await navigator.clipboard.readText()).toBe('$assets.invoiceApiKey')
     );
-    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    await user.click(screen.getByTitle('Expand erpCredential'));
     expect(
       screen.getByRole('button', { name: 'Copy path for $assets.erpCredential.username' })
     ).toBeInTheDocument();
@@ -1271,7 +1269,7 @@ describe('NodeVariablesPanel', () => {
     expect(onDeleteVariable).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
     expect(screen.queryByRole('dialog')).toBeNull();
     // Nested fields aren't assets, so they have no delete action.
-    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    await user.click(screen.getByTitle('Expand erpCredential'));
     expect(screen.queryByRole('button', { name: 'Delete username' })).toBeNull();
   });
 
@@ -1289,7 +1287,7 @@ describe('NodeVariablesPanel', () => {
     expect(screen.queryByRole('button', { name: 'Edit invoiceApiKey' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Delete invoiceApiKey' })).toBeInTheDocument();
     // Nested asset fields get no edit or delete at all.
-    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    await user.click(screen.getByTitle('Expand erpCredential'));
     expect(screen.queryByRole('button', { name: 'Delete username' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Edit username' })).toBeNull();
   });
@@ -1305,7 +1303,7 @@ describe('NodeVariablesPanel', () => {
     expect(
       screen.getByRole('button', { name: 'Copy path for $assets.orchestrator.invoiceApiKey' })
     ).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    await user.click(screen.getByTitle('Expand erpCredential'));
     expect(
       screen.getByRole('button', {
         name: 'Copy path for $assets.orchestrator.erpCredential.username',
@@ -1522,7 +1520,7 @@ describe('NodeVariablesPanel', () => {
     const ref = createRef<NodeVariablesPanelHandle>();
     render(<NodeVariablesPanel ref={ref} variables={VARIABLES} nodes={NODES} />);
     await openSearch(user, 'region');
-    await user.click(screen.getByRole('button', { name: 'Collapse flowConfig' }));
+    await user.click(screen.getByTitle('Collapse flowConfig'));
     await user.click(sectionToggle('Variables'));
 
     act(() => {

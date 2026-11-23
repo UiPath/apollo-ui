@@ -207,19 +207,19 @@ describe('ToolCall', () => {
     expect(screen.getByText('query').closest('[data-slot="tool-call-value"]')).toBeInTheDocument();
     expect(screen.queryByText('lang')).not.toBeInTheDocument();
 
-    const expandFilters = screen.getByRole('button', { name: 'Expand filters' });
+    const expandFilters = screen.getByTitle('Expand filters');
     // The row carries the expanded state; the chevron is only its mouse affordance.
     const filtersRow = expandFilters.closest('[role="row"]');
     expect(filtersRow).toHaveAttribute('aria-expanded', 'false');
     await user.click(expandFilters);
-    expect(screen.getByRole('button', { name: 'Collapse filters' })).toBeInTheDocument();
+    expect(screen.getByTitle('Collapse filters')).toBeInTheDocument();
     expect(filtersRow).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('lang')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Expand tags' })).toBeInTheDocument();
+    expect(screen.getByTitle('Expand tags')).toBeInTheDocument();
 
     // A container that arrives in a later value (e.g. while streaming) starts folded too.
     rerender(tree({ ...value, meta: { page: 1 } }));
-    expect(screen.getByRole('button', { name: 'Expand meta' })).toBeInTheDocument();
+    expect(screen.getByTitle('Expand meta')).toBeInTheDocument();
     expect(screen.getByText('lang')).toBeInTheDocument();
   });
 
@@ -409,7 +409,7 @@ describe('ToolCall', () => {
         </ToolCall>
       </JsonTreeViewProvider>
     );
-    expect(screen.getByRole('button', { name: 'filters aufklappen' })).toBeInTheDocument();
+    expect(screen.getByTitle('filters aufklappen')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copier le chemin filters' })).toBeInTheDocument();
   });
 
