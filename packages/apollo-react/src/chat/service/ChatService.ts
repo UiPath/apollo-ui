@@ -182,6 +182,7 @@ export class AutopilotChatService {
     this.getLocale = this.getLocale.bind(this);
     this.setTheme = this.setTheme.bind(this);
     this.setRenderer = this.setRenderer.bind(this);
+    this.setSpacing = this.setSpacing.bind(this);
     this.getTheme = this.getTheme.bind(this);
     this.setResourceManager = this.setResourceManager.bind(this);
     this.getResourceManager = this.getResourceManager.bind(this);
@@ -1213,6 +1214,17 @@ export class AutopilotChatService {
   setRenderer(renderer: AutopilotChatRenderer) {
     this._config.renderer = renderer;
     this._eventBus.publish(AutopilotChatEvent.RendererChange, renderer);
+  }
+
+  /**
+   * Sets the spacing for the chat interface, e.g. `{ compactMode: true }` for a denser layout in
+   * narrow panels. Replaces the current spacing; fields left out use their defaults.
+   *
+   * @param spacing - The spacing configuration, or undefined for the defaults
+   */
+  setSpacing(spacing: AutopilotChatConfiguration['spacing']) {
+    this._config.spacing = spacing;
+    this._internalService.publish(AutopilotChatInternalEvent.SetSpacing, spacing);
   }
 
   /**
