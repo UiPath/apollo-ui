@@ -673,7 +673,7 @@ export function createCommunityByoApi(
     if (folderRows.length === 0) {
       return fail({
         title: 'You need a folder for your connection',
-        detail: 'Create a folder in Orchestrator, or ask an administrator to add you to one.',
+        message: 'Create a folder in Orchestrator, or ask an administrator to add you to one.',
       });
     }
     const folderIds = new Set(folderRows.map((f) => f.id));
