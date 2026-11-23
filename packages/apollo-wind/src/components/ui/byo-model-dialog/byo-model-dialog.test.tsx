@@ -999,6 +999,26 @@ describe('ByoModelDialog', () => {
       expect(await screen.findByLabelText(/Endpoint/)).toBeInTheDocument();
     });
 
+    it('says why a saved connection cannot be edited when its form did not load', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi();
+      vi.mocked(api.loadForm).mockResolvedValueOnce({
+        ok: false,
+        failure: { title: 'Could not load the OpenAI connector' },
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+      await start(user, 'OpenAI');
+
+      expect(await screen.findByText('Could not load the OpenAI connector')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Edit connection' })).toBeDisabled();
+      await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Edit connection' })).toBeEnabled()
+      );
+      expect(screen.queryByText('Could not load the OpenAI connector')).toBeNull();
+    });
+
     it('loads what the dialog needs again', async () => {
       const user = userEvent.setup();
       const api = fakeApi();
