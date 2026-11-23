@@ -779,6 +779,10 @@ describe('createCommunityByoApi', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.failure.title).toBe('You need a folder for your connection');
+    expect(result.failure.message).toBe(
+      'Create a folder in Orchestrator, or ask an administrator to add you to one.'
+    );
+    expect(result.failure.detail).toBeUndefined();
   });
 
   it('refuses to edit a connection whose authentication type the dialog does not offer', async () => {
