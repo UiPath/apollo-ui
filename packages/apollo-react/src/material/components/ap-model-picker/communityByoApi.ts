@@ -1032,8 +1032,17 @@ export function createCommunityByoApi(
     if (!provider.requires) return ok(null);
     const read = await currentSettings(provider, connection);
     if (!read.ok) return read;
-    const other = otherPurpose(provider, read.value.sfd?.configs ?? {});
-    return ok(other ? connectionChange(provider, connection, other) : null);
+    const configs = read.value.sfd?.configs ?? {};
+    const other = otherPurpose(provider, configs);
+    if (!other) return ok(null);
+    // Only a connection whose authentication the dialog offers is switched: its settings are
+    // sent back as read, which is verified for those types alone (an assumed role is not one).
+    const authType = configs['authentication.type'];
+    const offered = provider.form.authTypes.some((t) => t.value === authType);
+    if (provider.form.authTypes.length && authType && !offered) {
+      return fail({ ...servesOther(provider, other), final: true });
+    }
+    return ok(connectionChange(provider, connection, other));
   };
 
   const applyConnectionChange: ByoModelDialogApi['applyConnectionChange'] = async (
