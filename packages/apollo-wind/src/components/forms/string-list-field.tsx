@@ -9,6 +9,7 @@ import {
   FormFieldLabel,
 } from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
+import { useFieldIds } from './aria-ids';
 import type { StringListFieldMetadata } from './form-schema';
 
 /** Interpolate `{{token}}` placeholders; unknown tokens are left untouched. */
@@ -54,8 +55,9 @@ export function StringListField({
   disabled = false,
   required = false,
   inputRef,
-  ariaDescribedBy = error ? `${field.name}-error` : undefined,
+  ariaDescribedBy,
 }: StringListFieldProps) {
+  const { errorId } = useFieldIds(field.name);
   return (
     <FormField data-slot="string-list-field">
       <FormFieldLabel
@@ -73,16 +75,16 @@ export function StringListField({
         invalid={!!error}
         disabled={disabled}
         inputRef={inputRef}
-        ariaDescribedBy={ariaDescribedBy}
+        ariaDescribedBy={ariaDescribedBy ?? (error ? errorId : undefined)}
       />
       <FormFieldDescription>{field.description}</FormFieldDescription>
-      <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
+      <FormFieldError id={errorId}>{error}</FormFieldError>
     </FormField>
   );
 }
 
 export interface StringListControlProps extends Omit<StringListFieldProps, 'error' | 'required'> {
-  /** Marks every row invalid and points it at the `${field.name}-error` message. */
+  /** Marks every row invalid and points it at the field's error message. */
   invalid?: boolean;
 }
 
@@ -95,8 +97,10 @@ export function StringListControl({
   invalid = false,
   disabled = false,
   inputRef,
-  ariaDescribedBy = invalid ? `${field.name}-error` : undefined,
+  ariaDescribedBy,
 }: StringListControlProps) {
+  const { errorId } = useFieldIds(field.name);
+  const describedBy = ariaDescribedBy ?? (invalid ? errorId : undefined);
   const items = value ?? [];
   const maxItems = field.maxItems ?? Number.POSITIVE_INFINITY;
   const canAdd = !disabled && items.length < maxItems;
@@ -160,8 +164,8 @@ export function StringListControl({
               // styling and lets assistive tech announce the FormFieldError text below,
               // regardless of which row is focused.
               aria-invalid={invalid || undefined}
-              aria-describedby={ariaDescribedBy}
-              aria-errormessage={invalid ? `${field.name}-error` : undefined}
+              aria-describedby={describedBy}
+              aria-errormessage={invalid ? errorId : undefined}
               className="flex-1"
             />
             <Button

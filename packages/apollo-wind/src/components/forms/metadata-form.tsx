@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { type FieldValues, FormProvider, useForm, useFormState, useWatch } from 'react-hook-form';
 import { z } from 'zod/v4';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/panel-tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { deepEqual, get } from '@/lib';
-
+import { FieldIdScopeContext } from './aria-ids';
 import { DataFetcher } from './data-fetcher';
 import { buildFieldActionRegistry } from './field-actions';
 import { FormFieldRenderer } from './field-renderer';
@@ -136,6 +136,9 @@ export function MetadataForm({
   changedFields,
   changedFieldLabel,
 }: MetadataFormProps) {
+  // Prefixes every field id, so a second form over the same schema (a docked panel and its
+  // expanded dialog) does not point its labels at the first form's controls.
+  const fieldIdScope = `${useId()}-`;
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
     Record<string, React.ComponentType<CustomFieldComponentProps>>
@@ -477,7 +480,9 @@ export function MetadataForm({
   return (
     <FormProvider {...form}>
       <LiteralValueContext.Provider value={readLiteralValue}>
-        {hasFieldTooltip ? <TooltipProvider>{body}</TooltipProvider> : body}
+        <FieldIdScopeContext.Provider value={fieldIdScope}>
+          {hasFieldTooltip ? <TooltipProvider>{body}</TooltipProvider> : body}
+        </FieldIdScopeContext.Provider>
       </LiteralValueContext.Provider>
     </FormProvider>
   );

@@ -1256,6 +1256,7 @@ import {
 // composed from the field anatomy parts.
 function NotesField({
   name,
+  controlId,
   value,
   onChange,
   onBlur,
@@ -1264,14 +1265,16 @@ function NotesField({
   error,
   field,
 }: CustomFieldComponentProps) {
-  const errorId = `${name}-error`;
+  // `controlId` carries the form's id prefix, so two forms over this schema keep their ids apart.
+  const id = controlId ?? name;
+  const errorId = `${id}-error`;
   return (
     <FormField>
-      <FormFieldLabel htmlFor={name} required={required}>
+      <FormFieldLabel htmlFor={id} required={required}>
         {field?.label}
       </FormFieldLabel>
       <Textarea
-        id={name}
+        id={id}
         value={typeof value === "string" ? value : ""}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
@@ -1319,6 +1322,9 @@ around the component, which is then only the control. Register it with its place
 receives `controlRef`, the handle Insert variable writes through, and `labelId`, for a control
 registered with `labelTarget: "labelledby"` that names itself.
 
+Put `controlId` on the focusable element, not `name`. The label points at `controlId`. Each
+`MetadataForm` prefixes it, so two forms over the same schema keep their labels apart.
+
 ### CustomFieldComponentProps Interface
 
 ```typescript
@@ -1332,6 +1338,7 @@ interface CustomFieldComponentProps {
   required?: boolean;
   error?: string;
   controlRef?: React.Ref<ValueModeControlHandle>; // in the field anatomy
+  controlId?: string; // id for the focusable control; the label points at it
   labelId?: string; // in the field anatomy
   [key: string]: unknown; // Additional props from componentProps
 }

@@ -104,6 +104,50 @@ describe('MetadataForm', () => {
       expect(screen.getByPlaceholderText('Enter email')).toBeInTheDocument();
     });
 
+    it('labels each control in its own form when the same schema is mounted twice', () => {
+      // A docked properties panel and its expanded dialog render the same node's form at once.
+      const schema: FormSchema = {
+        id: 'decision',
+        title: 'Decision',
+        sections: [
+          {
+            id: 's1',
+            fields: [
+              { name: 'inputs.trueLabel', type: 'text', label: 'True branch label' },
+              {
+                name: 'inputs.expression',
+                type: 'text',
+                label: 'Condition',
+                valueModes: { modes: ['literal', 'expression'] },
+              },
+              { name: 'enabled', type: 'switch', label: 'Enabled' },
+            ],
+          },
+        ],
+      };
+      render(
+        <>
+          <div data-testid="panel">
+            <MetadataForm schema={schema} />
+          </div>
+          <div data-testid="dialog">
+            <MetadataForm schema={schema} />
+          </div>
+        </>
+      );
+
+      for (const name of ['True branch label', 'Condition', 'Enabled']) {
+        for (const id of ['panel', 'dialog']) {
+          const form = within(screen.getByTestId(id));
+          const control = form.getByLabelText(name);
+          // `getByLabelText` throws when the label points at a control outside this form.
+          expect(screen.getByTestId(id)).toContainElement(control);
+        }
+      }
+      const ids = Array.from(document.querySelectorAll('[id]'), (element) => element.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
     it('renders section title when provided', () => {
       const schemaWithTitle: FormSchema = {
         id: 'form',
