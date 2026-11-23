@@ -543,12 +543,16 @@ function DialogBody({
   const apiTypeOptions = provider && alias ? apiTypesFor(providerId, alias) : [];
   const apiTypeKey = apiTypeOptions.map((t) => t.value).join('|');
   // As in AI Trust Layer, the first API type offered is taken. An edited model keeps its own
-  // while it is still offered.
+  // whenever it is offered, also after a change of provider.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the options are compared by their values
   React.useEffect(() => {
-    if (modelToEdit && apiTypeOptions.some((t) => t.value === apiType)) return;
-    const first = apiTypeOptions[0]?.value ?? '';
-    if (apiType !== first) setApiType(first);
+    const offered = (t: string | null | undefined) => apiTypeOptions.some((o) => o.value === t);
+    if (modelToEdit && offered(apiType)) return;
+    const next =
+      modelToEdit && offered(modelToEdit.apiType)
+        ? (modelToEdit.apiType as string)
+        : (apiTypeOptions[0]?.value ?? '');
+    if (apiType !== next) setApiType(next);
   }, [apiTypeKey, apiType, modelToEdit]);
   const apiTypeReady = apiTypeOptions.some((t) => t.value === apiType);
 
