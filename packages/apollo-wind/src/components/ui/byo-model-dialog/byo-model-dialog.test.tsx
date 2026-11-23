@@ -318,6 +318,26 @@ describe('ByoModelDialog', () => {
     expect(await screen.findByText('The test call failed: MISSING_TOOL_CALL')).toBeInTheDocument();
   });
 
+  it('shows a failure again when the adapter answers a retry with the same object', async () => {
+    const user = userEvent.setup();
+    const failure = { title: 'The test call failed: MISSING_TOOL_CALL' };
+    const api = fakeApi({ testAndSave: vi.fn(async () => ({ ok: false as const, failure })) });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await start(user, 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await pick(user, 'Your model', 'gpt-4o');
+    const save = screen.getByRole('button', { name: 'Test and add' });
+    await user.click(save);
+    await screen.findByText(failure.title);
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    expect(screen.queryByText(failure.title)).not.toBeInTheDocument();
+    await user.click(save);
+    await waitFor(() => expect(api.testAndSave).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText(failure.title)).toBeInTheDocument();
+  });
+
   it('shows a newer failure after an older one was dismissed', async () => {
     const user = userEvent.setup();
     const api = fakeApi({
