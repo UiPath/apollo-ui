@@ -1,6 +1,11 @@
 import { cn } from '@uipath/apollo-wind';
 import { useMemo } from 'react';
-import { isOutlineDrawnShape, isWideNodeShape, type NodeShape } from '../../schema';
+import {
+  isOutlineDrawnShape,
+  isRoundEndedShape,
+  isWideNodeShape,
+  type NodeShape,
+} from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
@@ -84,7 +89,7 @@ export const BaseContainer = ({
         ? 'bg-transparent border-0'
         : cn(
             'bg-surface-overlay border border-border',
-            shape === 'pill' ? 'rounded-full' : 'rounded-(--node-radius)'
+            isRoundEndedShape(shape) ? 'rounded-full' : 'rounded-(--node-radius)'
           ),
       'w-(--node-w) h-(--node-h)',
       'outline-offset-0 transition-[box-shadow,border-color] duration-150',

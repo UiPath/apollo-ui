@@ -164,6 +164,7 @@ vi.mock('./NodeLabel', () => ({
   },
 }));
 
+import { NODE_BADGE_INSET_CIRCLE, NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
 import type { HandleGroupManifest } from '../../schema';
 import { BaseNode } from './BaseNode';
 
@@ -501,6 +502,25 @@ describe('BaseNode', () => {
       fireEvent.click(actionBadge);
 
       expect(onActionNeeded).toHaveBeenCalledWith('test-node');
+    });
+
+    // The chip replaces the top-right badge, so it takes the same inset as that badge slot.
+    it.each([
+      ['square', NODE_BADGE_INSET_SQUARE],
+      ['circle', NODE_BADGE_INSET_CIRCLE],
+      ['pill', NODE_BADGE_INSET_CIRCLE],
+    ] as const)('sits at the top-right badge inset on a %s', (shape, inset) => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        display: { ...DEFAULT_MANIFEST.display, shape },
+      };
+      mockOverrideConfig.current = { executionStatusOverride: 'ActionNeeded' };
+
+      render(<BaseNode {...defaultProps} />);
+
+      const actionBadge = screen.getByRole('button', { name: 'Action needed' });
+      expect(actionBadge.style.top).toBe(`${inset}px`);
+      expect(actionBadge.style.left).toBe(`calc(var(--node-w) - ${inset + NODE_BADGE_SIZE}px)`);
     });
   });
 
