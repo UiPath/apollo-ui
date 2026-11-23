@@ -878,6 +878,28 @@ describe('createCommunityByoApi', () => {
       );
     });
 
+    it('is not switched when it uses an authentication type the dialog does not offer', async () => {
+      routeSession({ 'authentication.type': 'assumeRole', 'default.service.name': 's3' });
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(result?.ok).toBe(false);
+      if (!result || result.ok) return;
+      expect(result.failure.title).toBe('Edit this connection in Integration Service');
+      expect(result.failure.message).toContain('It is set up for s3, not Amazon Bedrock.');
+      expect(result.failure.final).toBe(true);
+      expect(calls.some((c) => c.method === 'PUT' || c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is used as it is with such an authentication type once it is for the Bedrock runtime', async () => {
+      routeSession({
+        'authentication.type': 'assumeRole',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      expect(await api().checkConnection?.('bedrock', saved)).toEqual({ ok: true, value: null });
+    });
+
     it('is used as it is when it is set up for the Bedrock runtime', async () => {
       routeSession({
         'authentication.type': 'accessKey',
