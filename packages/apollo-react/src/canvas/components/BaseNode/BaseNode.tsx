@@ -5,8 +5,6 @@ import {
   DEFAULT_NODE_SIZE,
   DEFAULT_RECTANGLE_NODE_WIDTH,
   GRID_SPACING,
-  NODE_BADGE_INSET_CIRCLE,
-  NODE_BADGE_INSET_SQUARE,
   NODE_BADGE_SIZE,
   NODE_BORDER_SIZE,
   NODE_CONTAINER_RADIUS_RATIO,
@@ -25,7 +23,7 @@ import {
   useToolbarActionStoreContext,
 } from '../../hooks';
 import { useBatchedUpdateNodeInternals } from '../../hooks/useBatchedUpdateNodeInternals';
-import { isWideNodeShape, type NodeShape } from '../../schema';
+import { isRoundEndedShape, isWideNodeShape, type NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import { CanvasIcon, getIcon } from '../../utils/icon-registry';
@@ -52,6 +50,7 @@ import type {
   NodeStatusContext,
 } from './BaseNode.types';
 import { BaseBadgeSlot } from './BaseNodeBadgeSlot';
+import { getNodeBadgeInset } from './BaseNodeBadgeSlot.utils';
 import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
 import { BaseContainer } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
@@ -378,8 +377,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     const innerBasis = Math.min(effectiveH, effectiveW);
     // A pill's ends are fully round, so a rounded-square icon tile reads as a mistake inside it.
-    const innerRadius =
-      displayShape === 'pill' ? '9999px' : getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
+    const innerRadius = isRoundEndedShape(displayShape)
+      ? '9999px'
+      : getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
 
     // Uniform gap: derive a fixed gap from the reference (smallest) dimension
     // so spacing is consistent on all sides regardless of aspect ratio.
@@ -745,8 +745,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       {handleElements}
       {executionStatus === 'ActionNeeded' &&
         (() => {
-          const badgeInset =
-            displayShape === 'circle' ? NODE_BADGE_INSET_CIRCLE : NODE_BADGE_INSET_SQUARE;
+          const badgeInset = getNodeBadgeInset(displayShape);
           return (
             <button
               type="button"

@@ -1,6 +1,7 @@
 import { memo } from 'react';
-import { NODE_BADGE_INSET_CIRCLE, NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
+import { NODE_BADGE_SIZE } from '../../constants';
 import type { NodeShape } from '../../schema';
+import { getNodeBadgeInset } from './BaseNodeBadgeSlot.utils';
 
 interface BaseBadgeSlotProps {
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -9,7 +10,7 @@ interface BaseBadgeSlotProps {
 }
 
 export const BaseBadgeSlot = memo(({ position, shape, children }: BaseBadgeSlotProps) => {
-  const offset = shape === 'circle' ? NODE_BADGE_INSET_CIRCLE : NODE_BADGE_INSET_SQUARE;
+  const offset = getNodeBadgeInset(shape);
   const style: React.CSSProperties = { width: NODE_BADGE_SIZE, height: NODE_BADGE_SIZE };
   switch (position) {
     case 'top-left':

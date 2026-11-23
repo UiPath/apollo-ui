@@ -10,8 +10,9 @@ import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/r
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button, cn, Input, Label, Slider, Switch } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DEFAULT_NODE_SIZE, DEFAULT_RECTANGLE_NODE_WIDTH } from '../../constants';
 import { NodeRegistryProvider } from '../../core';
-import type { CategoryManifest, NodeManifest } from '../../schema';
+import { type CategoryManifest, isWideNodeShape, type NodeManifest } from '../../schema';
 import {
   allCategoryManifests,
   allNodeManifests,
@@ -1541,6 +1542,22 @@ export const Handles: Story = {
 
 const VALIDATION_SEVERITIES = ['WARNING', 'ERROR', 'CRITICAL'] as const;
 
+/** The shared shapes plus a pill, whose round ends need the badge inset a circle gets. */
+const VALIDATION_SHAPES = [...SHAPES, { shape: 'pill', nodeType: 'uipath.agent' }] as const;
+
+/** The space between a node's right edge and the next column (192 - 96 for square nodes). */
+const VALIDATION_COLUMN_GAP = GRID_CONFIG.gapX - DEFAULT_NODE_SIZE;
+
+/** Each column starts one gap past the previous column's widest node. */
+const validationColumnX = (colIndex: number) =>
+  VALIDATION_SHAPES.slice(0, colIndex).reduce(
+    (x, { shape }) =>
+      x +
+      (isWideNodeShape(shape) ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE) +
+      VALIDATION_COLUMN_GAP,
+    GRID_CONFIG.startX
+  );
+
 const validationMessages: Record<string, string> = {
   WARNING: 'Trigger should be connected to at least one node',
   ERROR: 'URL is required',
@@ -1554,13 +1571,13 @@ function createValidationGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
 
   VALIDATION_SEVERITIES.forEach((severity, rowIndex) => {
-    SHAPES.forEach(({ shape, nodeType }, colIndex) => {
+    VALIDATION_SHAPES.forEach(({ shape, nodeType }, colIndex) => {
       nodes.push(
         createNode({
           id: `validation-${shape}-${severity}`,
           type: nodeType,
           position: {
-            x: GRID_CONFIG.startX + colIndex * GRID_CONFIG.gapX,
+            x: validationColumnX(colIndex),
             y: GRID_CONFIG.startY + rowIndex * GRID_CONFIG.gapY,
           },
           data: {

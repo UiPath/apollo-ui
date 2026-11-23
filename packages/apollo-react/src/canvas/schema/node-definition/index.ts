@@ -33,11 +33,18 @@ export {
   nodeManifestSchema,
   nodeRuntimeConstraintsManifestSchema,
 } from './node-manifest';
-export type { NodeShape, OutlineDrawnNodeShape, WideNodeShape } from './shape';
+export type {
+  NodeShape,
+  OutlineDrawnNodeShape,
+  RoundEndedNodeShape,
+  WideNodeShape,
+} from './shape';
 export {
   isOutlineDrawnShape,
+  isRoundEndedShape,
   isWideNodeShape,
   nodeShapeSchema,
   OUTLINE_DRAWN_NODE_SHAPES,
+  ROUND_ENDED_NODE_SHAPES,
   WIDE_NODE_SHAPES,
 } from './shape';
