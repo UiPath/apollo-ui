@@ -243,6 +243,28 @@ describe('ByoModelDialog', () => {
     expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
   });
 
+  it('suggests no retry when Connect is refused for good', async () => {
+    const user = userEvent.setup();
+    const api = fakeApi({
+      connect: vi.fn(async () => ({
+        ok: false as const,
+        failure: { title: 'Edit this connection in Integration Service', final: true },
+      })),
+    });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await start(user, 'Azure OpenAI');
+    await user.type(await screen.findByLabelText(/Endpoint/), 'https://res.openai.azure.com');
+    await user.type(screen.getByLabelText(/API key/), 'key');
+    await user.click(screen.getByRole('button', { name: 'Connect' }));
+
+    expect(
+      await screen.findByText('Edit this connection in Integration Service')
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/then Connect again/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+  });
+
   it('refuses a name already in the model list', async () => {
     const user = userEvent.setup();
     render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
