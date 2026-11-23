@@ -25,7 +25,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toDateValue } from '@/lib/date-value';
-import { joinIds } from './aria-ids';
+import { joinIds, useFieldIds } from './aria-ids';
 import type { FieldMetadata, FieldOption, FieldType, SliderFieldMetadata } from './form-schema';
 import { LiteralValueContext } from './literal-value-context';
 import { StringListControl } from './string-list-field';
@@ -45,7 +45,7 @@ export interface FieldControlProps {
   /** The resolved options of a select, multiselect or radio field. */
   options?: FieldOption[];
   disabled?: boolean;
-  /** Marks the control invalid and points it at the `${field.name}-error` message. */
+  /** Marks the control invalid and points it at the field's error message. */
   invalid?: boolean;
   /** Labels of a `boolean` field's radios. */
   strings?: Partial<BooleanRadioGroupStrings>;
@@ -54,9 +54,9 @@ export interface FieldControlProps {
 }
 
 /**
- * How a field's label reaches its control: `control` labels it with `htmlFor` the control's id
- * (`field.name`), and `labelledby` has the control name itself with `aria-labelledby` the label's
- * id (`${field.name}-label`).
+ * How a field's label reaches its control: `control` labels it with `htmlFor` the control's id,
+ * and `labelledby` has the control name itself with `aria-labelledby` the label's id. A custom
+ * component gets the two as `controlId` and `labelId`.
  */
 export type FieldControlLabelTarget = 'control' | 'labelledby';
 
@@ -143,7 +143,8 @@ const NO_SELECTION: string[] = [];
 /**
  * The bare control for a field's type, without its label, description or error. Its id is
  * `field.name`, and it names the label and error by `${field.name}-label` and
- * `${field.name}-error`, so those are the ids to give them. Custom fields render nothing.
+ * `${field.name}-error`, so those are the ids to give them. Inside `MetadataForm` all three
+ * carry the form's id prefix. Custom fields render nothing.
  */
 export function FieldControl({
   field,
@@ -154,7 +155,8 @@ export function FieldControl({
   strings,
   describedBy,
 }: FieldControlProps) {
-  const errorId = invalid ? `${field.name}-error` : undefined;
+  const ids = useFieldIds(field.name);
+  const errorId = invalid ? ids.errorId : undefined;
   const describedById = joinIds(errorId, describedBy);
   const { onChange } = formField;
   const multipleFiles = field.type === 'file' && field.multiple;
@@ -185,7 +187,7 @@ export function FieldControl({
     case 'email':
       return (
         <Input
-          id={field.name}
+          id={ids.controlId}
           value={formField.value as string | undefined}
           onChange={onTextChange}
           onBlur={formField.onBlur}
@@ -204,7 +206,7 @@ export function FieldControl({
     case 'number':
       return (
         <Input
-          id={field.name}
+          id={ids.controlId}
           value={formField.value as number | undefined}
           onBlur={formField.onBlur}
           name={formField.name}
@@ -225,7 +227,7 @@ export function FieldControl({
     case 'textarea':
       return (
         <Textarea
-          id={field.name}
+          id={ids.controlId}
           value={formField.value as string | undefined}
           onChange={onTextChange}
           onBlur={formField.onBlur}
@@ -249,7 +251,7 @@ export function FieldControl({
           disabled={disabled}
         >
           <SelectTrigger
-            id={field.name}
+            id={ids.controlId}
             aria-label={field.label}
             aria-invalid={invalid || undefined}
             aria-describedby={describedById}
@@ -274,7 +276,7 @@ export function FieldControl({
     case 'multiselect':
       return (
         <MultiSelect
-          id={field.name}
+          id={ids.controlId}
           selected={(formField.value as string[]) || NO_SELECTION}
           onChange={formField.onChange}
           options={multiSelectOptions}
@@ -298,14 +300,14 @@ export function FieldControl({
           aria-invalid={invalid || undefined}
           aria-describedby={describedById}
           aria-errormessage={errorId}
-          id={field.name}
+          id={ids.controlId}
         />
       );
 
     case 'boolean':
       return (
         <BooleanRadioGroup
-          aria-labelledby={`${field.name}-label`}
+          aria-labelledby={ids.labelId}
           value={typeof formField.value === 'boolean' ? formField.value : null}
           onValueChange={formField.onChange}
           onBlur={formField.onBlur}
@@ -320,7 +322,7 @@ export function FieldControl({
     case 'switch':
       return (
         <Switch
-          id={field.name}
+          id={ids.controlId}
           checked={formField.value === true}
           onCheckedChange={onCheckedChange}
           disabled={disabled}
@@ -333,7 +335,7 @@ export function FieldControl({
     case 'radio':
       return (
         <RadioGroup
-          aria-labelledby={`${field.name}-label`}
+          aria-labelledby={ids.labelId}
           value={formField.value as string | null | undefined}
           onValueChange={formField.onChange}
           disabled={disabled}
@@ -345,10 +347,10 @@ export function FieldControl({
             <div key={String(option.value)} className="flex items-center space-x-2">
               <RadioGroupItem
                 value={String(option.value)}
-                id={`${field.name}-${option.value}`}
+                id={`${ids.controlId}-${option.value}`}
                 disabled={'disabled' in option ? Boolean(option.disabled) : false}
               />
-              <Label variant="muted" htmlFor={`${field.name}-${option.value}`}>
+              <Label variant="muted" htmlFor={`${ids.controlId}-${option.value}`}>
                 {option.label}
               </Label>
             </div>
@@ -371,7 +373,7 @@ export function FieldControl({
     case 'date':
       return (
         <DatePicker
-          id={field.name}
+          id={ids.controlId}
           value={toDateValue(formField.value)}
           onValueChange={formField.onChange}
           disabled={disabled}
@@ -385,7 +387,7 @@ export function FieldControl({
     case 'datetime':
       return (
         <DateTimePicker
-          aria-labelledby={`${field.name}-label`}
+          aria-labelledby={ids.labelId}
           aria-invalid={invalid || undefined}
           aria-describedby={describedById}
           aria-errormessage={errorId}
@@ -400,7 +402,7 @@ export function FieldControl({
     case 'file':
       return (
         <FileUpload
-          id={field.name}
+          id={ids.controlId}
           ariaLabel={field.ariaLabel ?? field.label}
           aria-invalid={invalid || undefined}
           aria-describedby={describedById}
@@ -455,6 +457,7 @@ function SliderControl({
   errorId,
   describedById,
 }: SliderControlProps) {
+  const ids = useFieldIds(field.name);
   const resolvedMax = useSliderMax(field);
 
   // Clamp the form value if the resolved max drops below it (e.g. user
@@ -481,7 +484,7 @@ function SliderControl({
     // Radix renders the thumb as the role=slider element, so the name and invalid state
     // have to be put on it explicitly — a neighbouring <label> reaches neither.
     <Slider
-      aria-labelledby={`${field.name}-label`}
+      aria-labelledby={ids.labelId}
       aria-invalid={invalid || undefined}
       aria-describedby={describedById}
       aria-errormessage={errorId}

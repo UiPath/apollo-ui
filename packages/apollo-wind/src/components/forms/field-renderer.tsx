@@ -8,7 +8,7 @@ import {
   FormFieldLabel,
 } from '@/components/ui/form-field';
 import { deepEqual } from '@/lib';
-import { joinIds } from './aria-ids';
+import { joinIds, useFieldIds } from './aria-ids';
 import { DataFetcher } from './data-fetcher';
 import {
   clampSliderValue,
@@ -49,6 +49,7 @@ export function FormFieldRenderer({
 }: FormFieldRendererProps) {
   const { control, watch, getValues } = useFormContext();
   const changedNoteId = `${useId()}-changed`;
+  const ids = useFieldIds(field.name);
 
   // Ref for context to avoid unnecessary effect re-runs
   const contextRef = useRef(context);
@@ -327,6 +328,8 @@ export function FormFieldRenderer({
               disabled={formDisabled || fieldState.disabled}
               required={fieldState.required}
               error={error?.message}
+              controlId={ids.controlId}
+              labelId={ids.labelId}
               aria-describedby={joinIds(
                 field.componentProps?.['aria-describedby'] as string | undefined,
                 isChanged && changedNoteId
@@ -388,6 +391,7 @@ function BuiltInField({
   strings,
   changedNoteId,
 }: BuiltInFieldProps) {
+  const ids = useFieldIds(field.name);
   const control = (
     <FieldControl
       field={field}
@@ -408,7 +412,7 @@ function BuiltInField({
             {control}
             <div className="space-y-1 leading-none">
               <FormFieldLabel
-                htmlFor={field.name}
+                htmlFor={ids.controlId}
                 tooltip={field.tooltip}
                 tooltipAriaLabel={field.tooltipAriaLabel}
                 className="font-normal"
@@ -418,7 +422,7 @@ function BuiltInField({
               <FormFieldDescription>{field.description}</FormFieldDescription>
             </div>
           </div>
-          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
+          <FormFieldError id={ids.errorId}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -428,7 +432,7 @@ function BuiltInField({
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <FormFieldLabel
-                htmlFor={field.name}
+                htmlFor={ids.controlId}
                 required={required}
                 tooltip={field.tooltip}
                 tooltipAriaLabel={field.tooltipAriaLabel}
@@ -439,7 +443,7 @@ function BuiltInField({
             </div>
             {control}
           </div>
-          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
+          <FormFieldError id={ids.errorId}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -448,7 +452,7 @@ function BuiltInField({
         <FormField>
           <div className="flex justify-between">
             <FormFieldLabel
-              id={`${field.name}-label`}
+              id={ids.labelId}
               required={required}
               tooltip={field.tooltip}
               tooltipAriaLabel={field.tooltipAriaLabel}
@@ -459,7 +463,7 @@ function BuiltInField({
           </div>
           {control}
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
+          <FormFieldError id={ids.errorId}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -474,7 +478,7 @@ function BuiltInField({
           error={error}
           disabled={disabled}
           required={required}
-          ariaDescribedBy={joinIds(error && `${field.name}-error`, changedNoteId)}
+          ariaDescribedBy={joinIds(error && ids.errorId, changedNoteId)}
         />
       );
 
@@ -489,8 +493,8 @@ function BuiltInField({
               without this the group itself has no accessible name. */}
           <FormFieldLabel
             {...(field.type === 'radio' || field.type === 'boolean' || field.type === 'datetime'
-              ? { id: `${field.name}-label` }
-              : { htmlFor: field.name })}
+              ? { id: ids.labelId }
+              : { htmlFor: ids.controlId })}
             required={required}
             tooltip={field.tooltip}
             tooltipAriaLabel={field.tooltipAriaLabel}
@@ -499,7 +503,7 @@ function BuiltInField({
           </FormFieldLabel>
           {control}
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
+          <FormFieldError id={ids.errorId}>{error}</FormFieldError>
         </FormField>
       );
   }
