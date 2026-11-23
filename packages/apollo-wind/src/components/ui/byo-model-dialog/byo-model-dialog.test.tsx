@@ -605,6 +605,91 @@ describe('ByoModelDialog', () => {
       expect(api.applyConnectionChange).not.toHaveBeenCalled();
     });
 
+    it('lets nothing use or edit the connection while it is being checked', async () => {
+      const user = userEvent.setup();
+      let answer: (r: ByoResult<null>) => void = () => {};
+      const api = fakeApi({
+        checkConnection: vi.fn(() => new Promise<ByoResult<null>>((r) => (answer = r))),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await start(user, 'OpenAI');
+
+      expect(await screen.findByText('Checking the connection…')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Edit connection' })).toBeNull();
+
+      answer({ ok: true, value: null });
+      expect(await screen.findByRole('button', { name: 'Edit connection' })).toBeInTheDocument();
+    });
+
+    it('does not save an edited model before its connection is switched', async () => {
+      const api = fakeApi({
+        checkConnection: vi.fn(async () => ({ ok: true as const, value: CHANGE })),
+      });
+      render(
+        <ByoModelDialog
+          open
+          onOpenChange={vi.fn()}
+          api={api}
+          onSaved={vi.fn()}
+          editing={{ configurationId: 'cfg1', name: 'Taken' }}
+        />
+      );
+
+      expect(await screen.findByText(CHANGE.title)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Test and save' })).toBeDisabled();
+    });
+
+    it('does not save an edited model whose connection could not be checked', async () => {
+      const api = fakeApi({
+        checkConnection: vi.fn(async () => ({
+          ok: false as const,
+          failure: { title: 'Could not read the connection settings' },
+        })),
+      });
+      render(
+        <ByoModelDialog
+          open
+          onOpenChange={vi.fn()}
+          api={api}
+          onSaved={vi.fn()}
+          editing={{ configurationId: 'cfg1', name: 'Taken' }}
+        />
+      );
+
+      expect(await screen.findByText('Could not read the connection settings')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Test and save' })).toBeDisabled();
+      expect(screen.queryByRole('button', { name: 'Edit connection' })).toBeNull();
+    });
+
+    it('offers the switch again for another connection while an earlier switch is still running', async () => {
+      const user = userEvent.setup();
+      const other: ByoConnection = { ...SAVED, id: 'c2', name: 'Second OpenAI' };
+      let finish: (r: ByoResult<ByoConnection>) => void = () => {};
+      const api = fakeApi({
+        loadContext: vi.fn(async () => ({
+          ok: true as const,
+          value: { ...CONTEXT, connections: [SAVED, other] },
+        })),
+        checkConnection: vi.fn(async () => ({ ok: true as const, value: CHANGE })),
+        applyConnectionChange: vi.fn(
+          () => new Promise<ByoResult<ByoConnection>>((r) => (finish = r))
+        ),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await start(user, 'OpenAI');
+      await user.click(await screen.findByRole('checkbox', { name: CHANGE.agreement }));
+      await user.click(screen.getByRole('button', { name: 'Switch connection' }));
+      expect(await screen.findByRole('button', { name: /Switching…/ })).toBeDisabled();
+
+      await pick(user, 'Connection', 'Saved connection: Second OpenAI · My Workspace');
+      finish({ ok: true, value: SAVED });
+
+      await user.click(await screen.findByRole('checkbox', { name: CHANGE.agreement }));
+      expect(await screen.findByRole('button', { name: 'Switch connection' })).toBeEnabled();
+    });
+
     it('lists the models of a connection that needs no change', async () => {
       const user = userEvent.setup();
       const api = fakeApi({

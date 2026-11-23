@@ -108,6 +108,8 @@ type ModelsState = {
   failure?: ByoFailure;
   /** Set with `change`. */
   change?: ByoConnectionChange;
+  /** Set with `error` when the connection check itself failed, so it was never cleared for use. */
+  unchecked?: boolean;
 };
 type Attempt<T> =
   | { status: 'idle' | 'running' }
@@ -229,7 +231,12 @@ function DialogBody({
         const checked = await api.checkConnection(pid, conn);
         if (gen !== generation.current) return;
         if (!checked.ok) {
-          setModelsState({ ...NO_MODELS, status: 'error', failure: { ...checked.failure } });
+          setModelsState({
+            ...NO_MODELS,
+            status: 'error',
+            failure: { ...checked.failure },
+            unchecked: true,
+          });
           return;
         }
         if (checked.value) {
@@ -453,7 +460,8 @@ function DialogBody({
         setModelsState({ ...pending, failure: unexpected(err) });
       }
     } finally {
-      if (gen === generation.current) setApplyingChange(false);
+      // Also when the user moved on meanwhile: a switch they start next must not look busy.
+      setApplyingChange(false);
     }
   };
 
@@ -606,7 +614,11 @@ function DialogBody({
 
   const busy = keyLocked || test.status === 'running' || test.status === 'ok';
   const hasModel = Boolean(modelId.trim());
-  const readyToSave = connected && hasModel && nameReady && apiTypeReady;
+  // Until the check clears the connection, or while it still needs the agreed change, it is
+  // not usable: neither for saving a model nor for editing the connection itself.
+  const connectionCleared =
+    modelsState.status !== 'checking' && modelsState.status !== 'change' && !modelsState.unchecked;
+  const readyToSave = connected && connectionCleared && hasModel && nameReady && apiTypeReady;
 
   /** Tests the model, then adds it or saves the changes to the one being edited. */
   const runTest = async () => {
@@ -849,7 +861,7 @@ function DialogBody({
                     onSeparate={() => chooseConnection(NEW)}
                   />
                 )}
-                {connection && !editingConnection && modelsState.status !== 'change' && (
+                {connection && !editingConnection && connectionCleared && (
                   <div>
                     <Button
                       variant="link"
