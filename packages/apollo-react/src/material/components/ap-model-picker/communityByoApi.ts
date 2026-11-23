@@ -64,6 +64,32 @@ export interface CommunityByoProvider {
   form: ByoConnectionForm;
   /** Values the gateway needs that the form never asks for, worked out from the others. */
   derive?: (values: Record<string, string>) => Record<string, string>;
+  /**
+   * Settings a saved connection must already have for this dialog to edit it, because
+   * Connect sets them: another value means the connection serves something else.
+   */
+  requires?: Record<string, string>;
+}
+
+/** The first setting `requires` names that the saved connection holds differently. */
+function otherPurpose(
+  provider: CommunityByoProvider,
+  current: Record<string, unknown>
+): [string, unknown] | null {
+  for (const [key, value] of Object.entries(provider.requires ?? {})) {
+    if (current[key] !== value) return [key, current[key]];
+  }
+  return null;
+}
+
+const EDIT_IN_IS = 'Edit this connection in Integration Service';
+
+function servesOther(provider: CommunityByoProvider, [key, value]: [string, unknown]): ByoFailure {
+  const setting = value === undefined || value === null || value === '' ? 'none' : String(value);
+  return {
+    title: EDIT_IN_IS,
+    message: `It is set up for something other than ${provider.name} (${key}: ${setting}). Create a separate connection for ${provider.name}.`,
+  };
 }
 
 type FieldSpec = Partial<Omit<ByoFormField, 'key' | 'label'>>;
@@ -197,6 +223,8 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
     },
     // The connector serves any AWS service; the connection is for Bedrock's runtime.
     derive: (): Record<string, string> => ({ 'default.service.name': 'bedrock-runtime' }),
+    // A saved connection for another AWS service stays as it is, for what else uses it.
+    requires: { 'default.service.name': 'bedrock-runtime' },
   },
   {
     id: 'anthropic',
@@ -808,10 +836,12 @@ export function createCommunityByoApi(
     // Shown as another type, the connection would be switched to it on Connect.
     if (form.authTypes.length && savedAuthType && !knownAuthType) {
       return fail({
-        title: 'Edit this connection in Integration Service',
+        title: EDIT_IN_IS,
         message: `It uses an authentication type this dialog does not offer (${savedAuthType}).`,
       });
     }
+    const other = otherPurpose(provider, current);
+    if (other) return fail(servesOther(provider, other));
     return ok<ByoConnectionValues>({
       authType: knownAuthType ? (savedAuthType ?? null) : form.defaultAuthType,
       values,
@@ -845,6 +875,8 @@ export function createCommunityByoApi(
     const sf = await sessionForm(sid, folderId);
     if (!sf.ok) return fail(failure(sf, 'Could not read the connector form'));
     const sfd = sf.data as IsSessionForm | null;
+    const other = existing ? otherPurpose(provider, sfd?.configs ?? {}) : null;
+    if (other) return fail(servesOther(provider, other));
     // Every default goes back, then the session's configs, then what the user entered.
     // Editing, the configs are the connection's current settings with secrets masked,
     // and IS keeps a secret that comes back masked.
