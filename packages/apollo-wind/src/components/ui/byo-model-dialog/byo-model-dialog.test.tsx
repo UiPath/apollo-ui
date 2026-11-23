@@ -882,5 +882,53 @@ describe('ByoModelDialog', () => {
         )
       );
     });
+
+    it('keeps an edited model’s API type after a change of provider that also offers it', async () => {
+      const user = userEvent.setup();
+      const editing: ByoModelToEdit = {
+        ...SAVED_MODEL,
+        name: 'gpt-5',
+        replaces: 'gpt-5',
+        apiType: 'OpenAiChatCompletions',
+      };
+      const azure: ByoConnection = {
+        id: 'c2',
+        providerId: 'azure',
+        name: 'My Azure',
+        folderId: 'me',
+      };
+      const api = withReplaceable({
+        loadContext: vi.fn(async () => ({
+          ok: true as const,
+          value: { ...REPLACEABLE, connections: [SAVED, azure] },
+        })),
+        loadModel: vi.fn(async () => ({ ok: true as const, value: editing })),
+        apiTypes: vi.fn(() => TWO_TYPES),
+      });
+      render(
+        <ByoModelDialog
+          open
+          onOpenChange={vi.fn()}
+          api={api}
+          onSaved={vi.fn()}
+          editing={{ configurationId: 'cfg1', name: 'gpt-5' }}
+        />
+      );
+
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
+      );
+      await pick(user, 'Provider', 'Azure OpenAI');
+      await waitFor(() =>
+        expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled()
+      );
+      await pick(user, 'Your model', 'gpt-4o');
+      await user.click(screen.getByRole('button', { name: 'Test and save' }));
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({ apiType: 'OpenAiChatCompletions' })
+        )
+      );
+    });
   });
 });
