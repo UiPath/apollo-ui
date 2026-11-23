@@ -326,9 +326,8 @@ export interface JsonTreeRowWrapperProps {
   className?: string;
   style?: CSSProperties;
   /**
-   * Row click handler (used to expand/collapse containers by clicking the row).
-   * Custom wrappers should forward it to their root element so the behavior
-   * survives; the handler already ignores clicks on interactive descendants.
+   * @deprecated No longer passed. The grid row toggles on click itself, so a
+   * wrapper doesn't need to forward anything.
    */
   onClick?: (event: MouseEvent) => void;
   children: ReactNode;

@@ -13,8 +13,6 @@ export type TreeGridCell = 'name' | 'value' | 'actions' | 'detail';
 
 /** Marks an open editor, which owns its arrow keys. */
 const EDITOR_ATTR = 'data-json-tree-editor';
-/** Marks a control arrows and Tab skip (the chevron: the row carries expansion). */
-const SKIP_ATTR = 'data-json-tree-skip';
 /** Set on a control the tree took out of the Tab order, holding the tabindex to restore. */
 const MANAGED_ATTR = 'data-json-tree-tabindex';
 
@@ -46,8 +44,7 @@ function isOwnRow(grid: HTMLElement, row: HTMLElement): boolean {
 
 function isNavigable(element: HTMLElement): boolean {
   return (
-    !element.hasAttribute('disabled') &&
-    !element.closest(`[${EDITOR_ATTR}], [${SKIP_ATTR}], [aria-hidden="true"]`)
+    !element.hasAttribute('disabled') && !element.closest(`[${EDITOR_ATTR}], [aria-hidden="true"]`)
   );
 }
 
@@ -95,7 +92,6 @@ function focusInRow(row: HTMLElement, cell: TreeGridCell | undefined) {
  */
 function syncRowTabOrder(row: HTMLElement, tabbable: boolean) {
   for (const control of row.querySelectorAll<HTMLElement>(CONTROL_SELECTOR)) {
-    if (control.closest(`[${SKIP_ATTR}]`)) continue;
     const saved = control.getAttribute(MANAGED_ATTR);
     if (tabbable) {
       if (saved === null) continue;

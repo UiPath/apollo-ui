@@ -98,7 +98,7 @@ describe('NodeIOView', () => {
     render(<NodeIOView value={{ constructor: { name: 'x' } }} />);
     expect(screen.getByText('name')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Collapse constructor' }));
+    await userEvent.click(screen.getByTitle('Collapse constructor'));
 
     expect(screen.queryByText('name')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Expand all' })).toBeInTheDocument();
