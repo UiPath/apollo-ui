@@ -97,6 +97,59 @@ export function ModelAliasPicker({
 
   const placeholder = replaceable.length ? labels.replacementPlaceholder : labels.addCustomAlias;
 
+  const customGroup = allowsCustom && (custom === null || customShown) && (
+    <CommandGroup heading={labels.useOwnName}>
+      {custom !== null ? (
+        <CommandItem
+          value={`custom:${custom}`}
+          onSelect={() => choose({ kind: 'custom', name: custom })}
+          className="gap-2 py-1"
+        >
+          <Selected on />
+          <span className="min-w-0 truncate font-mono text-xs text-foreground">{custom}</span>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="3xs"
+                  icon
+                  className="ml-auto"
+                  aria-label={labels.editCustomAlias}
+                  // The row selects the alias; the pencil edits it instead.
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startAdding();
+                  }}
+                >
+                  <Pencil />
+                </Button>
+              </TooltipTrigger>
+              <TooltipPortal container={container}>
+                <TooltipContent>{labels.editCustomAlias}</TooltipContent>
+              </TooltipPortal>
+            </Tooltip>
+          </TooltipProvider>
+        </CommandItem>
+      ) : (
+        <CommandItem
+          value="custom:add"
+          onSelect={startAdding}
+          className="gap-2 py-1.5 text-foreground-accent"
+        >
+          <Plus size={14} />
+          {labels.addCustomAlias}
+        </CommandItem>
+      )}
+    </CommandGroup>
+  );
+  const customLast = Boolean(q) && custom === null && shown.length > 0;
+
   return (
     <Popover open={open} onOpenChange={(next) => (next ? setOpen(true) : close())} modal>
       <PopoverTrigger asChild>
@@ -172,60 +225,10 @@ export function ModelAliasPicker({
             />
             <CommandList className="max-h-[280px]">
               <CommandEmpty>{labels.aliasNoMatch(query)}</CommandEmpty>
-              {/* First, as in AI Trust Layer, so a long list does not hide it. */}
-              {allowsCustom && (custom === null || customShown) && (
-                <CommandGroup heading={labels.useOwnName}>
-                  {custom !== null ? (
-                    <CommandItem
-                      value={`custom:${custom}`}
-                      onSelect={() => choose({ kind: 'custom', name: custom })}
-                      className="gap-2 py-1"
-                    >
-                      <Selected on />
-                      <span className="min-w-0 truncate font-mono text-xs text-foreground">
-                        {custom}
-                      </span>
-                      <TooltipProvider delayDuration={300}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="3xs"
-                              icon
-                              className="ml-auto"
-                              aria-label={labels.editCustomAlias}
-                              // The row selects the alias; the pencil edits it instead.
-                              onPointerDown={(e) => e.stopPropagation()}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
-                              }}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                startAdding();
-                              }}
-                            >
-                              <Pencil />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipPortal container={container}>
-                            <TooltipContent>{labels.editCustomAlias}</TooltipContent>
-                          </TooltipPortal>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </CommandItem>
-                  ) : (
-                    <CommandItem
-                      value="custom:add"
-                      onSelect={startAdding}
-                      className="gap-2 py-1.5 text-foreground-accent"
-                    >
-                      <Plus size={14} />
-                      {labels.addCustomAlias}
-                    </CommandItem>
-                  )}
-                </CommandGroup>
-              )}
+              {/* First, as in AI Trust Layer, so a long list does not hide it, but after the
+                  models a search matches, so Enter picks a match and adds an alias only for
+                  a search that matches none. */}
+              {!customLast && customGroup}
               {shown.length > 0 && (
                 <CommandGroup heading={labels.useReplacement}>
                   {shown.map((m) => (
@@ -248,6 +251,7 @@ export function ModelAliasPicker({
                   ))}
                 </CommandGroup>
               )}
+              {customLast && customGroup}
             </CommandList>
           </Command>
         )}

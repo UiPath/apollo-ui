@@ -1190,6 +1190,29 @@ describe('ByoModelDialog', () => {
       ]);
     });
 
+    it('picks the first matching model on Enter, and adds a custom alias only when none matches', async () => {
+      const user = userEvent.setup();
+      render(
+        <ByoModelDialog open onOpenChange={vi.fn()} api={withReplaceable()} onSaved={vi.fn()} />
+      );
+
+      await user.click(await screen.findByRole('combobox', { name: 'Model alias' }));
+      await user.type(screen.getByPlaceholderText('Search UiPath models…'), '4.1');
+      console.log(
+        'SEL',
+        screen
+          .getAllByRole('option')
+          .map((o) => `${o.getAttribute('data-value')}=${o.getAttribute('aria-selected')}`)
+          .join(' | ')
+      );
+      await user.keyboard('{Enter}');
+      expect(screen.getByRole('combobox', { name: 'Model alias' })).toHaveTextContent('gpt-4.1');
+
+      await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+      await user.type(screen.getByPlaceholderText('Search UiPath models…'), 'my-own{Enter}');
+      expect(screen.getByRole('textbox', { name: 'Enter a custom alias' })).toHaveValue('my-own');
+    });
+
     it('keeps a custom alias and its edit action above the UiPath models', async () => {
       const user = userEvent.setup();
       render(
