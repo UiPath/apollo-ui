@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.41.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.41.0...@uipath/apollo-react@7.41.1) (2026-11-23)
+
+### Bug Fixes
+
+* **apollo-react:** build graph text bodies only near the scrollport [ECS-2218] ([7b066f5](https://github.com/UiPath/apollo-ui/commit/7b066f56abe204657f7b9a2bd0b2f21bbb345be3))
+
 ## [@uipath/apollo-react-v7.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.40.1...@uipath/apollo-react@7.41.0) (2026-11-23)
 
 ### Features
