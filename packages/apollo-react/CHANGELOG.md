@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v7.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.40.1...@uipath/apollo-react@7.41.0) (2026-11-23)
+
+### Features
+
+* **apollo-react:** decision text view matches design [ECS-2218] ([03d56fb](https://github.com/UiPath/apollo-ui/commit/03d56fbaf68c6e48f0bccfd3a89bdd5ce315b92b))
+* **apollo-react:** show a rule's name as its card title [ECS-2218] ([fe72763](https://github.com/UiPath/apollo-ui/commit/fe72763ed7aa1a6d5838370481943f4ea42207c3))
+
+### Bug Fixes
+
+* **apollo-react:** name a titled rule card after its rule name [ECS-2218] ([25cb2cd](https://github.com/UiPath/apollo-ui/commit/25cb2cd34eb13606eec252c0b48ccbd763319d7f))
+
 ## [@uipath/apollo-react-v7.40.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.40.0...@uipath/apollo-react@7.40.1) (2026-11-23)
 
 ### Bug Fixes
