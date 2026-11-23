@@ -517,6 +517,8 @@ export function createCommunityByoApi(
   let openSession: IsSession | null = null;
   // Read by `loadContext`; `apiTypes` and the saves answer from it.
   let rules: FeatureRules | null = null;
+  // The folders AI Trust Layer offers, which are the only ones a model is saved in.
+  let offeredFolderIds: Set<string> | null = null;
 
   /**
    * Makes a gateway call about a connection, repeating it while a connection created in
@@ -721,6 +723,7 @@ export function createCommunityByoApi(
       });
     }
     const folderIds = new Set(folderRows.map((f) => f.id));
+    offeredFolderIds = folderIds;
     const byConnector = (key: unknown) => providers.find((p) => p.connector === key);
     const saved: ByoConnection[] = asList(connections.data).flatMap((c) => {
       const connector = (c.connector as { key?: string } | undefined)?.key;
@@ -814,6 +817,9 @@ export function createCommunityByoApi(
         final: true,
       });
     }
+    // Saved there with other models, it would stay there: the dialog moves a configuration to
+    // the connection's folder only with its one model.
+    if (stuckOutsideOfferedFolders(saved)) return fail(savedElsewhere(name));
     const savedName = entry.desiredModel ?? name;
     // As in AI Trust Layer, a model under a UiPath model's name replaces that model.
     const replaces = rules && own(rules.connectorTypesByModel, savedName) ? savedName : null;
@@ -1039,7 +1045,8 @@ export function createCommunityByoApi(
     // sent back as read, which is verified for those types alone (an assumed role is not one).
     const authType = configs['authentication.type'];
     const offered = provider.form.authTypes.some((t) => t.value === authType);
-    if (provider.form.authTypes.length && authType && !offered) {
+    // One that does not say which authentication it uses is not switched either.
+    if (provider.form.authTypes.length && !offered) {
       return fail({ ...servesOther(provider, other), final: true });
     }
     return ok(connectionChange(provider, connection, other));
@@ -1094,6 +1101,20 @@ export function createCommunityByoApi(
    * Writes the edited model's new entry into its saved configuration.
    * Returns the folder the configuration is saved in.
    */
+  /** Saved, with other models, in a folder the dialog does not offer, such as a personal workspace. */
+  const stuckOutsideOfferedFolders = (configuration: ProductLlmConfiguration) =>
+    offeredFolderIds !== null &&
+    configuration.llmConfigurations.length > 1 &&
+    Boolean(configuration.folderId) &&
+    !offeredFolderIds.has(String(configuration.folderId));
+
+  const savedElsewhere = (name: string): ByoFailure => ({
+    title: `${name} cannot be edited here`,
+    message:
+      'It is saved with other models in a folder AI Trust Layer does not offer, such as a personal workspace. Edit it in AI Trust Layer.',
+    final: true,
+  });
+
   async function updateConfiguration(
     editing: ByoModelToEdit,
     entry: LlmConfigurationEntry,
@@ -1124,6 +1145,7 @@ export function createCommunityByoApi(
       other === edited ? updated : other
     );
 
+    if (stuckOutsideOfferedFolders(configuration)) return fail(savedElsewhere(editing.name));
     // The configuration moves to the connection's folder only when this is its one model.
     const onlyModel = configuration.llmConfigurations.length === 1;
     const savedFolderId = onlyModel ? folderId : configuration.folderId;
