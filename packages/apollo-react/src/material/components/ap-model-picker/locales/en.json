@@ -79,6 +79,7 @@
   "modelPicker.community.testAndSaveHint": "Sends one short test message to {provider}, then saves your changes.",
   "modelPicker.community.testing": "Testing…",
   "modelPicker.community.title": "Use your own model",
+  "modelPicker.community.tryAgain": "Try again",
   "modelPicker.community.useOwnName": "Custom",
   "modelPicker.community.useReplacement": "Replace a UiPath model",
   "modelPicker.count.many": "{n} models",

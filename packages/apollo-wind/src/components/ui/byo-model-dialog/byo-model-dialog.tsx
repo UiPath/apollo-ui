@@ -161,6 +161,8 @@ function DialogBody({
   // The connector form depends only on the provider, so it has its own counter: switching
   // connection must not drop a form that is still loading.
   const formLoad = React.useRef(0);
+  // The folder the form last loaded for, which Try again loads it for again.
+  const formFolder = React.useRef('');
   React.useEffect(
     () => () => {
       generation.current += 1;
@@ -268,6 +270,7 @@ function DialogBody({
   };
 
   const loadForm = async (pid: string, folder: string) => {
+    formFolder.current = folder;
     formLoad.current += 1;
     const load = formLoad.current;
     setFormState({ ...NO_FORM, status: 'loading' });
@@ -321,10 +324,14 @@ function DialogBody({
     loadForm(model.providerId, savedConnection?.folderId ?? defaultFolder);
   };
 
-  // Runs once per opening: `api` and `editTarget` are fixed while the dialog is open.
+  // Bumped by Try again after the context failed to load.
+  const [contextAttempt, setContextAttempt] = React.useState(0);
+  // Runs once per opening, and again on Try again: `api` and `editTarget` are fixed while the
+  // dialog is open.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the helpers it calls are recreated on every render
   React.useEffect(() => {
     const gen = generation.current;
+    setContext({ status: 'running' });
     const load = async () => {
       const contextResult = await api.loadContext();
       if (gen !== generation.current) return;
@@ -354,7 +361,7 @@ function DialogBody({
     load().catch((err: unknown) => {
       if (gen === generation.current) setContext({ status: 'error', failure: unexpected(err) });
     });
-  }, [api, editTarget]);
+  }, [api, editTarget, contextAttempt]);
 
   const resetDownstream = () => {
     setModelQuery('');
@@ -626,7 +633,13 @@ function DialogBody({
   // not usable: neither for saving a model nor for editing the connection itself.
   const connectionCleared =
     modelsState.status !== 'checking' && modelsState.status !== 'change' && !modelsState.unchecked;
-  const readyToSave = connected && connectionCleared && hasModel && nameReady && apiTypeReady;
+  // Each step opens only once every step before it is done, and closes again, keeping what was
+  // entered in it, when one of them stops being done.
+  const providerOpen = nameReady;
+  const providerDone = providerOpen && Boolean(provider);
+  const connectionDone = providerDone && connected && connectionCleared;
+  const modelDone = connectionDone && hasModel;
+  const readyToSave = modelDone && apiTypeReady;
 
   /** Tests the model, then adds it or saves the changes to the one being edited. */
   const runTest = async () => {
@@ -751,6 +764,7 @@ function DialogBody({
     return labels.connectedIn(folderLabel(connectOutcome.connection.folderId));
   })();
 
+  const modelsFailure = modelsState.status === 'error' ? (modelsState.failure ?? null) : null;
   // A dismissed failure stays hidden, and does not hide one that came after it.
   const failure =
     [
@@ -792,7 +806,13 @@ function DialogBody({
             <Spinner size="sm" /> {editTarget ? labels.loadingModel : labels.loadingContext}
           </div>
         )}
-        {context.status === 'error' && <FailureAlert failure={context.failure} labels={labels} />}
+        {context.status === 'error' && (
+          <FailureAlert
+            failure={context.failure}
+            labels={labels}
+            onRetry={() => setContextAttempt((n) => n + 1)}
+          />
+        )}
 
         {ctx && (
           <>
@@ -812,7 +832,7 @@ function DialogBody({
               </div>
             </Step>
 
-            <Step n={2} title={labels.providerStep} done={Boolean(provider)} disabled={!nameReady}>
+            <Step n={2} title={labels.providerStep} done={providerDone} disabled={!providerOpen}>
               <Select value={providerId} onValueChange={chooseProvider} disabled={busy}>
                 <SelectTrigger className="w-full" aria-label={labels.providerStep}>
                   <SelectValue placeholder={labels.providerPlaceholder} />
@@ -827,7 +847,12 @@ function DialogBody({
               </Select>
             </Step>
 
-            <Step n={3} title={labels.connectionStep} done={connected} disabled={!provider}>
+            <Step
+              n={3}
+              title={labels.connectionStep}
+              done={connectionDone}
+              disabled={!providerDone}
+            >
               <div className="flex flex-col gap-3">
                 {!provider && (
                   <Input
@@ -896,7 +921,11 @@ function DialogBody({
                         </div>
                       )}
                       {formState.status === 'error' && (
-                        <FailureAlert failure={formState.failure} labels={labels} />
+                        <FailureAlert
+                          failure={formState.failure}
+                          labels={labels}
+                          onRetry={() => loadForm(providerId, formFolder.current)}
+                        />
                       )}
                       {loadingConnectionValues && (
                         <div className="flex items-center gap-2 text-xs text-foreground-muted">
@@ -1016,7 +1045,7 @@ function DialogBody({
               </div>
             </Step>
 
-            <Step n={4} title={labels.modelStep} done={hasModel} disabled={!connected}>
+            <Step n={4} title={labels.modelStep} done={modelDone} disabled={!connectionDone}>
               {freeTextModel ? (
                 <Input
                   ref={modelTriggerRef}
@@ -1121,6 +1150,13 @@ function DialogBody({
             failure={failure}
             labels={labels}
             onDismiss={() => setDismissedFailures((prev) => [...prev, failure])}
+            // Only what the dialog loaded on its own is tried again from here: a failed Connect,
+            // switch or Test and add is tried again with its own button.
+            onRetry={
+              failure === modelsFailure && connection && !busy
+                ? () => loadModels(providerId, connection, generation.current)
+                : undefined
+            }
           />
         </div>
       )}
@@ -1313,10 +1349,12 @@ function FailureAlert({
   failure,
   labels,
   onDismiss,
+  onRetry,
 }: {
   failure: ByoFailure;
   labels: ByoModelDialogLabels;
   onDismiss?: () => void;
+  onRetry?: () => void;
 }) {
   const [showRaw, setShowRaw] = React.useState(false);
   return (
@@ -1355,6 +1393,13 @@ function FailureAlert({
       )}
       {!failure.detail && failure.message && (
         <AlertDescription className="break-words">{failure.message}</AlertDescription>
+      )}
+      {onRetry && (
+        <AlertDescription>
+          <Button variant="link" size="2xs" className="mt-1 h-auto p-0 text-xs" onClick={onRetry}>
+            {labels.tryAgain}
+          </Button>
+        </AlertDescription>
       )}
     </Alert>
   );

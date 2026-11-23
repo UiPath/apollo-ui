@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ByoModelDialog } from './byo-model-dialog';
@@ -130,6 +130,11 @@ async function addCustomAlias(user: ReturnType<typeof userEvent.setup>, alias: s
   await user.click(await screen.findByRole('option', { name: 'Add custom alias' }));
   await user.type(screen.getByRole('textbox', { name: 'Enter a custom alias' }), alias);
   await user.click(screen.getByRole('button', { name: 'Add' }));
+}
+
+/** The step whose title is `title`. */
+function step(title: string) {
+  return screen.getByRole('group', { name: new RegExp(`^\\d?\\s*${title}$`) });
 }
 
 /** Names the model `alias`, then picks the provider: the first two steps. */
@@ -622,9 +627,14 @@ describe('ByoModelDialog', () => {
 
       expect(await screen.findByText('Checking the connection…')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Edit connection' })).toBeNull();
+      // Not done yet, and the step after it stays closed.
+      expect(within(step('Connection')).getByText('3')).toBeInTheDocument();
+      expect(step('Your model')).toBeDisabled();
 
       answer({ ok: true, value: null });
       expect(await screen.findByRole('button', { name: 'Edit connection' })).toBeInTheDocument();
+      expect(within(step('Connection')).queryByText('3')).toBeNull();
+      expect(step('Your model')).toBeEnabled();
     });
 
     it('does not save an edited model before its connection is switched', async () => {
@@ -855,6 +865,136 @@ describe('ByoModelDialog', () => {
       await screen.findByText('Could not list your OpenAI models (HTTP 401)')
     ).toBeInTheDocument();
     expect(screen.getByText('Invalid key')).toBeInTheDocument();
+  });
+
+  describe('steps in order', () => {
+    it('closes the later steps while an earlier one is not done, keeping what they hold', async () => {
+      const user = userEvent.setup();
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
+      await start(user, 'OpenAI', 'my-gpt');
+      await pick(user, 'Your model', 'gpt-5.1');
+
+      await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+      await user.click(screen.getByRole('button', { name: 'Edit custom alias' }));
+      const editor = screen.getByRole('textbox', { name: 'Enter a custom alias' });
+      await user.clear(editor);
+      await user.type(editor, 'Taken');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      for (const later of ['Provider', 'Connection', 'Your model']) {
+        expect(step(later)).toBeDisabled();
+      }
+      expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
+      expect(screen.getByRole('combobox', { name: 'Provider' })).toHaveTextContent('OpenAI');
+      expect(screen.getByRole('combobox', { name: 'Your model' })).toHaveTextContent('gpt-5.1');
+
+      await user.click(screen.getByRole('combobox', { name: 'Model alias' }));
+      await user.click(screen.getByRole('button', { name: 'Edit custom alias' }));
+      await user.type(screen.getByRole('textbox', { name: 'Enter a custom alias' }), '-2');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      for (const later of ['Provider', 'Connection', 'Your model']) {
+        expect(step(later)).toBeEnabled();
+      }
+      expect(screen.getByRole('combobox', { name: 'Your model' })).toHaveTextContent('gpt-5.1');
+      expect(screen.getByRole('button', { name: 'Test and add' })).toBeEnabled();
+    });
+  });
+
+  describe('trying again', () => {
+    it('lists the models again', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi();
+      vi.mocked(api.listModels).mockResolvedValueOnce({
+        ok: false,
+        failure: { title: 'Could not list your OpenAI models (HTTP 503)' },
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+      await start(user, 'OpenAI');
+
+      expect(
+        await screen.findByText('Could not list your OpenAI models (HTTP 503)')
+      ).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+      await waitFor(() =>
+        expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled()
+      );
+      expect(screen.queryByText('Could not list your OpenAI models (HTTP 503)')).toBeNull();
+      expect(api.listModels).toHaveBeenCalledTimes(2);
+    });
+
+    it('checks the connection again', async () => {
+      const user = userEvent.setup();
+      const checkConnection = vi
+        .fn()
+        .mockRejectedValueOnce(new Error('network down'))
+        .mockResolvedValue({ ok: true, value: null });
+      render(
+        <ByoModelDialog
+          open
+          onOpenChange={vi.fn()}
+          api={fakeApi({ checkConnection })}
+          onSaved={vi.fn()}
+        />
+      );
+      await start(user, 'OpenAI');
+
+      await user.click(await screen.findByRole('button', { name: 'Try again' }));
+
+      expect(await screen.findByRole('button', { name: 'Edit connection' })).toBeInTheDocument();
+      expect(checkConnection).toHaveBeenCalledTimes(2);
+    });
+
+    it('loads the connection form again', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi();
+      vi.mocked(api.loadForm).mockResolvedValueOnce({
+        ok: false,
+        failure: { title: 'Could not load the Azure OpenAI connector' },
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+      await start(user, 'Azure OpenAI');
+
+      expect(
+        await screen.findByText('Could not load the Azure OpenAI connector')
+      ).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+      expect(await screen.findByLabelText(/Endpoint/)).toBeInTheDocument();
+    });
+
+    it('loads what the dialog needs again', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi();
+      vi.mocked(api.loadContext).mockResolvedValueOnce({
+        ok: false,
+        failure: { title: 'Could not load your folders' },
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await user.click(await screen.findByRole('button', { name: 'Try again' }));
+
+      expect(await screen.findByRole('combobox', { name: 'Model alias' })).toBeInTheDocument();
+    });
+
+    it('leaves a failed test to its own button', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        testAndSave: vi.fn(async () => ({
+          ok: false as const,
+          failure: { title: 'The model did not answer' },
+        })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+      await start(user, 'OpenAI', 'my-gpt');
+      await pick(user, 'Your model', 'gpt-5.1');
+      await user.click(screen.getByRole('button', { name: 'Test and add' }));
+
+      expect(await screen.findByText('The model did not answer')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Test and add' })).toBeEnabled();
+    });
   });
 
   it('keeps loading the form when the connection changes meanwhile', async () => {
