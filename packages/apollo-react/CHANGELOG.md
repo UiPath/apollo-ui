@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.41.1...@uipath/apollo-react@7.42.0) (2026-11-23)
+
+### Features
+
+* **apollo-react:** add Flow's handle "+" to Case stages ([ec85c38](https://github.com/UiPath/apollo-ui/commit/ec85c3858ea89458ed19ab838f3075cf802876d4))
+
 ## [@uipath/apollo-react-v7.41.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.41.0...@uipath/apollo-react@7.41.1) (2026-11-23)
 
 ### Bug Fixes
