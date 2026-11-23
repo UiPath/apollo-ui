@@ -990,7 +990,13 @@ function DialogBody({
                       <CommandList className="max-h-[280px]">
                         <CommandEmpty>{labels.modelNoMatch(modelQuery)}</CommandEmpty>
                         {shownCompatible.length > 0 && (
-                          <CommandGroup heading={labels.compatibleGroup(shownCompatible.length)}>
+                          <CommandGroup
+                            heading={
+                              models.incompatible.length > 0
+                                ? labels.compatibleGroup(shownCompatible.length)
+                                : undefined
+                            }
+                          >
                             {shownCompatible.map((m) => (
                               <ModelRow
                                 key={m.id}
