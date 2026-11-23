@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.40.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.40.0...@uipath/apollo-react@7.40.1) (2026-11-23)
+
+### Bug Fixes
+
+* **l10n:** 2 translation fixes from review ([d1627de](https://github.com/UiPath/apollo-ui/commit/d1627de3b413f59bf739c19859e88c196959d4d9))
+
 ## [@uipath/apollo-react-v7.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.39.0...@uipath/apollo-react@7.40.0) (2026-11-20)
 
 ### Features
