@@ -62,6 +62,17 @@ export interface ByoConnection {
   folderId: string;
 }
 
+/**
+ * What using a saved connection here changes in it, which the user agrees to first.
+ * The host words it: the dialog shows it under the connection.
+ */
+export interface ByoConnectionChange {
+  title: string;
+  message: string;
+  /** The checkbox the user ticks to agree to the change. */
+  agreement: string;
+}
+
 export interface ByoProviderModel {
   id: string;
   /** Short trailing text on the row, e.g. the inference profile in use. */
@@ -193,6 +204,19 @@ export interface ByoModelDialogApi {
     providerId: string,
     connection: ByoConnection
   ) => Promise<ByoResult<ByoProviderModels>>;
+  /**
+   * What using `connection` here would change in it, or `null` when it can be used as it is.
+   * Asked before its models are listed; a host that never changes a connection leaves it out.
+   */
+  checkConnection?: (
+    providerId: string,
+    connection: ByoConnection
+  ) => Promise<ByoResult<ByoConnectionChange | null>>;
+  /** Makes the change `checkConnection` described, once the user has agreed to it. */
+  applyConnectionChange?: (
+    providerId: string,
+    connection: ByoConnection
+  ) => Promise<ByoResult<ByoConnection>>;
   /**
    * The API types the provider can call the model through, most suitable first: replacing the
    * UiPath model `replaces`, or under a name of the user's own when it is `null`. Answers from

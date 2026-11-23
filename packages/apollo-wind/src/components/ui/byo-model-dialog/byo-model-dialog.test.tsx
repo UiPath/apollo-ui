@@ -531,6 +531,94 @@ describe('ByoModelDialog', () => {
     expect(api.loadConnectionValues).toHaveBeenCalledTimes(2);
   });
 
+  describe('a saved connection that needs a change', () => {
+    const CHANGE = {
+      title: 'This connection is set up for something else',
+      message: 'Using it here changes it.',
+      agreement: 'Change My OpenAI. I understand what else uses it may stop working.',
+    };
+
+    it('lists its models only once the user agrees and the change is made', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        checkConnection: vi
+          .fn()
+          .mockResolvedValueOnce({ ok: true, value: CHANGE })
+          .mockResolvedValueOnce({ ok: true, value: null }),
+        applyConnectionChange: vi.fn(async (_p, c) => ({ ok: true as const, value: c })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await start(user, 'OpenAI');
+
+      expect(await screen.findByText(CHANGE.title)).toBeInTheDocument();
+      expect(api.listModels).not.toHaveBeenCalled();
+      expect(screen.queryByRole('button', { name: 'Edit connection' })).toBeNull();
+      const switchButton = screen.getByRole('button', { name: 'Switch connection' });
+      expect(switchButton).toBeDisabled();
+
+      await user.click(screen.getByRole('checkbox', { name: CHANGE.agreement }));
+      await user.click(switchButton);
+
+      await waitFor(() => expect(api.listModels).toHaveBeenCalledWith('openai', SAVED));
+      expect(api.applyConnectionChange).toHaveBeenCalledWith('openai', SAVED);
+      expect(screen.queryByText(CHANGE.title)).toBeNull();
+      expect(await screen.findByText('Select one of 2 models')).toBeInTheDocument();
+    });
+
+    it('shows why the change failed and asks again', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        checkConnection: vi.fn(async () => ({ ok: true as const, value: CHANGE })),
+        applyConnectionChange: vi.fn(async () => ({
+          ok: false as const,
+          failure: { title: 'Integration Service refused the change' },
+        })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await start(user, 'OpenAI');
+      await user.click(await screen.findByRole('checkbox', { name: CHANGE.agreement }));
+      await user.click(screen.getByRole('button', { name: 'Switch connection' }));
+
+      expect(await screen.findByText('Integration Service refused the change')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: CHANGE.agreement })).not.toBeChecked();
+      expect(screen.getByRole('button', { name: 'Switch connection' })).toBeDisabled();
+      expect(api.listModels).not.toHaveBeenCalled();
+    });
+
+    it('leaves the connection as it is for a separate one', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        checkConnection: vi.fn(async () => ({ ok: true as const, value: CHANGE })),
+        applyConnectionChange: vi.fn(),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await start(user, 'OpenAI');
+      await user.click(
+        await screen.findByRole('button', { name: 'Create a separate connection instead' })
+      );
+
+      expect(await screen.findByRole('button', { name: 'Connect' })).toBeInTheDocument();
+      expect(screen.queryByText(CHANGE.title)).toBeNull();
+      expect(api.applyConnectionChange).not.toHaveBeenCalled();
+    });
+
+    it('lists the models of a connection that needs no change', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        checkConnection: vi.fn(async () => ({ ok: true as const, value: null })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+      await start(user, 'OpenAI');
+
+      expect(await screen.findByText('Select one of 2 models')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Edit connection' })).toBeInTheDocument();
+    });
+  });
+
   it('groups the models only when some are marked unusable', async () => {
     const user = userEvent.setup();
     const plain = { compatible: [{ id: 'gpt-5.1' }, { id: 'gpt-4o' }], incompatible: [] };

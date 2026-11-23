@@ -93,6 +93,16 @@ const M = {
     id: 'modelPicker.community.connectionUpdated',
     message: 'Connection updated.',
   }),
+  checkingConnection: msg({
+    id: 'modelPicker.community.checkingConnection',
+    message: 'Checking the connection…',
+  }),
+  applyChange: msg({ id: 'modelPicker.community.applyChange', message: 'Switch connection' }),
+  applyingChange: msg({ id: 'modelPicker.community.applyingChange', message: 'Switching…' }),
+  separateConnection: msg({
+    id: 'modelPicker.community.separateConnection',
+    message: 'Create a separate connection instead',
+  }),
   modelStep: msg({ id: 'modelPicker.community.modelStep', message: 'Your model' }),
   modelNeedsConnection: msg({
     id: 'modelPicker.community.modelNeedsConnection',
@@ -258,6 +268,10 @@ export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLa
     savingConnection: t(M.savingConnection),
     cancelConnectionEdit: t(M.cancelConnectionEdit),
     connectionUpdated: t(M.connectionUpdated),
+    checkingConnection: t(M.checkingConnection),
+    applyChange: t(M.applyChange),
+    applyingChange: t(M.applyingChange),
+    separateConnection: t(M.separateConnection),
     modelStep: t(M.modelStep),
     modelNeedsConnection: (provider) => t(M.modelNeedsConnection, { provider }),
     modelsLoading: (provider) => t(M.modelsLoading, { provider }),

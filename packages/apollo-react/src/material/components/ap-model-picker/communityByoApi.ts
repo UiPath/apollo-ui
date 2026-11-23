@@ -1,6 +1,7 @@
 import type {
   ByoApiType,
   ByoConnection,
+  ByoConnectionChange,
   ByoConnectionForm,
   ByoConnectionValues,
   ByoDialogContext,
@@ -84,8 +85,28 @@ function otherPurpose(
 
 const EDIT_IN_IS = 'Edit this connection in Integration Service';
 
+const settingOf = (value: unknown) =>
+  value === undefined || value === null || value === '' ? null : String(value);
+
+/** The change that makes a saved connection serve `provider`, for the user to agree to. */
+function connectionChange(
+  provider: CommunityByoProvider,
+  connection: ByoConnection,
+  [key, value]: [string, unknown]
+): ByoConnectionChange {
+  const setting = settingOf(value);
+  const usedFor = setting ? ` for ${setting}` : '';
+  return {
+    title: setting
+      ? `This connection is set up for ${setting}, not ${provider.name}`
+      : `This connection is not set up for ${provider.name}`,
+    message: `To use it here, UiPath switches it to ${provider.name} (${key}: ${provider.requires?.[key]}). Automations that use it${usedFor} may stop working.`,
+    agreement: `Switch "${connection.name}" to ${provider.name}. I understand automations that use it${usedFor} may stop working.`,
+  };
+}
+
 function servesOther(provider: CommunityByoProvider, [key, value]: [string, unknown]): ByoFailure {
-  const setting = value === undefined || value === null || value === '' ? 'none' : String(value);
+  const setting = settingOf(value) ?? 'none';
   return {
     title: EDIT_IN_IS,
     message: `It is set up for something other than ${provider.name} (${key}: ${setting}). Create a separate connection for ${provider.name}.`,
@@ -896,11 +917,45 @@ export function createCommunityByoApi(
 
     // IS needs a name here; the user's name is set by the rename below.
     const nameInIs = existing?.name ?? new Date().toISOString();
+    const submitted = await submitSession(provider, sid, sfd, configuration, {
+      folderId,
+      name: nameInIs,
+      existing: Boolean(existing),
+    });
+    if (!submitted.ok) return submitted;
+    const id = submitted.value;
+    let savedName = nameInIs;
+    if (name !== nameInIs) {
+      const renamed = await call(
+        'PATCH',
+        tenantUrl(`connections_/api/v1/Connections/${id}/rename`),
+        {
+          folderKey: folderId,
+          body: { newName: name },
+        }
+      );
+      if (renamed.ok) savedName = name;
+    }
+    if (!existing) createdAt.set(id, Date.now());
+    return ok({ id, providerId, name: savedName, folderId });
+  };
+
+  /**
+   * Sends a provisioning session's configuration to IS and waits for the connection:
+   * a new one, or, with `existing`, the saved one the session edits. Returns its id.
+   */
+  async function submitSession(
+    provider: CommunityByoProvider,
+    sid: string,
+    sfd: IsSessionForm | null,
+    configuration: Record<string, string>,
+    { folderId, name, existing }: { folderId: string; name: string; existing: boolean }
+  ): Promise<ByoResult<string>> {
     const body: Record<string, unknown> = {
       element: { key: provider.connector },
       sessionID: sid,
       configuration,
-      name: nameInIs,
+      name,
     };
     // A session that edits a saved connection names its element instance, which IS
     // updates with PUT. Without it, IS would create a new instance and leave the
@@ -950,20 +1005,48 @@ export function createCommunityByoApi(
       return fail({ title: 'Integration Service did not finish setting up the connection' });
     }
     if (!id) return fail({ title: 'Integration Service did not return the connection' });
-    let savedName = nameInIs;
-    if (name !== nameInIs) {
-      const renamed = await call(
-        'PATCH',
-        tenantUrl(`connections_/api/v1/Connections/${id}/rename`),
-        {
-          folderKey: folderId,
-          body: { newName: name },
-        }
-      );
-      if (renamed.ok) savedName = name;
-    }
-    if (!existing) createdAt.set(id, Date.now());
-    return ok({ id, providerId, name: savedName, folderId });
+    return ok(id);
+  }
+
+  /** The saved connection's current settings, read through the session that would edit it. */
+  async function currentSettings(
+    provider: CommunityByoProvider,
+    connection: ByoConnection
+  ): Promise<ByoResult<{ sid: string; sfd: IsSessionForm | null }>> {
+    const s = await session(provider, connection.folderId, connection.id);
+    if (!s.ok) return s;
+    const sf = await sessionForm(s.value.id, connection.folderId);
+    if (!sf.ok) return fail(failure(sf, 'Could not read the connection settings'));
+    return ok({ sid: s.value.id, sfd: sf.data as IsSessionForm | null });
+  }
+
+  const checkConnection: ByoModelDialogApi['checkConnection'] = async (providerId, connection) => {
+    const provider = byId(providerId);
+    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider.requires) return ok(null);
+    const read = await currentSettings(provider, connection);
+    if (!read.ok) return read;
+    const other = otherPurpose(provider, read.value.sfd?.configs ?? {});
+    return ok(other ? connectionChange(provider, connection, other) : null);
+  };
+
+  const applyConnectionChange: ByoModelDialogApi['applyConnectionChange'] = async (
+    providerId,
+    connection
+  ) => {
+    const provider = byId(providerId);
+    if (!provider?.requires) return fail({ title: `Unknown provider ${providerId}` });
+    const read = await currentSettings(provider, connection);
+    if (!read.ok) return read;
+    const { sid, sfd } = read.value;
+    // Its settings as they are, secrets masked so IS keeps them, with only `requires` changed.
+    const configuration = { ...sfd?.configs, ...provider.requires };
+    const submitted = await submitSession(provider, sid, sfd, configuration, {
+      folderId: connection.folderId,
+      name: connection.name,
+      existing: true,
+    });
+    return submitted.ok ? ok(connection) : submitted;
   };
 
   const listModels: ByoModelDialogApi['listModels'] = async (providerId, connection) => {
@@ -1151,6 +1234,8 @@ export function createCommunityByoApi(
     loadConnectionValues,
     connect,
     listModels,
+    checkConnection,
+    applyConnectionChange,
     apiTypes,
     testAndSave,
   };
