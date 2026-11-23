@@ -79,6 +79,17 @@ export function ModelAliasPicker({
     setDraft(custom ?? query.trim());
     setAdding(true);
   };
+  // Back to the list with focus on its search, which replaces the editor that had it.
+  const [returning, setReturning] = React.useState(false);
+  const stopAdding = () => {
+    setAdding(false);
+    setReturning(true);
+  };
+  React.useEffect(() => {
+    if (!returning) return;
+    setReturning(false);
+    searchRef.current?.focus();
+  }, [returning]);
   const confirmCustom = () => {
     const name = draft.trim();
     if (name) choose({ kind: 'custom', name });
@@ -123,7 +134,7 @@ export function ModelAliasPicker({
           // In the custom alias editor, back to the list rather than closing it.
           if (!adding) return;
           e.preventDefault();
-          setAdding(false);
+          stopAdding();
         }}
       >
         {adding ? (
@@ -145,7 +156,7 @@ export function ModelAliasPicker({
               <Button size="2xs" disabled={!draft.trim()} onClick={confirmCustom}>
                 {custom === null ? labels.addAlias : labels.saveAlias}
               </Button>
-              <Button size="2xs" variant="ghost" onClick={() => setAdding(false)}>
+              <Button size="2xs" variant="ghost" onClick={stopAdding}>
                 {labels.cancel}
               </Button>
             </div>
