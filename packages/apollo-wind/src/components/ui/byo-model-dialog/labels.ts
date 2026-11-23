@@ -81,6 +81,7 @@ export interface ByoModelDialogLabels {
 
   close: string;
   dismiss: string;
+  tryAgain: string;
   cancel: string;
   testAndAdd: string;
   testAndSave: string;
@@ -166,6 +167,7 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
 
   close: 'Close',
   dismiss: 'Dismiss',
+  tryAgain: 'Try again',
   cancel: 'Cancel',
   testAndAdd: 'Test and add',
   testAndSave: 'Test and save',
