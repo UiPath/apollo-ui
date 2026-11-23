@@ -456,32 +456,10 @@ describe('createCommunityByoApi', () => {
     expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
   });
 
-  it.each([
-    'dall-e-3',
-    'gpt-image-1',
-    'amazon.nova-canvas-v1:0',
-    'amazon.nova-reel-v1:1',
-    'Veo-3.0-generate',
-    'FLUX.1-pro',
-  ])('lists the image or video model %s as not supported', async (id) => {
-    routes.push(on('POST', `${GATEWAY}/api/byom/available-models`, () => ({ body: [id] })));
-
-    const result = await api().listModels('openai', {
-      id: 'c',
-      providerId: 'openai',
-      name: 'n',
-      folderId: 'f',
-    });
-
-    expect(result.ok && result.value.incompatible.map((m) => [m.id, m.short])).toEqual([
-      [id, 'Image or video model'],
-    ]);
-  });
-
-  it('tags the models that are not chat models', async () => {
+  it('offers every listed model, newest first, without judging any by its name', async () => {
     routes.push(
       on('POST', `${GATEWAY}/api/byom/available-models`, () => ({
-        body: ['gpt-4o', 'text-embedding-3-large', 'whisper-1', 'gpt-5.1'],
+        body: ['gpt-4o', 'text-embedding-3-large', 'whisper-1', 'gpt-5.1', 'gpt-4o'],
       }))
     );
 
@@ -494,11 +472,13 @@ describe('createCommunityByoApi', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.compatible.map((m) => m.id)).toEqual(['gpt-5.1', 'gpt-4o']);
-    expect(result.value.incompatible.map((m) => [m.id, m.short])).toEqual([
-      ['whisper-1', 'Audio model'],
-      ['text-embedding-3-large', 'Embedding model'],
+    expect(result.value.compatible.map((m) => m.id)).toEqual([
+      'whisper-1',
+      'text-embedding-3-large',
+      'gpt-5.1',
+      'gpt-4o',
     ]);
+    expect(result.value.incompatible).toEqual([]);
     expect(calls[0]?.body).toMatchObject({
       product: 'agents',
       connectorType: 'OpenAi',

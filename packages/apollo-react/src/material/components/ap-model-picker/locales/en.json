@@ -45,7 +45,7 @@
   "modelPicker.community.modelNeedsConnection": "Connect to list your {provider} models",
   "modelPicker.community.modelNoMatch": "No models match \"{query}\".",
   "modelPicker.community.modelSearch": "Search {count} models…",
-  "modelPicker.community.modelSelect": "Select a model · {count} can be used",
+  "modelPicker.community.modelSelect": "Select one of {count} models",
   "modelPicker.community.modelStep": "Your model",
   "modelPicker.community.modelsFailed": "Could not list your {provider} models",
   "modelPicker.community.modelsLoading": "Loading your {provider} models…",

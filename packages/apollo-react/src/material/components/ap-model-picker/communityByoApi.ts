@@ -368,15 +368,6 @@ const connectorsCarrying = (apiType: string) =>
     apiTypes.includes(apiType) ? [type] : []
   );
 
-// Provider ids come in any case (Bedrock's `amazon.nova-canvas-v1:0`, OpenAI's `dall-e-3`).
-const NOT_CHAT: [RegExp, string][] = [
-  [/embed|rerank/i, 'Embedding model'],
-  [/moderation/i, 'Moderation model'],
-  [/tts|whisper|transcribe|audio/i, 'Audio model'],
-  [/realtime/i, 'Realtime model'],
-  [/image|dall-e|sora|imagen|veo-|nova-canvas|nova-reel|flux|stability\./i, 'Image or video model'],
-  [/davinci|babbage/i, 'Completions only'],
-];
 const OPENAI_API_TYPES = ['OpenAiChatCompletions', 'OpenAiResponses', 'OpenAiEmbeddings'];
 /** The API types each connector carries, as AI Trust Layer lists them. */
 const CONNECTOR_API_TYPES: Record<string, string[]> = {
@@ -962,18 +953,11 @@ export function createCommunityByoApi(
     );
     if (!r.ok) return fail(failure(r, `Could not list your ${provider.name} models`));
     const ids = [...new Set(Array.isArray(r.data) ? (r.data as string[]) : [])];
-    const rows: ByoProviderModel[] = ids.map((id) => {
-      const notChat = NOT_CHAT.find(([re]) => re.test(id));
-      return notChat
-        ? { id, short: notChat[1], reason: `${notChat[1]}: not a chat model.` }
-        : { id };
-    });
-    const newestFirst = (a: ByoProviderModel, b: ByoProviderModel) =>
-      b.id.localeCompare(a.id, undefined, { numeric: true });
-    return ok({
-      compatible: rows.filter((m) => !m.reason).sort(newestFirst),
-      incompatible: rows.filter((m) => m.reason).sort(newestFirst),
-    });
+    // The gateway returns ids only, so no model is marked unusable: Test and add checks it.
+    const rows: ByoProviderModel[] = ids
+      .map((id) => ({ id }))
+      .sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true }));
+    return ok({ compatible: rows, incompatible: [] });
   };
 
   /**
