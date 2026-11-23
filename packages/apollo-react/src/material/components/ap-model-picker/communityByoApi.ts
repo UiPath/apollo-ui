@@ -141,7 +141,7 @@ function switchRefusal(
   const authType = authTypeOf(provider, configs);
   const offered = provider.form.authTypes.some((t) => t.value === authType);
   if (!provider.form.authTypes.length || offered) return null;
-  return { ...servesOther(provider, other), final: true };
+  return servesOther(provider, other);
 }
 
 function servesOther(provider: CommunityByoProvider, [, value]: [string, unknown]): ByoFailure {
@@ -149,6 +149,8 @@ function servesOther(provider: CommunityByoProvider, [, value]: [string, unknown
   return {
     title: EDIT_IN_IS,
     message: `It is set up for ${setting ?? 'another service'}, not ${provider.name}. Create a separate connection for ${provider.name}.`,
+    // Asking again gives the same answer, so neither Try again nor Connect again is suggested.
+    final: true,
   };
 }
 

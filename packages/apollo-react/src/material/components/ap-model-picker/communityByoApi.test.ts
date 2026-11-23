@@ -1010,6 +1010,53 @@ describe('createCommunityByoApi', () => {
       expect(result.ok && result.value.authType).toBe('accessKey');
     });
 
+    it('is not switched once its settings changed after a check that asked for the switch', async () => {
+      const configs: Record<string, string> = { ...s3 };
+      routeSession(configs);
+      const client = api();
+
+      const checked = await client.checkConnection?.('bedrock', saved);
+      expect(checked?.ok && checked.value?.title).toBe(
+        'This connection is set up for s3, not Amazon Bedrock'
+      );
+      configs['authentication.type'] = 'assumeRole';
+      const result = await client.applyConnectionChange?.('bedrock', saved);
+
+      expect(!result?.ok && result?.failure.final).toBe(true);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is not saved by Connect once it was set up for another service after its form loaded', async () => {
+      const configs: Record<string, string> = {
+        'authentication.type': 'accessKey',
+        'aws.region': 'eu-central-1',
+        'default.service.name': 'bedrock-runtime',
+      };
+      routeSession(configs);
+      const client = api();
+      const form = await client.loadForm('bedrock', null);
+      if (!form.ok) throw new Error('no form');
+
+      expect((await client.loadConnectionValues('bedrock', saved)).ok).toBe(true);
+      configs['default.service.name'] = 's3';
+      const result = await client.connect({
+        providerId: 'bedrock',
+        form: form.value,
+        authType: 'accessKey',
+        values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': '' },
+        name: 'AWS',
+        folderId: 'f',
+        existing: saved,
+      });
+
+      expect(!result.ok && result.failure.message).toContain(
+        'It is set up for s3, not Amazon Bedrock.'
+      );
+      // Saving again would give the same answer, so the dialog suggests no retry.
+      expect(!result.ok && result.failure.final).toBe(true);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
     it('is edited here when it is set up for the Bedrock runtime', async () => {
       routeSession({
         'authentication.type': 'accessKey',
