@@ -1120,7 +1120,8 @@ describe('createCommunityByoApi', () => {
     });
 
     expect(result).toEqual({ ok: true, value: { ...saved, name: 'Renamed' } });
-    expect(sessions).toBe(1);
+    // Reading the form and saving it each open a session, so the save sees the settings as they are now.
+    expect(sessions).toBe(2);
     const auth = calls.find((c) => c.url.endsWith('/authenticate'));
     expect(auth?.method).toBe('PUT');
     expect(auth?.body).toMatchObject({
