@@ -627,6 +627,29 @@ describe('ByoModelDialog', () => {
       expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
     });
 
+    it('stops offering a switch the host refuses for good', async () => {
+      const user = userEvent.setup();
+      const api = fakeApi({
+        checkConnection: vi.fn(async () => ({ ok: true as const, value: CHANGE })),
+        applyConnectionChange: vi.fn(async () => ({
+          ok: false as const,
+          failure: { title: 'Edit this connection in Integration Service', final: true },
+        })),
+      });
+      render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+      await start(user, 'OpenAI');
+
+      await user.click(await screen.findByRole('checkbox', { name: CHANGE.agreement }));
+      await user.click(screen.getByRole('button', { name: 'Switch connection' }));
+
+      expect(
+        await screen.findByText('Edit this connection in Integration Service')
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Switch connection' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
+    });
+
     it('leaves the connection as it is for a separate one', async () => {
       const user = userEvent.setup();
       const api = fakeApi({

@@ -105,6 +105,23 @@ function connectionChange(
   };
 }
 
+/**
+ * Why a connection set up for another purpose is not switched, if it is not: only one whose
+ * authentication the dialog offers is, since its settings are sent back as read, which is
+ * verified for those types alone (an assumed role is not one), and one that does not say which
+ * authentication it uses is not either.
+ */
+function switchRefusal(
+  provider: CommunityByoProvider,
+  configs: Record<string, unknown>,
+  other: [string, unknown]
+): ByoFailure | null {
+  const authType = configs['authentication.type'];
+  const offered = provider.form.authTypes.some((t) => t.value === authType);
+  if (!provider.form.authTypes.length || offered) return null;
+  return { ...servesOther(provider, other), final: true };
+}
+
 function servesOther(provider: CommunityByoProvider, [, value]: [string, unknown]): ByoFailure {
   const setting = settingOf(value);
   return {
@@ -1041,15 +1058,8 @@ export function createCommunityByoApi(
     const configs = read.value.sfd?.configs ?? {};
     const other = otherPurpose(provider, configs);
     if (!other) return ok(null);
-    // Only a connection whose authentication the dialog offers is switched: its settings are
-    // sent back as read, which is verified for those types alone (an assumed role is not one).
-    const authType = configs['authentication.type'];
-    const offered = provider.form.authTypes.some((t) => t.value === authType);
-    // One that does not say which authentication it uses is not switched either.
-    if (provider.form.authTypes.length && !offered) {
-      return fail({ ...servesOther(provider, other), final: true });
-    }
-    return ok(connectionChange(provider, connection, other));
+    const refused = switchRefusal(provider, configs, other);
+    return refused ? fail(refused) : ok(connectionChange(provider, connection, other));
   };
 
   const applyConnectionChange: ByoModelDialogApi['applyConnectionChange'] = async (
@@ -1061,6 +1071,10 @@ export function createCommunityByoApi(
     const read = await currentSettings(provider, connection);
     if (!read.ok) return read;
     const { sid, sfd } = read.value;
+    // Read again here, so a connection changed since it was checked is checked as it now is.
+    const other = otherPurpose(provider, sfd?.configs ?? {});
+    const refused = other && switchRefusal(provider, sfd?.configs ?? {}, other);
+    if (refused) return fail(refused);
     // Its settings as they are, secrets masked so IS keeps them, with only `requires` changed.
     const configuration = { ...sfd?.configs, ...provider.requires };
     const submitted = await submitSession(provider, sid, sfd, configuration, {

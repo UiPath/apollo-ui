@@ -469,7 +469,12 @@ function DialogBody({
       if (gen !== generation.current) return;
       if (!result.ok) {
         setChangeAgreed(false);
-        setModelsState({ ...pending, failure: { ...result.failure } });
+        // A switch the host will never make is not offered again: the failure says what to do.
+        setModelsState(
+          result.failure.final
+            ? { ...NO_MODELS, status: 'error', failure: { ...result.failure }, unchecked: true }
+            : { ...pending, failure: { ...result.failure } }
+        );
         return;
       }
       // What the host answered is the connection from now on, for Test and add too.
