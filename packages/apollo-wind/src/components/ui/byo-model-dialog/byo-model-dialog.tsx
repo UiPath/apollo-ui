@@ -225,6 +225,8 @@ function DialogBody({
       return;
     }
     setChangeAgreed(false);
+    // A check that throws has not cleared the connection either.
+    let cleared = !api.checkConnection;
     try {
       if (api.checkConnection) {
         setModelsState({ ...NO_MODELS, status: 'checking' });
@@ -243,6 +245,7 @@ function DialogBody({
           setModelsState({ ...NO_MODELS, status: 'change', change: checked.value });
           return;
         }
+        cleared = true;
       }
       setModelsState({ ...NO_MODELS, status: 'loading' });
       const result = await api.listModels(pid, conn);
@@ -254,7 +257,12 @@ function DialogBody({
       }
     } catch (err) {
       if (gen === generation.current) {
-        setModelsState({ ...NO_MODELS, status: 'error', failure: unexpected(err) });
+        setModelsState({
+          ...NO_MODELS,
+          status: 'error',
+          failure: unexpected(err),
+          ...(cleared ? {} : { unchecked: true }),
+        });
       }
     }
   };
