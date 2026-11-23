@@ -729,7 +729,7 @@
   "toolbox.item.submenu": "サブメニューあり",
   "toolbox.search": "検索",
   "toolbox.search.clear": "検索をクリア",
-  "toolbox.search.noResults": "",
+  "toolbox.search.noResults": "一致するノードが見つかりませんでした。",
   "toolbox.search.pending": "検索中",
-  "toolbox.search.results": ""
+  "toolbox.search.results": "結果: {count}"
 }
