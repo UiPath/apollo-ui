@@ -609,7 +609,12 @@ describe('ByoModelDialog', () => {
       const user = userEvent.setup();
       let answer: (r: ByoResult<null>) => void = () => {};
       const api = fakeApi({
-        checkConnection: vi.fn(() => new Promise<ByoResult<null>>((r) => (answer = r))),
+        checkConnection: vi.fn(
+          () =>
+            new Promise<ByoResult<null>>((r) => {
+              answer = r;
+            })
+        ),
       });
       render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
 
@@ -662,6 +667,29 @@ describe('ByoModelDialog', () => {
       expect(screen.queryByRole('button', { name: 'Edit connection' })).toBeNull();
     });
 
+    it('does not save an edited model whose connection check was rejected', async () => {
+      const api = fakeApi({
+        checkConnection: vi.fn(async () => {
+          throw new Error('network down');
+        }),
+      });
+      render(
+        <ByoModelDialog
+          open
+          onOpenChange={vi.fn()}
+          api={api}
+          onSaved={vi.fn()}
+          editing={{ configurationId: 'cfg1', name: 'Taken' }}
+        />
+      );
+
+      await waitFor(() => expect(api.checkConnection).toHaveBeenCalled());
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Test and save' })).toBeDisabled()
+      );
+      expect(screen.queryByRole('button', { name: 'Edit connection' })).toBeNull();
+    });
+
     it('offers the switch again for another connection while an earlier switch is still running', async () => {
       const user = userEvent.setup();
       const other: ByoConnection = { ...SAVED, id: 'c2', name: 'Second OpenAI' };
@@ -673,7 +701,10 @@ describe('ByoModelDialog', () => {
         })),
         checkConnection: vi.fn(async () => ({ ok: true as const, value: CHANGE })),
         applyConnectionChange: vi.fn(
-          () => new Promise<ByoResult<ByoConnection>>((r) => (finish = r))
+          () =>
+            new Promise<ByoResult<ByoConnection>>((r) => {
+              finish = r;
+            })
         ),
       });
       render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
