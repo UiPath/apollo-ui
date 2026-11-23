@@ -794,6 +794,69 @@ describe('createCommunityByoApi', () => {
     expect(result.failure.message).toContain('awsUipathManagedCrossAccountAssumeRole');
   });
 
+  describe('a saved Amazon Web Services connection', () => {
+    const saved = { id: 'conn-aws', providerId: 'bedrock', name: 'AWS', folderId: 'f' };
+    const routeSession = (configs: Record<string, string>) =>
+      routes.push(
+        on('POST', `${TENANT}/connections_/api/v1/Connections/conn-aws/auth`, () => ({
+          body: { sessionId: 'sid-aws', expiresAt: Date.now() + 600_000 },
+        })),
+        on(
+          'GET',
+          `${TENANT}/elements_/v1/elements/normalized-instances/applications/sessions/sid-aws`,
+          () => ({ body: { configs, elementInstance: { id: 1 } } })
+        )
+      );
+    const s3 = { 'authentication.type': 'accessKey', 'default.service.name': 's3' };
+
+    it('is not edited here when it is set up for another AWS service', async () => {
+      routeSession(s3);
+
+      const result = await api().loadConnectionValues('bedrock', saved);
+
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+      expect(result.failure.title).toBe('Edit this connection in Integration Service');
+      expect(result.failure.message).toContain('default.service.name: s3');
+      expect(result.failure.message).toContain('Create a separate connection');
+    });
+
+    it('is left unchanged when Connect is asked to edit it anyway', async () => {
+      routeSession(s3);
+      const client = api();
+      const form = await client.loadForm('bedrock', null);
+      if (!form.ok) throw new Error('no form');
+
+      const result = await client.connect({
+        providerId: 'bedrock',
+        form: form.value,
+        authType: 'accessKey',
+        values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': '' },
+        name: 'AWS',
+        folderId: 'f',
+        existing: saved,
+      });
+
+      expect(result.ok).toBe(false);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is edited here when it is set up for the Bedrock runtime', async () => {
+      routeSession({
+        'authentication.type': 'accessKey',
+        'aws.region': 'eu-central-1',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      const result = await api().loadConnectionValues('bedrock', saved);
+
+      expect(result).toEqual({
+        ok: true,
+        value: { authType: 'accessKey', values: { 'aws.region': 'eu-central-1' } },
+      });
+    });
+  });
+
   it('edits a saved connection through its own session, keeping a secret left blank', async () => {
     let sessions = 0;
     routes.push(
