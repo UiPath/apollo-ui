@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.95.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.95.2...@uipath/apollo-wind@2.95.3) (2026-11-23)
+
+### Bug Fixes
+
+* **apollo-wind:** scope form field ids to each MetadataForm [MST-14393] [MST-14487] ([1c68724](https://github.com/UiPath/apollo-ui/commit/1c68724b5836ee5808976ea6925471f5fb31ee96))
+
 ## [@uipath/apollo-wind-v2.95.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.95.1...@uipath/apollo-wind@2.95.2) (2026-11-20)
 
 ### Bug Fixes
