@@ -105,35 +105,40 @@ function connectionChange(
   };
 }
 
-/** The connection's authentication type, when it names one the provider's form does not offer. */
-function unofferedAuthType(
+/**
+ * The connection's authentication type. IS leaves it out of a connection that uses the
+ * connector's default, which each form's default mirrors (on alpha, saved Azure OpenAI API-key
+ * connections name none).
+ */
+const authTypeOf = (provider: CommunityByoProvider, configs: Record<string, unknown>) =>
+  configs['authentication.type'] ?? provider.form.defaultAuthType;
+
+/** Why the connection is not edited here, when its authentication type is not one the form offers. */
+function authTypeRefusal(
   provider: CommunityByoProvider,
   configs: Record<string, unknown>
-): string | null {
-  const authType = configs['authentication.type'];
-  if (!provider.form.authTypes.length || !authType) return null;
-  return provider.form.authTypes.some((t) => t.value === authType) ? null : String(authType);
-}
-
-function otherAuthType(authType: string): ByoFailure {
+): ByoFailure | null {
+  if (!provider.form.authTypes.length) return null;
+  const authType = authTypeOf(provider, configs);
+  if (provider.form.authTypes.some((t) => t.value === authType)) return null;
   return {
     title: EDIT_IN_IS,
-    message: `It uses an authentication type this dialog does not offer (${authType}).`,
+    message: `It uses an authentication type this dialog does not offer (${String(authType)}).`,
+    final: true,
   };
 }
 
 /**
  * Why a connection set up for another purpose is not switched, if it is not: only one whose
  * authentication the dialog offers is, since its settings are sent back as read, which is
- * verified for those types alone (an assumed role is not one), and one that does not say which
- * authentication it uses is not either.
+ * verified for those types alone (an assumed role is not one).
  */
 function switchRefusal(
   provider: CommunityByoProvider,
   configs: Record<string, unknown>,
   other: [string, unknown]
 ): ByoFailure | null {
-  const authType = configs['authentication.type'];
+  const authType = authTypeOf(provider, configs);
   const offered = provider.form.authTypes.some((t) => t.value === authType);
   if (!provider.form.authTypes.length || offered) return null;
   return { ...servesOther(provider, other), final: true };
@@ -901,8 +906,8 @@ export function createCommunityByoApi(
     const savedAuthType = current['authentication.type'];
     const knownAuthType = form.authTypes.some((t) => t.value === savedAuthType);
     // Shown as another type, the connection would be switched to it on Connect.
-    const unoffered = unofferedAuthType(provider, current);
-    if (unoffered) return fail(otherAuthType(unoffered));
+    const unoffered = authTypeRefusal(provider, current);
+    if (unoffered) return fail(unoffered);
     const other = otherPurpose(provider, current);
     if (other) return fail(servesOther(provider, other));
     return ok<ByoConnectionValues>({
@@ -941,8 +946,8 @@ export function createCommunityByoApi(
     const other = existing ? otherPurpose(provider, sfd?.configs ?? {}) : null;
     if (other) return fail(servesOther(provider, other));
     // Checked again as the connection now is: saved as another type, it would be switched to it.
-    const unoffered = existing ? unofferedAuthType(provider, sfd?.configs ?? {}) : null;
-    if (unoffered) return fail(otherAuthType(unoffered));
+    const unoffered = existing ? authTypeRefusal(provider, sfd?.configs ?? {}) : null;
+    if (unoffered) return fail(unoffered);
     // Every default goes back, then the session's configs, then what the user entered.
     // Editing, the configs are the connection's current settings with secrets masked,
     // and IS keeps a secret that comes back masked.

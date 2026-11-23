@@ -891,13 +891,14 @@ describe('createCommunityByoApi', () => {
       expect(calls.some((c) => c.method === 'PUT' || c.url.endsWith('/authenticate'))).toBe(false);
     });
 
-    it('is not switched when it does not say which authentication it uses', async () => {
+    it('is switched when it names no authentication type, which is the default one', async () => {
       routeSession({ 'default.service.name': 's3' });
 
       const result = await api().checkConnection?.('bedrock', saved);
 
-      expect(!result?.ok && result?.failure.final).toBe(true);
-      expect(calls.some((c) => c.method === 'PUT' || c.url.endsWith('/authenticate'))).toBe(false);
+      expect(result?.ok && result.value?.title).toBe(
+        'This connection is set up for s3, not Amazon Bedrock'
+      );
     });
 
     it('is used as it is with such an authentication type once it is for the Bedrock runtime', async () => {
@@ -999,6 +1000,14 @@ describe('createCommunityByoApi', () => {
         'It uses an authentication type this dialog does not offer (assumeRole).'
       );
       expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('takes a connection that names no authentication type to use the default one', async () => {
+      routeSession({ 'aws.region': 'eu-central-1', 'default.service.name': 'bedrock-runtime' });
+
+      const result = await api().loadConnectionValues('bedrock', saved);
+
+      expect(result.ok && result.value.authType).toBe('accessKey');
     });
 
     it('is edited here when it is set up for the Bedrock runtime', async () => {
