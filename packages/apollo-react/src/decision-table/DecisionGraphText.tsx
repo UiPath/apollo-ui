@@ -69,7 +69,7 @@ export interface DecisionGraphTextProps<Refusal, Logic, Op, Policy, Total, Type,
   nodes: readonly DecisionGraphNode[];
   /** Read only with the host's selected decision; `select` also tells the host what the view brought into view; `edit` adds the host's actions on the decisions, each shown in the cards' menus and keys only when listed; the host clears a selection whose rule or cell an edit removed, using `liveSelection`. */
   mode: DecisionGraphMode<Refusal, Logic>;
-  /** The body of an open decision, its table in any `DecisionText` mode; `context.revealDecision` takes a link to another decision in other content in place. */
+  /** The body of an open decision, its table in any `DecisionText` mode; also called for a folded table card near the scrollport, whose heading takes the table's policy chip, a worse mark and citations, while a card further away shows the node's. `context.revealDecision` takes a link to another decision in other content in place. */
   renderBody: (
     decisionId: string,
     context: DecisionGraphBodyContext
@@ -331,18 +331,18 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
   }, [scroller]);
 
   const perRuleHeight = perRuleHeightOf(heightsRef.current, ruleCounts);
+  const isMounted = (decisionId: string): boolean =>
+    near === null ||
+    near.has(decisionId) ||
+    decisionId === selected ||
+    decisionId === revealed ||
+    decisionId === focused;
   const bodyOf = (
     decisionId: string,
     scrollContainer: HTMLElement,
     built: DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> | null
   ): React.ReactNode => {
-    const mounted =
-      near === null ||
-      near.has(decisionId) ||
-      decisionId === selected ||
-      decisionId === revealed ||
-      decisionId === focused;
-    if (mounted) {
+    if (isMounted(decisionId)) {
       const body = built ?? renderBody(decisionId, bodyContext);
       return body.kind === 'table' ? (
         <DecisionTextView
@@ -473,7 +473,10 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
       );
     }
     const open = expanded.has(node.id);
-    const built = node.logic.kind === 'table' ? renderBody(node.id, bodyContext) : null;
+    const built =
+      node.logic.kind === 'table' && scroller && isMounted(node.id)
+        ? renderBody(node.id, bodyContext)
+        : null;
     const text = tableTextOf(built);
     const textCitations = text?.citations;
     const textMark = text?.headerMark;

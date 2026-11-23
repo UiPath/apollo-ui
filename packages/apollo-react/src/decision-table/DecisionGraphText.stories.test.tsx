@@ -11,6 +11,9 @@ const { Default, Editing, Errors } = composeStories(stories);
 beforeEach(() => {
   HTMLElement.prototype.scrollTo = () => {};
 });
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 const caption = () => screen.getByTestId('graph-caption');
 const body = (id: string) => within(screen.getByTestId(`graph-body-${id}`));
@@ -124,6 +127,7 @@ describe('DecisionGraphText stories', () => {
   });
 
   it('undoes and redoes a hit policy change from the card heading picker', async () => {
+    vi.stubGlobal('IntersectionObserver', undefined);
     render(<Editing />);
     const picker = screen.getByTestId('graph-risk-policy');
     const before = picker.textContent;

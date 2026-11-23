@@ -34,6 +34,13 @@ const graph = (props: Partial<FixtureGraphProps> = {}) => (
   />
 );
 
+beforeEach(() => {
+  vi.stubGlobal('IntersectionObserver', undefined);
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('DecisionGraphText citations', () => {
   afterEach(cleanup);
 

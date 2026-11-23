@@ -15,6 +15,7 @@ export {
 } from './DecisionGraphText';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
+export type { DecisionTextDecisionActions } from './useDecisionTextHeaderActions';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type {
   DecisionGraphAction,

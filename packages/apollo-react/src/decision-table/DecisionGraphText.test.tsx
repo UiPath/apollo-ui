@@ -325,13 +325,53 @@ describe('DecisionGraphText', () => {
     expect(heading).toHaveTextContent(/now UUnique/);
   });
 
-  it('builds each table body once per render, an open one included', async () => {
-    const renderBody = vi.fn((id: string) => textBody(id));
-    render(graph({ renderBody, expansion: held(new Set(['risk'])) }));
-    const counts = new Map<string, number>();
-    for (const [id] of renderBody.mock.calls) counts.set(id, (counts.get(id) ?? 0) + 1);
-    expect(counts.has('risk')).toBe(true);
-    expect(new Set(counts.values()).size).toBe(1);
+  it('builds a folded table card only while it is near the scrollport, heading it from the node otherwise', () => {
+    nearCard = () => false;
+    const renderBody = vi.fn((id: string) => {
+      const built = textBody(id);
+      return built.kind === 'table' && id === 'risk'
+        ? {
+            ...built,
+            text: {
+              ...built.text,
+              citations: {
+                kind: 'cited' as const,
+                decision: [{ kind: 'page' as const, page: 9 }],
+                rules: new Map(),
+                onOpenCitation: () => {},
+              },
+              headerMark: { tone: 'error' as const, title: 'Broken', glyph: true as const },
+            },
+          }
+        : built;
+    });
+    render(graph({ renderBody }));
+    const policy = () => screen.getByTestId('graph-hit-policy-risk');
+    const callsFor = (id: string) =>
+      renderBody.mock.calls.filter(([called]) => called === id).length;
+    const showsTableHeading = () => {
+      expect(policy().querySelector('[aria-describedby]')).not.toBeNull();
+      expect(screen.getByTestId('graph-mark-risk')).toHaveAttribute('title', 'Broken');
+      expect(screen.getByTestId('graph-citation-risk')).toBeInTheDocument();
+    };
+    const showsNodeHeading = () => {
+      expect(policy().querySelector('[aria-describedby]')).toBeNull();
+      expect(policy()).toHaveTextContent('U');
+      expect(screen.queryByTestId('graph-mark-risk')).toBeNull();
+      expect(screen.queryByTestId('graph-citation-risk')).toBeNull();
+    };
+    expect(renderBody).not.toHaveBeenCalled();
+    showsNodeHeading();
+    const card = screen.getByTestId('graph-decision-risk');
+    const observer = cardObservers[0];
+    act(() => observer?.report([{ target: card, isIntersecting: true }]));
+    expect(callsFor('risk')).toBeGreaterThan(0);
+    expect(renderBody.mock.calls.every(([id]) => id === 'risk')).toBe(true);
+    showsTableHeading();
+    const beforeLeave = renderBody.mock.calls.length;
+    act(() => observer?.report([{ target: card, isIntersecting: false }]));
+    expect(renderBody.mock.calls.length).toBe(beforeLeave);
+    showsNodeHeading();
   });
 
   it('shows what the host gives for a decision that is not a table', async () => {
