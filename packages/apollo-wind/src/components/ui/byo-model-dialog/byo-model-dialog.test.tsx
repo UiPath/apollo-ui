@@ -883,6 +883,44 @@ describe('ByoModelDialog', () => {
       );
     });
 
+    it('restores an edited model’s API type when its alias is restored', async () => {
+      const user = userEvent.setup();
+      const editing: ByoModelToEdit = {
+        ...SAVED_MODEL,
+        name: 'gpt-5',
+        replaces: 'gpt-5',
+        apiType: 'OpenAiChatCompletions',
+      };
+      const api = withReplaceable({
+        loadModel: vi.fn(async () => ({ ok: true as const, value: editing })),
+        apiTypes: vi.fn((_: string, replaces: string | null) =>
+          replaces === 'gpt-4.1' ? [TWO_TYPES[0]] : TWO_TYPES
+        ),
+      });
+      render(
+        <ByoModelDialog
+          open
+          onOpenChange={vi.fn()}
+          api={api}
+          onSaved={vi.fn()}
+          editing={{ configurationId: 'cfg1', name: 'gpt-5' }}
+        />
+      );
+
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Test and save' })).toBeEnabled()
+      );
+      // gpt-4.1 offers only Responses, so the type moves; going back must bring the saved one back.
+      await pick(user, 'Model alias', 'gpt-4.1');
+      await pick(user, 'Model alias', 'gpt-5');
+      await user.click(screen.getByRole('button', { name: 'Test and save' }));
+      await waitFor(() =>
+        expect(api.testAndSave).toHaveBeenCalledWith(
+          expect.objectContaining({ replaces: 'gpt-5', apiType: 'OpenAiChatCompletions' })
+        )
+      );
+    });
+
     it('keeps an edited model’s API type after a change of provider that also offers it', async () => {
       const user = userEvent.setup();
       const editing: ByoModelToEdit = {
