@@ -105,6 +105,23 @@ function connectionChange(
   };
 }
 
+/** The connection's authentication type, when it names one the provider's form does not offer. */
+function unofferedAuthType(
+  provider: CommunityByoProvider,
+  configs: Record<string, unknown>
+): string | null {
+  const authType = configs['authentication.type'];
+  if (!provider.form.authTypes.length || !authType) return null;
+  return provider.form.authTypes.some((t) => t.value === authType) ? null : String(authType);
+}
+
+function otherAuthType(authType: string): ByoFailure {
+  return {
+    title: EDIT_IN_IS,
+    message: `It uses an authentication type this dialog does not offer (${authType}).`,
+  };
+}
+
 /**
  * Why a connection set up for another purpose is not switched, if it is not: only one whose
  * authentication the dialog offers is, since its settings are sent back as read, which is
@@ -884,12 +901,8 @@ export function createCommunityByoApi(
     const savedAuthType = current['authentication.type'];
     const knownAuthType = form.authTypes.some((t) => t.value === savedAuthType);
     // Shown as another type, the connection would be switched to it on Connect.
-    if (form.authTypes.length && savedAuthType && !knownAuthType) {
-      return fail({
-        title: EDIT_IN_IS,
-        message: `It uses an authentication type this dialog does not offer (${savedAuthType}).`,
-      });
-    }
+    const unoffered = unofferedAuthType(provider, current);
+    if (unoffered) return fail(otherAuthType(unoffered));
     const other = otherPurpose(provider, current);
     if (other) return fail(servesOther(provider, other));
     return ok<ByoConnectionValues>({
@@ -927,6 +940,9 @@ export function createCommunityByoApi(
     const sfd = sf.data as IsSessionForm | null;
     const other = existing ? otherPurpose(provider, sfd?.configs ?? {}) : null;
     if (other) return fail(servesOther(provider, other));
+    // Checked again as the connection now is: saved as another type, it would be switched to it.
+    const unoffered = existing ? unofferedAuthType(provider, sfd?.configs ?? {}) : null;
+    if (unoffered) return fail(otherAuthType(unoffered));
     // Every default goes back, then the session's configs, then what the user entered.
     // Editing, the configs are the connection's current settings with secrets masked,
     // and IS keeps a secret that comes back masked.
@@ -1071,9 +1087,11 @@ export function createCommunityByoApi(
     const read = await currentSettings(provider, connection);
     if (!read.ok) return read;
     const { sid, sfd } = read.value;
-    // Read again here, so a connection changed since it was checked is checked as it now is.
+    // Read again here, so a connection changed since it was checked is checked as it now is:
+    // one already for this provider needs no change, so nothing is sent.
     const other = otherPurpose(provider, sfd?.configs ?? {});
-    const refused = other && switchRefusal(provider, sfd?.configs ?? {}, other);
+    if (!other) return ok(connection);
+    const refused = switchRefusal(provider, sfd?.configs ?? {}, other);
     if (refused) return fail(refused);
     // Its settings as they are, secrets masked so IS keeps them, with only `requires` changed.
     const configuration = { ...sfd?.configs, ...provider.requires };
