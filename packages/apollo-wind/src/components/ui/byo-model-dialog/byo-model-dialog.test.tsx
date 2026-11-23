@@ -485,6 +485,33 @@ describe('ByoModelDialog', () => {
     expect(api.loadConnectionValues).toHaveBeenCalledTimes(2);
   });
 
+  it('groups the models only when some are marked unusable', async () => {
+    const user = userEvent.setup();
+    const plain = { compatible: [{ id: 'gpt-5.1' }, { id: 'gpt-4o' }], incompatible: [] };
+    const api = fakeApi({ listModels: vi.fn(async () => ({ ok: true as const, value: plain })) });
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={api} onSaved={vi.fn()} />);
+
+    await start(user, 'OpenAI');
+    const trigger = screen.getByRole('combobox', { name: 'Your model' });
+    await waitFor(() => expect(trigger).toBeEnabled());
+    expect(trigger).toHaveTextContent('Select one of 2 models');
+    await user.click(trigger);
+    expect(await screen.findByRole('option', { name: 'gpt-4o' })).toBeInTheDocument();
+    expect(screen.queryByText('Can be used · 2')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Not supported/)).not.toBeInTheDocument();
+  });
+
+  it('shows the unusable models in their own group, with the usable ones under a heading', async () => {
+    const user = userEvent.setup();
+    render(<ByoModelDialog open onOpenChange={vi.fn()} api={fakeApi()} onSaved={vi.fn()} />);
+
+    await start(user, 'OpenAI');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Your model' })).toBeEnabled());
+    await user.click(screen.getByRole('combobox', { name: 'Your model' }));
+    expect(await screen.findByText('Can be used · 2')).toBeInTheDocument();
+    expect(screen.getByText('Not supported · 1')).toBeInTheDocument();
+  });
+
   it('loads the model list again when a connection edit fails while the list was loading', async () => {
     const user = userEvent.setup();
     let finishFirstList: () => void = () => {};

@@ -46,7 +46,7 @@ export interface ByoModelDialogLabels {
   modelNeedsConnection: (provider: string) => string;
   modelsLoading: (provider: string) => string;
   modelsFailed: (provider: string) => string;
-  modelSelect: (compatible: number) => string;
+  modelSelect: (count: number) => string;
   modelSearch: (total: number) => string;
   modelNoMatch: (query: string) => string;
   compatibleGroup: (count: number) => string;
@@ -127,7 +127,7 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   modelNeedsConnection: (provider) => `Connect to list your ${provider} models`,
   modelsLoading: (provider) => `Loading your ${provider} models…`,
   modelsFailed: (provider) => `Could not list your ${provider} models`,
-  modelSelect: (compatible) => `Select a model · ${compatible} can be used`,
+  modelSelect: (count) => `Select one of ${count} models`,
   modelSearch: (total) => `Search ${total} models…`,
   modelNoMatch: (query) => `No models match "${query}".`,
   compatibleGroup: (count) => `Can be used · ${count}`,
