@@ -891,6 +891,15 @@ describe('createCommunityByoApi', () => {
       expect(calls.some((c) => c.method === 'PUT' || c.url.endsWith('/authenticate'))).toBe(false);
     });
 
+    it('is not switched when it does not say which authentication it uses', async () => {
+      routeSession({ 'default.service.name': 's3' });
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(!result?.ok && result?.failure.final).toBe(true);
+      expect(calls.some((c) => c.method === 'PUT' || c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
     it('is used as it is with such an authentication type once it is for the Bedrock runtime', async () => {
       routeSession({
         'authentication.type': 'assumeRole',
@@ -1120,6 +1129,40 @@ describe('createCommunityByoApi', () => {
       const context = await client.loadContext();
       return { client, context };
     };
+
+    it('refuses to edit a model saved with others in a folder it does not offer', async () => {
+      const { client } = await loaded();
+      const entry = (id: string, desiredModel: string) => ({
+        id,
+        desiredModel,
+        customerModel: 'gpt-4o',
+        connectorType: 'OpenAi',
+        connectionId: 'conn-1',
+      });
+      routes.push(
+        on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-me`, () => ({
+          body: {
+            id: 'cfg-me',
+            folderId: 'me',
+            llmConfigurations: [entry('e1', 'my-gpt'), entry('e2', 'other')],
+          },
+        })),
+        on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-alone`, () => ({
+          body: { id: 'cfg-alone', folderId: 'me', llmConfigurations: [entry('e1', 'my-gpt')] },
+        }))
+      );
+
+      const stuck = await client.loadModel({ configurationId: 'cfg-me', name: 'my-gpt' });
+      expect(stuck.ok).toBe(false);
+      if (stuck.ok) return;
+      expect(stuck.failure.title).toBe('my-gpt cannot be edited here');
+      expect(stuck.failure.message).toContain('Edit it in AI Trust Layer.');
+      expect(stuck.failure.final).toBe(true);
+
+      // Alone in its configuration, it moves to the connection's folder when saved.
+      const alone = await client.loadModel({ configurationId: 'cfg-alone', name: 'my-gpt' });
+      expect(alone.ok).toBe(true);
+    });
 
     it('lists the feature models, marking those this feature replaced and retiring ones last', async () => {
       const { context } = await loaded();
