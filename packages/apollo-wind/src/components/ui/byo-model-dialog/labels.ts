@@ -41,6 +41,10 @@ export interface ByoModelDialogLabels {
   savingConnection: string;
   cancelConnectionEdit: string;
   connectionUpdated: string;
+  checkingConnection: string;
+  applyChange: string;
+  applyingChange: string;
+  separateConnection: string;
 
   modelStep: string;
   modelNeedsConnection: (provider: string) => string;
@@ -122,6 +126,10 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   savingConnection: 'Saving…',
   cancelConnectionEdit: 'Cancel',
   connectionUpdated: 'Connection updated.',
+  checkingConnection: 'Checking the connection…',
+  applyChange: 'Switch connection',
+  applyingChange: 'Switching…',
+  separateConnection: 'Create a separate connection instead',
 
   modelStep: 'Your model',
   modelNeedsConnection: (provider) => `Connect to list your ${provider} models`,

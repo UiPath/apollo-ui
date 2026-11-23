@@ -794,6 +794,13 @@ describe('createCommunityByoApi', () => {
     expect(result.failure.message).toContain('awsUipathManagedCrossAccountAssumeRole');
   });
 
+  it('uses a saved connection as it is when its provider requires nothing of it', async () => {
+    const saved = { id: 'conn-1', providerId: 'openai', name: 'Mine', folderId: 'f' };
+
+    expect(await api().checkConnection?.('openai', saved)).toEqual({ ok: true, value: null });
+    expect(calls).toEqual([]);
+  });
+
   describe('a saved Amazon Web Services connection', () => {
     const saved = { id: 'conn-aws', providerId: 'bedrock', name: 'AWS', folderId: 'f' };
     const routeSession = (configs: Record<string, string>) =>
@@ -839,6 +846,82 @@ describe('createCommunityByoApi', () => {
 
       expect(result.ok).toBe(false);
       expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('asks to be switched to Bedrock when it is set up for another AWS service', async () => {
+      routeSession(s3);
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(result).toEqual({
+        ok: true,
+        value: {
+          title: 'This connection is set up for s3, not Amazon Bedrock',
+          message:
+            'To use it here, UiPath switches it to Amazon Bedrock (default.service.name: bedrock-runtime). Automations that use it for s3 may stop working.',
+          agreement:
+            'Switch "AWS" to Amazon Bedrock. I understand automations that use it for s3 may stop working.',
+        },
+      });
+    });
+
+    it('asks to be switched to Bedrock when it names no service', async () => {
+      routeSession({ 'authentication.type': 'accessKey' });
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(result?.ok && result.value?.title).toBe(
+        'This connection is not set up for Amazon Bedrock'
+      );
+      expect(result?.ok && result.value?.agreement).toBe(
+        'Switch "AWS" to Amazon Bedrock. I understand automations that use it may stop working.'
+      );
+    });
+
+    it('is used as it is when it is set up for the Bedrock runtime', async () => {
+      routeSession({
+        'authentication.type': 'accessKey',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      expect(await api().checkConnection?.('bedrock', saved)).toEqual({ ok: true, value: null });
+    });
+
+    it('switches to Bedrock with only its service changed', async () => {
+      routeSession({
+        'authentication.type': 'accessKey',
+        'aws.region': 'eu-central-1',
+        'aws.api.key': 'AKIA',
+        'aws.api.secret': '********',
+        'default.service.name': 's3',
+      });
+      routes.push(
+        on('PUT', `${TENANT}/elements_/v1/elements/normalized-instances/authenticate`, () => ({
+          body: { elementInstance: { connectionId: 'conn-aws' } },
+        })),
+        on('GET', `${TENANT}/connections_/api/v1/Sessions/sid-aws`, () => ({
+          body: { status: 'success', connectionId: 'conn-aws' },
+        }))
+      );
+
+      const result = await api().applyConnectionChange?.('bedrock', saved);
+
+      expect(result).toEqual({ ok: true, value: saved });
+      const auth = calls.find((c) => c.url.endsWith('/authenticate'));
+      expect(auth?.method).toBe('PUT');
+      expect(auth?.body).toMatchObject({
+        sessionID: 'sid-aws',
+        instanceID: 1,
+        name: 'AWS',
+        configuration: {
+          'authentication.type': 'accessKey',
+          'aws.region': 'eu-central-1',
+          'aws.api.key': 'AKIA',
+          'aws.api.secret': '********',
+          'default.service.name': 'bedrock-runtime',
+        },
+      });
+      expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
     });
 
     it('is edited here when it is set up for the Bedrock runtime', async () => {

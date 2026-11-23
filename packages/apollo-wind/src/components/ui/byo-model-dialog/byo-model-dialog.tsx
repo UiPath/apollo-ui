@@ -6,11 +6,13 @@ import {
   ChevronRight,
   CircleCheck,
   KeyRound,
+  TriangleAlert,
   X,
 } from 'lucide-react';
 import * as React from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Command,
@@ -45,6 +47,7 @@ import { type ByoModelDialogLabels, resolveByoModelDialogLabels } from './labels
 import { type ModelAlias, ModelAliasPicker } from './model-alias-picker';
 import type {
   ByoConnection,
+  ByoConnectionChange,
   ByoConnectionForm,
   ByoDialogContext,
   ByoEditTarget,
@@ -98,10 +101,13 @@ type FormState =
   | { status: 'idle' | 'loading' | 'ok'; form: ByoConnectionForm }
   | { status: 'error'; form: ByoConnectionForm; failure: ByoFailure };
 type ModelsState = {
-  status: 'idle' | 'loading' | 'ok' | 'error';
+  /** `change`: the connection needs a change the user has not agreed to yet. */
+  status: 'idle' | 'checking' | 'loading' | 'ok' | 'error' | 'change';
   models: ByoProviderModels;
-  /** Why the list could not be loaded; set with `error`. */
+  /** Why the list could not be loaded, set with `error`; or why the change failed, with `change`. */
   failure?: ByoFailure;
+  /** Set with `change`. */
+  change?: ByoConnectionChange;
 };
 type Attempt<T> =
   | { status: 'idle' | 'running' }
@@ -180,6 +186,8 @@ function DialogBody({
   const [connect, setConnect] = React.useState<Attempt<ConnectOutcome>>({ status: 'idle' });
 
   const [modelsState, setModelsState] = React.useState<ModelsState>(NO_MODELS);
+  const [changeAgreed, setChangeAgreed] = React.useState(false);
+  const [applyingChange, setApplyingChange] = React.useState(false);
   const [modelId, setModelId] = React.useState('');
   const [modelQuery, setModelQuery] = React.useState('');
   const [modelListOpen, setModelListOpen] = React.useState(false);
@@ -214,8 +222,22 @@ function DialogBody({
       setModelsState(NO_MODELS);
       return;
     }
-    setModelsState({ ...NO_MODELS, status: 'loading' });
+    setChangeAgreed(false);
     try {
+      if (api.checkConnection) {
+        setModelsState({ ...NO_MODELS, status: 'checking' });
+        const checked = await api.checkConnection(pid, conn);
+        if (gen !== generation.current) return;
+        if (!checked.ok) {
+          setModelsState({ ...NO_MODELS, status: 'error', failure: { ...checked.failure } });
+          return;
+        }
+        if (checked.value) {
+          setModelsState({ ...NO_MODELS, status: 'change', change: checked.value });
+          return;
+        }
+      }
+      setModelsState({ ...NO_MODELS, status: 'loading' });
       const result = await api.listModels(pid, conn);
       if (gen !== generation.current) return;
       if (result.ok) {
@@ -407,6 +429,31 @@ function DialogBody({
       if (gen === generation.current) failConnectionEdit(unexpected(err));
     } finally {
       if (gen === generation.current) setLoadingConnectionValues(false);
+    }
+  };
+
+  /** Makes the change the user agreed to, then lists the connection's models. */
+  const applyChange = async () => {
+    if (!connection || !api.applyConnectionChange || modelsState.status !== 'change') return;
+    const gen = generation.current;
+    const pending = modelsState;
+    setApplyingChange(true);
+    try {
+      const result = await api.applyConnectionChange(providerId, connection);
+      if (gen !== generation.current) return;
+      if (!result.ok) {
+        setChangeAgreed(false);
+        setModelsState({ ...pending, failure: { ...result.failure } });
+        return;
+      }
+      loadModels(providerId, result.value, gen);
+    } catch (err) {
+      if (gen === generation.current) {
+        setChangeAgreed(false);
+        setModelsState({ ...pending, failure: unexpected(err) });
+      }
+    } finally {
+      if (gen === generation.current) setApplyingChange(false);
     }
   };
 
@@ -670,6 +717,8 @@ function DialogBody({
 
   const modelTriggerText = (() => {
     if (!connected) return labels.modelNeedsConnection(providerName);
+    if (modelsState.status === 'checking') return labels.checkingConnection;
+    if (modelsState.status === 'change') return labels.modelNeedsConnection(providerName);
     if (modelsState.status === 'loading') return labels.modelsLoading(providerName);
     if (modelsState.status === 'error') return labels.modelsFailed(providerName);
     return labels.modelSelect(models.compatible.length);
@@ -687,7 +736,9 @@ function DialogBody({
     [
       connect.status === 'error' ? connect.failure : null,
       test.status === 'error' ? test.failure : null,
-      modelsState.status === 'error' ? (modelsState.failure ?? null) : null,
+      modelsState.status === 'error' || modelsState.status === 'change'
+        ? (modelsState.failure ?? null)
+        : null,
     ].find((f) => f && !dismissedFailures.includes(f)) ?? null;
 
   let aliasHint = { text: labels.nameHint, tone: 'text-foreground-muted' };
@@ -786,7 +837,19 @@ function DialogBody({
                     {connectMessage}
                   </p>
                 )}
-                {connection && !editingConnection && (
+                {connection && !editingConnection && modelsState.status === 'change' && (
+                  <ConnectionChangeNotice
+                    change={modelsState.change as ByoConnectionChange}
+                    agreed={changeAgreed}
+                    applying={applyingChange}
+                    disabled={busy}
+                    labels={labels}
+                    onAgreedChange={setChangeAgreed}
+                    onApply={applyChange}
+                    onSeparate={() => chooseConnection(NEW)}
+                  />
+                )}
+                {connection && !editingConnection && modelsState.status !== 'change' && (
                   <div>
                     <Button
                       variant="link"
@@ -1165,6 +1228,67 @@ function Field({ id, label, hint, required, children }: FieldProps) {
 }
 
 /** What failed, with the raw response one click away (or the message, when there is none). */
+interface ConnectionChangeNoticeProps {
+  change: ByoConnectionChange;
+  agreed: boolean;
+  applying: boolean;
+  disabled: boolean;
+  labels: ByoModelDialogLabels;
+  onAgreedChange: (agreed: boolean) => void;
+  onApply: () => void;
+  onSeparate: () => void;
+}
+
+/** The change a saved connection needs, which the user agrees to before it is made. */
+function ConnectionChangeNotice({
+  change,
+  agreed,
+  applying,
+  disabled,
+  labels,
+  onAgreedChange,
+  onApply,
+  onSeparate,
+}: ConnectionChangeNoticeProps) {
+  const id = React.useId();
+  return (
+    <Alert variant="warning" className="min-w-0">
+      <TriangleAlert />
+      <AlertTitle>{change.title}</AlertTitle>
+      <AlertDescription className="flex flex-col gap-3 break-words">
+        <span>{change.message}</span>
+        <div className="flex items-start gap-2">
+          <Checkbox
+            id={id}
+            checked={agreed}
+            disabled={disabled || applying}
+            onCheckedChange={(v) => onAgreedChange(v === true)}
+            className="mt-0.5"
+          />
+          <Label htmlFor={id} className="text-xs font-normal leading-4">
+            {change.agreement}
+          </Label>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button size="2xs" disabled={!agreed || disabled || applying} onClick={onApply}>
+            {applying && <Spinner size="sm" />}
+            {applying ? labels.applyingChange : labels.applyChange}
+          </Button>
+          <Button
+            variant="link"
+            size="2xs"
+            className="h-auto p-0 text-xs"
+            disabled={disabled || applying}
+            onClick={onSeparate}
+          >
+            {labels.separateConnection}
+          </Button>
+        </div>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 function FailureAlert({
   failure,
   labels,
