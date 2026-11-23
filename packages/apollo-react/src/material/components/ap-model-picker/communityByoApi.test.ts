@@ -824,7 +824,7 @@ describe('createCommunityByoApi', () => {
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.failure.title).toBe('Edit this connection in Integration Service');
-      expect(result.failure.message).toContain('default.service.name: s3');
+      expect(result.failure.message).toContain('It is set up for s3, not Amazon Bedrock.');
       expect(result.failure.message).toContain('Create a separate connection');
     });
 
@@ -858,7 +858,7 @@ describe('createCommunityByoApi', () => {
         value: {
           title: 'This connection is set up for s3, not Amazon Bedrock',
           message:
-            'To use it here, UiPath switches it to Amazon Bedrock (default.service.name: bedrock-runtime). Automations that use it for s3 may stop working.',
+            'To use it here, UiPath switches it to Amazon Bedrock. Automations that use it for s3 may stop working.',
           agreement:
             'Switch "AWS" to Amazon Bedrock. I understand automations that use it for s3 may stop working.',
         },
