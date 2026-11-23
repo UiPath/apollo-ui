@@ -955,6 +955,15 @@ describe('createCommunityByoApi', () => {
       expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
     });
 
+    it('is not switched when its authentication changed to one the dialog does not offer since it was checked', async () => {
+      routeSession({ 'authentication.type': 'assumeRole', 'default.service.name': 's3' });
+
+      const result = await api().applyConnectionChange?.('bedrock', saved);
+
+      expect(!result?.ok && result?.failure.final).toBe(true);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
     it('is edited here when it is set up for the Bedrock runtime', async () => {
       routeSession({
         'authentication.type': 'accessKey',
