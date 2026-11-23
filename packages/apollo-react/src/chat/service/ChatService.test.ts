@@ -146,6 +146,52 @@ describe('AutopilotChatService', () => {
     });
   });
 
+  describe('spacing', () => {
+    it('stores the spacing and emits SetSpacing', () => {
+      const service = createService();
+      const handler = vi.fn();
+      service.__internalService__.on(AutopilotChatInternalEvent.SetSpacing, handler);
+
+      service.setSpacing({ compactMode: true });
+
+      expect(service.getConfig().spacing).toEqual({ compactMode: true });
+      expect(handler).toHaveBeenCalledWith({ compactMode: true });
+    });
+
+    it('works when called detached from the service', () => {
+      const service = createService();
+      const { setSpacing } = service;
+
+      setSpacing({ compactMode: true });
+
+      expect(service.getConfig().spacing).toEqual({ compactMode: true });
+    });
+
+    it('replaces the previous spacing rather than merging into it', () => {
+      const service = createService();
+      service.initialize({
+        mode: AutopilotChatMode.SideBySide,
+        spacing: { compactMode: true, messageSpacing: 4 },
+      });
+
+      service.setSpacing({ messageSpacing: 8 });
+
+      expect(service.getConfig().spacing).toEqual({ messageSpacing: 8 });
+    });
+
+    it('goes back to the defaults when cleared', () => {
+      const service = createService();
+      const handler = vi.fn();
+      service.__internalService__.on(AutopilotChatInternalEvent.SetSpacing, handler);
+      service.setSpacing({ compactMode: true });
+
+      service.setSpacing(undefined);
+
+      expect(service.getConfig().spacing).toBeUndefined();
+      expect(handler).toHaveBeenLastCalledWith(undefined);
+    });
+  });
+
   describe('info links', () => {
     const links = [{ label: 'Terms', url: 'https://a.test/terms' }];
 

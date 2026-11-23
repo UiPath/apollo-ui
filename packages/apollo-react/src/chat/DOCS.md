@@ -208,6 +208,7 @@ See [Usage Examples](#usage-examples) for complete setup details.
 | `setLocale(locale: string)`                                                                                    | Sets the locale for the chat interface. Changes will be reflected immediately in the UI. Useful for embedded mode where locale needs to be changed dynamically                                                                  |
 | `getLocale()`                                                                                                  | Returns the current locale setting                                                                                                                                                                                              |
 | `setRenderer(renderer: AutopilotChatRenderer)`                                                                 | Sets the renderer ('wind' or 'material'); the chat switches in place and keeps its state. See [Renderers and setup](#renderers-and-setup) |
+| `setSpacing(spacing: AutopilotChatConfiguration['spacing'])`                                                   | Replaces the spacing configuration, e.g. `{ compactMode: true }`; the chat updates in place. See [Spacing](#spacing-configuration) |
 | `setTheme(theme: string)`                                                                                      | Sets the theme for the chat interface ('light', 'dark', 'light-hc', 'dark-hc', 'future-light', 'future-dark'). Changes will be reflected immediately in the UI. Useful for embedded mode where theme needs to be changed dynamically                           |
 | `getTheme()`                                                                                                   | Returns the current theme setting                                                                                                                                                                                               |
 | `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)`                                                | Adds or replaces a custom message renderer in the chat service (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer))                                                                                              |
@@ -3064,6 +3065,12 @@ chatService.initialize({
     compactMode: true, // This will apply compact defaults to all spacing values
   },
 });
+```
+
+To change it after the chat is set up, call `setSpacing`. It replaces the whole spacing configuration and the chat updates in place:
+
+```typescript
+chatService.setSpacing({ compactMode: true });
 ```
 
 #### Default Compact Mode Behavior
