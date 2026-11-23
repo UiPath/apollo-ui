@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import type { ModelBadgeKind } from './badges';
 import { ModelPicker } from './ModelPicker';
 import type { DiscoveryModel } from './types';
-import { defaultCostTier } from './utils';
+import { defaultCostTier, isUiPathModel } from './utils';
 
 const MOCK_MODELS: DiscoveryModel[] = [
   {
@@ -851,6 +851,54 @@ export const RecommendedFromDiscovery: Story = {
           '`defaultCostTier` example) and stamps the matching pool kind ' +
           'via `badgesFor`. The pool owns the labels, tooltips, and ' +
           'colors, so cost badges read identically in every product.',
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// UiPath-built models: Discovery vendor `UiPathMls`. The picker stamps the
+// "By UiPath" pool badge by default and labels the provider group "UiPath".
+// ---------------------------------------------------------------------------
+
+const PATH_MINI: DiscoveryModel = {
+  modelId: 'path-mini',
+  modelName: 'path-mini',
+  displayName: 'UiPath Path Mini',
+  vendor: 'UiPathMls',
+  isRecommended: false,
+  modelSubscriptionType: 'UiPathOwned',
+  routingDetails: { geography: 'EU' },
+  modelDetails: { contextWindowTokens: 128000 },
+};
+
+const WITH_UIPATH_MODEL: DiscoveryModel[] = [...DISCOVERY_WITH_RECOMMENDED, PATH_MINI];
+
+export const UiPathBuiltModels: Story = {
+  name: 'UiPath-built models (By UiPath badge)',
+  render: Controlled,
+  args: {
+    variant: 'searchable',
+    models: WITH_UIPATH_MODEL,
+    label: 'Model',
+    required: true,
+    groupBy: 'subscription',
+    homeRegion: 'EU',
+    badgesFor: (m) => [
+      ...(isUiPathModel(m) ? (['uipath-model'] as ModelBadgeKind[]) : []),
+      ...agentsCostBadges(m),
+    ],
+    value: 'path-mini',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Models UiPath builds itself (Discovery vendor `UiPathMls`) carry ' +
+          'the "By UiPath" pool badge. Without `badgesFor` the picker adds ' +
+          'it on its own; a product that passes `badgesFor` adds ' +
+          "`'uipath-model'` for rows where `isUiPathModel` is true, as here. " +
+          'Grouped by provider, these models sit under "UiPath".',
       },
     },
   },

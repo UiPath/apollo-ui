@@ -20,6 +20,7 @@ import type { ModelTag } from './types';
  *   deprecating   → warning (caution before removal)
  *   out-of-region → error   (compliance risk)
  *   custom / thinking → neutral mini
+ *   uipath-model → info    (informational, who built the model)
  *
  * Cost tiers render as neutral gray mini chips intentionally — using the
  * semantic warning/error palette there would imply that high-cost
@@ -40,6 +41,7 @@ const VARIANT_MAP: Record<string, string> = {
   'cost-basic': 'mini',
   'cost-standard': 'mini',
   'cost-premium': 'mini',
+  'uipath-model': 'info-mini',
 };
 
 // Inline override first, so a single tag can opt out without disturbing others of its kind.

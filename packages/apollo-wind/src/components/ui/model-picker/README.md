@@ -103,7 +103,7 @@ The picker derives lifecycle chips automatically (Recommended, Preview, Deprecat
 />
 ```
 
-The pool currently ships the cost tiers: `cost-basic`, `cost-standard`, `cost-premium`. **Adding a badge to the pool is a design-system PR**: one entry in `badges.ts` plus its label in `labels.ts` — not a per-product invention. That keeps naming, colors, and translations consistent everywhere.
+The pool currently ships the cost tiers (`cost-basic`, `cost-standard`, `cost-premium`) and `uipath-model` ("By UiPath", see §5). **Adding a badge to the pool is a design-system PR**: one entry in `badges.ts` plus its label in `labels.ts` — not a per-product invention. That keeps naming, colors, and translations consistent everywhere.
 
 **Defining a new pool badge** (using a hypothetical "Early access" badge as the example):
 
@@ -174,6 +174,14 @@ A host-supplied `badgesFor` takes over entirely — return your own pool kinds t
 
 ```tsx
 <ModelPicker badgesFor={(m) => (isExpensive(m) ? ['cost-premium'] : [])} … />
+```
+
+The **By UiPath** badge (`uipath-model`) is on by default too: `isUiPathModel` marks models UiPath builds itself (Discovery vendor `UiPathMls`, never BYO rows), and the Provider view labels that vendor "UiPath". A host that supplies its own `badgesFor` keeps the badge by returning it:
+
+```tsx
+import { isUiPathModel } from '@uipath/apollo-wind';
+
+<ModelPicker badgesFor={(m) => [...(isUiPathModel(m) ? ['uipath-model'] as const : []), ...myCostBadges(m)]} … />
 ```
 
 ### 6. BYO management

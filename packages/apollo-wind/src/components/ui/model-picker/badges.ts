@@ -8,8 +8,8 @@
  * localized once, centrally.
  *
  * Adding a badge is a design-system PR: one entry below plus its
- * entry in `labels.ts`. The pool starts with the cost tiers
- * (Basic / Standard / Premium).
+ * entry in `labels.ts`. The pool holds the cost tiers
+ * (Basic / Standard / Premium) and the "By UiPath" badge.
  *
  * `customTagsFor` remains as an escape hatch for experiments, but the
  * expectation is that anything worth shipping graduates into the pool.
@@ -18,7 +18,7 @@
 import type { StaticLabelKey } from './labels';
 
 /** Kinds available in the pool. Grows by design-system PR. */
-export type ModelBadgeKind = 'cost-basic' | 'cost-standard' | 'cost-premium';
+export type ModelBadgeKind = 'cost-basic' | 'cost-standard' | 'cost-premium' | 'uipath-model';
 
 export interface ModelBadgeDefinition {
   /**
@@ -57,5 +57,11 @@ export const MODEL_BADGES: Record<ModelBadgeKind, ModelBadgeDefinition> = {
     label: 'costPremium',
     tooltip: 'costTooltip',
     variant: 'mini',
+  },
+  // Marks models UiPath builds itself (see `isUiPathModel`).
+  'uipath-model': {
+    label: 'uipathModel',
+    tooltip: 'uipathModelTooltip',
+    variant: 'info-mini',
   },
 };

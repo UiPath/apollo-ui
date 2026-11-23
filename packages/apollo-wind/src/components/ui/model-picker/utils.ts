@@ -72,6 +72,14 @@ export const isByoModel = (m: DiscoveryModel) =>
   !!m.byoConnectionLabel;
 
 /**
+ * A model UiPath builds itself (Discovery vendor `UiPathMls`), as opposed
+ * to a third-party model UiPath hosts. BYO rows never count.
+ */
+export function isUiPathModel(m: DiscoveryModel): boolean {
+  return m.vendor === 'UiPathMls' && !isByoModel(m);
+}
+
+/**
  * Ready-made `filter` predicate for products that only offer text-generation
  * models: drops embeddings (by `capabilities`, or by API flavor —
  * `OpenAiEmbeddings`, `GeminiEmbeddings`) and realtime (by `modelType`).
@@ -248,15 +256,18 @@ export function deriveModelTags(
   // users see the design-system semantics before any tenant noise.
   // Pool badges first (sanctioned, centrally defined), then any
   // free-form `customTagsFor` extras (escape hatch).
-  // Default: stamp the model's cost tier from the pool whenever the DTO
-  // carries cost data — every product gets cost badges with no wiring.
-  // A host-supplied `badgesFor` takes over entirely (return [] to
-  // suppress badges).
+  // Default: stamp "By UiPath" on UiPath-built models, and the model's
+  // cost tier from the pool whenever the DTO carries cost data — every
+  // product gets these badges with no wiring. A host-supplied
+  // `badgesFor` takes over entirely (return [] to suppress badges).
   const poolBadges =
     context.badgesFor?.(model) ??
     (() => {
+      const kinds: ModelBadgeKind[] = [];
+      if (isUiPathModel(model)) kinds.push('uipath-model');
       const tier = defaultCostTier(model);
-      return tier ? ([`cost-${tier}`] as const) : [];
+      if (tier) kinds.push(`cost-${tier}`);
+      return kinds;
     })();
   for (const kind of poolBadges) {
     const def = MODEL_BADGES[kind];
@@ -349,6 +360,7 @@ const VENDOR_LABELS: Record<string, string> = {
   AzureOpenAi: 'Azure OpenAI',
   VertexAi: 'Google Vertex',
   AwsBedrock: 'AWS Bedrock',
+  UiPathMls: 'UiPath',
 };
 function vendorLabel(vendor: string): string {
   return VENDOR_LABELS[vendor] ?? vendor;
