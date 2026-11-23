@@ -92,7 +92,7 @@ const settingOf = (value: unknown) =>
 function connectionChange(
   provider: CommunityByoProvider,
   connection: ByoConnection,
-  [key, value]: [string, unknown]
+  [, value]: [string, unknown]
 ): ByoConnectionChange {
   const setting = settingOf(value);
   const usedFor = setting ? ` for ${setting}` : '';
@@ -100,16 +100,16 @@ function connectionChange(
     title: setting
       ? `This connection is set up for ${setting}, not ${provider.name}`
       : `This connection is not set up for ${provider.name}`,
-    message: `To use it here, UiPath switches it to ${provider.name} (${key}: ${provider.requires?.[key]}). Automations that use it${usedFor} may stop working.`,
+    message: `To use it here, UiPath switches it to ${provider.name}. Automations that use it${usedFor} may stop working.`,
     agreement: `Switch "${connection.name}" to ${provider.name}. I understand automations that use it${usedFor} may stop working.`,
   };
 }
 
-function servesOther(provider: CommunityByoProvider, [key, value]: [string, unknown]): ByoFailure {
-  const setting = settingOf(value) ?? 'none';
+function servesOther(provider: CommunityByoProvider, [, value]: [string, unknown]): ByoFailure {
+  const setting = settingOf(value);
   return {
     title: EDIT_IN_IS,
-    message: `It is set up for something other than ${provider.name} (${key}: ${setting}). Create a separate connection for ${provider.name}.`,
+    message: `It is set up for ${setting ?? 'another service'}, not ${provider.name}. Create a separate connection for ${provider.name}.`,
   };
 }
 
