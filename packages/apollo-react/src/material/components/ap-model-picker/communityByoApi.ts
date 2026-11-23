@@ -638,11 +638,14 @@ export function createCommunityByoApi(
     folderKey: string,
     connectionId: string | null = null
   ) {
+    // A saved connection gets a session of its own each time: its form shows the settings as they
+    // were when the session opened, and every check of them must see them as they are now.
     const reusable =
+      connectionId === null &&
       openSession &&
       openSession.connector === provider.connector &&
       openSession.folderKey === folderKey &&
-      openSession.connectionId === connectionId &&
+      openSession.connectionId === null &&
       Date.now() < openSession.expiresAt - 30_000;
     if (reusable && openSession) return ok(openSession);
 
@@ -890,7 +893,7 @@ export function createCommunityByoApi(
     if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     const { form } = provider;
 
-    // The same session Connect then submits the changes through.
+    // Its own session: Connect opens another, so it saves over the settings as they are then.
     const s = await session(provider, connection.folderId, connection.id);
     if (!s.ok) return s;
     const sf = await sessionForm(s.value.id, connection.folderId);
