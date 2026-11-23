@@ -925,6 +925,14 @@ function DialogBody({
                     </Button>
                   </div>
                 )}
+                {/* Edit connection needs the form: say why it is off, and offer to load it again. */}
+                {connection && !showConnectionForm && formState.status === 'error' && (
+                  <FailureAlert
+                    failure={formState.failure}
+                    labels={labels}
+                    onRetry={() => loadForm(providerId, formFolder.current)}
+                  />
+                )}
 
                 {showConnectionForm && (
                   <>
