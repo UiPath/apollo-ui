@@ -110,6 +110,13 @@ export const clickedAction = (target: EventTarget | null): RuleAction | null => 
   return action === 'conditions' || action === 'rule' ? { action, rowId, trigger: button } : null;
 };
 
+/** The rule whose drag handle a press on `target` hit. */
+export const pressedDragHandle = (target: EventTarget | null): string | undefined =>
+  target instanceof Element
+    ? target.closest('[data-rule-action="drag"]')?.closest<HTMLElement>('li[data-row-id]')?.dataset
+        .rowId
+    : undefined;
+
 /** The decision a click on `target` opens: its linked input's. */
 export const clickedDecision = (target: EventTarget | null): string | undefined =>
   target instanceof Element

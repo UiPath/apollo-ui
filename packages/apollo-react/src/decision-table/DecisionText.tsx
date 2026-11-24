@@ -1,6 +1,6 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { AddRuleFooter } from './AddRuleFooter';
 import { bandsOf } from './bandColumns';
 import { ColumnEditorOverlay } from './ColumnEditorOverlay';
@@ -27,6 +27,7 @@ import {
   DECISION_TEXT_FRAME_CLASS,
   DECISION_TEXT_INLINE_FRAME_CLASS,
   NUMBER_MARGIN_CLASS,
+  RULE_DRAG_PREVIEW_CLASS,
   TEXT_COLUMN_CLASS,
 } from './sentenceStyles';
 import type {
@@ -55,6 +56,7 @@ import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionT
 import { useHostValueEdit } from './useHostValueEdit';
 import { usePendingCondition } from './usePendingCondition';
 import { useRuleMenus } from './useRuleMenus';
+import { useRuleDrag } from './useRuleDrag';
 import { type DecisionTextScroll, useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
 import { useTextAnnouncements } from './useTextAnnouncements';
@@ -255,10 +257,14 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   const listed = diffRows?.rules ?? shown.rules;
   const [focusedRowId, setFocusedRowId] = useState<string | undefined>(undefined);
   const retainedRowId = edit?.editing?.rowId ?? selected?.rowId;
+  const listedRowIds = useMemo(() => listed.map((rule) => rule.rowId), [listed]);
+  const ruleDrag = useRuleDrag(listedRowIds);
+  const draggedRowId = ruleDrag.drag?.rowId;
   const retainedRowIds = useMemo(
-    () => [retainedRowId, focusedRowId],
-    [retainedRowId, focusedRowId]
+    () => [retainedRowId, focusedRowId, draggedRowId],
+    [retainedRowId, focusedRowId, draggedRowId]
   );
+  const dragPreviewRef = useRef<HTMLDivElement>(null);
   const ruleWindow = useRuleWindow(listed, selected?.rowId, retainedRowIds, scroll);
   const citedRows = useMemo(
     (): CitedRow[] =>
@@ -307,6 +313,15 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
     citedRows,
     revealRow: ruleWindow.scrollRowIntoView,
     revealStop: ruleWindow.scrollStopIntoView,
+    startRuleDrag: (rowId, event) =>
+      !diffRows &&
+      ruleDrag.start(rowId, event, {
+        container: ruleWindow.container,
+        scroller: ruleWindow.scroller,
+        stickyTopPx: () => ruleWindow.headerRef.current?.offsetHeight ?? 0,
+        previewRef: dragPreviewRef,
+        onMoveRule: edit?.onMoveRule,
+      }),
   });
   const citationKeysHinted = !selectable && citedRows.length > 0;
   const columnEditing = useColumnEditing({
@@ -413,6 +428,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
                           kind: 'edit',
                           editLabels: edit.labels,
                           onRenameRule: edit.onRenameRule,
+                          reorder: edit.onMoveRule ? { drag: ruleDrag.drag } : null,
                           openMenu: ruleMenus.state,
                           pending: shown.pending,
                         }
@@ -461,6 +477,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
           dataTestId={dataTestId}
         />
       )}
+      <div ref={dragPreviewRef} aria-hidden inert className={RULE_DRAG_PREVIEW_CLASS} />
       <MarkTooltip container={ruleWindow.container} dataTestId={dataTestId} />
       <GridContextMenu
         label={ruleMenus.label}

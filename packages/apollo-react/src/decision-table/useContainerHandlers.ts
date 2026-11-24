@@ -11,6 +11,7 @@ import {
 import {
   clickedDecision,
   clickedSelection,
+  pressedDragHandle,
   rowIdOf,
   stopDecisionOf,
   valueTokenAt,
@@ -74,6 +75,8 @@ export interface ContainerHandlersParams {
   revealRow: RuleWindow['scrollRowIntoView'];
   /** Scrolls a stop of a listed rule into view, clear of the sticky header. */
   revealStop: RuleWindow['scrollStopIntoView'];
+  /** Starts dragging the rule whose handle was pressed, and returns whether it did. */
+  startRuleDrag: (rowId: string, event: React.PointerEvent<HTMLElement>) => boolean;
 }
 
 /** A listed rule with citations: its id, its place among the listed rules and how many it has. */
@@ -145,6 +148,7 @@ export const useContainerHandlers = ({
   citedRows,
   revealRow,
   revealStop,
+  startRuleDrag,
 }: ContainerHandlersParams) => {
   const pendingCitationRef = useRef<{ row: CitedRow; button: number } | null>(null);
   const focusPendingCitation = (): boolean => {
@@ -206,6 +210,8 @@ export const useContainerHandlers = ({
     consumerPointerOver?.(event);
   };
   const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    const dragged = pressedDragHandle(event.target);
+    if (dragged !== undefined && startRuleDrag(dragged, event)) return;
     pressedRef.current = true;
     stopPressRef.current = onNextGesture(event.currentTarget, endPress);
     valueEditing.onPointerDown();

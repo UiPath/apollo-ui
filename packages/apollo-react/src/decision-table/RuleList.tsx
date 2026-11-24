@@ -2,11 +2,13 @@ import { forwardRef } from 'react';
 import { DiffFoldRow, type DiffFoldRowProps } from './DiffFoldRow';
 import type { DiffRow, RuleDiff } from './decisionTextDiff';
 import type { TableMarks } from './marks';
-import { RuleCard, type RuleCardMode, type RuleCardProps } from './RuleCard';
+import { RuleCard, type RuleCardMode, type RuleCardProps, type RuleDropEdge } from './RuleCard';
 import type { SentenceListStyle } from './sentenceRuleHeights';
 import { GUTTER_CLASS } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
 import type { SentenceRule, SentenceValueId } from './sentenceTypes';
+import { dropIndex } from './useDragReorder';
+import type { RuleDrag } from './useRuleDrag';
 import type { AxisSegment } from './useVirtualizedAxis';
 
 /** Which card menu is open, and for which rule. */
@@ -33,6 +35,8 @@ export interface RuleListProps {
         kind: 'edit';
         editLabels: Extract<RuleCardMode, { kind: 'edit' }>['editLabels'];
         onRenameRule: Extract<RuleCardMode, { kind: 'edit' }>['onRenameRule'];
+        /** The live drag while rules reorder by dragging; null when they do not. */
+        reorder: { drag: RuleDrag | null } | null;
         openMenu: OpenRuleMenu | null;
         pending: SentenceValueId | null;
       }
@@ -46,6 +50,13 @@ export interface RuleListProps {
   dataTestId: string;
   labels: RuleCardProps['labels'] & DiffFoldRowProps['labels'];
 }
+
+/** Where the drop line of a drag that would move its rule shows on the card at `index`. */
+const dropEdgeOf = (drag: RuleDrag | null, index: number, count: number): RuleDropEdge => {
+  if (!drag || dropIndex(drag.from, drag.boundary) === drag.from) return undefined;
+  if (drag.boundary === index) return 'before';
+  return drag.boundary === count && index === count - 1 ? 'after' : undefined;
+};
 
 /** The windowed rules: a rule card for each mounted rule, a spacer for each run left out. */
 export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
@@ -69,13 +80,19 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
     ref
   ) => {
     let nextRuleIndex = 0;
-    const cardModeOf = (rowId: string, ruleDiff: RuleDiff | undefined): RuleCardMode => {
+    const cardModeOf = (
+      rowId: string,
+      index: number,
+      ruleDiff: RuleDiff | undefined
+    ): RuleCardMode => {
       if (ruleDiff) return { kind: 'diff', diff: ruleDiff };
       if (mode.kind !== 'edit') return { kind: 'read' };
       return {
         kind: 'edit',
         editLabels: mode.editLabels,
         onRenameRule: mode.onRenameRule,
+        draggable: mode.reorder !== null,
+        drop: dropEdgeOf(mode.reorder?.drag ?? null, index, rules.length),
         openMenu: mode.openMenu?.rowId === rowId ? mode.openMenu.menu : undefined,
         pendingColumnId: mode.pending?.rowId === rowId ? mode.pending.columnId : undefined,
       };
@@ -124,7 +141,11 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
                 selectable={selectable}
                 decisionLinks={decisionLinks}
                 citations={citations}
-                {...cardModeOf(rule.rowId, row?.kind === 'rule' ? row.diff : undefined)}
+                {...cardModeOf(
+                  rule.rowId,
+                  segment.from + offset,
+                  row?.kind === 'rule' ? row.diff : undefined
+                )}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
                 labels={labels}

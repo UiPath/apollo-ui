@@ -103,8 +103,15 @@ export const ROW_SURFACE_CLASS = cn(
   'data-[selected=true]:outline-2 data-[row-selected=true]:outline-2 group-focus-visible/row:outline-2'
 );
 
+/** A dragged rule's copy: fixed under the pointer so scrolling leaves it put. */
+export const RULE_DRAG_PREVIEW_CLASS = 'pointer-events-none fixed top-0 left-0 z-50 opacity-85';
+
+/** The line a dragged rule drops on, at its card's top or bottom edge. */
+export const RULE_DROP_LINE_CLASS =
+  'relative before:absolute before:inset-x-0 before:hidden before:h-0.5 before:rounded-full before:bg-primary data-[drop]:before:block data-[drop=before]:before:-top-px data-[drop=after]:before:bottom-[calc(var(--sentence-row-gap)-1px)]';
+
 export const ROW_NUMBER_CLASS =
-  'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100';
+  'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100 group-has-[[data-selected]]/row:opacity-100';
 
 export const LINE_CLASS = cn(
   'flex min-h-[var(--sentence-line)] items-start gap-2',
@@ -263,6 +270,11 @@ export const RULE_ACTION_CLASS = cn(
 /** Hidden until its card is hovered or holds the selection, or it has keyboard focus. */
 export const REVEALED_ACTION_CLASS =
   'opacity-0 group-hover/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
+
+export const RULE_DRAG_HANDLE_CLASS = cn(
+  'size-3.5 shrink-0 cursor-grab touch-none text-foreground-de-emp',
+  REVEALED_ACTION_CLASS
+);
 
 export const CITATION_BUTTON_CLASS =
   'gap-1 text-foreground-de-emp hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0';

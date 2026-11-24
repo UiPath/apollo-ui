@@ -1,5 +1,5 @@
 import { cn } from '@uipath/apollo-wind';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, GripVertical } from 'lucide-react';
 import type React from 'react';
 import { memo } from 'react';
 import { CitationButtons } from './CitationButton';
@@ -32,6 +32,8 @@ import {
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
   RULE_CITATIONS_CLASS,
+  RULE_DRAG_HANDLE_CLASS,
+  RULE_DROP_LINE_CLASS,
   RULE_TITLE_CLASS,
   SENTENCE_CLASS,
 } from './sentenceStyles';
@@ -85,7 +87,14 @@ export type RuleCardMode =
       pendingColumnId: string | undefined;
       /** Renames the rule from its name field; without it the name is read-only. */
       onRenameRule: RenameRule | undefined;
+      /** Whether its number pill holds a drag handle. */
+      draggable: boolean;
+      /** The card edge a drag would drop on, if any. */
+      drop: RuleDropEdge;
     };
+
+/** The edge of a card a dragged rule drops on. */
+export type RuleDropEdge = 'before' | 'after' | undefined;
 
 export type RuleCardProps = RuleCardBase &
   RuleCardMode & {
@@ -166,7 +175,8 @@ export const RuleCard = memo<RuleCardProps>(
         aria-label={card.ariaLabel}
         aria-describedby={card.describedBy}
         aria-current={ruleSelected || undefined}
-        className={RULE_CARD_CLASS}
+        className={cn(RULE_CARD_CLASS, edit?.draggable && RULE_DROP_LINE_CLASS)}
+        data-drop={edit?.drop}
         data-row-id={rule.rowId}
         data-tone={card.tone}
         data-change={diff?.change}
@@ -179,11 +189,18 @@ export const RuleCard = memo<RuleCardProps>(
           data-selected={ruleSelected || undefined}
           data-row-selected={rowSelected || undefined}
         >
-          {(card.number !== null || card.changeStatus) && (
+          {(card.number !== null || card.changeStatus || edit?.draggable) && (
             <span className={cn(ROW_NUMBER_CLASS, diff && ROW_NUMBER_CHANGE_CLASS)}>
               {diff && <ChangeSign diff={diff} />}
               {card.number}
               {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
+              {edit?.draggable && (
+                <GripVertical
+                  aria-hidden
+                  className={RULE_DRAG_HANDLE_CLASS}
+                  data-rule-action="drag"
+                />
+              )}
             </span>
           )}
           {edit?.onRenameRule && (title !== null || rowSelected) ? (
