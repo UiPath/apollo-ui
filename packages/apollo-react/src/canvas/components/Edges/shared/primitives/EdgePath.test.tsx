@@ -24,6 +24,14 @@ function renderPath(props: Partial<React.ComponentProps<typeof EdgePath>> = {}) 
  * through silently.
  */
 describe('EdgePath', () => {
+  it('uses a custom dasharray over strokeStyle, except while animated', () => {
+    expect(renderPath({ dasharray: '2,5' }).visible.style.strokeDasharray).toBe('2,5');
+    expect(
+      renderPath({ dasharray: '2,5', strokeStyle: 'dashed' }).visible.style.strokeDasharray
+    ).toBe('2,5');
+    expect(renderPath({ dasharray: '2,5', animated: true }).visible.style.strokeDasharray).toBe('');
+  });
+
   it('renders solid by default and dashed for strokeStyle="dashed"', () => {
     expect(renderPath().visible.style.strokeDasharray).toBe('0');
     expect(renderPath({ strokeStyle: 'dashed' }).visible.style.strokeDasharray).toBe('5,5');
@@ -62,5 +70,18 @@ describe('EdgePath', () => {
   it('uses a default cursor in readonly mode and pointer otherwise', () => {
     expect(renderPath().interaction.style.cursor).toBe('pointer');
     expect(renderPath({ isReadOnly: true }).interaction.style.cursor).toBe('default');
+  });
+
+  it('leaves the stroke width to the attribute unless told to enforce it', () => {
+    const { visible } = renderPath({ style: { strokeWidth: 3 } });
+    expect(visible.getAttribute('stroke-width')).toBe('3');
+    expect(visible.style.strokeWidth).toBe('');
+  });
+
+  it('also sets the stroke width inline for enforceStrokeWidth, selected or not', () => {
+    expect(renderPath({ enforceStrokeWidth: true }).visible.style.strokeWidth).toBe('2');
+    expect(
+      renderPath({ enforceStrokeWidth: true, style: { strokeWidth: 3 } }).visible.style.strokeWidth
+    ).toBe('3');
   });
 });

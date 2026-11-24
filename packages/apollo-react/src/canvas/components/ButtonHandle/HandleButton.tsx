@@ -14,6 +14,22 @@ const BUTTON_POSITION: Record<Position, string> = {
   [Position.Right]: 'flex-row left-full top-1/2 -translate-y-1/2',
 };
 
+// How far the button is pulled in from the handle's outer edge (12px off the node). Its inner
+// edge stays there in both sizes, so it grows outward. `rounded` sits 2px off the node; `circle`
+// is centred on the node's edge when small, where the notch would be.
+const ANCHOR_INSET_PX = { rounded: 10, circle: 20 } as const;
+// Half of a `ButtonHandle`'s 24px cross-axis: how far its box reaches outside the node.
+const HANDLE_REACH_PX = 12;
+const ANCHOR_MARGIN: Record<Position, 'marginBottom' | 'marginTop' | 'marginRight' | 'marginLeft'> =
+  {
+    [Position.Top]: 'marginBottom',
+    [Position.Bottom]: 'marginTop',
+    [Position.Left]: 'marginRight',
+    [Position.Right]: 'marginLeft',
+  };
+const SIZE_TRANSITION =
+  '[transition:width_120ms_ease,height_120ms_ease,border-radius_120ms_ease,opacity_120ms_ease,color_120ms_ease,background-color_120ms_ease,border-color_120ms_ease]';
+
 export type HandleButtonPortal = {
   nodeId: string;
   left: number;
@@ -47,6 +63,9 @@ export const HandleButton = memo(
     renderLabel = true,
     portal,
     title,
+    compact,
+    shape = 'rounded',
+    edgeOffset = HANDLE_REACH_PX,
   }: {
     visible?: boolean;
     labelVisible?: boolean;
@@ -75,6 +94,19 @@ export const HandleButton = memo(
     portal?: HandleButtonPortal;
     /** Native tooltip for the add button. The accessible name stays `label`-driven. */
     title?: string;
+    /**
+     * Set to make the button stand in for the handle, anchored against the node: `true` small,
+     * `false` full size. Leave undefined for the default button beyond the handle.
+     */
+    compact?: boolean;
+    /** Only applies when `compact` is set. */
+    shape?: 'rounded' | 'circle';
+    /**
+     * With `compact` set: how far outside the node the positioned parent ends. Defaults to the
+     * 12px a `ButtonHandle` reaches; pass 0 when the parent ends at the node's edge, as a host's
+     * own handle may.
+     */
+    edgeOffset?: number;
   }) => {
     const accessibleName = label ? `Add node from ${label} handle` : 'Add node';
     const didDragRef = useRef(false);
@@ -180,7 +212,14 @@ export const HandleButton = memo(
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
-          className="nodrag nopan pointer-events-auto animate-fade-in"
+          iconSize={compact ? 10 : undefined}
+          className={cx(
+            'nodrag nopan pointer-events-auto animate-fade-in',
+            compact !== undefined && SIZE_TRANSITION,
+            // Button sizes its svg to 16px, which overflows this box and lands off-centre.
+            compact && 'h-4 w-4 [&_svg]:size-2.5',
+            compact !== undefined && shape === 'circle' ? 'rounded-full' : compact && 'rounded-md'
+          )}
         />
       )
     );
@@ -188,6 +227,11 @@ export const HandleButton = memo(
     const content = (
       <div
         className={cx('absolute flex items-center pointer-events-none', BUTTON_POSITION[position])}
+        style={
+          compact !== undefined
+            ? { [ANCHOR_MARGIN[position]]: HANDLE_REACH_PX - edgeOffset - ANCHOR_INSET_PX[shape] }
+            : undefined
+        }
       >
         {addButton}
         {label && renderLabel && (
@@ -265,11 +309,27 @@ const BRIDGE_POSITION: Record<Position, string> = {
  * Invisible bridge to cover gaps between handle buttons preventing flickering when moving the pointer between them.
  */
 export const HandleHoverBridge = memo(
-  ({ position, visible }: { position: Position; visible?: boolean }) => {
+  ({
+    position,
+    visible,
+    extent,
+  }: {
+    position: Position;
+    visible?: boolean;
+    /** How far the bridge reaches out from the node, in px. Defaults to 60. */
+    extent?: number;
+  }) => {
     if (!visible) return null;
     const isVertical = position === Position.Top || position === Position.Bottom;
     return (
-      <div className={cx(BRIDGE_BASE, BRIDGE_POSITION[position], isVertical ? 'h-15' : 'w-15')} />
+      <div
+        className={cx(
+          BRIDGE_BASE,
+          BRIDGE_POSITION[position],
+          extent === undefined && (isVertical ? 'h-15' : 'w-15')
+        )}
+        style={extent === undefined ? undefined : { [isVertical ? 'height' : 'width']: extent }}
+      />
     );
   }
 );

@@ -51,4 +51,17 @@ describe('BaseBadgeSlot', () => {
       expectInset(shape, position, NODE_BADGE_INSET_SQUARE);
     });
   });
+
+  it('uses an explicit inset on the sides of its corner', () => {
+    const { container } = render(
+      <BaseBadgeSlot position="bottom-right" shape="circle" inset={2}>
+        <span />
+      </BaseBadgeSlot>
+    );
+    const style = (container.firstElementChild as HTMLElement).style;
+
+    expect(style.bottom).toBe('2px');
+    expect(style.right).toBe('2px');
+    expect(style.top).toBe('');
+  });
 });

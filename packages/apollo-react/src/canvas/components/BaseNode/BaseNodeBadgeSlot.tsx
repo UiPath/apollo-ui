@@ -6,11 +6,13 @@ import { getNodeBadgeInset } from './BaseNodeBadgeSlot.utils';
 interface BaseBadgeSlotProps {
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   shape?: NodeShape;
+  /** Distance from the corner. Defaults to the inset for `shape`. */
+  inset?: number;
   children: React.ReactNode;
 }
 
-export const BaseBadgeSlot = memo(({ position, shape, children }: BaseBadgeSlotProps) => {
-  const offset = getNodeBadgeInset(shape);
+export const BaseBadgeSlot = memo(({ position, shape, inset, children }: BaseBadgeSlotProps) => {
+  const offset = inset ?? getNodeBadgeInset(shape);
   const style: React.CSSProperties = { width: NODE_BADGE_SIZE, height: NODE_BADGE_SIZE };
   switch (position) {
     case 'top-left':

@@ -3,6 +3,7 @@ export * from './AgentCanvas';
 export * from './AlignmentGuides';
 export * from './BaseCanvas';
 export * from './BaseNode';
+export * from './BpmnElements';
 export * from './ButtonHandle';
 export * from './CanvasBottomPanel';
 export * from './CanvasDiffView';

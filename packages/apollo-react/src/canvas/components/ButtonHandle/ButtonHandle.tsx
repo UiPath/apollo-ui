@@ -1,5 +1,6 @@
-import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Handle, type HandleProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type {
   HandleConfigurationSpecificPosition,
   HandleLabelVisibility,
@@ -34,6 +35,14 @@ export interface HandleMouseEvent {
   position: Position;
 }
 
+/**
+ * Props forwarded to the underlying xyflow `Handle`, including `data-*` attributes. `className`
+ * and `style` are applied after apollo's own; mouse handlers run after apollo's.
+ */
+export type ButtonHandleHandleProps = Omit<HandleProps, 'id' | 'type' | 'position' | 'children'> & {
+  [key: `data-${string}`]: string | number | boolean | undefined;
+};
+
 type ButtonHandleProps = {
   id: string;
   nodeId: string;
@@ -65,6 +74,100 @@ type ButtonHandleProps = {
   nodeHeight?: number;
   portalAction?: boolean;
   addButtonTitle?: string;
+  /**
+   * `outer` starts a connection only from the half of the handle outside the node, so small
+   * nodes stay draggable by their body. Defaults to `full`.
+   */
+  hitArea?: 'full' | 'outer';
+  /**
+   * `expand-on-hover` makes the "+" the handle itself: a small button against the node in place
+   * of the notch, growing outward to full size while the pointer is over it or the node is
+   * selected. Defaults to `always` (notch plus a full-size button beyond it).
+   */
+  buttonReveal?: 'always' | 'expand-on-hover';
+  /** With `expand-on-hover`: `circle` centres the small button on the node's edge like a notch. */
+  buttonShape?: 'rounded' | 'circle';
+  /**
+   * `node` makes the xyflow handle fill the node's box, so edges anchor on the node's border
+   * instead of 12px outside it. The notch, "+" and label are then portalled into the handle's
+   * parent, so `hitRegion`'s clip cannot hide them, and a shown notch starts a connection like
+   * the handle itself. Supports one handle per side; ignores `hitArea` and a `connectionPosition`
+   * that differs from `position`.
+   * Defaults to `edge` (a box straddling the node's edge).
+   */
+  anchor?: 'edge' | 'node';
+  /**
+   * With `anchor="node"`, the part of the node that belongs to this handle. `strip` is a band
+   * along this side, for starting connections without covering the node's body. `quadrant` is the
+   * triangular quarter of the node nearest this side, so a connection dropped anywhere on the node
+   * lands on the nearest side. Defaults to `strip`.
+   */
+  hitRegion?: 'strip' | 'quadrant';
+  /** Depth of the `strip` hit region in px. Defaults to 8. */
+  hitRegionDepth?: number;
+  /**
+   * With `anchor="node"`, where the notch, "+" and label are portalled instead of the handle's
+   * parent: an element the size of the node, for a host that draws them in a layer above the
+   * nodes. `null` holds them back until the element exists.
+   */
+  visualsContainer?: HTMLElement | null;
+  /**
+   * Forwarded to the xyflow `Handle`: `isConnectable`, `isConnectableStart`, `isConnectableEnd`,
+   * `onPointerDown`, `className`, `style`, `data-*` and the like. Use its `onMouseEnter` /
+   * `onMouseLeave` for hover on the handle element itself; the top-level `onMouseEnter` /
+   * `onMouseLeave` only cover the "+" button.
+   */
+  handleProps?: ButtonHandleHandleProps;
+  /** Receives the handle's DOM element. */
+  elementRef?: React.Ref<HTMLDivElement>;
+};
+
+const DEFAULT_HIT_REGION_DEPTH_PX = 8;
+
+const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation();
+
+const NODE_ANCHOR_STYLE = {
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  transform: 'none',
+} as const;
+
+const QUADRANT_CLIP_PATH: Record<Position, string> = {
+  [Position.Top]: 'polygon(50% 50%, 0% 0%, 100% 0%)',
+  [Position.Right]: 'polygon(50% 50%, 100% 0%, 100% 100%)',
+  [Position.Bottom]: 'polygon(50% 50%, 100% 100%, 0% 100%)',
+  [Position.Left]: 'polygon(50% 50%, 0% 100%, 0% 0%)',
+};
+
+/** `clip-path` limiting a node-filling handle to its `hitRegion`. */
+export const getHandleHitRegionClipPath = (
+  position: Position,
+  hitRegion: 'strip' | 'quadrant' = 'strip',
+  depth: number = DEFAULT_HIT_REGION_DEPTH_PX
+): string => {
+  if (hitRegion === 'quadrant') return QUADRANT_CLIP_PATH[position];
+  const rest = `calc(100% - ${depth}px)`;
+  switch (position) {
+    case Position.Top:
+      return `inset(0 0 ${rest} 0)`;
+    case Position.Right:
+      return `inset(0 0 0 ${rest})`;
+    case Position.Bottom:
+      return `inset(${rest} 0 0 0)`;
+    default:
+      return `inset(0 ${rest} 0 0)`;
+  }
+};
+
+const OUTER_HIT_AREA: Record<Position, string> = {
+  [Position.Top]: 'inset-x-0 top-0 h-1/2',
+  [Position.Bottom]: 'inset-x-0 bottom-0 h-1/2',
+  [Position.Left]: 'inset-y-0 left-0 w-1/2',
+  [Position.Right]: 'inset-y-0 right-0 w-1/2',
 };
 
 const ButtonHandleBase = ({
@@ -94,8 +197,40 @@ const ButtonHandleBase = ({
   nodeHeight,
   portalAction = false,
   addButtonTitle,
+  hitArea = 'full',
+  buttonReveal = 'always',
+  buttonShape = 'rounded',
+  anchor = 'edge',
+  hitRegion = 'strip',
+  hitRegionDepth = DEFAULT_HIT_REGION_DEPTH_PX,
+  visualsContainer: hostVisualsContainer,
+  handleProps,
+  elementRef,
 }: ButtonHandleProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
+  // Where node-anchored visuals are portalled: beside the handle, out of reach of its clip.
+  const [handleParent, setVisualsContainer] = useState<HTMLElement | null>(null);
+  const visualsContainer = hostVisualsContainer === undefined ? handleParent : hostVisualsContainer;
+  const setHandleElement = useCallback(
+    (element: HTMLDivElement | null) => {
+      handleRef.current = element;
+      if (anchor === 'node' && element) setVisualsContainer(element.parentElement);
+      if (typeof elementRef === 'function') {
+        elementRef(element);
+      } else if (elementRef) {
+        (elementRef as React.MutableRefObject<HTMLDivElement | null>).current = element;
+      }
+    },
+    [anchor, elementRef]
+  );
+  const {
+    className: hostClassName,
+    style: hostStyle,
+    onMouseEnter: hostMouseEnter,
+    onMouseLeave: hostMouseLeave,
+    onMouseDown: hostMouseDown,
+    ...hostHandleProps
+  } = handleProps ?? {};
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
 
@@ -170,8 +305,49 @@ const ButtonHandleBase = ({
     [connectionPosition, id, nodeId, handleType, onAction]
   );
 
-  const markAsHovered = useCallback(() => setIsHovered(true), []);
-  const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
+  // Separate from `isHovered`, which mousedown clears: collapsing the button mid-click would
+  // move it out from under the pointer.
+  const [isPointerOver, setIsPointerOver] = useState(false);
+  const markAsHovered = useCallback(() => {
+    setIsHovered(true);
+    setIsPointerOver(true);
+  }, []);
+  const unmarkAsHovered = useCallback(() => {
+    setIsHovered(false);
+    setIsPointerOver(false);
+  }, []);
+  const clearHoverOnMouseDown = useCallback(() => setIsHovered(false), []);
+  // Apollo's own hover tracking first, then the host's handler.
+  const onHandleMouseEnter = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      markAsHovered();
+      hostMouseEnter?.(event);
+    },
+    [markAsHovered, hostMouseEnter]
+  );
+  const onHandleMouseLeave = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      unmarkAsHovered();
+      hostMouseLeave?.(event);
+    },
+    [unmarkAsHovered, hostMouseLeave]
+  );
+  const onHandleMouseDown = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      clearHoverOnMouseDown();
+      hostMouseDown?.(event);
+    },
+    [clearHoverOnMouseDown, hostMouseDown]
+  );
+  const onInwardHandleMouseDown = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      unmarkAsHovered();
+      hostMouseDown?.(event);
+    },
+    [unmarkAsHovered, hostMouseDown]
+  );
+  const buttonIsHandle = buttonReveal === 'expand-on-hover';
+  const compactButton = buttonIsHandle ? !(isPointerOver || selected) : undefined;
   const showActionButton = !!onAction && type === 'source';
 
   // Label visibility defaults to the handle's own visibility (current behavior).
@@ -228,20 +404,22 @@ const ButtonHandleBase = ({
           layout={layout}
         />
         <Handle
-          ref={handleRef}
+          {...hostHandleProps}
+          ref={setHandleElement}
           type={type}
           position={connectionPosition}
           id={id}
-          onMouseEnter={markAsHovered}
-          onMouseLeave={unmarkAsHovered}
-          onMouseDown={unmarkAsHovered}
+          onMouseEnter={onHandleMouseEnter}
+          onMouseLeave={onHandleMouseLeave}
+          onMouseDown={onInwardHandleMouseDown}
           className={cx(
             'absolute! z-20 flex! items-center! justify-center! overflow-visible! border-0! rounded-none! bg-transparent!',
             visible
               ? 'cursor-crosshair! pointer-events-auto! opacity-100'
-              : 'cursor-default! pointer-events-none! opacity-0'
+              : 'cursor-default! pointer-events-none! opacity-0',
+            hostClassName
           )}
-          style={layout.anchorStyle}
+          style={{ ...layout.anchorStyle, ...hostStyle }}
         />
         {showActionButton ? (
           <HandleButton
@@ -274,36 +452,21 @@ const ButtonHandleBase = ({
         })
       : undefined;
 
-  return (
-    <Handle
-      ref={handleRef}
-      type={type}
-      position={position}
-      id={id}
-      onMouseEnter={markAsHovered}
-      onMouseLeave={unmarkAsHovered}
-      onMouseDown={unmarkAsHovered}
-      className={cx(
-        'flex! items-center! justify-center! border-0! rounded-none! bg-transparent!',
-        visible ? 'opacity-100' : 'pointer-events-none! opacity-0'
-      )}
-      style={{
-        width: handleWidth,
-        height: handleHeight,
-        top,
-        bottom,
-        left,
-        right,
-        transform,
-      }}
-    >
-      <HandleNotch
-        handleType={handleType}
-        isVertical={isVertical}
-        selected={selected}
-        hovered={isHovered}
-        showNotch={showNotches}
-      />
+  // The button stands in for the notch. Also hidden while the handle is, or the notch would fade
+  // out visibly as the handle appears.
+  const notchShown =
+    showNotches && !(buttonIsHandle && showActionButton && (showButton || !visible));
+  const notch = (
+    <HandleNotch
+      handleType={handleType}
+      isVertical={isVertical}
+      selected={selected}
+      hovered={isHovered}
+      showNotch={notchShown}
+    />
+  );
+  const actionOrLabel = (
+    <>
       {showActionButton ? (
         <HandleButton
           visible={showButton}
@@ -319,6 +482,8 @@ const ButtonHandleBase = ({
           labelIcon={labelIcon}
           labelBackgroundColor={labelBackgroundColor}
           portal={portal}
+          compact={compactButton}
+          shape={buttonShape}
         />
       ) : (
         label && (
@@ -331,6 +496,117 @@ const ButtonHandleBase = ({
           />
         )
       )}
+    </>
+  );
+
+  if (anchor === 'node') {
+    const notchGrabbable = notchShown && visible;
+
+    return (
+      <Handle
+        {...hostHandleProps}
+        ref={setHandleElement}
+        type={type}
+        position={position}
+        id={id}
+        onMouseEnter={onHandleMouseEnter}
+        onMouseLeave={onHandleMouseLeave}
+        onMouseDown={onHandleMouseDown}
+        className={cx(
+          'border-0! rounded-none! bg-transparent!',
+          !visible && 'pointer-events-none!',
+          hostClassName
+        )}
+        style={{
+          ...NODE_ANCHOR_STYLE,
+          clipPath: getHandleHitRegionClipPath(position, hitRegion, hitRegionDepth),
+          ...hostStyle,
+        }}
+      >
+        {/* A React child, so events still reach the handle's handlers, but not a DOM one. */}
+        {visualsContainer &&
+          createPortal(
+            // The box an edge-anchored handle would occupy, so the visuals land where they do there.
+            <div
+              data-handle-visuals={id}
+              className={cx(
+                'absolute z-20 flex items-center justify-center pointer-events-none',
+                visible ? 'opacity-100' : 'opacity-0'
+              )}
+              style={{
+                width: handleWidth,
+                height: handleHeight,
+                top,
+                bottom,
+                left,
+                right,
+                transform,
+              }}
+            >
+              {/* xyflow reads the handle type off the pressed element, so the notch carries it. */}
+              <div
+                data-handle-grab-zone={notchGrabbable ? '' : undefined}
+                data-handleid={id}
+                data-handlepos={position}
+                data-nodeid={nodeId}
+                className={cx(
+                  'flex size-4 shrink-0 items-center justify-center',
+                  notchGrabbable && [type, 'nodrag nopan pointer-events-auto cursor-crosshair']
+                )}
+              >
+                {notch}
+              </div>
+              {/* Keeps a press on the "+" from reading as a press on the handle. */}
+              <span
+                className="contents"
+                onPointerDown={stopPropagation}
+                onMouseDown={(event) => {
+                  event.stopPropagation();
+                  clearHoverOnMouseDown();
+                }}
+              >
+                {actionOrLabel}
+              </span>
+            </div>,
+            visualsContainer
+          )}
+      </Handle>
+    );
+  }
+
+  return (
+    <Handle
+      {...hostHandleProps}
+      ref={setHandleElement}
+      type={type}
+      position={position}
+      id={id}
+      onMouseEnter={onHandleMouseEnter}
+      onMouseLeave={onHandleMouseLeave}
+      onMouseDown={onHandleMouseDown}
+      className={cx(
+        'flex! items-center! justify-center! border-0! rounded-none! bg-transparent!',
+        visible ? 'opacity-100' : 'pointer-events-none! opacity-0',
+        // z-20 keeps the outer strip above the node toolbar's hover bridge.
+        hitArea === 'outer' && 'pointer-events-none! z-20',
+        hostClassName
+      )}
+      style={{
+        width: handleWidth,
+        height: handleHeight,
+        top,
+        bottom,
+        left,
+        right,
+        transform,
+        ...hostStyle,
+      }}
+    >
+      {hitArea === 'outer' && visible && (
+        <span className={cx('absolute pointer-events-auto', OUTER_HIT_AREA[position])} />
+      )}
+      {notch}
+      {actionOrLabel}
     </Handle>
   );
 };
