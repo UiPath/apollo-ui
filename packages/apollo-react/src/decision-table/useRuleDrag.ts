@@ -96,7 +96,13 @@ export const useRuleDrag = (rowIds: readonly string[], onMoveRule: MoveRule | un
         );
         const state = dragRef.current;
         const target = boundaryAt(view, indexOf, y);
-        if (!state || target === null || target.boundary === state.boundary) return;
+        if (
+          !state ||
+          target === null ||
+          (target.boundary === state.boundary && target.gapTopPx === state.gapTopPx)
+        ) {
+          return;
+        }
         dragRef.current = { ...state, ...target };
         setDrag(dragRef.current);
       };

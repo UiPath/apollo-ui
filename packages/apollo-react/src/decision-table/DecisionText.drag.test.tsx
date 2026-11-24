@@ -11,18 +11,22 @@ import { RULE_DRAG_PREVIEW_OFFSET_PX } from './constants';
 import { DecisionText } from './DecisionText';
 
 const CARD_PX = 100;
+let firstCardGrowthPx = 0;
 
 beforeEach(() => {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
     const index = GRID_SENTENCE_RULES.findIndex((rule) => rule.rowId === this.dataset.rowId);
-    const top = index < 0 ? 0 : index * CARD_PX;
-    return DOMRect.fromRect({ x: 0, y: top, width: 400, height: index < 0 ? 0 : CARD_PX });
+    if (index < 0) return DOMRect.fromRect({ x: 0, y: 0, width: 400, height: 0 });
+    const top = index * CARD_PX + (index > 0 ? firstCardGrowthPx : 0);
+    const height = CARD_PX + (index === 0 ? firstCardGrowthPx : 0);
+    return DOMRect.fromRect({ x: 0, y: top, width: 400, height });
   });
 });
 
 afterEach(() => {
+  firstCardGrowthPx = 0;
   cleanup();
   vi.restoreAllMocks();
 });
@@ -110,6 +114,16 @@ describe('DecisionText rule drag', () => {
     expect(indicator()).toHaveAttribute('aria-hidden', 'true');
     expect(indicator()).toHaveAttribute('inert');
     expect(document.querySelector('li[data-drop]')).toBeNull();
+  });
+
+  it('moves the drop line with its gap when a card above grows under the drag', () => {
+    renderDrag(vi.fn());
+    grab('r2', 150);
+    pointer('pointermove', 2 * CARD_PX + 80);
+    expect(dropAt()).toBe(`${3 * CARD_PX - GAP_PX / 2}px`);
+    firstCardGrowthPx = 10;
+    pointer('pointermove', 2 * CARD_PX + 85);
+    expect(dropAt()).toBe(`${3 * CARD_PX + 10 - GAP_PX / 2}px`);
   });
 
   it('moves a rule up to the top edge of the first card', () => {
