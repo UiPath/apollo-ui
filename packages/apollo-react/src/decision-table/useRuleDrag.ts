@@ -20,8 +20,10 @@ export interface RuleDragSurface {
   /** How much of the scroller's top the sticky header covers. */
   stickyTopPx: () => number;
   previewRef: React.RefObject<HTMLElement | null>;
-  onMoveRule: ((from: number, to: number) => void) | undefined;
 }
+
+/** Moves a rule from one index to another. */
+export type MoveRule = (from: number, to: number) => void;
 
 /** The boundary at the edge nearest `y` of the mounted card under it, by row index. */
 const boundaryAt = (
@@ -34,7 +36,7 @@ const boundaryAt = (
     const index = indexOf.get(card.dataset.rowId ?? '');
     if (index === undefined) continue;
     const { top, height } = card.getBoundingClientRect();
-    if (y < top + height / 2) return boundary ?? index;
+    if (y < top + height / 2) return index;
     boundary = index + 1;
   }
   return boundary;
@@ -53,16 +55,18 @@ const copyOf = (card: HTMLElement): Node => {
 };
 
 /** Drag-reorder of rule cards on the grid's pointer drag: the drop is the edge of the card under the pointer, read from live card rects; the rules changing cancels it. */
-export const useRuleDrag = (rowIds: readonly string[]) => {
+export const useRuleDrag = (rowIds: readonly string[], onMoveRule: MoveRule | undefined) => {
   const [drag, setDrag] = useState<RuleDrag | null>(null);
   const rowIdsRef = useRef(rowIds);
   rowIdsRef.current = rowIds;
+  const moveRef = useRef(onMoveRule);
+  moveRef.current = onMoveRule;
   const dragRef = useRef<RuleDrag | null>(null);
   const cancelRef = useRef<(() => void) | null>(null);
 
   const start = useCallback(
     (rowId: string, event: React.PointerEvent<HTMLElement>, surface: RuleDragSurface): boolean => {
-      const { container, scroller, stickyTopPx, previewRef, onMoveRule } = surface;
+      const { container, scroller, stickyTopPx, previewRef } = surface;
       const rowIds = rowIdsRef.current;
       const view = container();
       const from = rowIds.indexOf(rowId);
@@ -70,7 +74,7 @@ export const useRuleDrag = (rowIds: readonly string[]) => {
         event.target instanceof Element
           ? event.target.closest<HTMLElement>('li[data-row-id]')
           : null;
-      if (event.button !== 0 || !onMoveRule || !view || from < 0 || !card) return false;
+      if (event.button !== 0 || !moveRef.current || !view || from < 0 || !card) return false;
       cancelRef.current?.();
       event.preventDefault();
       const indexOf = new Map(rowIds.map((id, index) => [id, index]));
@@ -101,12 +105,11 @@ export const useRuleDrag = (rowIds: readonly string[]) => {
         pointer,
         edgeScroll: ({ y }) => target !== null && edgeScrollRows(target, y, stickyTopPx()),
         onPointer: retarget,
-        onDrop: (at) => {
-          retarget(at);
+        onDrop: () => {
           const state = dragRef.current;
           if (!state) return;
           const to = dropIndex(state.from, state.boundary);
-          if (to !== state.from) onMoveRule(state.from, to);
+          if (to !== state.from) moveRef.current?.(state.from, to);
         },
         onEnd: () => {
           preview?.replaceChildren();

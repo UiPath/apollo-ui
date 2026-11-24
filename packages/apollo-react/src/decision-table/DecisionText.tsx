@@ -258,7 +258,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   const [focusedRowId, setFocusedRowId] = useState<string | undefined>(undefined);
   const retainedRowId = edit?.editing?.rowId ?? selected?.rowId;
   const listedRowIds = useMemo(() => listed.map((rule) => rule.rowId), [listed]);
-  const ruleDrag = useRuleDrag(listedRowIds);
+  const ruleDrag = useRuleDrag(listedRowIds, edit?.onMoveRule);
   const draggedRowId = ruleDrag.drag?.rowId;
   const retainedRowIds = useMemo(
     () => [retainedRowId, focusedRowId, draggedRowId],
@@ -320,7 +320,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
         scroller: ruleWindow.scroller,
         stickyTopPx: () => ruleWindow.headerRef.current?.offsetHeight ?? 0,
         previewRef: dragPreviewRef,
-        onMoveRule: edit?.onMoveRule,
       }),
   });
   const citationKeysHinted = !selectable && citedRows.length > 0;
@@ -477,7 +476,13 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
           dataTestId={dataTestId}
         />
       )}
-      <div ref={dragPreviewRef} aria-hidden inert className={RULE_DRAG_PREVIEW_CLASS} />
+      <div
+        ref={dragPreviewRef}
+        aria-hidden
+        inert
+        className={RULE_DRAG_PREVIEW_CLASS}
+        style={SENTENCE_LIST_STYLE}
+      />
       <MarkTooltip container={ruleWindow.container} dataTestId={dataTestId} />
       <GridContextMenu
         label={ruleMenus.label}
