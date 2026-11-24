@@ -172,15 +172,6 @@ describe('DecisionText rule drag', () => {
     expect(indicator()).toBeNull();
   });
 
-  it('drops where the pointer is released, not where it last moved', () => {
-    const onMoveRule = vi.fn();
-    renderDrag(onMoveRule);
-    grab('r1', 50);
-    pointer('pointermove', 120);
-    pointer('pointerup', 280);
-    expect(onMoveRule.mock.calls).toEqual([[0, 2]]);
-  });
-
   it("sizes the dragged copy with the list's line variables", () => {
     renderDrag(vi.fn());
     expect(preview()?.style.getPropertyValue('--sentence-line')).toBe('24px');

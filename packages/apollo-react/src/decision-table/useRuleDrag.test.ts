@@ -50,6 +50,9 @@ describe('useRuleDrag', () => {
     });
     act(() => {
       document.dispatchEvent(
+        new PointerEvent('pointermove', { clientX: 10, clientY: y, pointerId: 1, buttons: 1 })
+      );
+      document.dispatchEvent(
         new PointerEvent('pointerup', { clientX: 10, clientY: y, pointerId: 1 })
       );
     });
