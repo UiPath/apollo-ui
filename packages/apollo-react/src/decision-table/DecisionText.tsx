@@ -208,7 +208,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   const { edit, refusal } = useHostValueEdit(
     mode.kind === 'edit' ? mode.edit : undefined,
     [...inputs, ...outputs],
-    useDecisionTextEditLabels(),
+    useDecisionTextEditLabels(mode.kind === 'edit' ? mode.edit.ruleNameLabel : undefined),
     announcements
   );
   const addRule =

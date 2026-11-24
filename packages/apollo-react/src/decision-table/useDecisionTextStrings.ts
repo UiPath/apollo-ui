@@ -150,8 +150,8 @@ export const useDecisionTextLabels = (): DecisionTextLabels => {
   }, [_]);
 };
 
-/** The editing strings in the active locale. */
-export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
+/** The editing strings in the active locale, with the host's rule name label when it gives one. */
+export const useDecisionTextEditLabels = (ruleNameLabel?: string): DecisionTextEditLabels => {
   const { _ } = useSafeLingui();
   return useMemo(
     (): DecisionTextEditLabels => ({
@@ -183,7 +183,7 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
       insertRuleBelow: _({ id: 'decision-text.insert_rule_below', message: 'Insert rule below' }),
       duplicateRule: _({ id: 'decision-text.duplicate_rule', message: 'Duplicate rule' }),
       clearRule: _({ id: 'decision-text.clear_rule', message: 'Clear rule' }),
-      ruleNameLabel: _({ id: 'decision-text.rule_name', message: 'Rule name' }),
+      ruleNameLabel: ruleNameLabel ?? _({ id: 'decision-text.rule_name', message: 'Rule name' }),
       ruleNamePlaceholder: _({
         id: 'decision-text.rule_name_placeholder',
         message: 'Name this rule…',
@@ -242,6 +242,6 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
       }),
       moreProperties: _({ id: 'decision-text.more_properties', message: 'More properties' }),
     }),
-    [_]
+    [_, ruleNameLabel]
   );
 };

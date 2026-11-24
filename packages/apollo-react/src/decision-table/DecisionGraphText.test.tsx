@@ -351,7 +351,7 @@ describe('DecisionGraphText', () => {
       renderBody.mock.calls.filter(([called]) => called === id).length;
     const showsTableHeading = () => {
       expect(policy().querySelector('[aria-describedby]')).not.toBeNull();
-      expect(screen.getByTestId('graph-mark-risk')).toHaveAttribute('title', 'Broken');
+      expect(screen.getByTestId('graph-mark-risk')).toHaveAttribute('data-mark-title', 'Broken');
       expect(screen.getByTestId('graph-citation-risk')).toBeInTheDocument();
     };
     const showsNodeHeading = () => {
@@ -403,6 +403,27 @@ describe('DecisionGraphText', () => {
     expect(document.activeElement).toBe(screen.getByTestId('text-eligibility-row-r3'));
     expect(scrollToSpy.mock.contexts).toEqual([screen.getByTestId('graph-scroller')]);
     expect(scrollIntoViewSpy).not.toHaveBeenCalled();
+  });
+
+  it("shows a card mark's message on hover", async () => {
+    render(
+      graph({
+        nodes: [
+          {
+            kind: 'decision',
+            id: 'offer',
+            label: 'Offer',
+            logic: { kind: 'other' },
+            mark: { kind: 'decision', mark: { tone: 'warning', title: 'No logic', glyph: true } },
+            children: [],
+          },
+        ],
+        renderBody: () => ({ kind: 'other', content: null }),
+      })
+    );
+    expect(screen.queryByTestId('graph-offer-mark-tooltip')).toBeNull();
+    await userEvent.hover(screen.getByTestId('graph-mark-offer'));
+    expect(await screen.findByTestId('graph-offer-mark-tooltip')).toHaveTextContent('No logic');
   });
 
   it('opens a decision its mark names from the keyboard, focusing its heading', async () => {
