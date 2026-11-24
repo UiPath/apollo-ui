@@ -125,7 +125,7 @@ export const LINE_SLOT_CLASS =
 /** A line's end: its remove actions, then its glyph, at the card's end edge. */
 export const LINE_END_CLASS = 'ms-auto flex h-[var(--sentence-line)] shrink-0 items-center';
 
-/** The room a floating card's actions take on its first line, before the glyph column. */
+/** The room a floating card's actions take at the end of its first line. */
 export const ACTIONS_RESERVE_CLASS = 'w-[calc(2*var(--sentence-line))] shrink-0';
 
 export const SENTENCE_CLASS = 'min-h-[var(--sentence-line)]';
@@ -269,9 +269,9 @@ export const PENDING_LINE_CLASS =
 
 export const RULE_ACTIONS_CLASS = 'ms-auto flex h-[var(--sentence-line)] shrink-0 items-center';
 
-/** An unnamed card's actions over its top end, left of the glyph column. */
+/** An unnamed card's actions over its top end. */
 export const RULE_ACTIONS_FLOAT_CLASS =
-  'absolute end-[calc(0.75rem+var(--sentence-line))] top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center';
+  'absolute end-3 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center';
 
 export const RULE_ACTION_CLASS = cn(
   LINE_SLOT_CLASS,
@@ -311,9 +311,6 @@ export const REMOVE_CONDITION_CLASS = cn(
   'text-foreground-de-emp hover:text-foreground',
   'opacity-0 group-hover/clause:opacity-100 group-focus-within/clause:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100'
 );
-
-/** The glyph column of a line or title row with no glyph. */
-export const EMPTY_SLOT_CLASS = 'size-[var(--sentence-line)] shrink-0';
 
 export const ADD_RULE_LINK_CLASS = 'h-auto w-fit gap-1 rounded-md px-2 py-1.5 [&_svg]:size-3.5';
 

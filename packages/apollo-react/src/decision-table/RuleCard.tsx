@@ -23,7 +23,6 @@ import {
   CITED_LINES_CLASS,
   CLAUSE_CLASS,
   CLAUSE_TEXT_CLASS,
-  EMPTY_SLOT_CLASS,
   INLINE_LINE_CLASS,
   LINES_CLASS,
   MOVED_ICON_CLASS,
@@ -227,12 +226,7 @@ export const RuleCard = memo<RuleCardProps>(
               ) : (
                 <span className={CLAUSE_TEXT_CLASS}>{title}</span>
               )}
-              {actions && (
-                <>
-                  {actions}
-                  <span aria-hidden className={EMPTY_SLOT_CLASS} />
-                </>
-              )}
+              {actions}
             </div>
           ) : null}
           <CitedLine citations={lined ? null : citationButtons}>
