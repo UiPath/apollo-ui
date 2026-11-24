@@ -15,7 +15,6 @@ import {
   GRID_SENTENCE_RULES,
   MULTI_SENTENCE_COLUMNS,
   MULTI_SENTENCE_POLICY,
-  MULTI_SENTENCE_RULES,
   manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
 import { type FixtureTextProps, textPropsOf } from './__fixtures__/textMode';
@@ -76,30 +75,6 @@ describe('DecisionText citations', () => {
     ).toBeTruthy();
     expect(within(card(firstRowId())).getByTestId(`nl-citation-${firstRowId()}`)).toBeTruthy();
     expect(within(card(secondRowId())).queryByTestId(`nl-citation-${secondRowId()}`)).toBeNull();
-  });
-
-  it("keeps a cited rule's heading and condition lines on one glyph boundary, its citations outside it", () => {
-    const rule = MULTI_SENTENCE_RULES.find((entry) => entry.lines.length > 0);
-    const rowId = rule?.rowId ?? '';
-    renderView({
-      rules: MULTI_SENTENCE_RULES,
-      ...MULTI_SENTENCE_COLUMNS,
-      hitPolicy: MULTI_SENTENCE_POLICY,
-      citations: {
-        kind: 'cited',
-        decision: [],
-        rules: new Map([[rowId, [RULE_CITATION]]]),
-        onOpenCitation: vi.fn(),
-      },
-      selected: { kind: 'rule', rowId },
-    });
-    const sentence = card(rowId).querySelector('[data-sentence]');
-    const lines = card(rowId).querySelector('ul');
-    const citation = screen.getByTestId(`nl-citation-${rowId}`);
-    expect(lines).not.toBeNull();
-    expect(lines?.parentElement).toBe(sentence?.parentElement);
-    expect(sentence?.contains(citation)).toBe(false);
-    expect(lines?.contains(citation)).toBe(false);
   });
 
   it('hides the rule citation at rest and its page until the rule is selected', () => {

@@ -267,7 +267,11 @@ export const REVEALED_ACTION_CLASS =
 export const CITATION_BUTTON_CLASS =
   'gap-1 text-foreground-de-emp hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0';
 
-export const RULE_CITATIONS_CLASS = 'flex flex-wrap gap-1 pb-1.5';
+export const RULE_CITATIONS_CLASS = 'ms-auto flex flex-wrap justify-end gap-1';
+
+export const CITED_LINES_CLASS = 'flex flex-wrap items-end gap-x-2';
+
+export const CITED_LINE_CLASS = 'grow';
 
 export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
 
