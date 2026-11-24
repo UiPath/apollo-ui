@@ -1,4 +1,5 @@
 import { cn } from '@uipath/apollo-wind';
+import { DROP_INDICATOR_Z_CLASS } from './gridStyles';
 import type { MarkTone } from './marks';
 
 const DECISION_TEXT_SURFACE_CLASS = cn(
@@ -24,6 +25,9 @@ export const DECISION_TEXT_HEADER_CLASS =
 export const HEADER_LABEL_CLASS = 'font-semibold';
 
 export const GUTTER_CLASS = 'px-[var(--sentence-gutter,0.875rem)]';
+
+/** The rule list: the containing block of its drop indicator. */
+export const RULE_LIST_CLASS = cn('relative', GUTTER_CLASS);
 
 export const DECISION_TEXT_BANDS_CLASS = cn(
   'grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-x-2 gap-y-2 pt-3.5 pb-4',
@@ -106,9 +110,11 @@ export const ROW_SURFACE_CLASS = cn(
 /** A dragged rule's copy: fixed under the pointer so scrolling leaves it put. */
 export const RULE_DRAG_PREVIEW_CLASS = 'pointer-events-none fixed top-0 left-0 z-50 opacity-85';
 
-/** The line a dragged rule drops on, at its card's top or bottom edge. */
-export const RULE_DROP_LINE_CLASS =
-  'relative before:absolute before:inset-x-0 before:hidden before:h-0.5 before:rounded-full before:bg-primary data-[drop]:before:block data-[drop=before]:before:-top-px data-[drop=after]:before:bottom-[calc(var(--sentence-row-gap)-1px)]';
+/** The line centred in the gap a dragged rule drops into, across the list's gutters. */
+export const RULE_DROP_INDICATOR_CLASS = cn(
+  'pointer-events-none absolute inset-x-[var(--sentence-gutter,0.875rem)] h-0.5 -translate-y-1/2 rounded-full bg-primary',
+  DROP_INDICATOR_Z_CLASS
+);
 
 export const ROW_NUMBER_CLASS =
   'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100 group-has-[[data-selected]]/row:opacity-100';
