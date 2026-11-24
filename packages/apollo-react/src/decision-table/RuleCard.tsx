@@ -14,6 +14,7 @@ import {
   ruleCardModel,
 } from './ruleCardModel';
 import { StopLabels } from './StopLabels';
+import { isLineMark } from './sentenceMarks';
 import { ruleTitleOf } from './sentenceParts';
 import {
   CHANGE_SIGN_CLASS,
@@ -211,7 +212,7 @@ export const RuleCard = memo<RuleCardProps>(
                 <RuleLine
                   heading
                   parts={rule.heading}
-                  title={card.title}
+                  title={isLineMark(mark) ? undefined : card.title}
                   badge={card.badges.heading}
                   removals={NO_REMOVALS}
                   unworded={diff?.removedOutcomes}

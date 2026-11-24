@@ -962,6 +962,15 @@ describe('DecisionText', () => {
       expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
     });
 
+    it('anchors a rule message to its glyph, not to the whole heading line', () => {
+      renderView({
+        marks: rowMarks({ m5: { tone: 'warning', title: 'Unreachable', glyph: true } }),
+      });
+      const carriers = card('m5').querySelectorAll('[data-mark-title="Unreachable"]');
+      expect(carriers).toHaveLength(1);
+      expect(carriers[0]?.querySelector(':scope > [data-glyph="warning"]')).not.toBeNull();
+    });
+
     it('puts the glyph of a cell its sentence leaves out on the heading line, once', () => {
       renderView({
         marks: rowMarks({
