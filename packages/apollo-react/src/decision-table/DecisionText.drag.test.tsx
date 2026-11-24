@@ -106,13 +106,13 @@ describe('DecisionText rule drag', () => {
     expect(indicator()).toBeNull();
   });
 
-  it('shows no drop indicator until a drag has somewhere to drop, inert and hidden from readers', () => {
+  it('shows no drop indicator until a drag has somewhere to drop, hidden from readers and the pointer', () => {
     renderDrag(vi.fn());
     expect(indicator()).toBeNull();
     grab('r1', 50);
     pointer('pointermove', 280);
     expect(indicator()).toHaveAttribute('aria-hidden', 'true');
-    expect(indicator()).toHaveAttribute('inert');
+    expect(indicator()).toHaveClass('pointer-events-none');
     expect(document.querySelector('li[data-drop]')).toBeNull();
   });
 
@@ -233,6 +233,15 @@ describe('DecisionText rule drag', () => {
     );
     pointer('pointerup', 280);
     expect(onMoveRule).not.toHaveBeenCalled();
+  });
+
+  it('keeps the drag preview inert without handing React a boolean inert prop', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderDrag(vi.fn());
+    expect(preview()).not.toBeNull();
+    expect(preview()?.getAttribute('inert')).toBe('');
+    expect(errors.mock.calls.flat().join(' ')).not.toMatch(/inert/);
+    errors.mockRestore();
   });
 
   it('follows the pointer with an inert copy below-right of it, emptied on drop', () => {

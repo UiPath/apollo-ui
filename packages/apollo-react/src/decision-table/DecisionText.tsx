@@ -55,8 +55,8 @@ import {
 import { useDecisionTextEditLabels, useDecisionTextLabels } from './useDecisionTextStrings';
 import { useHostValueEdit } from './useHostValueEdit';
 import { usePendingCondition } from './usePendingCondition';
-import { useRuleMenus } from './useRuleMenus';
 import { useRuleDrag } from './useRuleDrag';
+import { useRuleMenus } from './useRuleMenus';
 import { type DecisionTextScroll, useRuleWindow } from './useRuleWindow';
 import { type SentenceNavigationSource, useSentenceNavigation } from './useSentenceNavigation';
 import { useTextAnnouncements } from './useTextAnnouncements';
@@ -264,7 +264,11 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
     () => [retainedRowId, focusedRowId, draggedRowId],
     [retainedRowId, focusedRowId, draggedRowId]
   );
-  const dragPreviewRef = useRef<HTMLDivElement>(null);
+  const dragPreviewRef = useRef<HTMLDivElement | null>(null);
+  const attachDragPreview = useCallback((node: HTMLDivElement | null) => {
+    node?.setAttribute('inert', '');
+    dragPreviewRef.current = node;
+  }, []);
   const ruleWindow = useRuleWindow(listed, selected?.rowId, retainedRowIds, scroll);
   const citedRows = useMemo(
     (): CitedRow[] =>
@@ -477,9 +481,8 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
         />
       )}
       <div
-        ref={dragPreviewRef}
+        ref={attachDragPreview}
         aria-hidden
-        inert
         className={RULE_DRAG_PREVIEW_CLASS}
         style={SENTENCE_LIST_STYLE}
       />

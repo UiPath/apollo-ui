@@ -10,7 +10,6 @@ export interface DropIndicatorProps {
 export const DropIndicator: React.FC<DropIndicatorProps> = ({ topPx }) => (
   <li
     aria-hidden
-    inert
     className={RULE_DROP_INDICATOR_CLASS}
     style={{ top: `${topPx}px` }}
     data-drop-indicator
