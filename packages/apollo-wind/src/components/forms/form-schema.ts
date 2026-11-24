@@ -567,9 +567,14 @@ export interface CustomFieldComponentProps {
   error?: string;
   /**
    * In the field anatomy: the handle Insert variable writes through. A component registered as
-   * `insertable` without a text input carrying the field's name as its id attaches one.
+   * `insertable` without a text input carrying `controlId` as its id attaches one.
    */
   controlRef?: React.Ref<ValueModeControlHandle>;
+  /**
+   * The id to put on the focusable control, which the label's `htmlFor` points at. It carries the
+   * form's id prefix, so it differs from `name` and stays unique when the same schema is mounted twice.
+   */
+  controlId?: string;
   /** In the field anatomy: the label's id, for a component registered with `labelTarget: 'labelledby'`. */
   labelId?: string;
   /** Id of the changed-field note while the field is flagged; put it on the focusable control. */

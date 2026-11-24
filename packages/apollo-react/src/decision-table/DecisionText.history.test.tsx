@@ -43,6 +43,7 @@ const renderView = ({
   const onRedo = vi.fn();
   render(
     <DecisionText
+      name="Discount"
       {...textPropsOf({
         rules: wordedRules(EDITABLE_TABLE),
         ...tableColumns(EDITABLE_TABLE),
@@ -112,6 +113,7 @@ describe('DecisionText undo and redo', () => {
     const onUndo = vi.fn();
     render(
       <DecisionText
+        name="Discount"
         {...textPropsOf({
           rules: wordedRules(EDITABLE_TABLE),
           ...tableColumns(EDITABLE_TABLE),
@@ -139,6 +141,7 @@ describe('DecisionText undo and redo', () => {
     const onUndo = vi.fn();
     render(
       <DecisionText
+        name="Discount"
         {...textPropsOf({
           rules: wordedRules(EDITABLE_TABLE),
           ...tableColumns(EDITABLE_TABLE),
@@ -160,6 +163,7 @@ describe('DecisionText undo and redo', () => {
     const onUndo = vi.fn();
     render(
       <DecisionText
+        name="Discount"
         {...textPropsOf({
           rules: wordedRules(EDITABLE_TABLE),
           ...tableColumns(EDITABLE_TABLE),
@@ -194,6 +198,7 @@ describe('DecisionText undo and redo', () => {
     const onUndo = vi.fn();
     render(
       <DecisionText
+        name="Discount"
         {...textPropsOf({
           rules: wordedRules(EDITABLE_TABLE),
           ...tableColumns(EDITABLE_TABLE),
@@ -220,6 +225,7 @@ describe('DecisionText undo and redo', () => {
     const onUndo = vi.fn();
     render(
       <DecisionText
+        name="Discount"
         {...textPropsOf({
           rules: wordedRules(EDITABLE_TABLE),
           ...tableColumns(EDITABLE_TABLE),

@@ -301,14 +301,15 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
       clear: () => commitEdit(node, undefined),
     }) ?? getDefaultActions();
 
-  // Container rows collapse/expand on a click anywhere in the row,
-  // except on an interactive control (the chevron, the row actions,
-  // an inline editor, or a dropdown trigger).
+  // Container rows collapse/expand on a click anywhere in the row, except on an
+  // interactive control (the row actions, an inline editor, or a dropdown trigger)
+  // or in the detail cell below the row, which holds the JSON editor.
+  // On the row element, it also gets a screen reader's activate (TalkBack double-tap).
   const rowClickable = isContainer && !!onToggleCollapsed;
   const handleRowClick = (event: MouseEvent) => {
     if (
       (event.target as HTMLElement).closest(
-        'button, a, input, textarea, select, [contenteditable="true"]'
+        'button, a, input, textarea, select, [contenteditable="true"], [data-cell="detail"]'
       )
     ) {
       return;
@@ -332,6 +333,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
     // The row element itself is the grid row (not the consumer's `RowWrapper`),
     // so a wrapper's own role or tabindex can't take the row's place.
     // biome-ignore lint/a11y/useSemanticElements: A table layout can't host the flex rows and virtualization.
+    // biome-ignore lint/a11y/useKeyWithClickEvents: The tree grid's onKeyDown handles the keys.
     <div
       role="row"
       data-path={node.path}
@@ -344,35 +346,35 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
       // Only a row with child rows to show or hide is a parent row; `{}` and `[]` are end rows.
       aria-expanded={isParentRow(row) ? !collapsedHere : undefined}
       className={ROW_ELEMENT_CLASS}
+      onClick={rowClickable ? handleRowClick : undefined}
     >
       <RowWrapper
         node={node}
         displayPath={displayPath}
         className={cn(ROW_CLASS, rowClickable && 'cursor-pointer')}
         style={rowIndent(depth)}
-        onClick={rowClickable ? handleRowClick : undefined}
       >
         <GridCell cell="name" className={cn(NAME_CELL_CLASS, besideValue && 'max-w-1/2')}>
           {isContainer ? (
-            <button
-              type="button"
-              // A mouse affordance only: the row is the keyboard's expand/collapse control.
-              tabIndex={-1}
-              data-json-tree-skip=""
-              onClick={() => onToggleCollapsed?.(node.path)}
-              // Without a handler the tree's expansion is fixed (e.g. a host holding
-              // search matches open), so the chevron shows state but isn't a control.
-              disabled={!onToggleCollapsed}
-              aria-label={
-                collapsedHere ? strings.expandKey(node.key) : strings.collapseKey(node.key)
-              }
-              className="grid size-2.5 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground disabled:cursor-default disabled:hover:text-foreground-subtle"
+            // State only: a click toggles through the row, which carries aria-expanded.
+            <span
+              aria-hidden
+              // A click would focus the name cell; leave focus on the row, which carries aria-expanded.
+              onMouseDown={(event) => {
+                event.preventDefault();
+                event.currentTarget.closest<HTMLElement>('[role="row"]')?.focus();
+              }}
+              title={collapsedHere ? strings.expandKey(node.key) : strings.collapseKey(node.key)}
+              className={cn(
+                'grid size-2.5 shrink-0 place-items-center text-foreground-subtle transition',
+                rowClickable && 'hover:text-foreground'
+              )}
             >
               <ChevronDown
                 size={10}
                 className={cn('transition-transform duration-100', collapsedHere && '-rotate-90')}
               />
-            </button>
+            </span>
           ) : (
             <div className="size-2.5 shrink-0" />
           )}

@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { DataFetcher } from './data-fetcher';
-import type { FormPlugin, FormSchema } from './form-schema';
+import type { CustomFieldComponentProps, FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
 import * as converter from './validation-converter';
 import { envelopeCodec, type ValueModeControlProps } from './value-modes';
@@ -172,5 +172,39 @@ describe('MetadataForm with value modes: rules, conditions and data sources', ()
     await settle();
     expect(screen.queryByLabelText('Escalate')).toBeNull();
     expect(screen.queryByLabelText('Reason')).toBeNull();
+  });
+});
+
+describe('MetadataForm with value modes: control ids', () => {
+  it('gives a custom component reused as a control the scoped id as controlId too', async () => {
+    // Written as a custom field component, so it reads `controlId`, not the control's `id`.
+    const Reused = ({ controlId, name, value }: CustomFieldComponentProps) => (
+      <input id={controlId ?? name} value={String(value ?? '')} readOnly />
+    );
+    const schema: FormSchema = {
+      id: 'f',
+      title: 'F',
+      sections: [
+        {
+          id: 's',
+          fields: [
+            {
+              name: 'a',
+              type: 'text',
+              label: 'A',
+              valueModes: { modes: ['literal', 'expression'], controls: { literal: 'reused' } },
+            },
+          ],
+        },
+      ],
+    };
+    const plugins: FormPlugin[] = [
+      { name: 'host', valueModes: { controlRegistry: { reused: { component: Reused } } } },
+    ];
+    render(<MetadataForm schema={schema} plugins={plugins} />);
+    await settle();
+
+    const control = screen.getByLabelText('A');
+    expect(control.id).not.toBe('a');
   });
 });

@@ -1,3 +1,4 @@
+import type { BandAddLabels, BandOverflowLabels } from './BandList';
 import type { BandLabels } from './bandColumns';
 import type { ColumnEdit, ColumnPopoverLabels } from './ColumnPopover';
 import type { DiffLabels } from './decisionTextDiff';
@@ -16,6 +17,8 @@ import type { ValueCommit, ValueFieldData } from './valueTypes';
 export interface DecisionTextLabels
   extends RuleCardLabels,
     BandLabels,
+    BandOverflowLabels,
+    BandAddLabels,
     DiffLabels,
     HitPolicyLabels,
     TextAnnouncementLabels {

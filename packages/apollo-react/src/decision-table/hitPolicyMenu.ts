@@ -111,9 +111,9 @@ const placedOf = <Policy, Total>(
 export const policyHeaderOf = <Policy, Total>(
   catalog: HitPolicyCatalog<Policy, Total>,
   pick: HitPolicyPick<Policy, Total>
-): { label: string; hint: string } => {
+): { label: string; hint: string; code: string } => {
   const placed = placedOf(catalog, pick);
-  return { label: placed?.label ?? '', hint: placed?.hint ?? '' };
+  return { label: placed?.label ?? '', hint: placed?.hint ?? '', code: placed?.code ?? '' };
 };
 
 const policyLabelOf = <Policy, Total>(

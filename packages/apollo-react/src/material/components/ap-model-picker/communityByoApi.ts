@@ -1,6 +1,7 @@
 import type {
   ByoApiType,
   ByoConnection,
+  ByoConnectionChange,
   ByoConnectionForm,
   ByoConnectionValues,
   ByoDialogContext,
@@ -64,6 +65,93 @@ export interface CommunityByoProvider {
   form: ByoConnectionForm;
   /** Values the gateway needs that the form never asks for, worked out from the others. */
   derive?: (values: Record<string, string>) => Record<string, string>;
+  /**
+   * Settings a saved connection must already have for this dialog to edit it, because
+   * Connect sets them: another value means the connection serves something else.
+   */
+  requires?: Record<string, string>;
+}
+
+/** The first setting `requires` names that the saved connection holds differently. */
+function otherPurpose(
+  provider: CommunityByoProvider,
+  current: Record<string, unknown>
+): [string, unknown] | null {
+  for (const [key, value] of Object.entries(provider.requires ?? {})) {
+    if (current[key] !== value) return [key, current[key]];
+  }
+  return null;
+}
+
+const EDIT_IN_IS = 'Edit this connection in Integration Service';
+
+const settingOf = (value: unknown) =>
+  value === undefined || value === null || value === '' ? null : String(value);
+
+/** The change that makes a saved connection serve `provider`, for the user to agree to. */
+function connectionChange(
+  provider: CommunityByoProvider,
+  connection: ByoConnection,
+  [, value]: [string, unknown]
+): ByoConnectionChange {
+  const setting = settingOf(value);
+  const usedFor = setting ? ` for ${setting}` : '';
+  return {
+    title: setting
+      ? `This connection is set up for ${setting}, not ${provider.name}`
+      : `This connection is not set up for ${provider.name}`,
+    message: `To use it here, UiPath switches it to ${provider.name}. Automations that use it${usedFor} may stop working.`,
+    agreement: `Switch "${connection.name}" to ${provider.name}. I understand automations that use it${usedFor} may stop working.`,
+  };
+}
+
+/**
+ * The connection's authentication type. IS leaves it out of a connection that uses the
+ * connector's default, which each form's default mirrors (on alpha, saved Azure OpenAI API-key
+ * connections name none).
+ */
+const authTypeOf = (provider: CommunityByoProvider, configs: Record<string, unknown>) =>
+  configs['authentication.type'] ?? provider.form.defaultAuthType;
+
+/** Why the connection is not edited here, when its authentication type is not one the form offers. */
+function authTypeRefusal(
+  provider: CommunityByoProvider,
+  configs: Record<string, unknown>
+): ByoFailure | null {
+  if (!provider.form.authTypes.length) return null;
+  const authType = authTypeOf(provider, configs);
+  if (provider.form.authTypes.some((t) => t.value === authType)) return null;
+  return {
+    title: EDIT_IN_IS,
+    message: `It uses an authentication type this dialog does not offer (${String(authType)}).`,
+    final: true,
+  };
+}
+
+/**
+ * Why a connection set up for another purpose is not switched, if it is not: only one whose
+ * authentication the dialog offers is, since its settings are sent back as read, which is
+ * verified for those types alone (an assumed role is not one).
+ */
+function switchRefusal(
+  provider: CommunityByoProvider,
+  configs: Record<string, unknown>,
+  other: [string, unknown]
+): ByoFailure | null {
+  const authType = authTypeOf(provider, configs);
+  const offered = provider.form.authTypes.some((t) => t.value === authType);
+  if (!provider.form.authTypes.length || offered) return null;
+  return servesOther(provider, other);
+}
+
+function servesOther(provider: CommunityByoProvider, [, value]: [string, unknown]): ByoFailure {
+  const setting = settingOf(value);
+  return {
+    title: EDIT_IN_IS,
+    message: `It is set up for ${setting ?? 'another service'}, not ${provider.name}. Create a separate connection for ${provider.name}.`,
+    // Asking again gives the same answer, so neither Try again nor Connect again is suggested.
+    final: true,
+  };
 }
 
 type FieldSpec = Partial<Omit<ByoFormField, 'key' | 'label'>>;
@@ -121,8 +209,6 @@ const AWS_REGIONS: [string, string][] = [
   ['ap-southeast-2', 'Asia Pacific (Sydney)'],
 ];
 
-const IAM_ROLE_PLACEHOLDER = 'arn:aws:iam::123456789012:role/my-role';
-
 export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
   {
     id: 'openai',
@@ -172,17 +258,15 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
     },
   },
   // AI Trust Layer reaches Bedrock through the Amazon Web Services connector, never `uipath-aws-bedrock`.
-  // Its third authentication type, a UiPath-managed cross-account role, needs onboarding by support.
+  // Only access keys are offered: an assumed role or a UiPath-managed cross-account role is set up
+  // in AI Trust Layer.
   {
     id: 'bedrock',
     name: 'Amazon Bedrock',
     connector: 'uipath-amazon-webservices',
     connectorType: 'AmazonWebServices',
     form: {
-      authTypes: [
-        { value: 'accessKey', label: 'Access key' },
-        { value: 'assumeRole', label: 'Assume role' },
-      ],
+      authTypes: [{ value: 'accessKey', label: 'Access key' }],
       defaultAuthType: 'accessKey',
       fields: [
         // The gateway calls Bedrock in the connection's region.
@@ -197,20 +281,12 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
           group: 'accessKey',
           hint: 'Only for temporary credentials.',
         }),
-        field('assume.role.aws.api.key', 'Access key ID', { group: 'assumeRole' }),
-        secret('assume.role.aws.api.secret', 'Secret access key', { group: 'assumeRole' }),
-        field('assume.role.aws.iam.role', 'IAM role ARN', {
-          group: 'assumeRole',
-          placeholder: IAM_ROLE_PLACEHOLDER,
-          hint: 'The role these credentials assume to call Bedrock.',
-        }),
-        advanced('assume.role.aws.temporary.session.token', 'Session token', {
-          secret: true,
-          group: 'assumeRole',
-          hint: 'Only for temporary credentials.',
-        }),
       ],
     },
+    // The connector serves any AWS service; the connection is for Bedrock's runtime.
+    derive: (): Record<string, string> => ({ 'default.service.name': 'bedrock-runtime' }),
+    // A saved connection for another AWS service stays as it is, for what else uses it.
+    requires: { 'default.service.name': 'bedrock-runtime' },
   },
   {
     id: 'anthropic',
@@ -382,15 +458,6 @@ const connectorsCarrying = (apiType: string) =>
     apiTypes.includes(apiType) ? [type] : []
   );
 
-// Provider ids come in any case (Bedrock's `amazon.nova-canvas-v1:0`, OpenAI's `dall-e-3`).
-const NOT_CHAT: [RegExp, string][] = [
-  [/embed|rerank/i, 'Embedding model'],
-  [/moderation/i, 'Moderation model'],
-  [/tts|whisper|transcribe|audio/i, 'Audio model'],
-  [/realtime/i, 'Realtime model'],
-  [/image|dall-e|sora|imagen|veo-|nova-canvas|nova-reel|flux|stability\./i, 'Image or video model'],
-  [/davinci|babbage/i, 'Completions only'],
-];
 const OPENAI_API_TYPES = ['OpenAiChatCompletions', 'OpenAiResponses', 'OpenAiEmbeddings'];
 /** The API types each connector carries, as AI Trust Layer lists them. */
 const CONNECTOR_API_TYPES: Record<string, string[]> = {
@@ -422,6 +489,8 @@ const MASKED_SECRET = '********';
 const SESSION_POLLS = 20;
 const SESSION_POLL_MS = 1500;
 const RETRY_MS = 5000;
+
+const FOLDER_PAGE = 500;
 
 const asList = (data: unknown): Record<string, unknown>[] => {
   if (Array.isArray(data)) return data;
@@ -489,6 +558,8 @@ export function createCommunityByoApi(
   let openSession: IsSession | null = null;
   // Read by `loadContext`; `apiTypes` and the saves answer from it.
   let rules: FeatureRules | null = null;
+  // The folders AI Trust Layer offers, which are the only ones a model is saved in.
+  let offeredFolderIds: Set<string> | null = null;
 
   /**
    * Makes a gateway call about a connection, repeating it while a connection created in
@@ -541,17 +612,40 @@ export function createCommunityByoApi(
     return { ok: res.ok, status: res.status, statusText: res.statusText, data };
   }
 
+  /** Every folder the user can see, read page by page. */
+  async function listFolders(): Promise<CallResult> {
+    const items: Record<string, unknown>[] = [];
+    for (;;) {
+      const page = await call(
+        'GET',
+        tenantUrl(
+          `orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=${FOLDER_PAGE}&skip=${items.length}`
+        )
+      );
+      if (!page.ok) return page;
+      const batch = asList(page.data);
+      items.push(...batch);
+      const count = Number((page.data as { Count?: unknown } | null)?.Count ?? 0);
+      if (batch.length < FOLDER_PAGE || items.length >= count) {
+        return { ...page, data: { PageItems: items } };
+      }
+    }
+  }
+
   /** A provisioning session for a new connection, or for editing the saved connection `connectionId`. */
   async function session(
     provider: CommunityByoProvider,
     folderKey: string,
     connectionId: string | null = null
   ) {
+    // A saved connection gets a session of its own each time: its form shows the settings as they
+    // were when the session opened, and every check of them must see them as they are now.
     const reusable =
+      connectionId === null &&
       openSession &&
       openSession.connector === provider.connector &&
       openSession.folderKey === folderKey &&
-      openSession.connectionId === connectionId &&
+      openSession.connectionId === null &&
       Date.now() < openSession.expiresAt - 30_000;
     if (reusable && openSession) return ok(openSession);
 
@@ -593,12 +687,7 @@ export function createCommunityByoApi(
   const loadContext = async (): Promise<ByoResult<ByoDialogContext>> => {
     const [folders, connections, products, vendorModels, modelApiTypes, configurations] =
       await Promise.all([
-        call(
-          'GET',
-          tenantUrl(
-            'orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0'
-          )
-        ),
+        listFolders(),
         call(
           'GET',
           tenantUrl('connections_/api/v1/Connections?allFolders=true&folderDefaults=true')
@@ -622,11 +711,15 @@ export function createCommunityByoApi(
       return fail({
         title: 'This feature does not take models of your own',
         detail: `No BYO configuration for ${product} / ${operationGroupName}.`,
+        final: true,
       });
     }
     // Every model of such a feature is configured at once, which only AI Trust Layer offers.
     if (feature.modelsConfigurationOption === 'AllModels') {
-      return fail({ title: 'This feature’s models are configured together in AI Trust Layer' });
+      return fail({
+        title: 'This feature’s models are configured together in AI Trust Layer',
+        final: true,
+      });
     }
     rules = {
       feature,
@@ -652,34 +745,43 @@ export function createCommunityByoApi(
       // As in AI Trust Layer, models being retired come last.
       .sort((a, b) => Number(Boolean(a.retiresOn)) - Number(Boolean(b.retiresOn)));
 
-    const rows = asList(folders.data)
-      .filter((f) => f.IsSelectable !== false)
+    // AI Trust Layer keeps connections out of personal workspaces and solution debug folders.
+    const folderRows: ByoFolder[] = asList(folders.data)
+      .filter(
+        (f) =>
+          f.IsSelectable !== false &&
+          !f.IsPersonal &&
+          f.FolderType !== 'Personal' &&
+          f.FolderType !== 'DebugSolution'
+      )
       .map((f) => ({
-        folder: {
-          id: String(f.Key),
-          label: f.IsPersonal
-            ? String(f.DisplayName)
-            : String(f.FullyQualifiedName ?? f.DisplayName)
-                .split('/')
-                .join(' › '),
-        } satisfies ByoFolder,
-        personal: Boolean(f.IsPersonal),
+        id: String(f.Key),
+        label: String(f.FullyQualifiedName ?? f.DisplayName)
+          .split('/')
+          .join(' › '),
       }));
-    rows.sort((a, b) => Number(b.personal) - Number(a.personal));
+    if (folderRows.length === 0) {
+      return fail({
+        title: 'You need a folder for your connection',
+        message: 'Create a folder in Orchestrator, or ask an administrator to add you to one.',
+      });
+    }
+    const folderIds = new Set(folderRows.map((f) => f.id));
+    offeredFolderIds = folderIds;
     const byConnector = (key: unknown) => providers.find((p) => p.connector === key);
     const saved: ByoConnection[] = asList(connections.data).flatMap((c) => {
       const connector = (c.connector as { key?: string } | undefined)?.key;
       const provider = byConnector(connector);
       const folder = (c.folder as { key?: string } | undefined)?.key;
-      return provider && folder
+      return provider && folder && folderIds.has(folder)
         ? [{ id: String(c.id), providerId: provider.id, name: String(c.name), folderId: folder }]
         : [];
     });
     return ok({
       providers: providers.map(({ id, name }) => ({ id, name })),
       connections: saved,
-      folders: rows.map((r) => r.folder),
-      defaultFolderId: rows[0]?.folder.id ?? null,
+      folders: folderRows,
+      defaultFolderId: folderRows[0]?.id ?? null,
       takenModelNames: [...new Set([...options.takenModelNames(), ...configured])],
       replaceableModels,
       allowsNewNames: feature.modelsConfigurationOption === ADD_OWN_MODELS,
@@ -756,8 +858,12 @@ export function createCommunityByoApi(
       return fail({
         title: `${name} cannot be edited here`,
         detail: JSON.stringify(saved, null, 2),
+        final: true,
       });
     }
+    // Saved there with other models, it would stay there: the dialog moves a configuration to
+    // the connection's folder only with its one model.
+    if (stuckOutsideOfferedFolders(saved)) return fail(savedElsewhere(name));
     const savedName = entry.desiredModel ?? name;
     // As in AI Trust Layer, a model under a UiPath model's name replaces that model.
     const replaces = rules && own(rules.connectorTypesByModel, savedName) ? savedName : null;
@@ -774,7 +880,8 @@ export function createCommunityByoApi(
 
   const loadForm: ByoModelDialogApi['loadForm'] = async (providerId) => {
     const provider = byId(providerId);
-    if (!provider) return fail<ByoConnectionForm>({ title: `Unknown provider ${providerId}` });
+    if (!provider)
+      return fail<ByoConnectionForm>({ title: `Unknown provider ${providerId}`, final: true });
     return ok(provider.form);
   };
 
@@ -783,10 +890,10 @@ export function createCommunityByoApi(
     connection
   ) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     const { form } = provider;
 
-    // The same session Connect then submits the changes through.
+    // Its own session: Connect opens another, so it saves over the settings as they are then.
     const s = await session(provider, connection.folderId, connection.id);
     if (!s.ok) return s;
     const sf = await sessionForm(s.value.id, connection.folderId);
@@ -804,12 +911,10 @@ export function createCommunityByoApi(
     const savedAuthType = current['authentication.type'];
     const knownAuthType = form.authTypes.some((t) => t.value === savedAuthType);
     // Shown as another type, the connection would be switched to it on Connect.
-    if (form.authTypes.length && savedAuthType && !knownAuthType) {
-      return fail({
-        title: 'Edit this connection in Integration Service',
-        message: `It uses an authentication type this dialog does not offer (${savedAuthType}).`,
-      });
-    }
+    const unoffered = authTypeRefusal(provider, current);
+    if (unoffered) return fail(unoffered);
+    const other = otherPurpose(provider, current);
+    if (other) return fail(servesOther(provider, other));
     return ok<ByoConnectionValues>({
       authType: knownAuthType ? (savedAuthType ?? null) : form.defaultAuthType,
       values,
@@ -826,7 +931,7 @@ export function createCommunityByoApi(
     existing,
   }) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     // An empty field is left out, so the connector's default applies. Editing, an emptied
     // setting is sent empty so it is cleared, while an empty secret is left out so IS keeps it.
     const entered: Record<string, string> = {};
@@ -843,6 +948,11 @@ export function createCommunityByoApi(
     const sf = await sessionForm(sid, folderId);
     if (!sf.ok) return fail(failure(sf, 'Could not read the connector form'));
     const sfd = sf.data as IsSessionForm | null;
+    const other = existing ? otherPurpose(provider, sfd?.configs ?? {}) : null;
+    if (other) return fail(servesOther(provider, other));
+    // Checked again as the connection now is: saved as another type, it would be switched to it.
+    const unoffered = existing ? authTypeRefusal(provider, sfd?.configs ?? {}) : null;
+    if (unoffered) return fail(unoffered);
     // Every default goes back, then the session's configs, then what the user entered.
     // Editing, the configs are the connection's current settings with secrets masked,
     // and IS keeps a secret that comes back masked.
@@ -862,11 +972,45 @@ export function createCommunityByoApi(
 
     // IS needs a name here; the user's name is set by the rename below.
     const nameInIs = existing?.name ?? new Date().toISOString();
+    const submitted = await submitSession(provider, sid, sfd, configuration, {
+      folderId,
+      name: nameInIs,
+      existing: Boolean(existing),
+    });
+    if (!submitted.ok) return submitted;
+    const id = submitted.value;
+    let savedName = nameInIs;
+    if (name !== nameInIs) {
+      const renamed = await call(
+        'PATCH',
+        tenantUrl(`connections_/api/v1/Connections/${id}/rename`),
+        {
+          folderKey: folderId,
+          body: { newName: name },
+        }
+      );
+      if (renamed.ok) savedName = name;
+    }
+    if (!existing) createdAt.set(id, Date.now());
+    return ok({ id, providerId, name: savedName, folderId });
+  };
+
+  /**
+   * Sends a provisioning session's configuration to IS and waits for the connection:
+   * a new one, or, with `existing`, the saved one the session edits. Returns its id.
+   */
+  async function submitSession(
+    provider: CommunityByoProvider,
+    sid: string,
+    sfd: IsSessionForm | null,
+    configuration: Record<string, string>,
+    { folderId, name, existing }: { folderId: string; name: string; existing: boolean }
+  ): Promise<ByoResult<string>> {
     const body: Record<string, unknown> = {
       element: { key: provider.connector },
       sessionID: sid,
       configuration,
-      name: nameInIs,
+      name,
     };
     // A session that edits a saved connection names its element instance, which IS
     // updates with PUT. Without it, IS would create a new instance and leave the
@@ -916,25 +1060,62 @@ export function createCommunityByoApi(
       return fail({ title: 'Integration Service did not finish setting up the connection' });
     }
     if (!id) return fail({ title: 'Integration Service did not return the connection' });
-    let savedName = nameInIs;
-    if (name !== nameInIs) {
-      const renamed = await call(
-        'PATCH',
-        tenantUrl(`connections_/api/v1/Connections/${id}/rename`),
-        {
-          folderKey: folderId,
-          body: { newName: name },
-        }
-      );
-      if (renamed.ok) savedName = name;
-    }
-    if (!existing) createdAt.set(id, Date.now());
-    return ok({ id, providerId, name: savedName, folderId });
+    return ok(id);
+  }
+
+  /** The saved connection's current settings, read through the session that would edit it. */
+  async function currentSettings(
+    provider: CommunityByoProvider,
+    connection: ByoConnection
+  ): Promise<ByoResult<{ sid: string; sfd: IsSessionForm | null }>> {
+    const s = await session(provider, connection.folderId, connection.id);
+    if (!s.ok) return s;
+    const sf = await sessionForm(s.value.id, connection.folderId);
+    if (!sf.ok) return fail(failure(sf, 'Could not read the connection settings'));
+    return ok({ sid: s.value.id, sfd: sf.data as IsSessionForm | null });
+  }
+
+  const checkConnection: ByoModelDialogApi['checkConnection'] = async (providerId, connection) => {
+    const provider = byId(providerId);
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
+    if (!provider.requires) return ok(null);
+    const read = await currentSettings(provider, connection);
+    if (!read.ok) return read;
+    const configs = read.value.sfd?.configs ?? {};
+    const other = otherPurpose(provider, configs);
+    if (!other) return ok(null);
+    const refused = switchRefusal(provider, configs, other);
+    return refused ? fail(refused) : ok(connectionChange(provider, connection, other));
+  };
+
+  const applyConnectionChange: ByoModelDialogApi['applyConnectionChange'] = async (
+    providerId,
+    connection
+  ) => {
+    const provider = byId(providerId);
+    if (!provider?.requires) return fail({ title: `Unknown provider ${providerId}`, final: true });
+    const read = await currentSettings(provider, connection);
+    if (!read.ok) return read;
+    const { sid, sfd } = read.value;
+    // Read again here, so a connection changed since it was checked is checked as it now is:
+    // one already for this provider needs no change, so nothing is sent.
+    const other = otherPurpose(provider, sfd?.configs ?? {});
+    if (!other) return ok(connection);
+    const refused = switchRefusal(provider, sfd?.configs ?? {}, other);
+    if (refused) return fail(refused);
+    // Its settings as they are, secrets masked so IS keeps them, with only `requires` changed.
+    const configuration = { ...sfd?.configs, ...provider.requires };
+    const submitted = await submitSession(provider, sid, sfd, configuration, {
+      folderId: connection.folderId,
+      name: connection.name,
+      existing: true,
+    });
+    return submitted.ok ? ok(connection) : submitted;
   };
 
   const listModels: ByoModelDialogApi['listModels'] = async (providerId, connection) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     const { result: r } = await whileNewConnectionInvisible(connection.id, () =>
       call('POST', buildGatewayUrl(ctx, 'api/byom/available-models'), {
         body: {
@@ -951,24 +1132,31 @@ export function createCommunityByoApi(
     );
     if (!r.ok) return fail(failure(r, `Could not list your ${provider.name} models`));
     const ids = [...new Set(Array.isArray(r.data) ? (r.data as string[]) : [])];
-    const rows: ByoProviderModel[] = ids.map((id) => {
-      const notChat = NOT_CHAT.find(([re]) => re.test(id));
-      return notChat
-        ? { id, short: notChat[1], reason: `${notChat[1]}: not a chat model.` }
-        : { id };
-    });
-    const newestFirst = (a: ByoProviderModel, b: ByoProviderModel) =>
-      b.id.localeCompare(a.id, undefined, { numeric: true });
-    return ok({
-      compatible: rows.filter((m) => !m.reason).sort(newestFirst),
-      incompatible: rows.filter((m) => m.reason).sort(newestFirst),
-    });
+    // The gateway returns ids only, so no model is marked unusable: Test and add checks it.
+    const rows: ByoProviderModel[] = ids
+      .map((id) => ({ id }))
+      .sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true }));
+    return ok({ compatible: rows, incompatible: [] });
   };
 
   /**
    * Writes the edited model's new entry into its saved configuration.
    * Returns the folder the configuration is saved in.
    */
+  /** Saved, with other models, in a folder the dialog does not offer, such as a personal workspace. */
+  const stuckOutsideOfferedFolders = (configuration: ProductLlmConfiguration) =>
+    offeredFolderIds !== null &&
+    configuration.llmConfigurations.length > 1 &&
+    Boolean(configuration.folderId) &&
+    !offeredFolderIds.has(String(configuration.folderId));
+
+  const savedElsewhere = (name: string): ByoFailure => ({
+    title: `${name} cannot be edited here`,
+    message:
+      'It is saved with other models in a folder AI Trust Layer does not offer, such as a personal workspace. Edit it in AI Trust Layer.',
+    final: true,
+  });
+
   async function updateConfiguration(
     editing: ByoModelToEdit,
     entry: LlmConfigurationEntry,
@@ -999,6 +1187,7 @@ export function createCommunityByoApi(
       other === edited ? updated : other
     );
 
+    if (stuckOutsideOfferedFolders(configuration)) return fail(savedElsewhere(editing.name));
     // The configuration moves to the connection's folder only when this is its one model.
     const onlyModel = configuration.llmConfigurations.length === 1;
     const savedFolderId = onlyModel ? folderId : configuration.folderId;
@@ -1017,7 +1206,7 @@ export function createCommunityByoApi(
     editing,
   }) => {
     const provider = byId(providerId);
-    if (!provider) return fail({ title: `Unknown provider ${providerId}` });
+    if (!provider) return fail({ title: `Unknown provider ${providerId}`, final: true });
     if (!ctx.organizationId || !ctx.tenantId) {
       return fail({ title: 'The picker needs organizationId and tenantId to add a model.' });
     }
@@ -1124,6 +1313,8 @@ export function createCommunityByoApi(
     loadConnectionValues,
     connect,
     listModels,
+    checkConnection,
+    applyConnectionChange,
     apiTypes,
     testAndSave,
   };

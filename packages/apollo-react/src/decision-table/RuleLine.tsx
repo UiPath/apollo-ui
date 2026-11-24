@@ -3,7 +3,7 @@ import type React from 'react';
 import { LineText, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { type RemovedLine, removedLineKey } from './decisionTextDiff';
-import { RemoveConditionButton, type RemoveConditionButtonProps } from './RemoveConditionButton';
+import { type RemoveConditionButtonProps, RemoveConditionButtons } from './RemoveConditionButton';
 import { ADDED_LINE_CLASS, LINE_CLASS, REMOVED_LINE_CLASS } from './sentenceStyles';
 
 export interface RuleLineProps
@@ -27,7 +27,7 @@ export interface RuleLineProps
   className?: string;
 }
 
-/** A card's heading or lead: its text, the cells a diff changed that it does not word, the clear or remove action of each outcome or condition it words, then its glyph. */
+/** A card's heading or lead: its text, the cells a diff changed that it does not word, the remove action of each condition it words, then its glyph. */
 export const RuleLine: React.FC<RuleLineProps> = ({
   title,
   badge,
@@ -49,9 +49,7 @@ export const RuleLine: React.FC<RuleLineProps> = ({
         <LineText {...lineProps} parts={line.parts} />
       </span>
     ))}
-    {removals.map((condition) => (
-      <RemoveConditionButton key={condition.columnId} {...condition} />
-    ))}
+    <RemoveConditionButtons removals={removals} />
     {badge && <MarkBadge {...badge} />}
   </div>
 );

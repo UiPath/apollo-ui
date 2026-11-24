@@ -252,9 +252,8 @@ function valueAsText(node: JsonTreeNode): string {
   return JSON.stringify(node.value, null, 2);
 }
 
-const DefaultRowWrapper: JsonTreeRowWrapper = ({ className, style, onClick, children }) => (
-  // biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: A mouse shortcut for the row's chevron button, which keyboard users reach directly.
-  <div className={className} style={style} onClick={onClick}>
+const DefaultRowWrapper: JsonTreeRowWrapper = ({ className, style, children }) => (
+  <div className={className} style={style}>
     {children}
   </div>
 );

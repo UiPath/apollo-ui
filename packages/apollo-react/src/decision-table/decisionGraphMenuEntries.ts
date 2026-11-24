@@ -1,3 +1,5 @@
+import { Trash2 } from 'lucide-react';
+import { createElement } from 'react';
 import type {
   DecisionGraphAction,
   DecisionGraphActionKind,
@@ -46,7 +48,6 @@ export interface DecisionGraphMenuHandlers<Refusal, Logic> {
   startRename: () => void;
   confirmDelete: () => void;
   chooseLinks: (kind: DecisionGraphLinkKind) => void;
-  writeNote: () => void;
   changeLogic: Extract<DecisionGraphAction<Refusal, Logic>, { kind: 'changeLogic' }> | undefined;
 }
 
@@ -74,6 +75,29 @@ const MOVE_SHORTCUTS = {
 export const RENAME_KEY = 'F2';
 
 export const DELETE_KEY = 'Delete';
+
+/** A decision's Rename entry, which opens its name field. */
+export const renameEntryOf = (
+  labels: Pick<DecisionGraphActionLabels, 'rename'>,
+  startRename: () => void
+): GridMenuEntry => ({
+  label: labels.rename,
+  shortcut: RENAME_KEY,
+  focusesOwnSurface: true,
+  onClick: startRename,
+});
+
+/** A decision's Delete entry, which asks first. */
+export const deleteEntryOf = (
+  labels: Pick<DecisionGraphActionLabels, 'deleteDecision'>,
+  confirmDelete: () => void
+): GridMenuEntry => ({
+  label: labels.deleteDecision,
+  icon: createElement(Trash2, { 'aria-hidden': true }),
+  shortcut: DELETE_KEY,
+  destructive: true,
+  onClick: confirmDelete,
+});
 
 /** A node's moves in menu order, each null where it cannot go. */
 export const movesOf = (node: DecisionGraphNode, position: DecisionGraphPosition) => ({
@@ -111,7 +135,15 @@ const moveEntriesOf = <Refusal, Logic>(
       ? [entry(labels.moveUnder(previous.label), moves.under, MOVE_SHORTCUTS.under)]
       : []),
     ...(nested && position.kind === 'under'
-      ? [entry(labels.moveOutOf(position.parent.label), moves.out, MOVE_SHORTCUTS.out)]
+      ? [
+          entry(
+            position.parentPosition.kind === 'top'
+              ? labels.makeTopLevel
+              : labels.moveOutOf(position.parent.label),
+            moves.out,
+            MOVE_SHORTCUTS.out
+          ),
+        ]
       : []),
   ];
 };
@@ -165,7 +197,6 @@ const addEntriesOf = <Refusal, Logic>(
 
 const CARD_KINDS: readonly DecisionGraphActionKind[] = [
   'rename',
-  'addNote',
   'add',
   'chooseInputs',
   'chooseUsers',
@@ -212,7 +243,7 @@ export const hasReferenceEntries = <Refusal, Logic>(
   offersStopUsing(actions, position) ||
   canMove(actions, node, position, false);
 
-/** A decision card's menu: open, rename, note and logic; then add; then links; then moves; then delete. */
+/** A decision card's menu: open, rename and logic; then add and inputs; then moves and users; then delete. */
 export const decisionEntriesOf = <Refusal, Logic>(
   actions: readonly DecisionGraphAction<Refusal, Logic>[],
   labels: DecisionGraphActionLabels,
@@ -226,17 +257,7 @@ export const decisionEntriesOf = <Refusal, Logic>(
   return joined([
     [
       ...(handlers.open ? [{ label: labels.openDecision, onClick: handlers.open }] : []),
-      ...(has('rename')
-        ? [
-            {
-              label: labels.rename,
-              shortcut: RENAME_KEY,
-              focusesOwnSurface: true,
-              onClick: handlers.startRename,
-            },
-          ]
-        : []),
-      ...(has('addNote') ? [{ label: labels.addNote, onClick: handlers.writeNote }] : []),
+      ...(has('rename') ? [renameEntryOf(labels, handlers.startRename)] : []),
       ...(changeLogic
         ? changeLogic.logicOptions(decisionId).map((option) => ({
             label: labels.changeLogicTo(option.label),
@@ -248,27 +269,30 @@ export const decisionEntriesOf = <Refusal, Logic>(
           }))
         : []),
     ],
-    addEntriesOf(actions, labels, node, position, handlers),
     [
+      ...addEntriesOf(actions, labels, node, position, handlers),
       ...(has('chooseInputs')
-        ? [{ label: labels.chooseInputs, onClick: () => handlers.chooseLinks('chooseInputs') }]
+        ? [
+            {
+              label: labels.chooseInputs,
+              onClick: () => handlers.chooseLinks('chooseInputs'),
+            },
+          ]
         : []),
+    ],
+    [
+      ...moveEntriesOf(actions, labels, node, position, handlers, true),
       ...(has('chooseUsers')
-        ? [{ label: labels.chooseUsers, onClick: () => handlers.chooseLinks('chooseUsers') }]
+        ? [
+            {
+              label: labels.usedByMenu,
+              onClick: () => handlers.chooseLinks('chooseUsers'),
+            },
+          ]
         : []),
       ...stopUsingEntriesOf(actions, labels, node, position, handlers),
     ],
-    moveEntriesOf(actions, labels, node, position, handlers, true),
-    has('delete')
-      ? [
-          {
-            label: labels.delete,
-            shortcut: DELETE_KEY,
-            destructive: true,
-            onClick: handlers.confirmDelete,
-          },
-        ]
-      : [],
+    has('delete') ? [deleteEntryOf(labels, handlers.confirmDelete)] : [],
   ]);
 };
 

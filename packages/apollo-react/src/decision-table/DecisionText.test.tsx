@@ -39,6 +39,7 @@ import {
   type FixtureOffer,
   type FixtureOperator,
   type FixturePick,
+  type FixtureRefusal,
   type FixtureType,
   GRID_SENTENCE_COLUMNS,
   GRID_SENTENCE_POLICY,
@@ -65,7 +66,7 @@ import {
 } from './__fixtures__/textMode';
 import type { ColumnEdit, ColumnFieldData } from './ColumnPopover';
 import type { ColumnTypeOption } from './columnTypes';
-import { EMPTY_VALUE_DASH, FALLBACK_ROW_VIEWPORT_PX } from './constants';
+import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { DecisionText } from './DecisionText';
 import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
@@ -112,6 +113,7 @@ type ViewProps = Partial<FlatTextProps>;
 
 const view = (props: ViewProps = {}) => (
   <DecisionText
+    name="Discount"
     {...textPropsOf({
       rules: MULTI_SENTENCE_RULES,
       ...MULTI_SENTENCE_COLUMNS,
@@ -126,7 +128,7 @@ const renderView = (props: ViewProps = {}) => render(view(props));
 
 const card = (rowId: string) => screen.getByTestId(`nl-row-${rowId}`);
 const ruleLine = (rowId: string, index: 0 | 1) =>
-  card(rowId).querySelector('[data-sentence]')?.children[index];
+  card(rowId).querySelector('[data-sentence]')?.firstElementChild?.children[index];
 const mountedRows = () => [...document.querySelectorAll<HTMLElement>('li[data-row-id]')];
 const rowMarks = (rows: Record<string, RowMark>): TableMarks => ({
   rows: new Map(Object.entries(rows)),
@@ -350,17 +352,22 @@ const editWith = (overrides: Partial<FixtureEdit> = {}): FixtureEdit => ({
 
 describe('DecisionText', () => {
   describe('layout', () => {
+    it('shows the decision name before the hit policy on the header line', () => {
+      renderView();
+      const toggle = screen.getByTestId('nl-toggle');
+      expect(screen.getByTestId('nl-name')).toHaveTextContent('Discount');
+      expect(toggle).toContainElement(screen.getByTestId('nl-name'));
+      expect(screen.getByTestId('nl-header').firstElementChild).toBe(toggle);
+    });
+
     it('shows the header label and hint, then each band caption followed by its column names', () => {
       renderView();
       expect(screen.getByTestId('nl-header')).toHaveTextContent(
-        'CollectReturns the matches as a list.'
+        'DiscountCCollectReturns the matches as a list.'
       );
       const bands = screen.getByTestId('nl-bands');
       expect([...bands.querySelectorAll('[data-band-id]')].map((band) => band.textContent)).toEqual(
-        [
-          'InputsCredit ScoreDebt RatioCountryStart DateChannel',
-          'OutputsDecisionCredit LimitReason',
-        ]
+        ['InputsCredit ScoreDebt RatioCountry+2 more', 'OutputsDecisionCredit LimitReason']
       );
     });
 
@@ -446,9 +453,228 @@ describe('DecisionText', () => {
       );
     });
 
-    it('shows an empty value as the grid shows an empty cell', () => {
+    it("opens a named rule's card with its name as a bold title, and a blank name with none", () => {
+      const names = ['Terminal: confirmed sanctions match', '  ', ''];
+      renderView({
+        rules: MULTI_SENTENCE_RULES.map((rule, index) => ({ ...rule, name: names[index] })),
+      });
+      const title = card('m1').querySelector('[data-rule-title]');
+      expect(title).toHaveTextContent('Terminal: confirmed sanctions match');
+      expect(title).toHaveClass('font-semibold');
+      const surface = card('m1').firstElementChild;
+      expect([...(surface?.children ?? [])].find((child) => child.tagName !== 'SPAN')).toBe(title);
+      expect(card('m1')).toHaveAccessibleName(
+        expect.stringMatching(/^Terminal: confirmed sanctions match Decision is "approve"/)
+      );
+      expect(card('m2')).toHaveAccessibleName(expect.stringMatching(/^Decision is /));
+      expect(card('m2').querySelector('[data-rule-title]')).toBeNull();
+      expect(card('m3').querySelector('[data-rule-title]')).toBeNull();
+      expect(card('m4').querySelector('[data-rule-title]')).toBeNull();
+    });
+
+    it('shows an empty output as a value to set', () => {
       renderView();
-      expect(valueChip('m2', 'reason')).toHaveTextContent(EMPTY_VALUE_DASH);
+      expect(valueChip('m2', 'reason')).toHaveTextContent('Set a value');
+      expect(valueChip('m2', 'reason')).toHaveClass('border-dashed');
+    });
+
+    it('reads a catch-all with the lead the host sends', () => {
+      renderView({ hitPolicy: { kind: 'policy', policy: 'first' } });
+      expect(card('m5')).toHaveTextContent('in every case');
+      expect(card('m5')).not.toHaveTextContent('Otherwise');
+    });
+
+    it('fills the policy chip at rest, and rings a selected rule with its outline alone', () => {
+      renderView({ onSelect: vi.fn(), edit: editWith(), selected: { kind: 'rule', rowId: 'm2' } });
+      expect(screen.getByTestId('nl-policy')).toHaveClass('bg-background-hover');
+      const surface = card('m2').querySelector('[data-row-selected="true"]') ?? card('m2');
+      expect(surface.className).toContain('data-[row-selected=true]:outline-2');
+      expect(surface.className).not.toContain('ring-2');
+    });
+
+    const wordNote = (refusal: FixtureRefusal) =>
+      refusal.reason === 'note' ? refusal.text : 'Not a value';
+
+    const renderNamed = (onRenameDecision = vi.fn(), onDeleteDecision = vi.fn()) => {
+      const props = textPropsOf({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        ariaLabel: 'Rules',
+        dataTestId: 'nl',
+        edit: editWith(),
+      });
+      if (props.mode.kind !== 'edit') throw new Error('expected edit mode');
+      render(
+        <DecisionText
+          name="Discount"
+          {...props}
+          mode={{
+            ...props.mode,
+            decisionActions: { onRenameDecision, onDeleteDecision, wordRefusal: wordNote },
+          }}
+        />
+      );
+      return { onRenameDecision, onDeleteDecision };
+    };
+
+    it('renames the decision from its header menu or F2, back on the toggle after Enter, and not on Escape', async () => {
+      const { onRenameDecision } = renderNamed();
+      const user = userEvent.setup();
+      await user.click(screen.getByRole('button', { name: 'Discount actions' }));
+      await user.click(await screen.findByRole('menuitem', { name: /Rename/ }));
+      const field = await screen.findByRole('textbox', { name: 'Name of Discount' });
+      await user.clear(field);
+      await user.type(field, 'Loan{Enter}');
+      expect(onRenameDecision.mock.calls).toEqual([['Loan']]);
+      expect(document.activeElement).toBe(screen.getByTestId('nl-toggle'));
+      await user.keyboard('{F2}');
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('textbox', { name: 'Name of Discount' })).toBeNull();
+      expect(onRenameDecision).toHaveBeenCalledTimes(1);
+      expect(document.activeElement).toBe(screen.getByTestId('nl-toggle'));
+    });
+
+    it('drops an open rename field or delete dialog when the host withdraws its action, and does not reopen it', async () => {
+      const props = textPropsOf({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        ariaLabel: 'Rules',
+        dataTestId: 'nl',
+        edit: editWith(),
+      });
+      if (props.mode.kind !== 'edit') throw new Error('expected edit mode');
+      const offered = {
+        ...props.mode,
+        decisionActions: {
+          onRenameDecision: vi.fn(),
+          onDeleteDecision: vi.fn(),
+          wordRefusal: wordNote,
+        },
+      };
+      const { rerender } = render(<DecisionText name="Discount" {...props} mode={offered} />);
+      const user = userEvent.setup();
+      act(() => screen.getByTestId('nl-toggle').focus());
+      await user.keyboard('{F2}');
+      expect(screen.getByRole('textbox', { name: 'Name of Discount' })).toBeInTheDocument();
+      rerender(<DecisionText name="Discount" {...props} mode={{ kind: 'read', selected: null }} />);
+      rerender(<DecisionText name="Discount" {...props} mode={offered} />);
+      expect(screen.queryByRole('textbox', { name: 'Name of Discount' })).toBeNull();
+      act(() => screen.getByTestId('nl-toggle').focus());
+      await user.keyboard('{Delete}');
+      expect(await screen.findByTestId('nl-delete-dialog')).toBeInTheDocument();
+      rerender(
+        <DecisionText
+          name="Discount"
+          {...props}
+          mode={{
+            ...offered,
+            decisionActions: { onRenameDecision: vi.fn(), wordRefusal: wordNote },
+          }}
+        />
+      );
+      rerender(<DecisionText name="Discount" {...props} mode={offered} />);
+      expect(screen.queryByTestId('nl-delete-dialog')).toBeNull();
+    });
+
+    it('keeps the rename field open with the host refusal on Enter, and shows a delete refusal in its dialog', async () => {
+      const { onRenameDecision, onDeleteDecision } = renderNamed(
+        vi.fn(() => ({ reason: 'note' as const, text: 'Name taken' })),
+        vi.fn(() => ({ reason: 'note' as const, text: 'In use' }))
+      );
+      const user = userEvent.setup();
+      act(() => screen.getByTestId('nl-toggle').focus());
+      await user.keyboard('{F2}');
+      const field = screen.getByRole('textbox', { name: 'Name of Discount' });
+      await user.clear(field);
+      await user.type(field, 'Risk{Enter}');
+      expect(onRenameDecision.mock.calls).toEqual([['Risk']]);
+      expect(screen.getByRole('textbox', { name: 'Name of Discount' })).toHaveValue('Risk');
+      expect(screen.getByText('Name taken')).toBeInTheDocument();
+      await user.keyboard('{Escape}');
+      await user.keyboard('{Delete}');
+      await user.click(await screen.findByTestId('nl-delete-dialog-confirm'));
+      expect(onDeleteDecision).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('nl-delete-dialog')).toHaveTextContent('In use');
+    });
+
+    it('announces a rename the host refuses when focus leaves the field', async () => {
+      renderNamed(vi.fn(() => ({ reason: 'note' as const, text: 'Name taken' })));
+      const user = userEvent.setup();
+      act(() => screen.getByTestId('nl-toggle').focus());
+      await user.keyboard('{F2}');
+      const field = screen.getByRole('textbox', { name: 'Name of Discount' });
+      await user.clear(field);
+      await user.type(field, 'Risk');
+      act(() => field.blur());
+      expect(screen.queryByRole('textbox', { name: 'Name of Discount' })).toBeNull();
+      expect(await screen.findByTestId('nl-live')).toHaveTextContent('Name taken');
+    });
+
+    it('deletes the decision from its header menu only once confirmed', async () => {
+      const { onDeleteDecision } = renderNamed();
+      const user = userEvent.setup();
+      await user.click(screen.getByRole('button', { name: 'Discount actions' }));
+      await user.click(await screen.findByRole('menuitem', { name: /Delete decision/ }));
+      await user.click(await screen.findByTestId('nl-delete-dialog-cancel'));
+      expect(onDeleteDecision).not.toHaveBeenCalled();
+      act(() => screen.getByTestId('nl-toggle').focus());
+      await user.keyboard('{Delete}');
+      expect(await screen.findByText('Delete Discount?')).toBeInTheDocument();
+      expect(screen.getByTestId('nl-delete-dialog')).not.toHaveTextContent(/No decision uses/i);
+      await user.click(screen.getByTestId('nl-delete-dialog-confirm'));
+      expect(onDeleteDecision).toHaveBeenCalledTimes(1);
+      expect(screen.queryByTestId('nl-delete-dialog')).toBeNull();
+    });
+
+    it('counts the rules in the header and adds columns from its menu while editing, with no menu when read-only', async () => {
+      const onAddColumn = vi.fn();
+      const props = textPropsOf({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        ariaLabel: 'Rules',
+        dataTestId: 'nl',
+        edit: editWith(),
+      });
+      if (props.mode.kind !== 'edit') throw new Error('expected edit mode');
+      const { rerender } = render(
+        <DecisionText name="Discount" {...props} mode={{ ...props.mode, onAddColumn }} />
+      );
+      expect(screen.getByTestId('nl-rule-count')).toHaveTextContent(
+        `${MULTI_SENTENCE_RULES.length} rules`
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Discount actions' }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Add input' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Discount actions' }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Add output' }));
+      expect(onAddColumn.mock.calls).toEqual([['input'], ['output']]);
+      rerender(<DecisionText name="Discount" {...props} mode={{ kind: 'read', selected: null }} />);
+      expect(screen.queryByTestId('nl-menu')).toBeNull();
+      expect(screen.getByTestId('nl-rule-count')).toBeInTheDocument();
+    });
+
+    it('offers Add input and Add output on a table with no columns while editing, and neither when read-only', async () => {
+      const onAddColumn = vi.fn();
+      const props = textPropsOf({
+        rules: [],
+        inputs: [],
+        outputs: [],
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        ariaLabel: 'Rules',
+        dataTestId: 'nl',
+        edit: editWith(),
+      });
+      if (props.mode.kind !== 'edit') throw new Error('expected edit mode');
+      const { rerender } = render(
+        <DecisionText name="Discount" {...props} mode={{ ...props.mode, onAddColumn }} />
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Add input' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Add output' }));
+      expect(onAddColumn.mock.calls).toEqual([['input'], ['output']]);
+      rerender(<DecisionText name="Discount" {...props} mode={{ kind: 'read', selected: null }} />);
+      expect(screen.queryByRole('button', { name: /^Add (input|output)$/ })).toBeNull();
     });
 
     it('renders its children inside the scroll container', () => {
@@ -528,7 +754,7 @@ describe('DecisionText', () => {
         hiddenStopLabels: count('li[data-row-id] [hidden]'),
         painted: count('[data-selected]') > 0,
       }).toEqual({
-        buttons: 0,
+        buttons: 1,
         valuesWithTabindex: 0,
         valuesWithLabel: 0,
         rulesWithTabindex: 0,
@@ -1542,29 +1768,22 @@ describe('DecisionText', () => {
       expect(screen.getByTestId('nl-column')).toHaveClass('mx-auto', 'w-full', 'max-w-3xl');
       expect(screen.getByTestId('nl-header').parentElement).toBe(screen.getByTestId('nl-column'));
     });
-
-    it('keeps 50 band columns on one list, named once by its caption', () => {
-      renderView({ ...manyColumns(50) });
-      const inputs = screen.getByRole('list', { name: 'Inputs' });
-      expect(within(inputs).getAllByRole('listitem')).toHaveLength(50);
-      expect(inputs.previousElementSibling).toHaveAttribute('aria-hidden', 'true');
-    });
   });
 
   describe('band lists', () => {
-    it('underlines every input and output name with a wave, and values only while editable', () => {
+    it('underlines every input and output name with a wave, and values while editable or on a warning', () => {
       const waved = (kind: string) =>
         [...document.querySelectorAll(`[data-kind="${kind}"]`)].map(
           (token) =>
             token.classList.contains('decoration-wavy') ||
-            token.classList.contains('group-data-[editable=true]/row:decoration-wavy')
+            token.classList.contains('data-[tone=warning]:decoration-wavy')
         );
       const { unmount } = renderView({ selected: null, onSelect: vi.fn(), edit: editWith() });
       expect(waved('input').length).toBeGreaterThan(0);
       expect(waved('input').every(Boolean)).toBe(true);
       const conditionValues = [
         ...document.querySelectorAll(
-          'li [data-kind="value"]:not([class*="sentence-output-hue"]):not(.italic)'
+          'li [data-kind="value"]:not([class*="sentence-output-hue"]):not(.border-dashed)'
         ),
       ];
       const perCell = new Map<string, number>();
@@ -1574,8 +1793,11 @@ describe('DecisionText', () => {
       }
       expect(Math.max(...perCell.values())).toBeGreaterThan(1);
       expect(
-        conditionValues.every((value) =>
-          value.classList.contains('group-data-[editable=true]/row:decoration-wavy')
+        conditionValues.every(
+          (value) =>
+            value.classList.contains('data-[tone=warning]:decoration-wavy') &&
+            value.classList.contains('group-data-[editable=true]/row:decoration-wavy') &&
+            value.closest('[data-editable="true"]') !== null
         )
       ).toBe(true);
       expect(document.querySelectorAll('[data-editable="true"]').length).toBeGreaterThan(0);
@@ -1586,11 +1808,40 @@ describe('DecisionText', () => {
       expect(document.querySelectorAll('[data-editable]')).toHaveLength(0);
     });
 
-    it('keeps the start gutter at its minimum outside a diff, with no rule numbers to fit', () => {
-      renderView({ rules: manySentenceRules(300) });
-      expect(
-        screen.getByTestId('nl-bands').style.getPropertyValue('--sentence-number-digits')
-      ).toBe('');
+    it("shows a rule's number beside its card only while the card is hovered or focused, with no grip", () => {
+      renderView({ numbered: true, edit: editWith(), selected: null, onSelect: vi.fn() });
+      const number = card('m3').firstElementChild?.firstElementChild;
+      expect(number).toHaveTextContent(/^3$/);
+      expect(number).toHaveClass(
+        'opacity-0',
+        'group-hover/row:opacity-100',
+        'group-focus-within/row:opacity-100'
+      );
+      expect(document.querySelector('.lucide-grip-vertical, [data-grip]')).toBeNull();
+    });
+
+    it('pads its scroll frame by the widest rule number, so every number beside a card stays inside it', () => {
+      renderView({ rules: manySentenceRules(300), numbered: true });
+      const frame = screen.getByTestId('nl');
+      expect(frame.style.getPropertyValue('--sentence-number-digits')).toBe('3');
+      expect(frame).toHaveClass('px-[calc(var(--sentence-number-digits,1)*1ch+1.75rem)]');
+    });
+
+    it('keeps that margin when an ancestor scrolls it', () => {
+      renderView({
+        rules: manySentenceRules(300),
+        numbered: true,
+        scroll: { container: document.createElement('div') },
+      });
+      const frame = screen.getByTestId('nl');
+      expect(frame.style.getPropertyValue('--sentence-number-digits')).toBe('3');
+      expect(frame).toHaveClass('px-[calc(var(--sentence-number-digits,1)*1ch+1.75rem)]');
+    });
+
+    it('lines the rule cards up with the band captions, the graph card owning the side margin', () => {
+      renderView({ numbered: true });
+      expect(screen.getByTestId('nl-bands')).toHaveClass('px-[var(--sentence-gutter,0.875rem)]');
+      expect(card('m3').parentElement).toHaveClass('px-[var(--sentence-gutter,0.875rem)]');
     });
 
     it('draws band column chips 24px tall in extra-small text', () => {
@@ -1619,7 +1870,7 @@ describe('DecisionText', () => {
       expect(within(pill).getByTitle(name)).toHaveClass('min-w-0', 'truncate');
     });
 
-    it('wraps 50 band columns onto as many lines as they need, with no scroll or tab stop of their own', async () => {
+    it('wraps 50 band columns with no scroll of their own, each band\'s "+N more" its only tab stop', async () => {
       renderView({ ...manyColumns(50) });
       const inputs = screen.getByRole('list', { name: 'Inputs' });
       expect(inputs).toHaveClass('flex-wrap');
@@ -1629,7 +1880,9 @@ describe('DecisionText', () => {
       await user.tab();
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
       await user.tab();
-      expect(document.activeElement).toBe(document.body);
+      expect(document.activeElement).toBe(screen.getByTestId('nl-toggle'));
+      await user.tab();
+      expect(document.activeElement).toBe(within(inputs).getByRole('button', { name: '+47 more' }));
     });
   });
 
@@ -1731,7 +1984,7 @@ describe('DecisionText', () => {
       });
       expect(valueChip('r2', 'age')).toHaveAttribute('role', 'group');
       expect(valueChip('r2', 'age')).toHaveAccessibleName('age 25 and 60, rule 2');
-      expect(screen.queryAllByRole('button')).toEqual([]);
+      expect(screen.queryAllByRole('button')).toEqual([screen.getByTestId('nl-toggle')]);
       act(() => valueChip('r2', 'age').focus());
       expect([press('Enter'), press(' ')]).toEqual([true, true]);
       expect(onKeyDown.mock.calls.map(([event]) => event.key)).toEqual(['Enter', ' ']);
@@ -1765,8 +2018,8 @@ describe('DecisionText', () => {
           edit,
         })
       );
-      expect(valueChip('m2', 'reason')).toHaveTextContent(EMPTY_VALUE_DASH);
-      expect(valueChip('m2', 'reason')).toHaveAccessibleName('Reason empty, rule 2');
+      expect(valueChip('m2', 'reason')).toHaveTextContent('Set a value');
+      expect(valueChip('m2', 'reason')).toHaveAccessibleName('Reason Set a value, rule 2');
       expect(editor()).toHaveAccessibleName('Reason empty, rule 2');
     });
 
@@ -2042,14 +2295,26 @@ describe('DecisionText', () => {
     ])('lands Tab into the view on the selected stop with %s selected, and Tab or Shift+Tab from it leaves the view', async (_, initial, stop) => {
       const { onSelect } = renderSelectable({ initial, ...NO_COLUMNS });
       const { before, after } = aroundView();
+      const toggle = screen.getByTestId('nl-toggle');
       act(() => before.focus());
+      expect(await tabs(1)).toEqual([toggle]);
       await tabs(1);
       expect(focusedStop()).toBe(stop);
       expect(await tabs(1)).toEqual([after]);
       await tabs(1, true);
       expect(focusedStop()).toBe(stop);
-      expect(await tabs(1, true)).toEqual([before]);
+      expect(await tabs(2, true)).toEqual([toggle, before]);
       expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('reaches the toggle and leaves by Tab and Shift+Tab with the rules collapsed under a selection', async () => {
+      renderSelectable({ initial: { kind: 'rule', rowId: 'r2' }, ...NO_COLUMNS });
+      const { before, after } = aroundView();
+      const toggle = screen.getByTestId('nl-toggle');
+      fireEvent.click(toggle);
+      act(() => before.focus());
+      expect(await tabs(2)).toEqual([toggle, after]);
+      expect(await tabs(2, true)).toEqual([toggle, before]);
     });
 
     it('leaves focus on the view a pointer gives it with a stop selected', () => {
@@ -2128,6 +2393,7 @@ describe('DecisionText', () => {
       const { before } = aroundView();
       gesture(screen.getByTestId('nl'), screen.getByTestId('nl-header'));
       act(() => before.focus());
+      expect(await tabs(1)).toEqual([screen.getByTestId('nl-toggle')]);
       await tabs(1);
       expect(focusedStop()).toBe('r2:age');
       expect(onSelect).not.toHaveBeenCalled();
@@ -2202,8 +2468,9 @@ describe('DecisionText', () => {
       const { onSelect } = renderSelectable({ ...NO_COLUMNS });
       const { before, after } = aroundView();
       act(() => before.focus());
-      expect(await tabs(2)).toEqual([screen.getByTestId('nl'), after]);
-      expect(await tabs(2, true)).toEqual([screen.getByTestId('nl'), before]);
+      const toggle = screen.getByTestId('nl-toggle');
+      expect(await tabs(3)).toEqual([screen.getByTestId('nl'), toggle, after]);
+      expect(await tabs(3, true)).toEqual([toggle, screen.getByTestId('nl'), before]);
       expect(onSelect).not.toHaveBeenCalled();
     });
 
@@ -2721,6 +2988,7 @@ describe('DecisionText', () => {
     it('takes edit only with a controlled selection, without which no card control is tabbable', () => {
       render(
         <DecisionText
+          name="Discount"
           table={{
             rules: GRID_SENTENCE_RULES,
             ...GRID_SENTENCE_COLUMNS,
@@ -4504,6 +4772,36 @@ describe('DecisionText', () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
+    it('opens the popover of a column picked from the +N more list, its pill shown in the band while it is open', async () => {
+      const inputs = ['a', 'b', 'c', 'd', 'e'].map((id) => ({
+        id,
+        name: id,
+        type: 'text' as const,
+      }));
+      renderEditing({ column: columnEdit(), inputs });
+      await userEvent.click(
+        within(screen.getByTestId('nl-bands')).getByRole('button', { name: '+2 more' })
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'e' }));
+      expect(pill('e')).toHaveAttribute('aria-expanded', 'true');
+      expect(field('Label')).toHaveValue('age');
+      expect(document.activeElement).toBe(field('Label'));
+    });
+
+    it('returns focus to +1 more when the popover of a fourth column picked from it closes', async () => {
+      const inputs = ['a', 'b', 'c', 'd'].map((id) => ({ id, name: id, type: 'text' as const }));
+      renderEditing({ column: columnEdit(), inputs });
+      await userEvent.click(
+        within(screen.getByTestId('nl-bands')).getByRole('button', { name: '+1 more' })
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'd' }));
+      expect(pill('d')).toHaveAttribute('aria-expanded', 'true');
+      await userEvent.keyboard('{Escape}');
+      expect(document.activeElement).toBe(
+        within(screen.getByTestId('nl-bands')).getByRole('button', { name: '+1 more' })
+      );
+    });
+
     it("titles a column's popover with its type's glyph, and offers each of the host's types with its own", () => {
       renderEditing({
         column: columnEdit({ field: () => ({ ...AGE_FIELD, type: 'number' }) }),
@@ -4814,25 +5112,28 @@ describe('DecisionText', () => {
       ).toEqual(['Remove Credit Score from rule 3', 'Remove Channel from rule 3']);
     });
 
-    it('clears each outcome with a value from the end of its sentence, and offers no card action without edit', () => {
-      const { onClearCell, unmount } = renderConditions();
-      expect(ruleLine('m1', 0)?.querySelectorAll('[data-rule-action]')).toHaveLength(0);
-      const clears = (rowId: string) =>
-        [...(ruleLine(rowId, 1)?.querySelectorAll('[data-rule-action]') ?? [])].map((action) =>
-          action.getAttribute('aria-label')
-        );
-      expect(clears('m1')).toEqual([
-        'Clear Decision in rule 1',
-        'Clear Credit Limit in rule 1',
-        'Clear Reason in rule 1',
-      ]);
-      expect(clears('m2')).toEqual(['Clear Decision in rule 2', 'Clear Credit Limit in rule 2']);
-      fireEvent.click(button('m2', 'Clear Credit Limit in rule 2'));
-      expect(onClearCell.mock.calls).toEqual([[{ rowId: 'm2', columnId: 'limit' }]]);
-      expect(within(card('m5')).queryAllByRole('button', { name: /^Remove / })).toEqual([]);
-      unmount();
-      renderView({ selected: null, onSelect: vi.fn() });
-      expect(document.querySelectorAll('[data-rule-action]')).toHaveLength(0);
+    it('reserves room for both remove actions on a lead with two conditions', () => {
+      renderConditions();
+      const lead = [...document.querySelectorAll<HTMLElement>('.group\\/clause')].find(
+        (clause) => clause.querySelectorAll('[data-rule-action="clear"]').length === 2
+      );
+      expect(lead?.style.paddingInlineEnd).toBe('calc(2 * 1.25rem + 0.5rem)');
+    });
+
+    it('puts one remove action on each condition line, revealed by that clause alone', () => {
+      renderConditions();
+      const lines = [...card('m1').querySelectorAll<HTMLElement>('li[data-column-id]')];
+      expect(lines.length).toBeGreaterThan(1);
+      for (const line of lines) {
+        const removes = line.querySelectorAll<HTMLElement>('[data-rule-action="clear"]');
+        expect(removes).toHaveLength(1);
+        const reveal = removes[0]?.parentElement;
+        expect(reveal?.className).toContain('group-hover/clause:opacity-100');
+        expect(reveal?.className).toContain('group-has-[[data-selected]]/row:opacity-100');
+        expect(reveal?.className).not.toContain('group-hover/row');
+        expect(removes[0]).toHaveClass('text-foreground-de-emp');
+        expect(reveal?.closest('.group\\/clause')).toBe(line);
+      }
     });
 
     it('clears a selected cell on Delete or Backspace, an input or an output alike', () => {
@@ -5338,6 +5639,7 @@ describe('DecisionText', () => {
       const expanded = () =>
         screen
           .getAllByRole('button', { expanded: true })
+          .filter((button) => button !== screen.getByTestId('nl-toggle'))
           .map((button) => button.getAttribute('aria-label'));
       fireEvent.click(add('r2'));
       expect(expanded()).toEqual(['Add condition to rule 2']);
@@ -5348,7 +5650,7 @@ describe('DecisionText', () => {
       fireEvent.click(actions('r2'));
       expect(expanded()).toEqual(['Rule 2 actions']);
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
-      expect(screen.queryAllByRole('button', { expanded: true })).toEqual([]);
+      expect(expanded()).toEqual([]);
     });
 
     it.each<[string, string, RuleChange, string, string]>([
@@ -5700,7 +6002,12 @@ describe('DecisionText', () => {
 
   describe('policy', () => {
     const FIRST: FixturePick = { kind: 'policy', policy: 'first' };
-    const trigger = () => screen.getByRole('button', { name: /^Hit policy/ });
+    const trigger = () => screen.getByRole('button', { name: /Hit policy/ });
+
+    it('names the trigger by the code it shows, then the policy', () => {
+      renderView({ hitPolicy: FIRST, onPolicyChange: vi.fn() });
+      expect(trigger()).toHaveAccessibleName(/^F, Hit policy: First/);
+    });
 
     it('offers no menu from a picker the host gives no hit policies', async () => {
       renderView({ hitPolicy: FIRST, hitPolicies: [], onPolicyChange: vi.fn() });
@@ -5712,12 +6019,12 @@ describe('DecisionText', () => {
     });
 
     it.each<[string, FixturePick, boolean, string, string]>([
-      ['the picked policy', FIRST, true, 'F·First', 'Stops at the first matching rule.'],
+      ['the picked policy', FIRST, true, 'F', 'Stops at the first matching rule.'],
       [
         'a picked total',
         { kind: 'total', policy: 'collect', total: 'min' },
         true,
-        'C<·Minimum',
+        'C<',
         'Returns the smallest match.',
       ],
       [
@@ -5728,16 +6035,18 @@ describe('DecisionText', () => {
         '',
       ],
       [
-        'the plain label outside editing',
+        'the code and label outside editing',
         GRID_SENTENCE_POLICY,
         false,
-        'Unique',
+        'UUnique',
         'Exactly one rule may match. Overlaps are errors.',
       ],
     ])('shows %s in place of the label, then its hint', (_, hitPolicy, editing, label, hint) => {
       renderView({ hitPolicy, ...(editing ? { onPolicyChange: vi.fn() } : {}) });
       expect(screen.queryByTestId('nl-policy')?.textContent).toBe(editing ? label : undefined);
-      expect(screen.getByTestId('nl-header').textContent).toBe(`${label}${hint}`);
+      expect(screen.getByTestId('nl-header').textContent).toBe(
+        `Discount${label}${hint}${MULTI_SENTENCE_RULES.length} rules`
+      );
     });
 
     it('reports the picked policy and focuses the trigger again', async () => {
@@ -5795,7 +6104,9 @@ describe('DecisionText', () => {
       const badge = screen.getByTestId('nl-header').querySelector('[data-glyph]')?.parentElement;
       expect(badge?.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'error');
       expect(badge).toHaveAttribute('data-mark-title', 'Priority needs ranked output values');
-      expect(trigger()).toHaveAccessibleDescription('Error: Priority needs ranked output values');
+      expect(trigger()).toHaveAccessibleDescription(
+        'Error: Priority needs ranked output values Returns the matches as a list.'
+      );
     });
 
     it('ends the plain label with the header mark when there is no picker', () => {
@@ -5805,7 +6116,9 @@ describe('DecisionText', () => {
       });
       const header = screen.getByTestId('nl-header');
       expect(header.querySelector('[data-glyph="warning"]')).not.toBeNull();
-      expect(screen.getByText('Unique')).toHaveAccessibleDescription('Warning: No rules');
+      expect(screen.getByTitle('Unique')).toHaveAccessibleDescription(
+        'Warning: No rules Exactly one rule may match. Overlaps are errors.'
+      );
     });
   });
 
@@ -5864,6 +6177,7 @@ describe('DecisionText', () => {
     it('takes onSelect only with selected, without which no stop or link is tabbable', () => {
       render(
         <DecisionText
+          name="Discount"
           table={{ rules: linkedRules, ...GRID_SENTENCE_COLUMNS, hitPolicy: GRID_SENTENCE_POLICY }}
           hitPolicies={HIT_POLICIES}
           columnTypes={COLUMN_TYPES}
@@ -5890,6 +6204,8 @@ describe('DecisionText', () => {
         initial: { kind: 'cell', rowId: 'r1', columnId: 'income' } satisfies SentenceSelection,
       });
       const user = userEvent.setup();
+      await user.tab();
+      expect(document.activeElement).toBe(screen.getByTestId('nl-toggle'));
       await user.tab();
       expect(document.activeElement).toBe(link('r1'));
       await user.keyboard('{Enter}');

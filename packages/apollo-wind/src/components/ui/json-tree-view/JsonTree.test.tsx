@@ -323,13 +323,16 @@ describe('JsonTreeView pathForCopy', () => {
     );
   });
 
-  it('shows chevrons as state, not controls, when the host fixes expansion', () => {
+  it('toggles from the chevron only when the host lets it', async () => {
     const nodes = buildJsonTree({ value: { config: { region: 'us-east' } } });
+    const onToggleCollapsed = vi.fn();
     const { rerender } = render(<JsonTreeView nodes={nodes} />);
-    expect(screen.getByRole('button', { name: 'Collapse config' })).toBeDisabled();
+    await userEvent.click(screen.getByTitle('Collapse config'));
+    expect(document.querySelector('[data-path="config"]')).toHaveAttribute('aria-expanded', 'true');
 
-    rerender(<JsonTreeView nodes={nodes} onToggleCollapsed={() => {}} />);
-    expect(screen.getByRole('button', { name: 'Collapse config' })).toBeEnabled();
+    rerender(<JsonTreeView nodes={nodes} onToggleCollapsed={onToggleCollapsed} />);
+    await userEvent.click(screen.getByTitle('Collapse config'));
+    expect(onToggleCollapsed).toHaveBeenCalledWith('config');
   });
 });
 
@@ -642,6 +645,43 @@ describe('JsonTreeView keyboard (treegrid)', () => {
     expect(row('config.retries')).toHaveAttribute('aria-setsize', '2');
     expect(row('config.retries')).toHaveAttribute('aria-rowindex', '3');
     expect(row('mode')).not.toHaveAttribute('aria-expanded');
+  });
+
+  it('keeps the chevron out of the accessibility tree, leaving the row as the only stop', () => {
+    render(<Harness />);
+    expect(screen.getByTitle('Collapse config')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.queryByRole('button', { name: 'Collapse config' })).not.toBeInTheDocument();
+  });
+
+  it('toggles from a chevron click and leaves focus on the row', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByTitle('Collapse config'));
+    expect(row('config')).toHaveFocus();
+    expect(row('config')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('does not toggle on a click in the open JSON editor area', async () => {
+    const onToggleCollapsed = vi.fn();
+    render(
+      <JsonTreeView
+        nodes={buildJsonTree({ value: { config: { x: 1 } } })}
+        onEdit={() => {}}
+        onToggleCollapsed={onToggleCollapsed}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Edit config as JSON' }));
+    const editor = screen.getByRole('textbox', { name: 'Edit JSON of config' });
+    await userEvent.click(editor.closest('[data-cell="detail"]') as HTMLElement);
+    expect(onToggleCollapsed).not.toHaveBeenCalled();
+  });
+
+  it('toggles when a screen reader activates the row element itself', async () => {
+    render(<Harness />);
+    // TalkBack's double-tap clicks the focused row, not a descendant.
+    await userEvent.click(row('config'));
+    expect(row('config')).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(row('config'));
+    expect(row('config')).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('takes a host label over the default name', () => {

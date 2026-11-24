@@ -79,6 +79,7 @@ const Host = ({
   const [selected, setSelected] = useState<SentenceSelection | null>(null);
   return (
     <DecisionText
+      name="Discount"
       table={{
         rules: MULTI_SENTENCE_RULES,
         ...MULTI_SENTENCE_COLUMNS,
@@ -1224,6 +1225,7 @@ describe('DecisionText popover field the host updates while it is open', () => {
     openNext = setEditing;
     return (
       <DecisionText
+        name="Discount"
         table={{
           rules: MULTI_SENTENCE_RULES,
           ...MULTI_SENTENCE_COLUMNS,
@@ -1327,6 +1329,7 @@ describe('DecisionText popover for a host whose operators are new objects on eve
             onClick={() => setTick((tick) => tick + 1)}
           />
           <DecisionText
+            name="Discount"
             table={{
               rules: MULTI_SENTENCE_RULES,
               ...MULTI_SENTENCE_COLUMNS,

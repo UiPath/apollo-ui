@@ -39,6 +39,8 @@ export interface LineTextLabels
     Pick<DiffLabels, 'changeStatus' | 'previousValue' | 'currentValue'> {
   /** The count a clamped run of values shows in place of the rest, e.g. "+9,980 more". */
   moreValues: (count: number) => string;
+  /** An output's empty value as its heading shows it, e.g. "Set a value". */
+  unsetOutput: string;
 }
 
 export interface LineTextProps {
@@ -119,6 +121,7 @@ export const LineText: React.FC<LineTextProps> = ({
           token={part}
           mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
           output={heading}
+          emptyText={labels.unsetOutput}
           selected={
             (part.kind === 'value' || stopOf(part) !== undefined) &&
             part.columnId === selectedColumnId

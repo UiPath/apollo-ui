@@ -141,7 +141,16 @@ const routeNoFoldersOrConnections = () =>
       'GET',
       `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`,
       () => ({
-        body: { PageItems: [{ Key: 'me', DisplayName: 'My Workspace', IsPersonal: true }] },
+        body: {
+          PageItems: [
+            {
+              Key: 'shared',
+              DisplayName: 'Shared',
+              FullyQualifiedName: 'Shared',
+              FolderType: 'Standard',
+            },
+          ],
+        },
       })
     ),
     on(
@@ -211,13 +220,13 @@ describe('createCommunityByoApi', () => {
     expect(result.value.fields[5]?.defaultValue).toBe('2023-10-01-preview');
   });
 
-  it("asks for Bedrock's region from a list and the credentials of the chosen authentication type", async () => {
+  it("asks for Bedrock's region from a list and an access key", async () => {
     const result = await api().loadForm('bedrock', null);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const { authTypes, fields } = result.value;
-    expect(authTypes.map((t) => t.value)).toEqual(['accessKey', 'assumeRole']);
+    expect(authTypes.map((t) => t.value)).toEqual(['accessKey']);
     const region = fields.find((f) => f.key === 'aws.region');
     expect(region).toMatchObject({ required: true, advanced: false, group: null });
     const regions = region?.options?.map((o) => o.value) ?? [];
@@ -228,11 +237,32 @@ describe('createCommunityByoApi', () => {
     const shown = (authType: string) =>
       fields.filter((f) => f.group === authType && f.required).map((f) => f.key);
     expect(shown('accessKey')).toEqual(['aws.api.key', 'aws.api.secret']);
-    expect(shown('assumeRole')).toEqual([
-      'assume.role.aws.api.key',
-      'assume.role.aws.api.secret',
-      'assume.role.aws.iam.role',
-    ]);
+  });
+
+  it('connects Amazon Web Services to the Bedrock runtime with an access key', async () => {
+    routeNewConnection();
+    const client = api();
+    const form = await client.loadForm('bedrock', null);
+    if (!form.ok) throw new Error('no form');
+
+    const result = await client.connect({
+      providerId: 'bedrock',
+      form: form.value,
+      authType: 'accessKey',
+      values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': 's' },
+      name: 'My AWS',
+      folderId: 'folder-key',
+    });
+
+    expect(result.ok).toBe(true);
+    const auth = calls.find((c) => c.url.endsWith('/authenticate'));
+    expect((auth?.body as { configuration: unknown }).configuration).toEqual({
+      'authentication.type': 'accessKey',
+      'aws.region': 'eu-central-1',
+      'aws.api.key': 'AKIA',
+      'aws.api.secret': 's',
+      'default.service.name': 'bedrock-runtime',
+    });
   });
 
   it.each(
@@ -426,32 +456,10 @@ describe('createCommunityByoApi', () => {
     expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
   });
 
-  it.each([
-    'dall-e-3',
-    'gpt-image-1',
-    'amazon.nova-canvas-v1:0',
-    'amazon.nova-reel-v1:1',
-    'Veo-3.0-generate',
-    'FLUX.1-pro',
-  ])('lists the image or video model %s as not supported', async (id) => {
-    routes.push(on('POST', `${GATEWAY}/api/byom/available-models`, () => ({ body: [id] })));
-
-    const result = await api().listModels('openai', {
-      id: 'c',
-      providerId: 'openai',
-      name: 'n',
-      folderId: 'f',
-    });
-
-    expect(result.ok && result.value.incompatible.map((m) => [m.id, m.short])).toEqual([
-      [id, 'Image or video model'],
-    ]);
-  });
-
-  it('tags the models that are not chat models', async () => {
+  it('offers every listed model, newest first, without judging any by its name', async () => {
     routes.push(
       on('POST', `${GATEWAY}/api/byom/available-models`, () => ({
-        body: ['gpt-4o', 'text-embedding-3-large', 'whisper-1', 'gpt-5.1'],
+        body: ['gpt-4o', 'text-embedding-3-large', 'whisper-1', 'gpt-5.1', 'gpt-4o'],
       }))
     );
 
@@ -464,11 +472,13 @@ describe('createCommunityByoApi', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.compatible.map((m) => m.id)).toEqual(['gpt-5.1', 'gpt-4o']);
-    expect(result.value.incompatible.map((m) => [m.id, m.short])).toEqual([
-      ['whisper-1', 'Audio model'],
-      ['text-embedding-3-large', 'Embedding model'],
+    expect(result.value.compatible.map((m) => m.id)).toEqual([
+      'whisper-1',
+      'text-embedding-3-large',
+      'gpt-5.1',
+      'gpt-4o',
     ]);
+    expect(result.value.incompatible).toEqual([]);
     expect(calls[0]?.body).toMatchObject({
       product: 'agents',
       connectorType: 'OpenAi',
@@ -592,7 +602,7 @@ describe('createCommunityByoApi', () => {
     expect(calls.filter((c) => c.url.endsWith('/llm-configurations'))).toHaveLength(0);
   });
 
-  it('lists personal workspace first and keeps only the BYO connectors', async () => {
+  it('lists the folders AI Trust Layer saves connections in and keeps only the BYO connectors', async () => {
     routes.push(
       on(
         'GET',
@@ -600,8 +610,20 @@ describe('createCommunityByoApi', () => {
         () => ({
           body: {
             PageItems: [
-              { Key: 'shared', DisplayName: 'Finance', FullyQualifiedName: 'Shared/Finance' },
-              { Key: 'me', DisplayName: 'My Workspace', IsPersonal: true },
+              { Key: 'me', DisplayName: 'My Workspace', IsPersonal: true, FolderType: 'Personal' },
+              {
+                Key: 'shared',
+                DisplayName: 'Shared',
+                FullyQualifiedName: 'Shared',
+                FolderType: 'Standard',
+              },
+              { Key: 'debug', DisplayName: 'Debug', FolderType: 'DebugSolution' },
+              {
+                Key: 'finance',
+                DisplayName: 'Finance',
+                FullyQualifiedName: 'Shared/Finance',
+                FolderType: 'Standard',
+              },
               { Key: 'nope', DisplayName: 'Locked', IsSelectable: false },
             ],
           },
@@ -616,25 +638,32 @@ describe('createCommunityByoApi', () => {
               id: 'c1',
               name: 'My OpenAI',
               connector: { key: 'uipath-openai-openai' },
-              folder: { key: 'me' },
+              folder: { key: 'shared' },
             },
             {
               id: 'c2',
               name: 'Slack',
               connector: { key: 'uipath-salesforce-slack' },
-              folder: { key: 'me' },
+              folder: { key: 'shared' },
             },
             // AI Trust Layer reaches Bedrock through Amazon Web Services, never this connector.
             {
               id: 'c3',
               name: 'Old Bedrock',
               connector: { key: 'uipath-aws-bedrock' },
-              folder: { key: 'me' },
+              folder: { key: 'shared' },
             },
             {
               id: 'c4',
               name: 'My AWS',
               connector: { key: 'uipath-amazon-webservices' },
+              folder: { key: 'finance' },
+            },
+            // A model saved on this one would be saved in the personal workspace.
+            {
+              id: 'c5',
+              name: 'Personal OpenAI',
+              connector: { key: 'uipath-openai-openai' },
               folder: { key: 'me' },
             },
           ],
@@ -648,15 +677,92 @@ describe('createCommunityByoApi', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.folders).toEqual([
-      { id: 'me', label: 'My Workspace' },
-      { id: 'shared', label: 'Shared › Finance' },
+      { id: 'shared', label: 'Shared' },
+      { id: 'finance', label: 'Shared › Finance' },
     ]);
-    expect(result.value.defaultFolderId).toBe('me');
+    expect(result.value.defaultFolderId).toBe('shared');
     expect(result.value.connections).toEqual([
-      { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'me' },
-      { id: 'c4', providerId: 'bedrock', name: 'My AWS', folderId: 'me' },
+      { id: 'c1', providerId: 'openai', name: 'My OpenAI', folderId: 'shared' },
+      { id: 'c4', providerId: 'bedrock', name: 'My AWS', folderId: 'finance' },
     ]);
     expect(result.value.takenModelNames).toEqual(['gpt-4o', 'gpt-5-2025-08-07', 'my-claude']);
+  });
+
+  it('reads every page of folders before keeping the saved connections in them', async () => {
+    const page = (skip: number, size: number) =>
+      Array.from({ length: size }, (_, i) => ({
+        Key: `f${skip + i}`,
+        DisplayName: `F${skip + i}`,
+        FolderType: 'Standard',
+      }));
+    routes.push(
+      on(
+        'GET',
+        `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`,
+        () => ({ body: { Count: 501, PageItems: page(0, 500) } })
+      ),
+      on(
+        'GET',
+        `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=500`,
+        () => ({ body: { Count: 501, PageItems: page(500, 1) } })
+      ),
+      on(
+        'GET',
+        `${TENANT}/connections_/api/v1/Connections?allFolders=true&folderDefaults=true`,
+        () => ({
+          body: [
+            {
+              id: 'c1',
+              name: 'Late OpenAI',
+              connector: { key: 'uipath-openai-openai' },
+              folder: { key: 'f500' },
+            },
+          ],
+        })
+      )
+    );
+    routeGatewayRules();
+
+    const result = await api().loadContext();
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.folders).toHaveLength(501);
+    expect(result.value.connections.map((c) => c.id)).toEqual(['c1']);
+  });
+
+  it('refuses when the only folder is the personal workspace', async () => {
+    routes.push(
+      on(
+        'GET',
+        `${TENANT}/orchestrator_/api/FoldersNavigation/GetAllFoldersForCurrentUser?take=500&skip=0`,
+        () => ({
+          body: {
+            PageItems: [
+              { Key: 'me', DisplayName: 'My Workspace', IsPersonal: true, FolderType: 'Personal' },
+            ],
+          },
+        })
+      ),
+      on(
+        'GET',
+        `${TENANT}/connections_/api/v1/Connections?allFolders=true&folderDefaults=true`,
+        () => ({
+          body: [],
+        })
+      )
+    );
+    routeGatewayRules();
+
+    const result = await api().loadContext();
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.failure.title).toBe('You need a folder for your connection');
+    expect(result.failure.message).toBe(
+      'Create a folder in Orchestrator, or ask an administrator to add you to one.'
+    );
+    expect(result.failure.detail).toBeUndefined();
   });
 
   it('refuses to edit a connection whose authentication type the dialog does not offer', async () => {
@@ -686,6 +792,285 @@ describe('createCommunityByoApi', () => {
     if (result.ok) return;
     expect(result.failure.title).toBe('Edit this connection in Integration Service');
     expect(result.failure.message).toContain('awsUipathManagedCrossAccountAssumeRole');
+  });
+
+  it('uses a saved connection as it is when its provider requires nothing of it', async () => {
+    const saved = { id: 'conn-1', providerId: 'openai', name: 'Mine', folderId: 'f' };
+
+    expect(await api().checkConnection?.('openai', saved)).toEqual({ ok: true, value: null });
+    expect(calls).toEqual([]);
+  });
+
+  describe('a saved Amazon Web Services connection', () => {
+    const saved = { id: 'conn-aws', providerId: 'bedrock', name: 'AWS', folderId: 'f' };
+    const routeSession = (configs: Record<string, string>) =>
+      routes.push(
+        on('POST', `${TENANT}/connections_/api/v1/Connections/conn-aws/auth`, () => ({
+          body: { sessionId: 'sid-aws', expiresAt: Date.now() + 600_000 },
+        })),
+        on(
+          'GET',
+          `${TENANT}/elements_/v1/elements/normalized-instances/applications/sessions/sid-aws`,
+          () => ({ body: { configs, elementInstance: { id: 1 } } })
+        )
+      );
+    const s3 = { 'authentication.type': 'accessKey', 'default.service.name': 's3' };
+
+    it('is not edited here when it is set up for another AWS service', async () => {
+      routeSession(s3);
+
+      const result = await api().loadConnectionValues('bedrock', saved);
+
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+      expect(result.failure.title).toBe('Edit this connection in Integration Service');
+      expect(result.failure.message).toContain('It is set up for s3, not Amazon Bedrock.');
+      expect(result.failure.message).toContain('Create a separate connection');
+    });
+
+    it('is left unchanged when Connect is asked to edit it anyway', async () => {
+      routeSession(s3);
+      const client = api();
+      const form = await client.loadForm('bedrock', null);
+      if (!form.ok) throw new Error('no form');
+
+      const result = await client.connect({
+        providerId: 'bedrock',
+        form: form.value,
+        authType: 'accessKey',
+        values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': '' },
+        name: 'AWS',
+        folderId: 'f',
+        existing: saved,
+      });
+
+      expect(result.ok).toBe(false);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('asks to be switched to Bedrock when it is set up for another AWS service', async () => {
+      routeSession(s3);
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(result).toEqual({
+        ok: true,
+        value: {
+          title: 'This connection is set up for s3, not Amazon Bedrock',
+          message:
+            'To use it here, UiPath switches it to Amazon Bedrock. Automations that use it for s3 may stop working.',
+          agreement:
+            'Switch "AWS" to Amazon Bedrock. I understand automations that use it for s3 may stop working.',
+        },
+      });
+    });
+
+    it('asks to be switched to Bedrock when it names no service', async () => {
+      routeSession({ 'authentication.type': 'accessKey' });
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(result?.ok && result.value?.title).toBe(
+        'This connection is not set up for Amazon Bedrock'
+      );
+      expect(result?.ok && result.value?.agreement).toBe(
+        'Switch "AWS" to Amazon Bedrock. I understand automations that use it may stop working.'
+      );
+    });
+
+    it('is not switched when it uses an authentication type the dialog does not offer', async () => {
+      routeSession({ 'authentication.type': 'assumeRole', 'default.service.name': 's3' });
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(result?.ok).toBe(false);
+      if (!result || result.ok) return;
+      expect(result.failure.title).toBe('Edit this connection in Integration Service');
+      expect(result.failure.message).toContain('It is set up for s3, not Amazon Bedrock.');
+      expect(result.failure.final).toBe(true);
+      expect(calls.some((c) => c.method === 'PUT' || c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is switched when it names no authentication type, which is the default one', async () => {
+      routeSession({ 'default.service.name': 's3' });
+
+      const result = await api().checkConnection?.('bedrock', saved);
+
+      expect(result?.ok && result.value?.title).toBe(
+        'This connection is set up for s3, not Amazon Bedrock'
+      );
+    });
+
+    it('is used as it is with such an authentication type once it is for the Bedrock runtime', async () => {
+      routeSession({
+        'authentication.type': 'assumeRole',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      expect(await api().checkConnection?.('bedrock', saved)).toEqual({ ok: true, value: null });
+    });
+
+    it('is used as it is when it is set up for the Bedrock runtime', async () => {
+      routeSession({
+        'authentication.type': 'accessKey',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      expect(await api().checkConnection?.('bedrock', saved)).toEqual({ ok: true, value: null });
+    });
+
+    it('switches to Bedrock with only its service changed', async () => {
+      routeSession({
+        'authentication.type': 'accessKey',
+        'aws.region': 'eu-central-1',
+        'aws.api.key': 'AKIA',
+        'aws.api.secret': '********',
+        'default.service.name': 's3',
+      });
+      routes.push(
+        on('PUT', `${TENANT}/elements_/v1/elements/normalized-instances/authenticate`, () => ({
+          body: { elementInstance: { connectionId: 'conn-aws' } },
+        })),
+        on('GET', `${TENANT}/connections_/api/v1/Sessions/sid-aws`, () => ({
+          body: { status: 'success', connectionId: 'conn-aws' },
+        }))
+      );
+
+      const result = await api().applyConnectionChange?.('bedrock', saved);
+
+      expect(result).toEqual({ ok: true, value: saved });
+      const auth = calls.find((c) => c.url.endsWith('/authenticate'));
+      expect(auth?.method).toBe('PUT');
+      expect(auth?.body).toMatchObject({
+        sessionID: 'sid-aws',
+        instanceID: 1,
+        name: 'AWS',
+        configuration: {
+          'authentication.type': 'accessKey',
+          'aws.region': 'eu-central-1',
+          'aws.api.key': 'AKIA',
+          'aws.api.secret': '********',
+          'default.service.name': 'bedrock-runtime',
+        },
+      });
+      expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
+    });
+
+    it('is not switched when its authentication changed to one the dialog does not offer since it was checked', async () => {
+      routeSession({ 'authentication.type': 'assumeRole', 'default.service.name': 's3' });
+
+      const result = await api().applyConnectionChange?.('bedrock', saved);
+
+      expect(!result?.ok && result?.failure.final).toBe(true);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('sends nothing when it is already for the Bedrock runtime by the time it is switched', async () => {
+      routeSession({
+        'authentication.type': 'assumeRole',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      const result = await api().applyConnectionChange?.('bedrock', saved);
+
+      expect(result).toEqual({ ok: true, value: saved });
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is not saved by Connect once its authentication is one the dialog does not offer', async () => {
+      routeSession({
+        'authentication.type': 'assumeRole',
+        'default.service.name': 'bedrock-runtime',
+      });
+      const client = api();
+      const form = await client.loadForm('bedrock', null);
+      if (!form.ok) throw new Error('no form');
+
+      const result = await client.connect({
+        providerId: 'bedrock',
+        form: form.value,
+        authType: 'accessKey',
+        values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': '' },
+        name: 'AWS',
+        folderId: 'f',
+        existing: saved,
+      });
+
+      expect(!result.ok && result.failure.message).toContain(
+        'It uses an authentication type this dialog does not offer (assumeRole).'
+      );
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('takes a connection that names no authentication type to use the default one', async () => {
+      routeSession({ 'aws.region': 'eu-central-1', 'default.service.name': 'bedrock-runtime' });
+
+      const result = await api().loadConnectionValues('bedrock', saved);
+
+      expect(result.ok && result.value.authType).toBe('accessKey');
+    });
+
+    it('is not switched once its settings changed after a check that asked for the switch', async () => {
+      const configs: Record<string, string> = { ...s3 };
+      routeSession(configs);
+      const client = api();
+
+      const checked = await client.checkConnection?.('bedrock', saved);
+      expect(checked?.ok && checked.value?.title).toBe(
+        'This connection is set up for s3, not Amazon Bedrock'
+      );
+      configs['authentication.type'] = 'assumeRole';
+      const result = await client.applyConnectionChange?.('bedrock', saved);
+
+      expect(!result?.ok && result?.failure.final).toBe(true);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is not saved by Connect once it was set up for another service after its form loaded', async () => {
+      const configs: Record<string, string> = {
+        'authentication.type': 'accessKey',
+        'aws.region': 'eu-central-1',
+        'default.service.name': 'bedrock-runtime',
+      };
+      routeSession(configs);
+      const client = api();
+      const form = await client.loadForm('bedrock', null);
+      if (!form.ok) throw new Error('no form');
+
+      expect((await client.loadConnectionValues('bedrock', saved)).ok).toBe(true);
+      configs['default.service.name'] = 's3';
+      const result = await client.connect({
+        providerId: 'bedrock',
+        form: form.value,
+        authType: 'accessKey',
+        values: { 'aws.region': 'eu-central-1', 'aws.api.key': 'AKIA', 'aws.api.secret': '' },
+        name: 'AWS',
+        folderId: 'f',
+        existing: saved,
+      });
+
+      expect(!result.ok && result.failure.message).toContain(
+        'It is set up for s3, not Amazon Bedrock.'
+      );
+      // Saving again would give the same answer, so the dialog suggests no retry.
+      expect(!result.ok && result.failure.final).toBe(true);
+      expect(calls.some((c) => c.url.endsWith('/authenticate'))).toBe(false);
+    });
+
+    it('is edited here when it is set up for the Bedrock runtime', async () => {
+      routeSession({
+        'authentication.type': 'accessKey',
+        'aws.region': 'eu-central-1',
+        'default.service.name': 'bedrock-runtime',
+      });
+
+      const result = await api().loadConnectionValues('bedrock', saved);
+
+      expect(result).toEqual({
+        ok: true,
+        value: { authType: 'accessKey', values: { 'aws.region': 'eu-central-1' } },
+      });
+    });
   });
 
   it('edits a saved connection through its own session, keeping a secret left blank', async () => {
@@ -735,7 +1120,8 @@ describe('createCommunityByoApi', () => {
     });
 
     expect(result).toEqual({ ok: true, value: { ...saved, name: 'Renamed' } });
-    expect(sessions).toBe(1);
+    // Reading the form and saving it each open a session, so the save sees the settings as they are now.
+    expect(sessions).toBe(2);
     const auth = calls.find((c) => c.url.endsWith('/authenticate'));
     expect(auth?.method).toBe('PUT');
     expect(auth?.body).toMatchObject({
@@ -799,7 +1185,7 @@ describe('createCommunityByoApi', () => {
 
     const result = await client.testAndSave({
       providerId: 'openai',
-      connection: { id: 'conn-2', providerId: 'openai', name: 'n', folderId: 'me' },
+      connection: { id: 'conn-2', providerId: 'openai', name: 'n', folderId: 'shared' },
       modelId: 'gpt-5.1',
       name: 'renamed',
       replaces: null,
@@ -846,6 +1232,40 @@ describe('createCommunityByoApi', () => {
       const context = await client.loadContext();
       return { client, context };
     };
+
+    it('refuses to edit a model saved with others in a folder it does not offer', async () => {
+      const { client } = await loaded();
+      const entry = (id: string, desiredModel: string) => ({
+        id,
+        desiredModel,
+        customerModel: 'gpt-4o',
+        connectorType: 'OpenAi',
+        connectionId: 'conn-1',
+      });
+      routes.push(
+        on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-me`, () => ({
+          body: {
+            id: 'cfg-me',
+            folderId: 'me',
+            llmConfigurations: [entry('e1', 'my-gpt'), entry('e2', 'other')],
+          },
+        })),
+        on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-alone`, () => ({
+          body: { id: 'cfg-alone', folderId: 'me', llmConfigurations: [entry('e1', 'my-gpt')] },
+        }))
+      );
+
+      const stuck = await client.loadModel({ configurationId: 'cfg-me', name: 'my-gpt' });
+      expect(stuck.ok).toBe(false);
+      if (stuck.ok) return;
+      expect(stuck.failure.title).toBe('my-gpt cannot be edited here');
+      expect(stuck.failure.message).toContain('Edit it in AI Trust Layer.');
+      expect(stuck.failure.final).toBe(true);
+
+      // Alone in its configuration, it moves to the connection's folder when saved.
+      const alone = await client.loadModel({ configurationId: 'cfg-alone', name: 'my-gpt' });
+      expect(alone.ok).toBe(true);
+    });
 
     it('lists the feature models, marking those this feature replaced and retiring ones last', async () => {
       const { context } = await loaded();
@@ -931,12 +1351,15 @@ describe('createCommunityByoApi', () => {
     it('refuses a feature whose models are configured together, or one that takes no own models', async () => {
       const all = await loaded(featureWith({ modelsConfigurationOption: 'AllModels' }));
       expect(all.context.ok).toBe(false);
+      expect(!all.context.ok && all.context.failure.final).toBe(true);
       routes = [];
       const none = await loaded({ agents: {} });
       expect(none.context.ok).toBe(false);
       expect(!none.context.ok && none.context.failure.title).toBe(
         'This feature does not take models of your own'
       );
+      // Asking again gives the same answer.
+      expect(!none.context.ok && none.context.failure.final).toBe(true);
     });
 
     it('saves a replacement under the UiPath model name, tested in replace mode', async () => {
@@ -950,7 +1373,7 @@ describe('createCommunityByoApi', () => {
 
       const result = await client.testAndSave({
         providerId: 'azure-openai',
-        connection: { id: 'conn-9', providerId: 'azure-openai', name: 'n', folderId: 'me' },
+        connection: { id: 'conn-9', providerId: 'azure-openai', name: 'n', folderId: 'shared' },
         modelId: 'my-deployment',
         name: 'gpt-4.1-2025-04-14',
         replaces: 'gpt-4.1-2025-04-14',
@@ -983,7 +1406,7 @@ describe('createCommunityByoApi', () => {
         on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-r`, () => ({
           body: {
             id: 'cfg-r',
-            folderId: 'me',
+            folderId: 'shared',
             llmConfigurations: [
               {
                 desiredModel: 'gpt-5-2025-08-07',
@@ -1017,7 +1440,7 @@ describe('createCommunityByoApi', () => {
         on('GET', `${GATEWAY}/api/byo/product/llm-configurations/cfg-c`, () => ({
           body: {
             id: 'cfg-c',
-            folderId: 'me',
+            folderId: 'shared',
             llmConfigurations: [
               {
                 desiredModel: 'constructor',

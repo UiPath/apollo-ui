@@ -252,9 +252,126 @@ describe('DecisionGraphText', () => {
     );
   });
 
-  it("clips an open body to its card's rounded bottom", () => {
+  it("rounds an open body to its card's bottom without clipping the rule numbers beside its cards", () => {
     render(graph({ expansion: held(new Set(['risk'])) }));
-    expect(body('risk')).toHaveClass('overflow-clip', 'rounded-b-[9px]');
+    expect(body('risk')).toHaveClass('rounded-b-[9px]');
+    expect(body('risk')).not.toHaveClass('overflow-clip');
+    expect(body('risk')?.querySelector('[class*="--sentence-gutter:0px"]')).not.toBeNull();
+    expect(body('risk')?.querySelector('[class*="sentence-number-digits,1"]')).toBeNull();
+  });
+
+  it.each([
+    ['reading', false],
+    ['editing', true],
+  ])("falls back to the node's hit policy label when the catalog has no matching option, %s", (_, editing) => {
+    render(
+      graph({
+        renderBody: (id) => {
+          const body = textBody(id);
+          return body.kind === 'table'
+            ? {
+                ...body,
+                text: {
+                  ...body.text,
+                  hitPolicies: [],
+                  ...(editing ? { mode: modeOf({ selected: null, onPolicyChange: vi.fn() }) } : {}),
+                },
+              }
+            : body;
+        },
+      })
+    );
+    if (editing) {
+      expect(screen.getByTestId('graph-risk-policy')).toHaveAccessibleName(/Unique/);
+    }
+    expect(screen.getByTestId('graph-hit-policy-risk')).toHaveTextContent('Unique');
+  });
+
+  it("describes a read-only card's policy chip by the policy's hint", () => {
+    render(graph());
+    expect(
+      screen.getByTestId('graph-hit-policy-risk').querySelector('[aria-describedby]')
+    ).toHaveAccessibleDescription('Exactly one rule may match. Overlaps are errors.');
+  });
+
+  it('shows a policy-only diff on the card heading, before and after', () => {
+    render(
+      graph({
+        renderBody: (id) => {
+          const body = textBody(id);
+          return body.kind === 'table'
+            ? {
+                ...body,
+                text: {
+                  ...body.text,
+                  mode: {
+                    kind: 'diff',
+                    diff: {
+                      mode: 'full',
+                      hitPolicy: {
+                        before: { kind: 'policy', policy: 'first' },
+                        after: GRID_SENTENCE_POLICY,
+                      },
+                    },
+                  },
+                },
+              }
+            : body;
+        },
+      })
+    );
+    const heading = screen.getByTestId('graph-hit-policy-risk');
+    expect(heading.querySelector('del')).toHaveTextContent('FFirst');
+    expect(heading).toHaveTextContent(/now UUnique/);
+  });
+
+  it('builds a folded table card only while it is near the scrollport, heading it from the node otherwise', () => {
+    nearCard = () => false;
+    const renderBody = vi.fn((id: string) => {
+      const built = textBody(id);
+      return built.kind === 'table' && id === 'risk'
+        ? {
+            ...built,
+            text: {
+              ...built.text,
+              citations: {
+                kind: 'cited' as const,
+                decision: [{ kind: 'page' as const, page: 9 }],
+                rules: new Map(),
+                onOpenCitation: () => {},
+              },
+              headerMark: { tone: 'error' as const, title: 'Broken', glyph: true as const },
+            },
+          }
+        : built;
+    });
+    render(graph({ renderBody }));
+    const policy = () => screen.getByTestId('graph-hit-policy-risk');
+    const callsFor = (id: string) =>
+      renderBody.mock.calls.filter(([called]) => called === id).length;
+    const showsTableHeading = () => {
+      expect(policy().querySelector('[aria-describedby]')).not.toBeNull();
+      expect(screen.getByTestId('graph-mark-risk')).toHaveAttribute('title', 'Broken');
+      expect(screen.getByTestId('graph-citation-risk')).toBeInTheDocument();
+    };
+    const showsNodeHeading = () => {
+      expect(policy().querySelector('[aria-describedby]')).toBeNull();
+      expect(policy()).toHaveTextContent('U');
+      expect(screen.queryByTestId('graph-mark-risk')).toBeNull();
+      expect(screen.queryByTestId('graph-citation-risk')).toBeNull();
+    };
+    expect(renderBody).not.toHaveBeenCalled();
+    showsNodeHeading();
+    const card = screen.getByTestId('graph-decision-risk');
+    const observer = cardObservers[0];
+    act(() => observer?.report([{ target: card, isIntersecting: true }]));
+    expect(callsFor('risk')).toBeGreaterThan(0);
+    expect(renderBody.mock.calls.every(([id]) => id === 'risk')).toBe(true);
+    showsTableHeading();
+    const beforeLeave = renderBody.mock.calls.length;
+    act(() => observer?.report([{ target: card, isIntersecting: false }]));
+    expect(renderBody.mock.calls.length).toBe(beforeLeave);
+    showsNodeHeading();
   });
 
   it('shows what the host gives for a decision that is not a table', async () => {
@@ -581,6 +698,30 @@ describe('DecisionGraphText open', () => {
     onOpenDecision.mockClear();
     await userEvent.dblClick(screen.getByTestId('graph-rule-count-pricing'));
     expect(onOpenDecision).toHaveBeenCalledWith('pricing');
+  });
+
+  it('opens nothing on a double-click inside the policy picker menu or its totals submenu', async () => {
+    const onOpenDecision = vi.fn();
+    render(
+      graph({
+        onOpenDecision,
+        renderBody: (id) => {
+          const body = textBody(id);
+          return body.kind === 'table'
+            ? {
+                ...body,
+                text: { ...body.text, mode: modeOf({ selected: null, onPolicyChange: vi.fn() }) },
+              }
+            : body;
+        },
+      })
+    );
+    await userEvent.click(screen.getByTestId('graph-risk-policy'));
+    const menu = await screen.findByTestId('graph-risk-policy-menu');
+    await userEvent.dblClick(menu);
+    const totals = within(menu).getByRole('menuitem', { name: /Collect and total/ });
+    await userEvent.dblClick(totals);
+    expect(onOpenDecision).not.toHaveBeenCalled();
   });
 
   it('opens nothing on a double-click inside a body, and leaves the double-click to the body', async () => {

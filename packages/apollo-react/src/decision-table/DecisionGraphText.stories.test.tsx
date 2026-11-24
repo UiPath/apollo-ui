@@ -11,6 +11,9 @@ const { Default, Editing, Errors } = composeStories(stories);
 beforeEach(() => {
   HTMLElement.prototype.scrollTo = () => {};
 });
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 const caption = () => screen.getByTestId('graph-caption');
 const body = (id: string) => within(screen.getByTestId(`graph-body-${id}`));
@@ -123,6 +126,21 @@ describe('DecisionGraphText stories', () => {
     expect(rules('risk')).toBe(risk + 1);
   });
 
+  it('undoes and redoes a hit policy change from the card heading picker', async () => {
+    vi.stubGlobal('IntersectionObserver', undefined);
+    render(<Editing />);
+    const picker = screen.getByTestId('graph-risk-policy');
+    const before = picker.textContent;
+    await userEvent.click(picker);
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: /First/ }));
+    expect(screen.getByTestId('graph-risk-policy').textContent).not.toBe(before);
+    screen.getByTestId('graph-risk-policy').focus();
+    await userEvent.keyboard('{Control>}z{/Control}');
+    expect(screen.getByTestId('graph-risk-policy').textContent).toBe(before);
+    await userEvent.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+    expect(screen.getByTestId('graph-risk-policy').textContent).not.toBe(before);
+  });
+
   it('drops the selection of a rule an undo takes away, as the standalone story does', async () => {
     render(<Editing />);
     await userEvent.click(screen.getByTestId('graph-toggle-risk'));
@@ -184,11 +202,12 @@ describe('DecisionGraphText stories', () => {
 
   it('changes the hit policy of one decision', async () => {
     await openRisk();
-    await userEvent.click(body('risk').getByRole('button', { name: /Hit policy/ }));
+    const chip = within(screen.getByTestId('graph-hit-policy-risk'));
+    await userEvent.click(chip.getByRole('button', { name: /Hit policy/ }));
     await userEvent.click(await screen.findByRole('menuitemradio', { name: /First/ }));
-    expect(screen.getByTestId('graph-body-risk')).toHaveTextContent('First');
-    expect(screen.getByTestId('graph-hit-policy-risk')).toHaveTextContent('First');
-    expect(screen.getByTestId('graph-hit-policy-eligibility')).toHaveTextContent('Unique');
+    expect(chip.getByRole('button', { name: 'F, Hit policy: First' })).toHaveTextContent('F');
+    expect(screen.getByTestId('graph-hit-policy-eligibility')).toHaveTextContent('U');
+    expect(body('risk').queryByTestId(/-header$/)).toBeNull();
   });
 
   it('renames a column of one decision', async () => {
@@ -273,6 +292,8 @@ describe('DecisionGraphText stories', () => {
       render(<Default />);
       focusOn('pricing');
       await userEvent.tab();
+      expect(screen.getByTestId('graph-pricing-policy')).toHaveFocus();
+      await userEvent.tab();
       expect(screen.getByTestId('graph-menu-pricing')).toHaveFocus();
       await userEvent.keyboard('{Enter}');
       await screen.findByRole('menu');
@@ -286,11 +307,11 @@ describe('DecisionGraphText stories', () => {
 
     it.each([
       ['Choose inputs', 'dialog'],
-      ['Add note', 'dialog'],
       ['Delete', 'alertdialog'],
     ] as const)('moves focus into the dialog %s opens from the menu, and back to the heading', async (name, role) => {
       render(<Default />);
       focusOn('eligibility');
+      await userEvent.tab();
       await userEvent.tab();
       await userEvent.keyboard('{Enter}');
       const item = await screen.findByRole('menuitem', { name: new RegExp(`^${name}`) });

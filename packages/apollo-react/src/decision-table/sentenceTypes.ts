@@ -30,6 +30,8 @@ export interface SentenceLine {
 export interface SentenceRule {
   /** Unique among the rules, and the key of its row in `TableMarks.rows`. */
   rowId: string;
+  /** The rule's name, shown as the card's title; a blank name shows none. */
+  name?: string;
   /** The row's outputs, shown first. */
   heading: readonly SentencePart[];
   /** The sentence that introduces the conditions, e.g. "when …" or "in every case". */

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
 import { PromptValueControl } from '@/components/ui/prompt-value-control';
 import { VariableValueControl } from '@/components/ui/variable-value-control';
-import { joinIds } from './aria-ids';
+import { joinIds, useFieldIds } from './aria-ids';
 import {
   DEFAULT_FIELD_ACTION_REGISTRY,
   type FieldActionConfirm,
@@ -165,8 +165,7 @@ function FieldAnatomy({
   const strings = context.strings ?? DEFAULT_METADATA_FORM_STRINGS;
   const config = field.valueModes;
   const { name } = field;
-  const errorId = `${name}-error`;
-  const labelId = `${name}-label`;
+  const { controlId, labelId, errorId } = useFieldIds(name);
   const controlDescribedBy = joinIds(error && errorId, describedBy);
   // Resolved only when a picker opens, so a live variables source never re-renders the field.
   const formVariables = context.variables;
@@ -281,13 +280,13 @@ function FieldAnatomy({
 
   const writeInnerRef = useRef(writeInner);
   writeInnerRef.current = writeInner;
-  // Inserts through the text input carrying the field's id: for the built-in controls, and for a
+  // Inserts through the text input carrying `controlId`: for the built-in controls, and for a
   // registered one that attached no handle. With no such input the reference is appended.
   const domHandle = useMemo<Required<ValueModeControlHandle>>(
     () => ({
-      focus: () => controlElement(groupRef.current, name)?.focus(),
+      focus: () => controlElement(groupRef.current, controlId)?.focus(),
       insertText: (text) => {
-        const element = controlElement(groupRef.current, name);
+        const element = controlElement(groupRef.current, controlId);
         if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
           // No controlRef handle and no text input to write at the caret: append to the value.
           const current = latest.current.inner;
@@ -310,7 +309,7 @@ function FieldAnatomy({
         });
       },
     }),
-    [name]
+    [controlId]
   );
 
   const ctx = useActionContext({
@@ -351,6 +350,7 @@ function FieldAnatomy({
     customComponents,
     binding,
     controlRef,
+    controlId,
     labelId,
     options,
     disabled,
@@ -372,7 +372,8 @@ function FieldAnatomy({
       requestModeSwitch: handleSelect,
       controlRef,
       inputRef: formField.ref,
-      id: name,
+      id: controlId,
+      controlId,
       labelId,
       invalid: !!error,
       placeholder: field.placeholder,
@@ -417,7 +418,7 @@ function FieldAnatomy({
       <FormFieldHeader
         label={field.label}
         labelId={labelId}
-        htmlFor={resolved.geometry.labelTarget === 'control' ? name : undefined}
+        htmlFor={resolved.geometry.labelTarget === 'control' ? controlId : undefined}
         required={required}
         tooltip={field.tooltip}
         tooltipAriaLabel={field.tooltipAriaLabel}
@@ -617,6 +618,7 @@ interface ResolveControlInput {
   customComponents: CustomComponents;
   binding: FieldControlFormField;
   controlRef: React.Ref<ValueModeControlHandle>;
+  controlId: string;
   labelId: string;
   options: FieldOption[];
   disabled: boolean;
@@ -691,11 +693,12 @@ function FallbackControl({
   error,
   errorId,
   describedBy,
+  controlId,
 }: ResolveControlInput) {
   const { value } = binding;
   return (
     <Input
-      id={field.name}
+      id={controlId}
       name={binding.name}
       ref={binding.ref as React.Ref<HTMLInputElement>}
       value={typeof value === 'string' ? value : value == null ? '' : String(value)}
@@ -736,6 +739,7 @@ function builtInLiteral(input: ResolveControlInput): Resolved {
           required={required}
           error={error}
           controlRef={input.controlRef}
+          controlId={input.controlId}
           labelId={input.labelId}
           aria-describedby={joinIds(
             field.componentProps?.['aria-describedby'] as string | undefined,

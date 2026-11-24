@@ -506,10 +506,7 @@ describe('value modes', () => {
       );
       await settle();
 
-      const group = screen.getByRole('radiogroup');
-      const label = screen.getByText('Flag');
-      expect(group).toHaveAttribute('aria-labelledby', 'flag-label');
-      expect(label.closest('label')).toHaveAttribute('id', 'flag-label');
+      expect(screen.getByRole('radiogroup')).toHaveAccessibleName('Flag');
 
       expect(screen.getByRole('radio', { name: 'True' })).toBeChecked();
       await user.click(screen.getByRole('radio', { name: 'False' }));
@@ -525,7 +522,7 @@ describe('value modes', () => {
     it('renders the radios without value modes too, named by the label', async () => {
       const { user, values } = setup([{ name: 'flag', type: 'boolean', label: 'Flag' }]);
       await settle();
-      expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-labelledby', 'flag-label');
+      expect(screen.getByRole('radiogroup')).toHaveAccessibleName('Flag');
       await user.click(screen.getByRole('radio', { name: 'False' }));
       expect(values().flag).toBe(false);
     });

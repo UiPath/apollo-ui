@@ -82,7 +82,7 @@ describe('NodeVariablesPanel recomputation', () => {
     await user.click(within(variables).getByRole('button', { name: 'Variables' }));
 
     collectContainerPaths.mockClear();
-    await user.click(screen.getByRole('button', { name: 'Expand flowConfig' }));
+    await user.click(screen.getByTitle('Expand flowConfig'));
     expect(screen.getByText('region')).toBeInTheDocument();
     expect(collectContainerPaths).not.toHaveBeenCalled();
   });

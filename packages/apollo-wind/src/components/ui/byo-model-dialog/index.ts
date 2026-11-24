@@ -6,6 +6,7 @@ export type {
   ByoApiType,
   ByoAuthType,
   ByoConnection,
+  ByoConnectionChange,
   ByoConnectionForm,
   ByoConnectionValues,
   ByoConnectRequest,

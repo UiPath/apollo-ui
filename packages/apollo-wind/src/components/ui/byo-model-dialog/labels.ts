@@ -41,12 +41,16 @@ export interface ByoModelDialogLabels {
   savingConnection: string;
   cancelConnectionEdit: string;
   connectionUpdated: string;
+  checkingConnection: string;
+  applyChange: string;
+  applyingChange: string;
+  separateConnection: string;
 
   modelStep: string;
   modelNeedsConnection: (provider: string) => string;
   modelsLoading: (provider: string) => string;
   modelsFailed: (provider: string) => string;
-  modelSelect: (compatible: number) => string;
+  modelSelect: (count: number) => string;
   modelSearch: (total: number) => string;
   modelNoMatch: (query: string) => string;
   compatibleGroup: (count: number) => string;
@@ -59,21 +63,30 @@ export interface ByoModelDialogLabels {
   nameTaken: (name: string) => string;
   nameReserved: (name: string) => string;
   useOwnName: string;
+  aliasSearch: string;
+  aliasNoMatch: (query: string) => string;
+  addCustomAlias: string;
+  editCustomAlias: string;
+  customAliasPlaceholder: string;
+  addAlias: string;
+  saveAlias: string;
   useReplacement: string;
   replacementPlaceholder: string;
   replacementHint: string;
   deprecated: string;
   retiresOn: (date: string) => string;
 
-  apiTypeStep: string;
-  apiTypePlaceholder: string;
-  apiTypeHint: string;
-  apiTypeNone: (provider: string) => string;
-
   showResponse: string;
   hideResponse: string;
 
   close: string;
+  dismiss: string;
+  tryAgain: string;
+  /** What to do after Connect or Save connection failed; `button` is the one that failed. */
+  retryConnect: (button: string) => string;
+  /** What to do after Test and add or Test and save failed; `button` is the one that failed. */
+  retryTest: (button: string) => string;
+  retrySwitch: string;
   cancel: string;
   testAndAdd: string;
   testAndSave: string;
@@ -108,7 +121,7 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   inUiPathCaption: (provider) => `Your connection to ${provider} will be saved in this folder.`,
   connectionName: 'Connection name',
   folder: 'Folder',
-  folderHint: 'Personal workspace keeps it to you; a shared folder lets teammates reuse it.',
+  folderHint: 'Teammates with access to this folder can reuse the connection.',
   connectionNameTaken: 'You already have a connection with this name.',
   connect: 'Connect',
   connecting: 'Connecting…',
@@ -119,12 +132,16 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   savingConnection: 'Saving…',
   cancelConnectionEdit: 'Cancel',
   connectionUpdated: 'Connection updated.',
+  checkingConnection: 'Checking the connection…',
+  applyChange: 'Switch connection',
+  applyingChange: 'Switching…',
+  separateConnection: 'Create a separate connection instead',
 
-  modelStep: 'Model',
+  modelStep: 'Your model',
   modelNeedsConnection: (provider) => `Connect to list your ${provider} models`,
   modelsLoading: (provider) => `Loading your ${provider} models…`,
   modelsFailed: (provider) => `Could not list your ${provider} models`,
-  modelSelect: (compatible) => `Select a model · ${compatible} can be used`,
+  modelSelect: (count) => `Select one of ${count} models`,
   modelSearch: (total) => `Search ${total} models…`,
   modelNoMatch: (query) => `No models match "${query}".`,
   compatibleGroup: (count) => `Can be used · ${count}`,
@@ -132,26 +149,33 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
   modelIdPlaceholder: 'Model or deployment name',
   modelIdLabel: 'Model id',
 
-  nameStep: 'Name in your model list',
-  nameHint: 'Shown in the model picker. Defaults to the model id.',
+  nameStep: 'Model alias',
+  nameHint: 'Shown in the model picker.',
   nameTaken: (name) => `"${name}" is already in your model list. Pick another name.`,
   nameReserved: (name) => `"${name}" is the name of a UiPath model. Pick another name.`,
-  useOwnName: 'A name of your own',
+  useOwnName: 'Custom',
+  aliasSearch: 'Search UiPath models…',
+  aliasNoMatch: (query) => `No UiPath model matches "${query}".`,
+  addCustomAlias: 'Add custom alias',
+  editCustomAlias: 'Edit custom alias',
+  customAliasPlaceholder: 'Enter a custom alias',
+  addAlias: 'Add',
+  saveAlias: 'Save',
   useReplacement: 'Replace a UiPath model',
   replacementPlaceholder: 'Select a UiPath model',
   replacementHint: 'Calls to this UiPath model go to your model instead.',
   deprecated: 'Deprecated',
   retiresOn: (date) => `To be retired on ${date}`,
 
-  apiTypeStep: 'API type',
-  apiTypePlaceholder: 'Select an API type',
-  apiTypeHint: 'The API endpoint supported by the LLM.',
-  apiTypeNone: (provider) => `${provider} offers no API type that can serve this model.`,
-
   showResponse: 'Show LLM response',
   hideResponse: 'Hide LLM response',
 
   close: 'Close',
+  dismiss: 'Dismiss',
+  tryAgain: 'Try again',
+  retryConnect: (button) => `Check the details above, then ${button} again.`,
+  retryTest: (button) => `Pick another model or fix its connection, then ${button} again.`,
+  retrySwitch: 'Switch connection again, or create a separate connection instead.',
   cancel: 'Cancel',
   testAndAdd: 'Test and add',
   testAndSave: 'Test and save',

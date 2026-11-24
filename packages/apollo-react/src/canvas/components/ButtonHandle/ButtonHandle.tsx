@@ -64,6 +64,7 @@ type ButtonHandleProps = {
   nodeWidth?: number;
   nodeHeight?: number;
   portalAction?: boolean;
+  addButtonTitle?: string;
 };
 
 const ButtonHandleBase = ({
@@ -92,6 +93,7 @@ const ButtonHandleBase = ({
   nodeWidth,
   nodeHeight,
   portalAction = false,
+  addButtonTitle,
 }: ButtonHandleProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -251,6 +253,7 @@ const ButtonHandleBase = ({
             onMouseEnter={handleButtonMouseEnter}
             onMouseLeave={handleButtonMouseLeave}
             handleRef={handleRef}
+            title={addButtonTitle}
             label={label}
             renderLabel={false}
           />
@@ -311,6 +314,7 @@ const ButtonHandleBase = ({
           onMouseEnter={handleButtonMouseEnter}
           onMouseLeave={handleButtonMouseLeave}
           handleRef={handleRef}
+          title={addButtonTitle}
           label={label}
           labelIcon={labelIcon}
           labelBackgroundColor={labelBackgroundColor}
@@ -428,6 +432,7 @@ const ButtonHandlesBase = ({
   nodeWidth,
   nodeHeight,
   portalActions = false,
+  addButtonTitle,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
@@ -444,6 +449,8 @@ const ButtonHandlesBase = ({
   nodeHeight?: number;
   /** Render source handle affordances (button and label) in the node overlay layer. */
   portalActions?: boolean;
+  /** Native tooltip for the source handles' add buttons. */
+  addButtonTitle?: string;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -470,8 +477,10 @@ const ButtonHandlesBase = ({
   // group-level visibility (hover/selection state) is handled via opacity.
   const visibleHandles = handles.filter((h) => h.visible ?? true);
 
-  // Show the hover bridge when any source handle in this group has an onAction callback.
-  const hasSourceButtons = visibleHandles.some((h) => h.type === 'source' && h.onAction);
+  // Show the hover bridge when any source handle in this group can show an add button.
+  const hasSourceButtons = visibleHandles.some(
+    (h) => h.type === 'source' && h.onAction && h.showButton !== false
+  );
 
   return (
     <>
@@ -514,6 +523,7 @@ const ButtonHandlesBase = ({
             nodeWidth={nodeWidth}
             nodeHeight={nodeHeight}
             portalAction={portalActions && handle.type === 'source'}
+            addButtonTitle={addButtonTitle}
           />
         );
       })}

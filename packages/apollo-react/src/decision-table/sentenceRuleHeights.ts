@@ -1,4 +1,5 @@
 import type React from 'react';
+import { ruleTitleOf } from './sentenceParts';
 import type { SentenceRule } from './sentenceTypes';
 
 /** One unwrapped sentence line's height; only a measured card counts the lines a wrap adds. */
@@ -14,13 +15,14 @@ export const SENTENCE_MIN_RULE_HEIGHT_PX =
   SENTENCE_RULE_GAP_PX +
   SENTENCE_LINE_HEIGHT_PX;
 
-/** A rule's height before its card is measured: one line for its heading and lead, and one for every condition line. */
+/** A rule's height before its card is measured: one line for its title, one for its heading and lead, and one for every condition line. */
 const sentenceRuleHeight = (rule: SentenceRule): number =>
-  rule.lines.length === 0
+  (ruleTitleOf(rule) === null ? 0 : SENTENCE_LINE_HEIGHT_PX) +
+  (rule.lines.length === 0
     ? SENTENCE_MIN_RULE_HEIGHT_PX
     : SENTENCE_MIN_RULE_HEIGHT_PX +
       SENTENCE_LINES_GAP_PX +
-      SENTENCE_LINE_HEIGHT_PX * rule.lines.length;
+      SENTENCE_LINE_HEIGHT_PX * rule.lines.length);
 
 /** Prefix sums of the rules' heights, for `useVirtualizedAxis`: a rule's `measured` height by row id, else its estimate. */
 export const sentenceRuleOffsets = (
@@ -47,9 +49,3 @@ export const SENTENCE_LIST_STYLE: SentenceListStyle = {
   '--sentence-lines-gap': `${SENTENCE_LINES_GAP_PX}px`,
   '--sentence-row-gap': `${SENTENCE_RULE_GAP_PX}px`,
 };
-
-/** The list's geometry, and the width of its rule numbers when they show. */
-export const sentenceListStyle = (numbered: boolean, ruleCount: number): SentenceListStyle =>
-  numbered
-    ? { ...SENTENCE_LIST_STYLE, '--sentence-number-digits': String(ruleCount).length }
-    : SENTENCE_LIST_STYLE;

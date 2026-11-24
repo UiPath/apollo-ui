@@ -84,7 +84,7 @@ export const contentTopIn = (element: HTMLElement, scroller: HTMLElement): numbe
   scroller.scrollTop;
 
 export interface RuleWindow {
-  listRef: React.RefObject<HTMLUListElement | null>;
+  attachList: (element: HTMLUListElement | null) => void;
   headerRef: React.RefObject<HTMLDivElement | null>;
   segments: AxisSegment[];
   /** The index of the selected row, or null when no row in the rules is selected. */
@@ -109,6 +109,11 @@ export const useRuleWindow = (
 ): RuleWindow => {
   const named = scroll === 'self' ? undefined : (scroll.container ?? null);
   const listRef = useRef<HTMLUListElement | null>(null);
+  const [list, setList] = useState<HTMLUListElement | null>(null);
+  const attachList = useCallback((element: HTMLUListElement | null) => {
+    listRef.current = element;
+    setList(element);
+  }, []);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
   const ancestorRef = useRef<ScrollAncestor | null>(null);
@@ -158,14 +163,13 @@ export const useRuleWindow = (
     .join('\n');
   // biome-ignore lint/correctness/useExhaustiveDependencies: the mounted cards change with their row ids
   useLayoutEffect(() => {
-    const list = listRef.current;
     if (!list || typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver((entries) =>
       setMeasured((current) => measuredHeights(current, entries))
     );
     for (const card of list.querySelectorAll(':scope > li[data-row-id]')) observer.observe(card);
     return () => observer.disconnect();
-  }, [mountedRowIds]);
+  }, [mountedRowIds, list]);
   const attachSection = useCallback(
     (element: HTMLElement | null) => {
       sectionRef.current = element;
@@ -178,7 +182,6 @@ export const useRuleWindow = (
   // biome-ignore lint/correctness/useExhaustiveDependencies: the spacers change with the mounted cards and the ancestor with the named container
   useLayoutEffect(() => {
     const ancestor = ancestorRef.current;
-    const list = listRef.current;
     if (!ancestor || !list || typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -192,7 +195,7 @@ export const useRuleWindow = (
       observer.observe(spacer);
     }
     return () => observer.disconnect();
-  }, [mountedRowIds, named]);
+  }, [mountedRowIds, named, list]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: the ancestor changes with the named container
   useLayoutEffect(() => {
     const ancestor = ancestorRef.current;
@@ -275,7 +278,7 @@ export const useRuleWindow = (
   };
 
   return {
-    listRef,
+    attachList,
     headerRef,
     segments,
     selectedRow,

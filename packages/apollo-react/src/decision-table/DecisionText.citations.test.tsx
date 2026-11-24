@@ -43,6 +43,7 @@ const cited = (onOpenCitation = vi.fn()): DecisionTextCitations => ({
 const renderView = (props: Partial<Parameters<typeof textPropsOf>[0]> = {}) =>
   render(
     <DecisionText
+      name="Discount"
       {...(textPropsOf({
         rules: GRID_SENTENCE_RULES,
         ...GRID_SENTENCE_COLUMNS,
@@ -86,6 +87,7 @@ describe('DecisionText citations', () => {
 
     view.rerender(
       <DecisionText
+        name="Discount"
         {...textPropsOf({
           rules: GRID_SENTENCE_RULES,
           ...GRID_SENTENCE_COLUMNS,
@@ -282,6 +284,7 @@ describe('DecisionText citations', () => {
   it('names a diff card citation by the rule number the card shows', () => {
     render(
       <DecisionText
+        name="Discount"
         {...textPropsOf({
           rules: DIFF_RULES,
           ...DIFF_COLUMNS,
@@ -322,6 +325,7 @@ describe('DecisionText citations', () => {
     const renderMany = (rowIds: readonly string[]) =>
       render(
         <DecisionText
+          name="Discount"
           {...textPropsOf({
             rules: MANY,
             ...MULTI_SENTENCE_COLUMNS,
@@ -348,6 +352,7 @@ describe('DecisionText citations', () => {
       const citations = far(['row-350']);
       const view = (selected: SentenceSelection | null) => (
         <DecisionText
+          name="Discount"
           {...textPropsOf({
             rules: MANY,
             ...MULTI_SENTENCE_COLUMNS,
@@ -376,6 +381,7 @@ describe('DecisionText citations', () => {
           <div ref={setContainer} style={{ overflowY: 'auto', height: 600 }}>
             {container && (
               <DecisionText
+                name="Discount"
                 {...textPropsOf({
                   rules: MANY,
                   ...MULTI_SENTENCE_COLUMNS,
@@ -474,6 +480,7 @@ describe('DecisionText citations', () => {
       });
       return (
         <DecisionText
+          name="Discount"
           {...textPropsOf({
             rules: GRID_SENTENCE_RULES,
             ...GRID_SENTENCE_COLUMNS,

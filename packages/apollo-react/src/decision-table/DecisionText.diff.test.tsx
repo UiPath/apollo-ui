@@ -43,6 +43,7 @@ const renderDiff = (
 ) =>
   render(
     <DecisionText
+      name="Discount"
       {...textPropsOf({
         rules: DIFF_RULES,
         ...DIFF_COLUMNS,
@@ -402,9 +403,12 @@ describe('DecisionText diff', () => {
   it('shows the hit policy before, struck, then after', () => {
     renderDiff(full);
     const header = screen.getByTestId('nl-header');
-    expect(within(header).getByText('First', { selector: 'del' })).toHaveTextContent('was First');
-    expect(within(header).getByText('Unique')).toHaveAttribute('data-change', 'update');
-    expect(header).toHaveTextContent('was First→now Unique');
+    const before = header.querySelector('del');
+    const after = header.querySelector('[data-change="update"]');
+    expect(before).toHaveTextContent('was FFirst');
+    expect(after).toHaveTextContent('now UUnique');
+    expect(before?.querySelector('[aria-hidden]')).toHaveTextContent('F');
+    expect(after?.querySelector('[aria-hidden]')).toHaveTextContent('U');
   });
 
   it("layers a value's change over its validation mark: both paint and the glyph still reads", () => {
@@ -421,14 +425,6 @@ describe('DecisionText diff', () => {
     expect(chip).toHaveAttribute('data-change', 'update');
     expect(chip).toHaveAttribute('data-tone', 'warning');
     expect(card).toHaveAccessibleDescription('Warning: Overlaps rule 4');
-  });
-
-  it('widens the start gutter for three-digit rule numbers in a diff, so their chips stay inside the view', () => {
-    const { rules, diff } = largeDiffTable(300);
-    renderDiff({ mode: 'compact', ...diff }, { rules });
-    expect(screen.getByTestId('nl-bands').style.getPropertyValue('--sentence-number-digits')).toBe(
-      '3'
-    );
   });
 
   it('folds unchanged rules in compact mode and opens a fold by mouse, keeping each number', async () => {

@@ -329,6 +329,27 @@ export const EDITABLE_TABLE: EditableTable = {
 /** The table with no rules, as a host starts a new one. */
 export const EMPTY_TABLE: EditableTable = { ...EDITABLE_TABLE, rules: [] };
 
+/** A rule, a rule with no risk yet, and a last rule with no conditions. */
+export const RULE_KINDS_TABLE: EditableTable = {
+  ...EDITABLE_TABLE,
+  rules: [
+    {
+      rowId: 'r1',
+      outcomes: { risk: '"high"' },
+      conditions: [
+        { inputId: 'age', operator: 'is less than', values: ['25'], joiner: ', ' },
+        { inputId: 'income', operator: 'is at most', values: ['40000'], joiner: ', ' },
+      ],
+    },
+    {
+      rowId: 'r2',
+      outcomes: {},
+      conditions: [{ inputId: 'age', operator: 'is greater than', values: ['60'], joiner: ', ' }],
+    },
+    { rowId: 'r3', outcomes: { risk: '"standard"' }, conditions: [] },
+  ],
+};
+
 /** `count` rules cycling through the editable table's, each with its own id, after one rule whose channel lists `values` values and one with a condition on each of `inputs` more inputs. */
 export const manyRulesTable = (count: number, values: number, inputs: number): EditableTable => {
   const extra = Array.from(

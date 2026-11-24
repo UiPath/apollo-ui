@@ -32,7 +32,7 @@ export interface PolicyPickerProps {
   dataTestId: string;
 }
 
-/** The header's picker: the picked option's code and label, opening the host's grouped options, or unavailable with none. */
+/** The header's picker: the picked option's code, or its label without one, opening the host's grouped options, or unavailable with none. */
 export const PolicyPicker: React.FC<PolicyPickerProps> = ({
   value,
   groups,
@@ -51,18 +51,16 @@ export const PolicyPicker: React.FC<PolicyPickerProps> = ({
       variant="ghost"
       size="4xs"
       disabled={options.length === 0}
-      aria-label={label}
+      aria-label={picked && picked.code !== '' ? `${picked.code}, ${label}` : label}
       aria-describedby={describedBy}
       className={POLICY_TRIGGER_CLASS}
       data-testid={`${dataTestId}-policy`}
     >
-      {picked && picked.code !== '' && (
-        <>
-          <span className={POLICY_CODE_CLASS}>{picked.code}</span>
-          <span aria-hidden>·</span>
-        </>
+      {picked && picked.code !== '' ? (
+        <span className={POLICY_CODE_CLASS}>{picked.code}</span>
+      ) : (
+        <span>{picked?.label ?? value}</span>
       )}
-      <span>{picked?.label ?? value}</span>
       {options.length > 0 && <ChevronDown aria-hidden />}
     </Button>
   );
@@ -77,6 +75,7 @@ export const PolicyPicker: React.FC<PolicyPickerProps> = ({
         data-testid={`${dataTestId}-policy-menu`}
         onClick={(event) => event.stopPropagation()}
         onKeyDown={(event) => event.stopPropagation()}
+        onDoubleClick={(event) => event.stopPropagation()}
       >
         <DropdownMenuRadioGroup value={value} onValueChange={pick}>
           {groups.map((group, index) => (

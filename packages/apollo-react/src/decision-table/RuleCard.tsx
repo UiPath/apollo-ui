@@ -14,10 +14,12 @@ import {
   ruleCardModel,
 } from './ruleCardModel';
 import { StopLabels } from './StopLabels';
+import { ruleTitleOf } from './sentenceParts';
 import {
   CHANGE_SIGN_CLASS,
   CITED_LINE_CLASS,
   CITED_LINES_CLASS,
+  CLAUSE_CLASS,
   HEADING_ACTIONS_SPACE_CLASS,
   INLINE_LINE_CLASS,
   LINES_CLASS,
@@ -29,6 +31,7 @@ import {
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
   RULE_CITATIONS_CLASS,
+  RULE_TITLE_CLASS,
   SENTENCE_CLASS,
 } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
@@ -135,6 +138,7 @@ export const RuleCard = memo<RuleCardProps>(
     const rowSelected = selectedColumnId !== undefined;
     const cited = citations.kind === 'cited' ? (citations.rules.get(rule.rowId) ?? []) : [];
     const lined = rule.lines.length + removedLines.length > 0;
+    const title = ruleTitleOf(rule);
     const citationButtons =
       citations.kind === 'cited' && cited.length > 0 ? (
         <div className={RULE_CITATIONS_CLASS}>
@@ -170,6 +174,7 @@ export const RuleCard = memo<RuleCardProps>(
         <div
           className={cn(ROW_SURFACE_CLASS, diff && ROW_CHANGE_CLASS)}
           data-selected={ruleSelected || undefined}
+          data-row-selected={rowSelected || undefined}
         >
           {(card.number !== null || card.changeStatus) && (
             <span className={cn(ROW_NUMBER_CLASS, diff && ROW_NUMBER_CHANGE_CLASS)}>
@@ -177,6 +182,14 @@ export const RuleCard = memo<RuleCardProps>(
               {card.number}
               {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
             </span>
+          )}
+          {title !== null && (
+            <div
+              className={cn(RULE_TITLE_CLASS, edit && HEADING_ACTIONS_SPACE_CLASS)}
+              data-rule-title
+            >
+              {title}
+            </div>
           )}
           <CitedLine citations={lined ? null : citationButtons}>
             <div
@@ -187,24 +200,33 @@ export const RuleCard = memo<RuleCardProps>(
               )}
               data-sentence
             >
-              <RuleLine
-                heading
-                parts={rule.heading}
-                title={card.title}
-                badge={card.badges.heading}
-                removals={NO_REMOVALS}
-                unworded={diff?.removedOutcomes}
-                className={INLINE_LINE_CLASS}
-                {...lineProps}
-              />{' '}
-              <RuleLine
-                verdicts
-                className={INLINE_LINE_CLASS}
-                parts={rule.lead}
-                badge={card.badges.lead}
-                removals={[...card.removals.heading, ...card.removals.lead]}
-                {...lineProps}
-              />
+              <div
+                className={CLAUSE_CLASS}
+                style={
+                  card.removals.lead.length > 1
+                    ? { paddingInlineEnd: `calc(${card.removals.lead.length} * 1.25rem + 0.5rem)` }
+                    : undefined
+                }
+              >
+                <RuleLine
+                  heading
+                  parts={rule.heading}
+                  title={card.title}
+                  badge={card.badges.heading}
+                  removals={NO_REMOVALS}
+                  unworded={diff?.removedOutcomes}
+                  className={INLINE_LINE_CLASS}
+                  {...lineProps}
+                />{' '}
+                <RuleLine
+                  verdicts
+                  className={INLINE_LINE_CLASS}
+                  parts={rule.lead}
+                  badge={card.badges.lead}
+                  removals={card.removals.lead}
+                  {...lineProps}
+                />
+              </div>
             </div>
           </CitedLine>
           {lined && (
