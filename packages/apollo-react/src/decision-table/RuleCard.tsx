@@ -232,7 +232,13 @@ export const RuleCard = memo<RuleCardProps>(
           </CitedLine>
           {lined && (
             <CitedLine citations={citationButtons}>
-              <ul className={cn(LINES_CLASS, citationButtons && CITED_LINE_CLASS)}>
+              <ul
+                className={cn(
+                  LINES_CLASS,
+                  edit && HEADING_ACTIONS_SPACE_CLASS,
+                  citationButtons && CITED_LINE_CLASS
+                )}
+              >
                 {rule.lines.map((line, index) => (
                   <ConditionLine
                     key={line.columnId}

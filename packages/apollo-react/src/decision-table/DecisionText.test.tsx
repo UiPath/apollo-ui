@@ -72,6 +72,7 @@ import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
+import { HEADING_ACTIONS_SPACE_CLASS } from './sentenceStyles';
 import type {
   SentenceCellId,
   SentencePart,
@@ -1780,6 +1781,15 @@ describe('DecisionText', () => {
   });
 
   describe('band lists', () => {
+    it('ends the heading and every condition line of an editable card at one glyph column', () => {
+      renderView({ selected: null, onSelect: vi.fn(), edit: editWith() });
+      const edge = (element: Element | null | undefined) =>
+        element?.classList.contains(HEADING_ACTIONS_SPACE_CLASS);
+      const lined = mountedRows().find((row) => row.querySelector('ul li[data-column-id]'));
+      expect(edge(lined?.querySelector('[data-sentence]'))).toBe(true);
+      expect(edge(lined?.querySelector('ul'))).toBe(true);
+    });
+
     it('underlines every input and output name with a wave, and values while editable or on a warning', () => {
       const waved = (kind: string) =>
         [...document.querySelectorAll(`[data-kind="${kind}"]`)].map(
