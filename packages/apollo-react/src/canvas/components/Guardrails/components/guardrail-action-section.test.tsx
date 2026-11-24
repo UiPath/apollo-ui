@@ -49,6 +49,78 @@ describe('GuardrailActionSection', () => {
     expect(await screen.findByRole('option', { name: 'Filter' })).toBeInTheDocument();
   });
 
+  describe('mask', () => {
+    const optionNames = async () => {
+      fireEvent.click(screen.getByRole('combobox', { name: /action type/i }));
+      await screen.findAllByRole('option');
+      return screen.getAllByRole('option').map((option) => option.textContent);
+    };
+
+    it('is offered only with showMask, last', async () => {
+      const { unmount } = render(
+        <GuardrailActionSection action={logAction} onActionChange={vi.fn()} />
+      );
+      expect(await optionNames()).toEqual(['Log', 'Block', 'Escalate']);
+      unmount();
+
+      render(<GuardrailActionSection action={logAction} onActionChange={vi.fn()} showMask />);
+      expect(await optionNames()).toEqual(['Log', 'Block', 'Escalate', 'Mask']);
+    });
+
+    it('still honours allowedActionTypes', async () => {
+      render(
+        <GuardrailActionSection
+          action={logAction}
+          onActionChange={vi.fn()}
+          showMask
+          allowedActionTypes={['log', 'block']}
+        />
+      );
+      expect(await optionNames()).toEqual(['Log', 'Block']);
+    });
+
+    it('emits a bare mask action and renders no second field for it', async () => {
+      const onActionChange = vi.fn();
+      const { rerender } = render(
+        <GuardrailActionSection action={logAction} onActionChange={onActionChange} showMask />
+      );
+
+      fireEvent.click(screen.getByRole('combobox', { name: /action type/i }));
+      fireEvent.click(await screen.findByRole('option', { name: 'Mask' }));
+      expect(onActionChange).toHaveBeenCalledWith({ $actionType: 'mask' });
+
+      rerender(
+        <GuardrailActionSection
+          action={{ $actionType: 'mask' }}
+          onActionChange={onActionChange}
+          showMask
+        />
+      );
+      expect(screen.getAllByRole('combobox')).toHaveLength(1);
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('keeps a stored mask action listed without showMask', async () => {
+      render(<GuardrailActionSection action={{ $actionType: 'mask' }} onActionChange={vi.fn()} />);
+
+      expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Mask');
+      expect(await optionNames()).toEqual(['Log', 'Block', 'Escalate', 'Mask']);
+    });
+
+    it('takes its label from labels', () => {
+      render(
+        <GuardrailActionSection
+          action={{ $actionType: 'mask' }}
+          onActionChange={vi.fn()}
+          showMask
+          labels={{ actionMaskLabel: 'Redact' }}
+        />
+      );
+
+      expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Redact');
+    });
+  });
+
   describe('allowedActionTypes', () => {
     const optionNames = async () => {
       fireEvent.click(screen.getByRole('combobox', { name: /action type/i }));

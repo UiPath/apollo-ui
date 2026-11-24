@@ -127,6 +127,22 @@ export const SingleScopeLocked: Story = {
 };
 
 /**
+ * disabledScopes disables single chips, with disabledScopesHint saying why. LLM calls starts
+ * selected here, so it stays clickable until deselected.
+ */
+export const DisabledScopes: Story = {
+  args: { selector: { scopes: ['Agent', 'Llm'] }, onChange: () => {} },
+  render: () => (
+    <ScopeSelectorHost
+      initial={{ scopes: ['Agent', 'Llm'] }}
+      availableToolNames={TOOLS}
+      disabledScopes={['Llm']}
+      disabledScopesHint={GUARDRAIL_BUILDER_EN_LABELS.scopeLlmMaskDisabledHint}
+    />
+  ),
+};
+
+/**
  * Errors are host-owned and render as soon as they are present. These are recomputed on every
  * change: deselect Tools to swap the tools message for the scopes one.
  */

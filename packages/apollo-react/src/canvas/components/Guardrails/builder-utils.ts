@@ -52,6 +52,8 @@ export function createDefaultGuardrailAction(
         app: { id: '', version: '', name: '' },
         recipient: { type: GuardrailRecipientType.User, value: '', displayName: '' },
       };
+    case 'mask':
+      return { $actionType: 'mask' };
     default:
       return { $actionType: 'log', severityLevel: 'Info' };
   }

@@ -434,6 +434,21 @@ describe('the other label sets still layer the same way', () => {
     expect([resolved.byo, resolved.provider]).toEqual(['BYO', 'Provider']);
   });
 
+  it('resolves the mask keys for a complete label object written before them', () => {
+    const {
+      actionMaskLabel: _mask,
+      scopeLlmMaskDisabledHint: _hint,
+      ...builderBefore
+    } = GUARDRAIL_BUILDER_EN_LABELS;
+    const builderLabels: GuardrailBuilderLabels = builderBefore;
+    const resolved = resolveGuardrailBuilderLabels(undefined, builderLabels);
+    expect([resolved.actionMaskLabel, resolved.scopeLlmMaskDisabledHint]).toEqual([
+      'Mask',
+      'LLM calls are masked by the AI Trust Layer policy.',
+    ]);
+    expect(resolveGuardrailActionLabels(undefined, builderLabels).actionMaskLabel).toBe('Mask');
+  });
+
   it('resolves the palette search and source keys for a label object written before them', () => {
     const {
       search: _search,

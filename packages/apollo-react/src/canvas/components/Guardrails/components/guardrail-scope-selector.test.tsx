@@ -203,6 +203,96 @@ describe('GuardrailScopeSelector', () => {
     });
   });
 
+  describe('disabledScopes', () => {
+    const HINT = 'LLM calls are masked by the AI Trust Layer policy.';
+
+    it('disables only the listed chips', () => {
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Agent'] }}
+          disabledScopes={['Llm']}
+        />
+      );
+
+      expect(screen.getByRole('button', { name: 'LLM calls' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Agent' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Tools' })).toBeEnabled();
+    });
+
+    it('keeps a disabled scope that is still selected deselectable', () => {
+      const onChange = vi.fn();
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Agent', 'Llm'] }}
+          disabledScopes={['Llm']}
+          onChange={onChange}
+        />
+      );
+
+      const chip = screen.getByRole('button', { name: 'LLM calls' });
+      expect(chip).toBeEnabled();
+      fireEvent.click(chip);
+      expect(onChange).toHaveBeenCalledWith({ scopes: ['Agent'] });
+    });
+
+    it('explains the disabled chips under the group and describes the group with it', () => {
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: [] }}
+          disabledScopes={['Llm']}
+          disabledScopesHint={HINT}
+          errors={{ scopes: 'At least one scope is required' }}
+        />
+      );
+
+      const describedBy = screen
+        .getByRole('group', { name: /scopes/i })
+        .getAttribute('aria-describedby');
+      const described = (describedBy ?? '')
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent);
+      expect(described).toEqual([HINT, 'At least one scope is required']);
+    });
+
+    it('shows no hint without disabled scopes, or when none of them is offered', () => {
+      const { unmount } = render(
+        <GuardrailScopeSelector {...defaultProps} disabledScopesHint={HINT} />
+      );
+      expect(screen.queryByText(HINT)).not.toBeInTheDocument();
+      unmount();
+
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          allowedScopes={['Agent', 'Tool']}
+          disabledScopes={['Llm']}
+          disabledScopesHint={HINT}
+        />
+      );
+      expect(screen.queryByText(HINT)).not.toBeInTheDocument();
+      expect(screen.getByRole('group', { name: /scopes/i })).not.toHaveAttribute(
+        'aria-describedby'
+      );
+    });
+
+    it('has no accessibility violations with a disabled chip and its hint', async () => {
+      const { container } = render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Agent'] }}
+          disabledScopes={['Llm']}
+          disabledScopesHint={HINT}
+        />
+      );
+
+      expect(screen.getByText(HINT)).toBeInTheDocument();
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   it('pre-selects all tools when toggling Tool scope on', () => {
     const onChange = vi.fn();
     render(<GuardrailScopeSelector {...defaultProps} onChange={onChange} />);

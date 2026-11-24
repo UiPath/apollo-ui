@@ -686,6 +686,165 @@ describe('GuardrailBuilder', () => {
     });
   });
 
+  describe('mask action', () => {
+    const HINT = 'LLM calls are masked by the AI Trust Layer policy.';
+    const llmChip = () => screen.getByRole('button', { name: 'LLM calls' });
+    const actionType = () => screen.getByRole('combobox', { name: /action type/i });
+
+    function renderBuilder(props?: Partial<GuardrailBuilderProps>) {
+      return render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Agent"
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+          {...props}
+        />
+      );
+    }
+
+    async function actionOptions() {
+      fireEvent.click(actionType());
+      await screen.findAllByRole('option');
+      return screen.getAllByRole('option').map((option) => option.textContent);
+    }
+
+    async function pickAction(name: string) {
+      fireEvent.click(actionType());
+      fireEvent.click(await screen.findByRole('option', { name }));
+    }
+
+    function save(onSave: ReturnType<typeof vi.fn>) {
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+      expect(onSave).toHaveBeenCalledTimes(1);
+      return onSave.mock.calls[0]?.[0] as GuardrailBuilderValue;
+    }
+
+    it('is not offered without showMask', async () => {
+      renderBuilder();
+      expect(await actionOptions()).toEqual(['Log', 'Block', 'Escalate']);
+    });
+
+    it('is offered with showMask', async () => {
+      renderBuilder({ showMask: true });
+      expect(await actionOptions()).toEqual(['Log', 'Block', 'Escalate', 'Mask']);
+    });
+
+    it('is never offered when opened from an LLM call', async () => {
+      renderBuilder({ showMask: true, scope: 'Llm', allowedActionTypes: ['mask', 'block'] });
+
+      // A new guardrail skips mask when picking its first allowed action.
+      expect(actionType()).toHaveTextContent('Block');
+      expect(await actionOptions()).toEqual(['Block']);
+    });
+
+    it('unticks LLM calls and disables its chip once selected', async () => {
+      const onSave = vi.fn();
+      renderBuilder({
+        showMask: true,
+        guardrail: makeGuardrail({ selector: { scopes: ['Agent', 'Llm'] } }),
+        onSave,
+      });
+      expect(llmChip()).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.queryByText(HINT)).not.toBeInTheDocument();
+
+      await pickAction('Mask');
+
+      expect(llmChip()).toHaveAttribute('aria-pressed', 'false');
+      expect(llmChip()).toBeDisabled();
+      expect(screen.getByText(HINT)).toBeInTheDocument();
+      const saved = save(onSave);
+      expect(saved.action).toEqual({ $actionType: 'mask' });
+      expect(saved.selector).toEqual({ scopes: ['Agent'] });
+    });
+
+    it('re-enables LLM calls, unticked, when another action replaces it', async () => {
+      renderBuilder({
+        showMask: true,
+        guardrail: makeGuardrail({ selector: { scopes: ['Agent', 'Llm'] } }),
+      });
+
+      await pickAction('Mask');
+      await pickAction('Log');
+
+      expect(llmChip()).toBeEnabled();
+      expect(llmChip()).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.queryByText(HINT)).not.toBeInTheDocument();
+    });
+
+    it('drops LLM calls from a saved mask guardrail on open', () => {
+      const onSave = vi.fn();
+      renderBuilder({
+        showMask: true,
+        availableToolNames: ['search'],
+        guardrail: makeGuardrail({
+          action: { $actionType: 'mask' },
+          selector: { scopes: ['Agent', 'Llm', 'Tool'], matchNames: ['search'] },
+        }),
+        onSave,
+      });
+
+      expect(actionType()).toHaveTextContent('Mask');
+      expect(llmChip()).toHaveAttribute('aria-pressed', 'false');
+      expect(llmChip()).toBeDisabled();
+      expect(save(onSave).selector).toEqual({ scopes: ['Agent', 'Tool'], matchNames: ['search'] });
+    });
+
+    it('drops LLM calls where the scope selector is hidden too', async () => {
+      const onSave = vi.fn();
+      renderBuilder({
+        showMask: true,
+        scope: 'Tool',
+        toolName: 'search',
+        guardrail: makeGuardrail({
+          selector: { scopes: ['Llm', 'Tool'], matchNames: ['search'] },
+        }),
+        onSave,
+      });
+
+      await pickAction('Mask');
+
+      expect(save(onSave).selector).toEqual({ scopes: ['Tool'], matchNames: ['search'] });
+    });
+
+    it('blocks Save when LLM calls was the only scope', async () => {
+      const onSave = vi.fn();
+      renderBuilder({
+        showMask: true,
+        guardrail: makeGuardrail({ selector: { scopes: ['Llm'] } }),
+        onSave,
+      });
+
+      await pickAction('Mask');
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+      expect(onSave).not.toHaveBeenCalled();
+      expect(screen.getByText('At least one scope is required')).toBeInTheDocument();
+    });
+
+    it('takes the hint from labels', () => {
+      renderBuilder({
+        guardrail: makeGuardrail({ action: { $actionType: 'mask' } }),
+        labels: { scopeLlmMaskDisabledHint: 'Masked upstream.' },
+      });
+
+      expect(screen.getByText('Masked upstream.')).toBeInTheDocument();
+    });
+
+    it('has no accessibility violations with mask selected', async () => {
+      const { container } = renderBuilder({
+        showMask: true,
+        guardrail: makeGuardrail({ action: { $actionType: 'mask' } }),
+      });
+
+      expect(screen.getByText(HINT)).toBeInTheDocument();
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   describe('host errors override', () => {
     it('displays host errors immediately and gates Save', () => {
       const onSave = vi.fn();
@@ -1671,7 +1830,7 @@ describe('GuardrailBuilder', () => {
       // Type-level: a new guardrail would otherwise start on a filter action nobody can edit.
       expectTypeOf<
         NonNullable<GuardrailBuilderProps['allowedActionTypes']>[number]
-      >().toEqualTypeOf<'log' | 'block' | 'escalate'>();
+      >().toEqualTypeOf<'log' | 'block' | 'escalate' | 'mask'>();
     });
 
     it('keeps an edited guardrail on its stored action whatever is allowed', () => {

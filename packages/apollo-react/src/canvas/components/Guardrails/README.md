@@ -687,8 +687,8 @@ since a connector may expose a validator id a built-in also uses.
 
 The complete Add/Edit screen for an OOTB guardrail validator: status banners, usage note,
 type display (edit mode), name, description, validator parameters, scope selector, action
-(log / block / escalate; filter is `CustomGuardrailBuilder`'s), evaluations
-toggle, mixed-scopes banner, and the Save / Cancel / Save-as-new footer.
+(log / block / escalate, and mask with `showMask`; filter is `CustomGuardrailBuilder`'s),
+evaluations toggle, mixed-scopes banner, and the Save / Cancel / Save-as-new footer.
 
 ```tsx
 import { GuardrailBuilder } from '@uipath/apollo-react/canvas/guardrails';
@@ -732,6 +732,15 @@ Contract highlights:
   `evalsTogglePlacement="none"` drops the evaluations toggle, for a host that configures only the
   name and parameters (pass `scope="Llm"` to hide the scope selector too). The saved value keeps
   its full shape: the default or stored action and `enabledForEvals` come back unchanged.
+- **Mask is opt-in and never targets LLM calls.** `showMask` offers the mask action
+  (`{ $actionType: 'mask' }`: PII is replaced with placeholders before the call and restored in
+  the output), for a host whose backend supports it; it is never offered with `scope="Llm"`,
+  and `allowedActionTypes` still applies. The AI Trust Layer policy already masks LLM calls, so
+  picking mask drops `Llm` from the selector in the same update, and opening a saved mask
+  guardrail drops it too. While mask is selected the LLM calls chip is disabled, with
+  `scopeLlmMaskDisabledHint` under the chips; another action re-enables the chip, unticked. A
+  guardrail left with no scope fails the usual scopes check. The detection scope is not locked
+  to text for mask: the validator form has no way to disable a single parameter yet.
 - **Bring-your-own display is opt-in**, because the two products' legacy builders differ.
   `byoDisplay` names a BYO definition by its configuration (`byoValidatorName`) in the computed
   title, as both do; `providerField` adds a read-only Provider field above the name holding
@@ -834,8 +843,9 @@ import { CustomGuardrailBuilder } from '@uipath/apollo-react/canvas/guardrails';
   at 900 gets one row.
 - **The value is the persisted custom guardrail.** `CustomGuardrailBuilderValue` mirrors both
   products' shape. Its action is `CustomGuardrailAction`, which is `GuardrailAction` with the
-  filter arm's `fields` typed as `GuardrailFieldReference[]`, since this screen edits them; that
-  is what lets a host's own custom type assign back without a cast. `onSave` receives the rules
+  filter arm's `fields` typed as `GuardrailFieldReference[]`, since this screen edits them, and
+  without the mask arm, which is the built-in PII validator's; that is what lets a host's own
+  custom type assign back without a cast. `onSave` receives the rules
   exactly as the rules section holds them, and the section renders every rule it holds, so nothing
   hidden is ever saved and nothing hidden can block Save.
 - **Validation** covers the name (required, case-insensitive duplicate), the rules
@@ -962,9 +972,9 @@ the lines follow the select as it changes.
 ## GuardrailActionSection
 
 The action half of a guardrail: an action-type select plus the field that type needs. `log`
-takes a severity level, `block` a reason, `filter` a host-supplied field picker, and
-`escalate` expands into the escalation layout that `EscalateActionFields` owns (recipient
-type, recipient, action app).
+takes a severity level, `block` a reason, `filter` a host-supplied field picker, `mask`
+nothing, and `escalate` expands into the escalation layout that `EscalateActionFields` owns
+(recipient type, recipient, action app).
 
 `GuardrailBuilder` renders it. Both are also exported for hosts that build their own editor,
 where the section needs two props:
@@ -1002,11 +1012,15 @@ const [action, setAction] = useState<GuardrailAction>({
 - **`filter` stays product territory.** The option appears only with `showFilter` (custom
   guardrails) and its field picker is `filterContent`: field references are product-shaped and
   this package never edits them.
+- **`mask` is opt-in.** The option appears only with `showMask`, last in the list; a stored mask
+  action stays listed without it, so the select never blanks. `GuardrailBuilder` forwards it and
+  owns what mask means for the scopes.
 - **`allowedActionTypes` narrows the offered types** (log and block only, for a host with no
-  escalation), `filter` still gated on `showFilter`. The current type stays listed, so a stored
-  action outside the list never blanks the select. Both builders forward it, and start a new
-  guardrail on the first allowed type when log is not among them. `GuardrailBuilder`'s takes no
-  `filter`, which it has no field picker for.
+  escalation), `filter` and `mask` still gated on `showFilter` and `showMask`. The current type
+  stays listed, so a stored action outside the list never blanks the select. Both builders
+  forward it, and start a new guardrail on the first allowed type when log is not among them.
+  `GuardrailBuilder`'s takes no `filter`, which it has no field picker for, and
+  `CustomGuardrailBuilder`'s no `mask`.
 - **`hideLogSeverity` drops the severity select** for a host whose log action has no severity
   (Flow's Guardrail node, where log is relabelled Fail). The type select keeps its column, so
   it does not move when the user switches to block. `severityLevel` is left as it is: a new
@@ -1364,6 +1378,11 @@ const [selector, setSelector] = useState<GuardrailSelector>({ scopes: ['Agent'] 
   While the value also holds a scope the definition no longer allows, the chip stays clickable
   and a click replaces the value with the allowed scope, which then locks; untouched, the stale
   value is saved as stored, as in legacy. `GuardrailBuilder` forwards it.
+- **`disabledScopes` disables single chips**, where `lockSingleScope` disables them all. A
+  disabled scope still in the value stays clickable, so it can be deselected. `disabledScopesHint`
+  renders under the chips, linked through the group's `aria-describedby`, while one of the
+  disabled scopes is offered: a disabled button gets no hover, so a tooltip on the chip would
+  never show. `GuardrailBuilder` passes both for a mask action (LLM calls).
 - **Only known tools render.** A `matchNames` entry missing from `availableToolNames` stays in
   the value, unseen; pruning renamed or deleted tools is the host's sync, not this component's.
 - **Errors are host-owned.** `GuardrailScopeSelectorErrors` is the selector slice of

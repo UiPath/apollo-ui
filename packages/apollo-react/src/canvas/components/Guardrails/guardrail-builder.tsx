@@ -60,6 +60,15 @@ import {
 
 const EMPTY_PARAM_IDS: ReadonlySet<string> = new Set();
 
+// The AI Trust Layer policy already masks LLM calls, so a mask action never targets them.
+const MASK_DISABLED_SCOPES: readonly GuardrailScope[] = ['Llm'];
+
+function withoutMaskedScopes(selector: GuardrailSelector): GuardrailSelector {
+  return selector.scopes.some((s) => MASK_DISABLED_SCOPES.includes(s))
+    ? { ...selector, scopes: selector.scopes.filter((s) => !MASK_DISABLED_SCOPES.includes(s)) }
+    : selector;
+}
+
 // Host parameter errors merge over the internal ones per parameter id.
 const BUILDER_ERROR_MERGES: GuardrailErrorMerges<GuardrailBuilderErrors> = {
   parameters: { merge: (internal, host) => ({ ...internal, ...host }) },
@@ -140,9 +149,16 @@ export interface GuardrailBuilderProps {
   /**
    * The action types to offer (e.g. log and block only, for a host with no escalation). A new
    * guardrail starts on the first of them when log is not among them. Filter is not one: this
-   * builder has no field picker to edit it (`CustomGuardrailBuilder` does).
+   * builder has no field picker to edit it (`CustomGuardrailBuilder` does). Mask is offered only
+   * with `showMask`.
    */
   allowedActionTypes?: ReadonlyArray<Exclude<GuardrailAction['$actionType'], 'filter'>>;
+  /**
+   * Offer the mask action (PII masking), for a host whose backend supports it. Never offered
+   * when opened from an LLM call (`scope="Llm"`). While mask is selected the LLM calls scope is
+   * dropped from the value and its chip disabled, since the AI Trust Layer policy masks those.
+   */
+  showMask?: boolean;
   /**
    * Hide the severity level select for a log action, for a host whose log action has no
    * severity. A new guardrail still saves the default `'Info'` and an edited one its stored
@@ -220,6 +236,7 @@ export function GuardrailBuilder({
   evalsTogglePlacement = 'form',
   hideAction = false,
   allowedActionTypes,
+  showMask = false,
   hideLogSeverity,
   renderRecipientSearch,
   renderStaticRecipient,
@@ -240,14 +257,18 @@ export function GuardrailBuilder({
   // label to whichever instance rendered first.
   const uid = useId();
 
+  const offersMask = showMask && scope !== 'Llm';
+
   const [formData, setFormData] = useState<GuardrailBuilderFormData>(() => {
     const data = initGuardrailBuilderFormData(definition, scope, guardrail, toolName);
     if (!guardrail && defaultName) data.name = defaultName;
-    const [firstAllowed] = allowedActionTypes ?? [];
+    const [firstAllowed] =
+      allowedActionTypes?.filter((type) => type !== 'mask' || offersMask) ?? [];
     const isDefaultAllowed = allowedActionTypes?.some((type) => type === data.action.$actionType);
     if (!guardrail && firstAllowed && !isDefaultAllowed) {
       data.action = createDefaultGuardrailAction(firstAllowed);
     }
+    if (data.action.$actionType === 'mask') data.selector = withoutMaskedScopes(data.selector);
     return data;
   });
 
@@ -278,6 +299,17 @@ export function GuardrailBuilder({
     (selector: GuardrailSelector) => updateField('selector', selector),
     [updateField]
   );
+
+  // Switching to mask drops LLM calls in the same update; switching away leaves them unticked.
+  const handleActionChange = useCallback((action: GuardrailAction) => {
+    setFormData((prev) => ({
+      ...prev,
+      action,
+      selector: action.$actionType === 'mask' ? withoutMaskedScopes(prev.selector) : prev.selector,
+    }));
+  }, []);
+
+  const isMask = formData.action.$actionType === 'mask';
 
   // Keyed by content, so a host's inline array does not recompute the result every render.
   const overrideIdsKey = (overrideParameterIds ?? []).join('\u0000');
@@ -574,6 +606,8 @@ export function GuardrailBuilder({
           availableToolNames={availableToolNames}
           allowedScopes={definition.allowedScopes}
           lockSingleScope={lockSingleScope}
+          disabledScopes={isMask ? MASK_DISABLED_SCOPES : undefined}
+          disabledScopesHint={isMask ? labels.scopeLlmMaskDisabledHint : undefined}
           errors={{ scopes: displayErrors.scopes, toolNames: displayErrors.toolNames }}
           labels={labels}
         />
@@ -586,7 +620,8 @@ export function GuardrailBuilder({
           <div className="space-y-3">
             <GuardrailActionSection
               action={formData.action}
-              onActionChange={(action) => updateField('action', action)}
+              onActionChange={handleActionChange}
+              showMask={offersMask}
               allowedActionTypes={allowedActionTypes}
               hideLogSeverity={hideLogSeverity}
               errors={{

@@ -191,6 +191,12 @@ export const LogWithoutSeverity: Story = {
   ),
 };
 
+/** Mask appears only with showMask, and needs no second field. */
+export const Mask: Story = {
+  args: { action: logAction, onActionChange: () => {} },
+  render: () => <ActionSectionHost initial={{ $actionType: 'mask' }} showMask />,
+};
+
 /** Filter appears only with showFilter, and its field picker is host content. */
 export const FilterWithHostFieldPicker: Story = {
   args: { action: { $actionType: 'filter', fields: [] }, onActionChange: () => {} },
