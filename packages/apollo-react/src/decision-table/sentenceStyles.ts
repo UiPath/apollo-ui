@@ -119,13 +119,14 @@ export const LINE_CLASS = cn(
 );
 
 /** One line-height square: a line's remove action, its glyph, and a card's actions share it. */
-export const LINE_SLOT_CLASS = 'inline-flex size-6 shrink-0 items-center justify-center';
+export const LINE_SLOT_CLASS =
+  'inline-flex size-[var(--sentence-line)] shrink-0 items-center justify-center';
 
 /** A line's end: its remove actions, then its glyph, at the card's end edge. */
 export const LINE_END_CLASS = 'ms-auto flex h-[var(--sentence-line)] shrink-0 items-center';
 
 /** The room a floating card's actions take on its first line, before the glyph column. */
-export const ACTIONS_RESERVE_CLASS = 'w-12 shrink-0';
+export const ACTIONS_RESERVE_CLASS = 'w-[calc(2*var(--sentence-line))] shrink-0';
 
 export const SENTENCE_CLASS = 'min-h-[var(--sentence-line)]';
 
@@ -270,7 +271,7 @@ export const RULE_ACTIONS_CLASS = 'ms-auto flex h-[var(--sentence-line)] shrink-
 
 /** An unnamed card's actions over its top end, left of the glyph column. */
 export const RULE_ACTIONS_FLOAT_CLASS =
-  'absolute end-9 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center';
+  'absolute end-[calc(0.75rem+var(--sentence-line))] top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center';
 
 export const RULE_ACTION_CLASS = cn(
   LINE_SLOT_CLASS,
@@ -312,7 +313,7 @@ export const REMOVE_CONDITION_CLASS = cn(
 );
 
 /** The glyph column of a line or title row with no glyph. */
-export const EMPTY_SLOT_CLASS = 'size-6 shrink-0';
+export const EMPTY_SLOT_CLASS = 'size-[var(--sentence-line)] shrink-0';
 
 export const ADD_RULE_LINK_CLASS = 'h-auto w-fit gap-1 rounded-md px-2 py-1.5 [&_svg]:size-3.5';
 

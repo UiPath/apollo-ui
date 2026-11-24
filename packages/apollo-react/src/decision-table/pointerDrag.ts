@@ -1,3 +1,5 @@
+import { AUTOSCROLL_EDGE_PX, AUTOSCROLL_STEP_PX } from './constants';
+
 /** A client point. */
 export interface PointerPoint {
   x: number;
@@ -19,6 +21,24 @@ export interface PointerDragOptions {
   /** The drag ended: dropped, cancelled, or torn down. */
   onEnd: () => void;
 }
+
+/** The rows `scroller` shows: the viewport for the page's scrolling element. */
+const visibleRowsOf = (scroller: HTMLElement): { top: number; bottom: number } =>
+  scroller === scroller.ownerDocument.scrollingElement
+    ? { top: 0, bottom: scroller.ownerDocument.defaultView?.innerHeight ?? 0 }
+    : scroller.getBoundingClientRect();
+
+/** Scrolls `scroller` one step toward a pointer at `y` near its top (below `topInsetPx`) or bottom edge, and returns whether it scrolled. */
+export const edgeScrollRows = (scroller: HTMLElement, y: number, topInsetPx: number): boolean => {
+  const { top, bottom } = visibleRowsOf(scroller);
+  const before = scroller.scrollTop;
+  if (y > bottom - AUTOSCROLL_EDGE_PX) {
+    scroller.scrollTop += AUTOSCROLL_STEP_PX;
+  } else if (y < top + topInsetPx + AUTOSCROLL_EDGE_PX) {
+    scroller.scrollTop -= AUTOSCROLL_STEP_PX;
+  }
+  return scroller.scrollTop !== before;
+};
 
 /** Follows one pointer drag on the document with an rAF edge autoscroll, until release, Escape, cancel or the window hiding; returns its teardown. */
 export const followPointerDrag = ({
@@ -42,7 +62,6 @@ export const followPointerDrag = ({
   };
   const autoscroll = () => {
     frame = null;
-    // Compared before and after the write: held against a fully-scrolled edge, the band alone rescheduled forever.
     if (edgeScroll(pointer)) {
       onPointer(pointer);
       frame = requestAnimationFrame(autoscroll);
@@ -52,7 +71,6 @@ export const followPointerDrag = ({
     if (!isOwner(move)) {
       return;
     }
-    // A pointerup missed outside the window would leave the drag armed for the next unrelated click.
     if ((move.buttons & 1) === 0) {
       end();
       return;

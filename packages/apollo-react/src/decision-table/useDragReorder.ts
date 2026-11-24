@@ -2,7 +2,7 @@ import { type DependencyList, useCallback, useEffect, useRef, useState } from 'r
 import { AUTOSCROLL_EDGE_PX, AUTOSCROLL_STEP_PX } from './constants';
 import { activeElementOf } from './gridEvents';
 import type { DragStartEvent } from './gridTypes';
-import { followPointerDrag, type PointerPoint } from './pointerDrag';
+import { edgeScrollRows, followPointerDrag, type PointerPoint } from './pointerDrag';
 
 /**
  * A live drag. Split by axis so a column drag cannot exist without its group: with the group
@@ -305,20 +305,17 @@ export const useDragReorder = (options: DragReorderOptions) => {
       if (!container) {
         return false;
       }
-      const rect = container.getBoundingClientRect();
-      const before = axis === 'row' ? container.scrollTop : container.scrollLeft;
       if (axis === 'row') {
-        if (pointer.y > rect.bottom - AUTOSCROLL_EDGE_PX) {
-          container.scrollTop += AUTOSCROLL_STEP_PX;
-        } else if (pointer.y < rect.top + headerHeight() + AUTOSCROLL_EDGE_PX) {
-          container.scrollTop -= AUTOSCROLL_STEP_PX;
-        }
-      } else if (pointer.x > rect.right - AUTOSCROLL_EDGE_PX) {
+        return edgeScrollRows(container, pointer.y, headerHeight());
+      }
+      const rect = container.getBoundingClientRect();
+      const before = container.scrollLeft;
+      if (pointer.x > rect.right - AUTOSCROLL_EDGE_PX) {
         container.scrollLeft += AUTOSCROLL_STEP_PX;
       } else if (pointer.x < rect.left + columnLeading() + AUTOSCROLL_EDGE_PX) {
         container.scrollLeft -= AUTOSCROLL_STEP_PX;
       }
-      return (axis === 'row' ? container.scrollTop : container.scrollLeft) !== before;
+      return container.scrollLeft !== before;
     },
     [containerRef, headerHeight, columnLeading]
   );

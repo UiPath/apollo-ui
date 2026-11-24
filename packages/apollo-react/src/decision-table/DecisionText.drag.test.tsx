@@ -112,6 +112,24 @@ describe('DecisionText rule drag', () => {
     expect(onMoveRule.mock.calls).toEqual([[2, 0]]);
   });
 
+  it('starts no drag from a press of another button than the primary one', () => {
+    const onMoveRule = vi.fn();
+    renderDrag(onMoveRule);
+    const target = handle('r1');
+    if (!target) throw new Error('no handle on r1');
+    fireEvent.pointerDown(target, {
+      clientX: 10,
+      clientY: 50,
+      pointerId: 1,
+      button: 2,
+      buttons: 2,
+    });
+    pointer('pointermove', 280);
+    expect(dropEdges()).toEqual([]);
+    pointer('pointerup', 280);
+    expect(onMoveRule).not.toHaveBeenCalled();
+  });
+
   it('shows no line and moves nothing over its own card', () => {
     const onMoveRule = vi.fn();
     renderDrag(onMoveRule);

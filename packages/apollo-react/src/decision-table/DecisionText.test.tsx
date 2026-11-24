@@ -406,7 +406,7 @@ describe('DecisionText', () => {
       it("shares one slot size between a line's remove action, glyph and the card's actions", () => {
         editable();
         const slot = (element: Element | null | undefined) =>
-          element?.className.split(' ').includes('size-6');
+          element?.className.split(' ').includes('size-[var(--sentence-line)]');
         expect(slot(card('r2').querySelector('[data-rule-action="clear"]'))).toBe(true);
         expect(slot(card('r2').querySelector('[data-glyph]')?.parentElement)).toBe(true);
         expect(slot(card('r2').querySelector('[data-rule-action="rule"]'))).toBe(true);

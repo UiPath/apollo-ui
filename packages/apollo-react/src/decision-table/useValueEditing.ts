@@ -255,15 +255,11 @@ export const useValueEditing = ({
     return true;
   };
 
-  const onAction = (action: RuleAction): boolean => {
-    if (action.action === 'clear') {
-      clear(action.cell, selected?.rowId === action.cell.rowId, false);
-      if (selected?.rowId !== action.cell.rowId) {
-        navigation.select(ruleSelection(action.cell.rowId), undefined, false);
-      }
-      return true;
+  const onClear = ({ cell }: Extract<RuleAction, { action: 'clear' }>) => {
+    clear(cell, selected?.rowId === cell.rowId, false);
+    if (selected?.rowId !== cell.rowId) {
+      navigation.select(ruleSelection(cell.rowId), undefined, false);
     }
-    return false;
   };
 
   const deleteRule = (rowId: string) => {
@@ -276,7 +272,11 @@ export const useValueEditing = ({
 
   const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
     const action = edit ? clickedAction(event.target) : null;
-    if (action) return onAction(action);
+    if (action?.action === 'clear') {
+      onClear(action);
+      return true;
+    }
+    if (action) return false;
     const value = edit ? clickedValue(event.target) : null;
     if (!value) return false;
     start(value);
