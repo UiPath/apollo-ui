@@ -131,17 +131,24 @@ const storyColumnField = (
   const common = {
     label: column?.name ?? columnId,
     type: columnTypeOf(columnId, edits),
-    allowedValues: edits[columnId]?.allowedValues ?? (ALLOWED_VALUES[columnId] ?? []).join(', '),
   };
   const binding = edits[columnId]?.binding ?? columnId;
   return isOutput(table, columnId)
-    ? { kind: 'output', ...common, name: binding, nameRequired: false }
+    ? {
+        kind: 'output',
+        ...common,
+        name: binding,
+        nameRequired: false,
+        allowedValues:
+          edits[columnId]?.allowedValues ?? (ALLOWED_VALUES[columnId] ?? []).join(', '),
+      }
     : { kind: 'input', ...common, expression: binding };
 };
 
 const columnEditOf = ({ label: _label, ...change }: ColumnChange<FixtureType>) => {
-  const { type, allowedValues } = change;
+  const { type } = change;
   const binding = change.kind === 'input' ? change.expression : change.name;
+  const allowedValues = change.kind === 'output' ? change.allowedValues : undefined;
   return {
     ...(binding === undefined ? {} : { binding }),
     ...(type === undefined ? {} : { type }),

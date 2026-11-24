@@ -18,9 +18,9 @@ import {
 } from './sentenceStyles';
 import type { SentenceBand } from './sentenceTypes';
 
-/** What a band column's popover edits, from the host's column: an input's expression, or an output's name and whether it needs one, with the host's type of it. */
+/** What a band column's popover edits, from the host's column: an input's expression, or an output's name, whether it needs one and its allowed values, with the host's type of it. */
 export type ColumnFieldData<Type> =
-  | { kind: 'input'; label: string; expression: string; type: Type; allowedValues: string }
+  | { kind: 'input'; label: string; expression: string; type: Type }
   | {
       kind: 'output';
       label: string;
@@ -32,7 +32,7 @@ export type ColumnFieldData<Type> =
 
 /** The fields Apply changed, trimmed; a field left out is unchanged. */
 export type ColumnChange<Type> =
-  | { kind: 'input'; label?: string; expression?: string; type?: Type; allowedValues?: string }
+  | { kind: 'input'; label?: string; expression?: string; type?: Type }
   | { kind: 'output'; label?: string; name?: string; type?: Type; allowedValues?: string };
 
 /** Editing of a band's input or output from its pill, in the host's column types. */
@@ -101,16 +101,20 @@ const changeOf = <Type,>(
   draft: ColumnDraft<Type>
 ): ColumnChange<Type> => {
   const label = changed(draft.label, field.label);
-  const allowedValues = changed(draft.allowedValues, field.allowedValues);
   const common = {
     ...(label === undefined ? {} : { label }),
     ...(draft.type === field.type ? {} : { type: draft.type }),
-    ...(allowedValues === undefined ? {} : { allowedValues }),
   };
   const binding = changed(draft.binding, bindingOf(field));
   if (field.kind === 'input')
     return { kind: 'input', ...common, ...(binding === undefined ? {} : { expression: binding }) };
-  return { kind: 'output', ...common, ...(binding === undefined ? {} : { name: binding }) };
+  const allowedValues = changed(draft.allowedValues, field.allowedValues);
+  return {
+    kind: 'output',
+    ...common,
+    ...(binding === undefined ? {} : { name: binding }),
+    ...(allowedValues === undefined ? {} : { allowedValues }),
+  };
 };
 
 /** A band column's editor: its label, its expression or name, its type and allowed values. Enter in a field applies. */
@@ -130,7 +134,7 @@ export const ColumnPopover = <Type,>({
     label: field.label,
     binding: bindingOf(field),
     type: field.type,
-    allowedValues: field.allowedValues,
+    allowedValues: field.kind === 'output' ? field.allowedValues : '',
   });
   const required = field.kind === 'input' || field.nameRequired;
   const missing = required && draft.binding.trim() === '';
@@ -233,23 +237,25 @@ export const ColumnPopover = <Type,>({
           dataTestId={`${dataTestId}-type`}
         />
       </div>
-      <div className={COLUMN_FIELD_CLASS}>
-        <Label htmlFor={`${id}-allowed`} className={COLUMN_FIELD_LABEL_CLASS}>
-          {labels.allowedValues}
-        </Label>
-        <Input
-          id={`${id}-allowed`}
-          className={COLUMN_CODE_FIELD_CLASS}
-          placeholder={placeholder}
-          aria-describedby={`${id}-allowed-hint`}
-          value={draft.allowedValues}
-          onChange={set('allowedValues')}
-          data-testid={`${dataTestId}-allowed-values`}
-        />
-        <span id={`${id}-allowed-hint`} className={COLUMN_HINT_CLASS}>
-          {labels.allowedValuesHint}
-        </span>
-      </div>
+      {!input && (
+        <div className={COLUMN_FIELD_CLASS}>
+          <Label htmlFor={`${id}-allowed`} className={COLUMN_FIELD_LABEL_CLASS}>
+            {labels.allowedValues}
+          </Label>
+          <Input
+            id={`${id}-allowed`}
+            className={COLUMN_CODE_FIELD_CLASS}
+            placeholder={placeholder}
+            aria-describedby={`${id}-allowed-hint`}
+            value={draft.allowedValues}
+            onChange={set('allowedValues')}
+            data-testid={`${dataTestId}-allowed-values`}
+          />
+          <span id={`${id}-allowed-hint`} className={COLUMN_HINT_CLASS}>
+            {labels.allowedValuesHint}
+          </span>
+        </div>
+      )}
       <PopoverFooter
         links={links}
         onCancel={onCancel}
