@@ -11,7 +11,10 @@ afterEach(() => {
 });
 
 describe('useRuleDrag', () => {
-  it("drops in the upper half of a card of a sparse window at that card's own index", () => {
+  it.each([
+    ['upper half of card r100', CARD_PX + 20, [[0, 99]]],
+    ['lower half of card r0', 80, []],
+  ])("drops in the %s of a sparse window at that card's own edge", (_, y, calls) => {
     const rowIds = Array.from({ length: 102 }, (_, index) => `r${index}`);
     const view = document.body.appendChild(document.createElement('ul'));
     const mounted = [0, 100, 101];
@@ -47,9 +50,9 @@ describe('useRuleDrag', () => {
     });
     act(() => {
       document.dispatchEvent(
-        new PointerEvent('pointerup', { clientX: 10, clientY: CARD_PX + 20, pointerId: 1 })
+        new PointerEvent('pointerup', { clientX: 10, clientY: y, pointerId: 1 })
       );
     });
-    expect(onMoveRule.mock.calls).toEqual([[0, 99]]);
+    expect(onMoveRule.mock.calls).toEqual(calls);
   });
 });

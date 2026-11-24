@@ -2,13 +2,15 @@ import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RULE_DRAG_PREVIEW_OFFSET_PX } from './constants';
 import { edgeScrollRows, followPointerDrag, type PointerPoint } from './pointerDrag';
+import { SENTENCE_RULE_GAP_PX } from './sentenceRuleHeights';
 import { dropIndex } from './useDragReorder';
 
-/** A rule drag: the dragged rule, and the boundary (`0..count`) it would drop before. */
+/** A rule drag: the dragged rule, the boundary (`0..count`) it would drop before, and where in the list that boundary's gap is centred. */
 export interface RuleDrag {
   rowId: string;
   from: number;
   boundary: number;
+  gapTopPx: number;
 }
 
 /** Where a rule drag runs: the cards' view, its scroller and header, the copy's slot, and the move. */
@@ -25,21 +27,25 @@ export interface RuleDragSurface {
 /** Moves a rule from one index to another. */
 export type MoveRule = (from: number, to: number) => void;
 
-/** The boundary at the edge nearest `y` of the mounted card under it, by row index. */
+/** The boundary at the edge nearest `y` of the mounted card under it, by that card's own index, with its gap's centre in the list. */
 const boundaryAt = (
   container: HTMLElement,
   indexOf: ReadonlyMap<string, number>,
   y: number
-): number | null => {
-  let boundary: number | null = null;
+): Pick<RuleDrag, 'boundary' | 'gapTopPx'> | null => {
+  let after: Pick<RuleDrag, 'boundary' | 'gapTopPx'> | null = null;
   for (const card of container.querySelectorAll<HTMLElement>('li[data-row-id]')) {
     const index = indexOf.get(card.dataset.rowId ?? '');
     if (index === undefined) continue;
-    const { top, height } = card.getBoundingClientRect();
-    if (y < top + height / 2) return index;
-    boundary = index + 1;
+    const { top, bottom, height } = card.getBoundingClientRect();
+    const listTop = card.parentElement?.getBoundingClientRect().top ?? 0;
+    if (y < top + height / 2) {
+      return { boundary: index, gapTopPx: top - listTop - SENTENCE_RULE_GAP_PX / 2 };
+    }
+    after = { boundary: index + 1, gapTopPx: bottom - listTop - SENTENCE_RULE_GAP_PX / 2 };
+    if (y < bottom) return after;
   }
-  return boundary;
+  return after;
 };
 
 const copyOf = (card: HTMLElement): Node => {
@@ -89,12 +95,12 @@ export const useRuleDrag = (rowIds: readonly string[], onMoveRule: MoveRule | un
           `translate(${x + RULE_DRAG_PREVIEW_OFFSET_PX}px, ${y + RULE_DRAG_PREVIEW_OFFSET_PX}px)`
         );
         const state = dragRef.current;
-        const boundary = boundaryAt(view, indexOf, y);
-        if (!state || boundary === null || boundary === state.boundary) return;
-        dragRef.current = { ...state, boundary };
+        const target = boundaryAt(view, indexOf, y);
+        if (!state || target === null || target.boundary === state.boundary) return;
+        dragRef.current = { ...state, ...target };
         setDrag(dragRef.current);
       };
-      dragRef.current = { rowId, from, boundary: from };
+      dragRef.current = { rowId, from, boundary: from, gapTopPx: 0 };
       setDrag(dragRef.current);
       const pointer = { x: event.clientX, y: event.clientY };
       retarget(pointer);

@@ -75,11 +75,10 @@ const pointer = (type: string, y: number, init: PointerEventInit = {}) =>
       })
     );
   });
-const dropEdges = () =>
-  [...document.querySelectorAll<HTMLElement>('li[data-drop]')].map(
-    (card) => `${card.dataset.rowId}:${card.dataset.drop}`
-  );
-const preview = () => document.querySelector<HTMLElement>('[inert][aria-hidden="true"]');
+const GAP_PX = 8;
+const indicator = () => document.querySelector<HTMLElement>('[data-drop-indicator]');
+const dropAt = () => indicator()?.style.top ?? null;
+const preview = () => document.querySelector<HTMLElement>('div[inert][aria-hidden="true"]');
 
 describe('DecisionText rule drag', () => {
   it('holds a grip in each number pill only when the host moves rules', () => {
@@ -95,12 +94,22 @@ describe('DecisionText rule drag', () => {
     renderDrag(onMoveRule);
     grab('r1', 50);
     pointer('pointermove', 2 * CARD_PX + 80);
-    expect(dropEdges()).toEqual(['r3:after']);
+    expect(dropAt()).toBe(`${3 * CARD_PX - GAP_PX / 2}px`);
     pointer('pointermove', 2 * CARD_PX + 20);
-    expect(dropEdges()).toEqual(['r3:before']);
+    expect(dropAt()).toBe(`${2 * CARD_PX - GAP_PX / 2}px`);
     pointer('pointerup', 2 * CARD_PX + 20);
     expect(onMoveRule.mock.calls).toEqual([[0, 1]]);
-    expect(dropEdges()).toEqual([]);
+    expect(indicator()).toBeNull();
+  });
+
+  it('shows no drop indicator until a drag has somewhere to drop, inert and hidden from readers', () => {
+    renderDrag(vi.fn());
+    expect(indicator()).toBeNull();
+    grab('r1', 50);
+    pointer('pointermove', 280);
+    expect(indicator()).toHaveAttribute('aria-hidden', 'true');
+    expect(indicator()).toHaveAttribute('inert');
+    expect(document.querySelector('li[data-drop]')).toBeNull();
   });
 
   it('moves a rule up to the top edge of the first card', () => {
@@ -108,7 +117,7 @@ describe('DecisionText rule drag', () => {
     renderDrag(onMoveRule);
     grab('r3', 250);
     pointer('pointermove', 10);
-    expect(dropEdges()).toEqual(['r1:before']);
+    expect(dropAt()).toBe(`${-GAP_PX / 2}px`);
     pointer('pointerup', 10);
     expect(onMoveRule.mock.calls).toEqual([[2, 0]]);
   });
@@ -126,7 +135,7 @@ describe('DecisionText rule drag', () => {
       buttons: 2,
     });
     pointer('pointermove', 280);
-    expect(dropEdges()).toEqual([]);
+    expect(indicator()).toBeNull();
     pointer('pointerup', 280);
     expect(onMoveRule).not.toHaveBeenCalled();
   });
@@ -146,7 +155,7 @@ describe('DecisionText rule drag', () => {
     rerender(dragView(undefined));
     pointer('pointerup', 280);
     expect(later).toHaveBeenCalledTimes(1);
-    expect(dropEdges()).toEqual([]);
+    expect(indicator()).toBeNull();
   });
 
   it('drops where the pointer is released, not where it last moved', () => {
@@ -168,7 +177,7 @@ describe('DecisionText rule drag', () => {
     renderDrag(onMoveRule);
     grab('r2', 150);
     pointer('pointermove', 120);
-    expect(dropEdges()).toEqual([]);
+    expect(indicator()).toBeNull();
     pointer('pointerup', 120);
     expect(onMoveRule).not.toHaveBeenCalled();
   });
@@ -184,7 +193,7 @@ describe('DecisionText rule drag', () => {
     cancel();
     pointer('pointerup', 280);
     expect(onMoveRule).not.toHaveBeenCalled();
-    expect(dropEdges()).toEqual([]);
+    expect(indicator()).toBeNull();
   });
 
   it('cancels when the rules change under it', () => {

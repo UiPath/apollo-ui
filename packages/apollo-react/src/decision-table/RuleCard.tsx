@@ -34,7 +34,6 @@ import {
   RULE_CARD_CLASS,
   RULE_CITATIONS_CLASS,
   RULE_DRAG_HANDLE_CLASS,
-  RULE_DROP_LINE_CLASS,
   RULE_TITLE_CLASS,
   SENTENCE_CLASS,
 } from './sentenceStyles';
@@ -88,12 +87,7 @@ export type RuleCardMode =
       onRenameRule: RenameRule | undefined;
       /** Whether its number pill holds a drag handle. */
       draggable: boolean;
-      /** The card edge a drag would drop on, if any. */
-      drop: RuleDropEdge;
     };
-
-/** The edge of a card a dragged rule drops on. */
-export type RuleDropEdge = 'before' | 'after' | undefined;
 
 export type RuleCardProps = RuleCardBase &
   RuleCardMode & {
@@ -185,8 +179,7 @@ export const RuleCard = memo<RuleCardProps>(
         aria-label={card.ariaLabel}
         aria-describedby={card.describedBy}
         aria-current={ruleSelected || undefined}
-        className={cn(RULE_CARD_CLASS, edit?.draggable && RULE_DROP_LINE_CLASS)}
-        data-drop={edit?.drop}
+        className={RULE_CARD_CLASS}
         data-row-id={rule.rowId}
         data-tone={card.tone}
         data-change={diff?.change}

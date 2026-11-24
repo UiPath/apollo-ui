@@ -7,7 +7,7 @@ const SENTENCE_LINE_HEIGHT_PX = 24;
 const SENTENCE_RULE_BORDER_PX = 1;
 const SENTENCE_RULE_PADDING_PX = 10;
 const SENTENCE_LINES_GAP_PX = 2;
-const SENTENCE_RULE_GAP_PX = 8;
+export const SENTENCE_RULE_GAP_PX = 8;
 /** A rule with no condition lines: its heading and its lead on one line. */
 export const SENTENCE_MIN_RULE_HEIGHT_PX =
   2 * SENTENCE_RULE_BORDER_PX +
