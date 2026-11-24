@@ -184,6 +184,7 @@ export const RuleCard = memo<RuleCardProps>(
             ? {
                 transform: CSS.Translate.toString(sortable.transform),
                 transition: sortable.transition,
+                ...(sortable.isDragging && { position: 'relative', zIndex: 1 }),
               }
             : undefined
         }

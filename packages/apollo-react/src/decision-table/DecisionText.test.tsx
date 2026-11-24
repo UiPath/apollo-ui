@@ -5654,6 +5654,20 @@ describe('DecisionText', () => {
         expect(onMoveRule.mock.calls).toEqual([[0, 1]]);
       });
 
+      it('raises the dragged card above the cards it passes, and lowers it on drop', () => {
+        renderMenus({ onMoveRule: vi.fn() });
+        press('r1', 'mouse', 30);
+        moveTo(60);
+        moveTo(250);
+        expect(card('r1').style.position).toBe('relative');
+        expect(card('r1').style.zIndex).toBe('1');
+        expect(card('r2').style.zIndex).toBe('');
+        act(() => {
+          fireEvent.pointerUp(document, { clientX: 10, clientY: 250 });
+        });
+        expect(card('r1').style.zIndex).toBe('');
+      });
+
       it('describes the drag handle with the drag instructions', () => {
         renderMenus({ onMoveRule: vi.fn() });
         const describedBy = handle('r1').getAttribute('aria-describedby');
