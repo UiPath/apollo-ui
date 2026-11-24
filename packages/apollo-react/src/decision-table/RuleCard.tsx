@@ -161,11 +161,14 @@ export const RuleCard = memo<RuleCardProps>(
       ) : null;
 
     const titleRow = title !== null || (rowSelected && edit?.onRenameRule !== undefined);
+    const firstLineBadges = [card.badges.heading, card.badges.lead].filter(
+      (badge) => badge !== null
+    );
     const actions = edit ? (
       <RuleActions
         position={position}
         selected={rowSelected}
-        floating={!titleRow}
+        placement={titleRow ? 'title' : firstLineBadges.length > 0 ? 'float-beside-mark' : 'float'}
         labels={edit.editLabels}
         openMenu={edit.openMenu}
       />
@@ -246,7 +249,7 @@ export const RuleCard = memo<RuleCardProps>(
                 </div>
                 <LineEnd
                   removals={card.removals.lead}
-                  badges={[card.badges.heading, card.badges.lead].filter((badge) => badge !== null)}
+                  badges={firstLineBadges}
                   reserve={actions !== null && !titleRow}
                 />
               </div>

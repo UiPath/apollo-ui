@@ -1,7 +1,7 @@
 import type React from 'react';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { RemoveConditionButton, type RemoveConditionButtonProps } from './RemoveConditionButton';
-import { ACTIONS_RESERVE_CLASS, EMPTY_SLOT_CLASS, LINE_END_CLASS } from './sentenceStyles';
+import { ACTIONS_RESERVE_CLASS, LINE_END_CLASS } from './sentenceStyles';
 
 export interface LineEndProps {
   removals: readonly RemoveConditionButtonProps[];
@@ -22,7 +22,6 @@ export const LineEnd: React.FC<LineEndProps> = ({ removals, badges, reserve }) =
       {badges.map((badge) => (
         <MarkBadge key={badge.id} {...badge} />
       ))}
-      {reserve && badges.length === 0 && <span aria-hidden className={EMPTY_SLOT_CLASS} />}
     </span>
   );
 };

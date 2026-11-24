@@ -275,9 +275,15 @@ export const PENDING_LINE_CLASS =
 
 export const RULE_ACTIONS_CLASS = 'ms-auto flex h-[var(--sentence-line)] shrink-0 items-center';
 
-/** An unnamed card's actions over its top end, left of the glyph column. */
+/** An unnamed card's actions over its top end. */
 export const RULE_ACTIONS_FLOAT_CLASS =
-  'absolute end-[calc(0.75rem+var(--sentence-line))] top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center';
+  'absolute end-3 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center';
+
+/** An unnamed card's actions one slot in, leaving the edge to its first line's mark. */
+export const RULE_ACTIONS_FLOAT_BESIDE_MARK_CLASS = cn(
+  RULE_ACTIONS_FLOAT_CLASS,
+  'end-[calc(0.75rem+var(--sentence-line))]'
+);
 
 export const RULE_ACTION_CLASS = cn(
   LINE_SLOT_CLASS,
@@ -311,9 +317,6 @@ export const HEADER_CITATION_REVEAL_CLASS =
 export const CLAUSE_CLASS = 'group/clause flex items-start gap-2';
 
 export const CLAUSE_TEXT_CLASS = 'min-w-0';
-
-/** The glyph column beside a floating card's actions when its first line has no glyph. */
-export const EMPTY_SLOT_CLASS = 'size-[var(--sentence-line)] shrink-0';
 
 export const REMOVE_CONDITION_CLASS = cn(
   LINE_SLOT_CLASS,
