@@ -53,3 +53,24 @@ describe('display.iconSize', () => {
     expect(() => displayConfigSchema.parse({ iconSize: 'small' })).toThrow();
   });
 });
+
+describe('display.labelLines', () => {
+  const manifestWithLines = (labelLines: unknown) => ({
+    nodeType: 'uipath.test.node',
+    version: '1.0.0',
+    display: { label: 'Test Node', labelLines },
+    tags: [],
+    sortOrder: 0,
+    handleConfiguration: [],
+  });
+
+  it.each([1, 2, 4])('accepts %i', (labelLines) => {
+    expect(() => nodeManifestSchema.parse(manifestWithLines(labelLines))).not.toThrow();
+    expect(() => displayConfigSchema.parse({ labelLines })).not.toThrow();
+  });
+
+  it.each([0, 1.5, '2'])('rejects %s', (labelLines) => {
+    expect(() => nodeManifestSchema.parse(manifestWithLines(labelLines))).toThrow();
+    expect(() => displayConfigSchema.parse({ labelLines })).toThrow();
+  });
+});

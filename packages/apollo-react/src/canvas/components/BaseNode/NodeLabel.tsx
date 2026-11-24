@@ -1,6 +1,6 @@
 import { forwardRef, memo } from 'react';
 import { NODE_TEXT_BOTTOM_OFFSET, NODE_TEXT_BOTTOM_OFFSET_WITH_HANDLES } from '../../constants';
-import { isWideNodeShape, type NodeShape } from '../../schema';
+import { isWideNodeShape, type NodeLabelLines, type NodeShape } from '../../schema';
 import { cx } from '../../utils/CssUtil';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { useInlineLabelEditing } from './useInlineLabelEditing';
@@ -61,6 +61,8 @@ const ConditionalTooltip = ({ content, placement = 'top', children }: Conditiona
 
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   shape?: NodeShape;
+  /** Lines a wide node's name may take before it's cut off with "…". */
+  lines?: number;
   backgroundColor?: string;
   onDoubleClick?: (e: React.MouseEvent) => void;
   'data-testid'?: string;
@@ -70,6 +72,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
   (
     {
       shape,
+      lines = 1,
       backgroundColor,
       onDoubleClick,
       children,
@@ -89,11 +92,19 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
         'text-center text-sm leading-[18px] font-semibold text-foreground overflow-hidden',
         backgroundColor && 'px-1.5 py-0.5 rounded-sm',
         isWideNodeShape(shape)
-          ? 'w-full text-left whitespace-nowrap text-ellipsis'
+          ? lines > 1
+            ? 'w-full text-left wrap-break-word line-clamp-(--node-label-lines)'
+            : 'w-full text-left whitespace-nowrap text-ellipsis'
           : 'wrap-break-word line-clamp-3',
         className
       )}
-      style={{ ...style, ...(backgroundColor ? { backgroundColor } : undefined) }}
+      style={
+        {
+          ...style,
+          ...(isWideNodeShape(shape) && lines > 1 ? { '--node-label-lines': lines } : undefined),
+          ...(backgroundColor ? { backgroundColor } : undefined),
+        } as React.CSSProperties
+      }
     >
       {children}
     </div>
@@ -103,6 +114,8 @@ Header.displayName = 'Header';
 
 interface SubHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   shape?: NodeShape;
+  /** Lines a wide node's description may take: 2, or 1 when the name takes more than one. */
+  lines?: 1 | 2;
   onDoubleClick?: (e: React.MouseEvent) => void;
   'data-testid'?: string;
 }
@@ -111,6 +124,7 @@ const SubHeader = forwardRef<HTMLDivElement, SubHeaderProps>(
   (
     {
       shape,
+      lines = 2,
       onDoubleClick,
       children,
       className,
@@ -127,7 +141,11 @@ const SubHeader = forwardRef<HTMLDivElement, SubHeaderProps>(
       onDoubleClick={onDoubleClick}
       className={cx(
         'text-center text-xs leading-[18px] text-foreground-muted wrap-break-word overflow-hidden whitespace-pre-line',
-        isWideNodeShape(shape) ? 'w-full text-left line-clamp-2' : 'line-clamp-5',
+        isWideNodeShape(shape)
+          ? lines === 1
+            ? 'w-full text-left line-clamp-1'
+            : 'w-full text-left line-clamp-2'
+          : 'line-clamp-5',
         className
       )}
       style={style}
@@ -218,6 +236,12 @@ export interface NodeLabelProps {
   labelTooltip?: string;
   labelBackgroundColor?: string;
   shape?: NodeShape;
+  /**
+   * Lines a wide node's name may take before it's cut off with "…" (default 1). The full name
+   * shows in a tooltip when it's cut off. With two or more, the description takes one line
+   * instead of two. Other shapes always wrap their name below the node.
+   */
+  labelLines?: NodeLabelLines;
   hasBottomHandles?: boolean;
   selected?: boolean;
   dragging?: boolean;
@@ -236,6 +260,7 @@ const NodeLabelInternal = ({
   labelTooltip,
   labelBackgroundColor,
   shape,
+  labelLines = 1,
   hasBottomHandles,
   selected,
   dragging,
@@ -277,6 +302,9 @@ const NodeLabelInternal = ({
     );
   }
 
+  // A wide node's name and description share about three lines at the smallest height.
+  const subLabelLines = labelLines > 1 ? 1 : 2;
+
   const headerTooltipContent = labelTooltip ?? label;
   const subHeaderTooltipContent = labelTooltip ?? subLabel;
 
@@ -299,7 +327,7 @@ const NodeLabelInternal = ({
             variant="normal"
             backgroundColor={labelBackgroundColor}
             placeholder={labelPlaceholder}
-            rows={isWideNodeShape(shape) ? 1 : undefined}
+            rows={isWideNodeShape(shape) ? labelLines : undefined}
             aria-label="Edit node name"
           />
           <EditableLabel
@@ -311,7 +339,7 @@ const NodeLabelInternal = ({
             shape={shape}
             variant="subtext"
             placeholder={subLabelPlaceholder}
-            rows={isWideNodeShape(shape) ? 2 : undefined}
+            rows={isWideNodeShape(shape) ? subLabelLines : undefined}
             aria-label="Edit node description"
           />
         </>
@@ -320,6 +348,7 @@ const NodeLabelInternal = ({
           <ConditionalTooltip content={headerTooltipContent} placement={tooltipPlacement}>
             <Header
               shape={shape}
+              lines={labelLines}
               backgroundColor={labelBackgroundColor}
               onDoubleClick={readonly ? undefined : handleDoubleClick(labelInputRef)}
               data-testid="node-label"
@@ -331,6 +360,7 @@ const NodeLabelInternal = ({
             <ConditionalTooltip content={subHeaderTooltipContent} placement={tooltipPlacement}>
               <SubHeader
                 shape={shape}
+                lines={subLabelLines}
                 onDoubleClick={readonly ? undefined : handleDoubleClick(subLabelInputRef)}
                 data-testid="node-sublabel"
               >

@@ -89,6 +89,12 @@ describe('resolveDisplay', () => {
     expect(resolveDisplay(manifest, { display: { iconSize: undefined } }).iconSize).toBe('compact');
   });
 
+  it('lets an instance display.labelLines override the manifest, and keeps it when undefined', () => {
+    const manifest = { label: 'Node', icon: 'box', labelLines: 2 };
+    expect(resolveDisplay(manifest, { display: { labelLines: 1 } }).labelLines).toBe(1);
+    expect(resolveDisplay(manifest, { display: { labelLines: undefined } }).labelLines).toBe(2);
+  });
+
   it('uses manifest canvasLabel for canvas label when no instance override', () => {
     const result = resolveDisplay({
       label: 'Send Outlook Email',

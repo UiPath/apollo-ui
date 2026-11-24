@@ -1,4 +1,4 @@
-import type { NodeIconSize, NodeShape } from '../../schema';
+import type { NodeIconSize, NodeLabelLines, NodeShape } from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ExecutionState } from '../../types/execution';
 import type { ValidationState } from '../../types/validation';
@@ -33,6 +33,8 @@ export interface BaseNodeData extends Record<string, unknown> {
     height?: number;
     /** Per-node override of the manifest's `display.iconSize`. */
     iconSize?: NodeIconSize;
+    /** Per-node override of the manifest's `display.labelLines`. */
+    labelLines?: NodeLabelLines;
   };
 
   /**
