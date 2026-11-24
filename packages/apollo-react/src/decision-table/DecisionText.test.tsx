@@ -1190,6 +1190,29 @@ describe('DecisionText', () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
+    it.each([
+      'Delete',
+      'Backspace',
+      'Enter',
+      ' ',
+    ])('leaves %s on a focused glyph to it, clearing or editing no selected cell', (key) => {
+      const onClearCell = vi.fn();
+      const onStartEdit = vi.fn();
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        marks: scoreMarks,
+        initial: { kind: 'cell', rowId: 'm3', columnId: 'score' } satisfies SentenceSelection,
+        edit: editWith({ onClearCell, onStartEdit }),
+      });
+      const glyph = within(card('m3')).getByRole('button', { name: 'Warning: Overlaps row 1' });
+      act(() => glyph.focus());
+      fireEvent.keyDown(glyph, { key });
+      expect(onClearCell).not.toHaveBeenCalled();
+      expect(onStartEdit).not.toHaveBeenCalled();
+    });
+
     it("shows a selected rule's message once the pointer is on its glyph", () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,
