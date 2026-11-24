@@ -1,12 +1,14 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
+import { LineEnd } from './LineEnd';
 import { LineLead } from './LineLead';
 import { LineText, type LineTextProps } from './LineText';
-import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
-import { type RemoveConditionButtonProps, RemoveConditionButtons } from './RemoveConditionButton';
+import type { MarkBadgeProps } from './MarkBadge';
+import type { RemoveConditionButtonProps } from './RemoveConditionButton';
 import {
   ADDED_LINE_CLASS,
   CLAUSE_CLASS,
+  CLAUSE_TEXT_CLASS,
   LINE_CLASS,
   MATCHED_LINE_CLASS,
   PENDING_LINE_CLASS,
@@ -53,9 +55,10 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
     >
       <LineLead matched={matched} labels={lineProps.labels} />
       {change && <span className="sr-only">{lineProps.labels.changeStatus(change)}</span>}
-      <LineText parts={line.parts} {...lineProps} />
-      {removal && <RemoveConditionButtons removals={[removal]} />}
-      {badge && <MarkBadge {...badge} />}
+      <span className={CLAUSE_TEXT_CLASS}>
+        <LineText parts={line.parts} {...lineProps} />
+      </span>
+      <LineEnd removals={removal ? [removal] : []} badges={badge ? [badge] : []} reserve={false} />
     </li>
   );
 };

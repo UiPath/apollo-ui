@@ -8,7 +8,7 @@ import {
 } from '@uipath/apollo-wind';
 import { Ellipsis, Plus } from 'lucide-react';
 import type React from 'react';
-import { RULE_ACTION_CLASS, RULE_ACTIONS_CLASS } from './sentenceStyles';
+import { RULE_ACTION_CLASS, RULE_ACTIONS_CLASS, RULE_ACTIONS_FLOAT_CLASS } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
 
 /** A card's action strings. */
@@ -23,6 +23,8 @@ export interface RuleActionsProps {
   position: number;
   /** Whether the card's row is selected, so its actions are in the tab order. */
   selected: boolean;
+  /** Over the card's top end, for a card with no title row to hold them. */
+  floating: boolean;
   labels: RuleActionsLabels;
   /** The card's menu that is open, if any. */
   openMenu: RuleMenuKind | undefined;
@@ -33,14 +35,19 @@ const ACTIONS = [
   { action: 'rule', Icon: Ellipsis, label: 'ruleActions' },
 ] as const;
 
-/** A card's own actions at its top end, after its lines in the tab order; the section resolves their clicks. */
+/** A card's own actions at its top end; the section resolves their clicks. */
 export const RuleActions: React.FC<RuleActionsProps> = ({
   position,
   selected,
+  floating,
   labels,
   openMenu,
 }) => (
-  <div className={RULE_ACTIONS_CLASS}>
+  <div
+    className={floating ? RULE_ACTIONS_FLOAT_CLASS : RULE_ACTIONS_CLASS}
+    data-rule-actions
+    data-floating={floating}
+  >
     <TooltipProvider>
       {ACTIONS.map(({ action, Icon, label }) => (
         <Tooltip key={action}>

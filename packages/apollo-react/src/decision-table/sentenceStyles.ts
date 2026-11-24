@@ -118,9 +118,18 @@ export const LINE_CLASS = cn(
   'group-data-[change=delete]/row:**:text-foreground-de-emp! group-data-[change=delete]/row:**:line-through'
 );
 
+/** One line-height square: a line's remove action, its glyph, and a card's actions share it. */
+export const LINE_SLOT_CLASS = 'inline-flex size-6 shrink-0 items-center justify-center';
+
+/** A line's end: its remove actions, then its glyph, at the card's end edge. */
+export const LINE_END_CLASS = 'ms-auto flex h-[var(--sentence-line)] shrink-0 items-center';
+
+/** The room a floating card's actions take on its first line, before the glyph column. */
+export const ACTIONS_RESERVE_CLASS = 'w-12 shrink-0';
+
 export const SENTENCE_CLASS = 'min-h-[var(--sentence-line)]';
 
-export const RULE_TITLE_CLASS = 'min-h-[var(--sentence-line)] font-semibold';
+export const RULE_TITLE_CLASS = 'flex min-h-[var(--sentence-line)] items-start gap-2 font-semibold';
 
 export const RULE_NAME_CLASS =
   'h-[var(--sentence-line)] w-full min-w-0 bg-transparent font-semibold text-foreground outline-none';
@@ -181,7 +190,7 @@ export const OUTPUT_VALUE_CLASS =
 export const EMPTY_OUTPUT_VALUE_CLASS =
   'inline-flex items-center rounded-md border border-dashed border-border px-1.5 text-sm leading-[calc(var(--sentence-line)-4px)] text-foreground-de-emp';
 
-export const LINE_MARK_CLASS = 'inline-flex h-[var(--sentence-line)] shrink-0 items-center';
+export const LINE_MARK_CLASS = LINE_SLOT_CLASS;
 
 export const MARK_GLYPH_CLASS = 'size-3.5 forced-colors:text-[CanvasText]';
 
@@ -257,13 +266,15 @@ export const POPOVER_APPLY_DIMMED_CLASS = 'aria-disabled:opacity-50';
 export const PENDING_LINE_CLASS =
   '[&_[data-kind=value]]:rounded-md [&_[data-kind=value]]:border [&_[data-kind=value]]:border-dashed [&_[data-kind=value]]:border-border [&_[data-kind=value]]:px-1.5 [&_[data-kind=value]]:font-normal [&_[data-kind=value]]:text-foreground-de-emp';
 
-export const HEADING_ACTIONS_SPACE_CLASS = 'pe-18';
+export const RULE_ACTIONS_CLASS = 'ms-auto flex h-[var(--sentence-line)] shrink-0 items-center';
 
-export const RULE_ACTIONS_CLASS =
-  'absolute end-2 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center gap-0.5';
+/** An unnamed card's actions over its top end, left of the glyph column. */
+export const RULE_ACTIONS_FLOAT_CLASS =
+  'absolute end-9 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center';
 
 export const RULE_ACTION_CLASS = cn(
-  'size-6 text-foreground-de-emp hover:text-foreground',
+  LINE_SLOT_CLASS,
+  'text-foreground-de-emp hover:text-foreground',
   'opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100'
 );
 
@@ -290,13 +301,18 @@ export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
 export const HEADER_CITATION_REVEAL_CLASS =
   'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
-export const CLAUSE_CLASS = 'group/clause relative pe-7';
+export const CLAUSE_CLASS = 'group/clause flex items-start gap-2';
 
-export const REMOVE_CONDITIONS_CLASS =
-  'absolute end-0 top-0.5 flex opacity-0 group-hover/clause:opacity-100 group-has-[[data-selected]]/row:opacity-100 group-focus-within/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
+export const CLAUSE_TEXT_CLASS = 'min-w-0';
 
-export const REMOVE_CONDITION_CLASS =
-  'size-5 shrink-0 text-foreground-de-emp hover:text-foreground';
+export const REMOVE_CONDITION_CLASS = cn(
+  LINE_SLOT_CLASS,
+  'text-foreground-de-emp hover:text-foreground',
+  'opacity-0 group-hover/clause:opacity-100 group-focus-within/clause:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100'
+);
+
+/** The glyph column of a line or title row with no glyph. */
+export const EMPTY_SLOT_CLASS = 'size-6 shrink-0';
 
 export const ADD_RULE_LINK_CLASS = 'h-auto w-fit gap-1 rounded-md px-2 py-1.5 [&_svg]:size-3.5';
 

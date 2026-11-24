@@ -128,7 +128,9 @@ const renderView = (props: ViewProps = {}) => render(view(props));
 
 const card = (rowId: string) => screen.getByTestId(`nl-row-${rowId}`);
 const ruleLine = (rowId: string, index: 0 | 1) =>
-  card(rowId).querySelector('[data-sentence]')?.firstElementChild?.children[index];
+  card(rowId).querySelector('[data-sentence]')?.firstElementChild?.firstElementChild?.children[
+    index
+  ];
 const mountedRows = () => [...document.querySelectorAll<HTMLElement>('li[data-row-id]')];
 const rowMarks = (rows: Record<string, RowMark>): TableMarks => ({
   rows: new Map(Object.entries(rows)),
@@ -358,6 +360,73 @@ const editWith = (overrides: Partial<FixtureEdit> = {}): FixtureEdit => ({
 
 describe('DecisionText', () => {
   describe('layout', () => {
+    describe('line ends', () => {
+      const editable = (selected: SentenceSelection | null = null, rules = GRID_SENTENCE_RULES) =>
+        render(
+          view({
+            rules,
+            ...GRID_SENTENCE_COLUMNS,
+            selected,
+            onSelect: vi.fn(),
+            edit: editWith({ onRenameRule: vi.fn() }),
+            marks: rowMarks({ r2: { tone: 'warning', title: 'Overlaps', glyph: true } }),
+          })
+        );
+      const endOf = (line: Element) => line.querySelector(':scope > [data-line-end]');
+
+      it('ends every line in one slot holding its remove actions, then its glyph', () => {
+        render(
+          view({
+            selected: null,
+            onSelect: vi.fn(),
+            edit: editWith(),
+            marks: rowMarks({
+              m1: { cells: { debt: { tone: 'error', title: 'Never', glyph: true } } },
+            }),
+          })
+        );
+        const lines = [...document.querySelectorAll('li[data-row-id] li[data-column-id]')];
+        expect(lines.length).toBeGreaterThan(0);
+        for (const line of lines) {
+          const end = endOf(line);
+          expect(end).not.toBeNull();
+          expect(end).toBe(line.lastElementChild);
+          const glyph = end?.querySelector('[data-glyph]');
+          const removes = end?.querySelectorAll('[data-rule-action="clear"]') ?? [];
+          for (const remove of removes) {
+            if (glyph)
+              expect(
+                remove.compareDocumentPosition(glyph) & Node.DOCUMENT_POSITION_FOLLOWING
+              ).toBeTruthy();
+          }
+        }
+        expect(document.querySelector('li[data-row-id] [style*="padding-inline-end"]')).toBeNull();
+      });
+
+      it("shares one slot size between a line's remove action, glyph and the card's actions", () => {
+        editable();
+        const slot = (element: Element | null | undefined) =>
+          element?.className.split(' ').includes('size-6');
+        expect(slot(card('r2').querySelector('[data-rule-action="clear"]'))).toBe(true);
+        expect(slot(card('r2').querySelector('[data-glyph]')?.parentElement)).toBe(true);
+        expect(slot(card('r2').querySelector('[data-rule-action="rule"]'))).toBe(true);
+        expect(slot(card('r2').querySelector('[data-rule-action="conditions"]'))).toBe(true);
+      });
+
+      it("floats an unnamed, unselected rule's actions; gives a named or selected one a title row with them", () => {
+        const named = GRID_SENTENCE_RULES.map((rule) =>
+          rule.rowId === 'r1' ? { ...rule, name: 'Young' } : rule
+        );
+        editable({ kind: 'rule', rowId: 'r2' }, named);
+        const titleOf = (rowId: string) => card(rowId).querySelector('[data-rule-title]');
+        const actionsOf = (rowId: string) => card(rowId).querySelector('[data-rule-actions]');
+        expect(titleOf('r1')?.contains(actionsOf('r1') ?? null)).toBe(true);
+        expect(titleOf('r2')?.contains(actionsOf('r2') ?? null)).toBe(true);
+        expect(titleOf('r3')).toBeNull();
+        expect(actionsOf('r3')).toHaveAttribute('data-floating', 'true');
+      });
+    });
+
     it('shows the decision name before the hit policy on the header line', () => {
       renderView();
       const toggle = screen.getByTestId('nl-toggle');
@@ -876,7 +945,7 @@ describe('DecisionText', () => {
         }),
       });
       const [, debtLine] = card('m1').querySelectorAll('li');
-      const badge = debtLine?.lastElementChild;
+      const badge = debtLine?.lastElementChild?.lastElementChild;
       expect(badge?.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'error');
       expect(badge).toHaveAttribute('data-mark-title', '"-" never matches');
       expect(card('m1')).toHaveAccessibleDescription('Error: "-" never matches');
@@ -968,7 +1037,7 @@ describe('DecisionText', () => {
       expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
     });
 
-    it('puts the glyph of a cell its sentence leaves out on the heading line, once', () => {
+    it('puts the glyph of a cell its sentence leaves out at the end of its sentence, once', () => {
       renderView({
         marks: rowMarks({
           m3: {
@@ -979,13 +1048,12 @@ describe('DecisionText', () => {
           },
         }),
       });
-      const heading = ruleLine('m3', 0);
-      const lead = ruleLine('m3', 1);
-      expect(heading?.querySelector('[data-glyph="error"]')?.parentElement).toHaveAttribute(
+      const end = card('m3').querySelector('[data-sentence] [data-line-end]');
+      expect(end?.querySelector('[data-glyph="error"]')?.parentElement).toHaveAttribute(
         'data-mark-title',
         'Not a number'
       );
-      expect(lead?.querySelector('[data-glyph="warning"]')?.parentElement).toHaveAttribute(
+      expect(end?.querySelector('[data-glyph="warning"]')?.parentElement).toHaveAttribute(
         'data-mark-title',
         'Overlaps row 1'
       );
@@ -5131,12 +5199,13 @@ describe('DecisionText', () => {
       ).toEqual(['Remove Credit Score from rule 3', 'Remove Channel from rule 3']);
     });
 
-    it('reserves room for both remove actions on a lead with two conditions', () => {
+    it("puts both remove actions of a lead with two conditions in its line's end slot", () => {
       renderConditions();
       const lead = [...document.querySelectorAll<HTMLElement>('.group\\/clause')].find(
         (clause) => clause.querySelectorAll('[data-rule-action="clear"]').length === 2
       );
-      expect(lead?.style.paddingInlineEnd).toBe('calc(2 * 1.25rem + 0.5rem)');
+      const end = lead?.querySelector(':scope > [data-line-end]');
+      expect(end?.querySelectorAll(':scope > [data-rule-action="clear"]')).toHaveLength(2);
     });
 
     it('puts one remove action on each condition line, revealed by that clause alone', () => {
@@ -5146,9 +5215,10 @@ describe('DecisionText', () => {
       for (const line of lines) {
         const removes = line.querySelectorAll<HTMLElement>('[data-rule-action="clear"]');
         expect(removes).toHaveLength(1);
-        const reveal = removes[0]?.parentElement;
+        const reveal = removes[0];
         expect(reveal?.className).toContain('group-hover/clause:opacity-100');
-        expect(reveal?.className).toContain('group-has-[[data-selected]]/row:opacity-100');
+        expect(reveal?.className).toContain('group-focus-within/clause:opacity-100');
+        expect(reveal?.className).not.toContain('group-has-[[data-selected]]/row');
         expect(reveal?.className).not.toContain('group-hover/row');
         expect(removes[0]).toHaveClass('text-foreground-de-emp');
         expect(reveal?.closest('.group\\/clause')).toBe(line);
