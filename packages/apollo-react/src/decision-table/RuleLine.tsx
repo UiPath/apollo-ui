@@ -29,6 +29,8 @@ export interface RuleLineProps
   /** How far from its clause's end the glyph sits, in the column the condition lines' glyphs share. */
   badgeEnd: string;
   removals: readonly RemoveConditionButtonProps[];
+  /** How far from its clause's end the remove actions sit, left of the glyph column; at the end when omitted. */
+  removalsEnd?: string;
   /** The cells a diff changed that the line does not word, struck or added after its text. */
   unworded?: readonly RemovedLine[];
   className?: string;
@@ -40,6 +42,7 @@ export const RuleLine: React.FC<RuleLineProps> = ({
   badge,
   badgeEnd,
   removals,
+  removalsEnd,
   unworded = [],
   className,
   ...lineProps
@@ -57,7 +60,7 @@ export const RuleLine: React.FC<RuleLineProps> = ({
         <LineText {...lineProps} parts={line.parts} />
       </span>
     ))}
-    <RemoveConditionButtons removals={removals} />
+    <RemoveConditionButtons removals={removals} end={removalsEnd} />
     {badge && (
       <span className={LINE_END_MARK_CLASS} style={{ insetInlineEnd: badgeEnd }} data-line-end-mark>
         <MarkBadge {...badge} />

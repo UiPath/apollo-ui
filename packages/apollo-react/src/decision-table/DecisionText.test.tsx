@@ -5556,6 +5556,29 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(actions('r2'));
     });
 
+    it('keeps the glyph column fixed when a lead has several remove actions', () => {
+      const ageWarning = {
+        cells: { age: { tone: 'warning', title: 'Odd', glyph: true } },
+      } as const;
+      render(
+        view({
+          rules: GRID_SENTENCE_RULES,
+          ...GRID_SENTENCE_COLUMNS,
+          selected: null,
+          onSelect: vi.fn(),
+          edit: editWith(),
+          marks: rowMarks({ r1: ageWarning, r3: ageWarning }),
+        })
+      );
+      const slotEnd = (rowId: string) =>
+        card(rowId).querySelector<HTMLElement>('[data-line-end-mark]')?.style.insetInlineEnd;
+      expect(
+        card('r1').querySelectorAll('[data-sentence] button[aria-label^="Remove"]')
+      ).toHaveLength(2);
+      expect(slotEnd('r1')).toBe('1.75rem');
+      expect(slotEnd('r3')).toBe('1.75rem');
+    });
+
     describe('dragging a rule', () => {
       const TOPS: Record<string, [number, number]> = { r1: [0, 60], r2: [70, 120], r3: [200, 80] };
       beforeEach(() => {

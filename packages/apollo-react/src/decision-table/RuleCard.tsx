@@ -151,14 +151,14 @@ export const RuleCard = memo<RuleCardProps>(
     const lined = rule.lines.length + removedLines.length > 0;
     const title = ruleTitleOf(rule);
     const leadRemovals = card.removals.lead.length;
-    const removalsEnd =
-      leadRemovals > 1 ? `calc(${leadRemovals} * 1.25rem + 0.5rem)` : CLAUSE_REMOVAL_END;
     const glyphs = [card.badges.heading, card.badges.lead].filter(Boolean).length;
+    const glyphsEnd = `calc(${CLAUSE_REMOVAL_END} + ${glyphs} * ${GLYPH_SLOT})`;
+    const removalsEnd = leadRemovals > 1 && glyphs > 0 ? glyphsEnd : undefined;
     const clauseEnd =
-      glyphs > 0
-        ? `calc(${removalsEnd} + ${glyphs} * ${GLYPH_SLOT})`
-        : leadRemovals > 1
-          ? removalsEnd
+      leadRemovals > 1
+        ? `calc(${removalsEnd ? `${removalsEnd} + ` : ''}${leadRemovals} * 1.25rem + 0.5rem)`
+        : glyphs > 0
+          ? glyphsEnd
           : undefined;
     const citationButtons =
       citations.kind === 'cited' && cited.length > 0 ? (
@@ -238,7 +238,7 @@ export const RuleCard = memo<RuleCardProps>(
                   parts={rule.heading}
                   title={isLineMark(mark) ? undefined : card.title}
                   badge={card.badges.heading}
-                  badgeEnd={removalsEnd}
+                  badgeEnd={CLAUSE_REMOVAL_END}
                   removals={NO_REMOVALS}
                   unworded={diff?.removedOutcomes}
                   className={INLINE_LINE_CLASS}
@@ -250,9 +250,12 @@ export const RuleCard = memo<RuleCardProps>(
                   parts={rule.lead}
                   badge={card.badges.lead}
                   badgeEnd={
-                    card.badges.heading ? `calc(${removalsEnd} + ${GLYPH_SLOT})` : removalsEnd
+                    card.badges.heading
+                      ? `calc(${CLAUSE_REMOVAL_END} + ${GLYPH_SLOT})`
+                      : CLAUSE_REMOVAL_END
                   }
                   removals={card.removals.lead}
+                  removalsEnd={removalsEnd}
                   {...lineProps}
                 />
               </div>
