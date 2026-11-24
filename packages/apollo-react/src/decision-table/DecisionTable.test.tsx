@@ -287,7 +287,7 @@ describe('DecisionTable row drag', () => {
     });
     pointer('pointermove', 0, yInRow(1));
     expect(screen.getByTestId('table-drop-indicator')).toBeInTheDocument();
-    pointer('pointerup', 0, yInRow(1));
+    pointer('pointerup');
 
     expect(onRowMove).toHaveBeenCalledWith(0, 1);
     expect(screen.queryByTestId('table-drop-indicator')).toBeNull();
@@ -345,7 +345,7 @@ describe('DecisionTable row drag', () => {
     });
     pointer('pointermove', 0, yInRow(1));
     expect(preview().childElementCount).toBe(0);
-    pointer('pointerup', 0, yInRow(1));
+    pointer('pointerup');
 
     expect(onRowMove).toHaveBeenCalledWith(0, 1);
   });
@@ -458,7 +458,7 @@ describe('DecisionTable column drag', () => {
       handle().startColumnDrag(0, 0, press(60, 10));
     });
     pointer('pointermove', 5000, 10);
-    pointer('pointerup', 5000, 10);
+    pointer('pointerup');
 
     expect(onColumnMove).toHaveBeenCalledWith(0, 0, 2);
   });
