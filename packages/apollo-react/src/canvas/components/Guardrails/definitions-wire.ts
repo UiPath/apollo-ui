@@ -28,6 +28,8 @@ export type GuardrailParameterDefinitionWire =
       defaultValue?: string | null;
       options: string[];
       optionLabels?: Record<string, string>;
+      /** The subset of `options` the editors mark as Preview. Agents only, so far. */
+      previewOptions?: string[];
     })
   | (GuardrailParameterWireBase & {
       type: 'enum-list';

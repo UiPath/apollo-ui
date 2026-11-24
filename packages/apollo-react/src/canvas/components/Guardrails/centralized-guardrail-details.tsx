@@ -82,6 +82,7 @@ export function CentralizedGuardrailDetails<
           Both: labels.detectionScopeBoth,
         },
       },
+      previewOption: labels.previewOptionLabel,
     },
   });
 

@@ -1259,11 +1259,12 @@ state and exposes a plugin seam, so the translation lives in one named place,
   canvas catalog. Domain copy for a validator this package has not learned (a BYO manifest, a
   newly shipped backend parameter) still belongs to whoever ships it, and reaches the form the
   same way.
-- **Preview options.** An enum-list's `previewOptions` (raw values, from the wire) read
-  "(Preview)" after their label in the multiselect list and the chip editor
-  (`previewOptionLabel`), and carry a `Preview` chip on their row in a map-enum keyed by that
-  enum-list (`previewOption`). Agents uses it for the PII entities behind
-  `EnablePreviewPiiEntities`.
+- **Preview options.** An enum's or enum-list's `previewOptions` (raw values, from the wire)
+  read "(Preview)" after their label in the select, the multiselect list and the chip editor
+  (`previewOptionLabel`), and an enum-list's carry a `Preview` chip on their row in a map-enum
+  keyed by it (`previewOption`). `CentralizedGuardrailDetails` reads them the same way for a
+  policy's values. Agents uses it for the PII entities behind `EnablePreviewPiiEntities` and for
+  the Detection scope options that read files.
 - **No product types cross the boundary.** `GuardrailValidatorParameter` structurally mirrors
   the wire shape both products persist, so host unions assign cleanly in both directions.
 - **Per-parameter override.** `renderParameter(ctx)` replaces the editor for any parameter

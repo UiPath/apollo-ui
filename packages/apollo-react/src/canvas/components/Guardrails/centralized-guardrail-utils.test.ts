@@ -612,6 +612,36 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
     ]);
   });
 
+  it('marks the detection scope options its definition lists as Preview', () => {
+    const definition: CentralizedGuardrailDefinition = {
+      validator: 'harmful_content',
+      parameters: [
+        {
+          id: 'detectionScope',
+          type: 'enum',
+          label: 'Detection scope',
+          optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
+          previewOptions: ['Files', 'Both'],
+        },
+      ],
+    };
+    const labels = {
+      ...FALLBACK_LABELS,
+      previewOption: CENTRALIZED_GUARDRAILS_EN_LABELS.previewOptionLabel,
+    };
+    const shownFor = (value: string, rowLabels: typeof FALLBACK_LABELS = labels) =>
+      resolveCentralizedGuardrailParameters(
+        guardrail({ validator: 'harmful_content', parameters: [detectionScope(value)] }),
+        { definition, labels: rowLabels }
+      ).map((row) => (row.kind === 'value' ? row.value : undefined));
+
+    expect(shownFor('Text')).toEqual(['Text only']);
+    expect(shownFor('Files')).toEqual(['Files only (Preview)']);
+    expect(shownFor('Both')).toEqual(['Text and files (Preview)']);
+    // A host that passes no template keeps the plain label.
+    expect(shownFor('Files', FALLBACK_LABELS)).toEqual(['Files only']);
+  });
+
   it('renders the detection scope raw for a host that passes no copy for it', () => {
     const { detectionScope: _omitted, ...labels } = FALLBACK_LABELS;
     const rows = resolveCentralizedGuardrailParameters(

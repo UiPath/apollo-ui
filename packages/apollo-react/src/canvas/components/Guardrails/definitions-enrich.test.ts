@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BYO_WIRE,
   CLASSIFIER_WIRE,
+  HARMFUL_CONTENT_FILE_SCOPE_WIRE,
   HARMFUL_CONTENT_WIRE,
   LLM_AS_JUDGE_WIRE,
   PII_DETECTION_PREVIEW_WIRE,
@@ -176,6 +177,15 @@ describe('enrichGuardrailDefinitions', () => {
       expect(entities.previewOptions).toEqual(PREVIEW_PII_ENTITY_OPTIONS);
       expect(entities.optionLabels?.ATIdentityCard).toBe('Austria Identity Card');
       expect(param(enrichOne(PII_DETECTION_WIRE), 'entities')).not.toHaveProperty('previewOptions');
+    });
+
+    it('carries the preview options of an enum through', () => {
+      const scope = param(enrichOne(HARMFUL_CONTENT_FILE_SCOPE_WIRE), 'detectionScope');
+
+      expect(scope.previewOptions).toEqual(['Files', 'Both']);
+      expect(param(enrichOne(HARMFUL_CONTENT_WIRE), 'harmfulContentEntities')).not.toHaveProperty(
+        'previewOptions'
+      );
     });
 
     it('merges wire labels over curated ones, per option', () => {
