@@ -45,7 +45,7 @@ describe('BaseContainer shadow opt-out', () => {
 
   it('omits every shadow utility class when shadow is disabled', () => {
     render(
-      <BaseContainer shadow={false} isHovered interactionState="drag">
+      <BaseContainer shadow={false} shadowType="dense" isHovered interactionState="drag">
         <span>content</span>
       </BaseContainer>
     );
@@ -57,8 +57,40 @@ describe('BaseContainer shadow opt-out', () => {
     expect(container).not.toHaveClass('shadow-(--canvas-node-shadow-rest)');
     expect(container).not.toHaveClass('shadow-(--canvas-node-shadow-hover)');
     expect(container).not.toHaveClass('shadow-(--canvas-node-shadow-lifted)');
+    // Nor the `shadowType` ones: the type is ignored without a shadow.
+    expect(container.className).not.toMatch(/canvas-node-shadow/);
     // Non-shadow drag styling still applies.
     expect(container).toHaveClass('cursor-grabbing');
+  });
+
+  it("uses the dense tokens at rest and on hover with shadowType 'dense'", () => {
+    const { rerender } = render(
+      <BaseContainer shadowType="dense">
+        <span>content</span>
+      </BaseContainer>
+    );
+    const container = screen.getByTestId('base-container');
+    expect(container).toHaveClass('shadow-(--canvas-node-shadow-dense-rest)');
+    expect(container).not.toHaveClass('shadow-(--canvas-node-shadow-rest)');
+
+    rerender(
+      <BaseContainer shadowType="dense" isHovered>
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(container).toHaveClass('shadow-(--canvas-node-shadow-dense-hover)');
+    expect(container).not.toHaveClass('shadow-(--canvas-node-shadow-hover)');
+  });
+
+  it("keeps the lifted shadow while dragging with shadowType 'dense'", () => {
+    render(
+      <BaseContainer shadowType="dense" interactionState="drag">
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(screen.getByTestId('base-container')).toHaveClass(
+      'shadow-(--canvas-node-shadow-lifted)'
+    );
   });
 });
 
@@ -190,9 +222,22 @@ describe('an outlined node is lifted like every other node', () => {
     expect(outline()).toHaveClass(`[filter:var(--canvas-node-filter-${token})]`);
   });
 
+  it.each([
+    ['rest', {}, 'dense-rest'],
+    ['hover', { isHovered: true }, 'dense-hover'],
+    ['drag', { interactionState: 'drag' as const }, 'lifted'],
+  ])("picks the outline filter on %s with shadowType 'dense'", (_name, props, token) => {
+    render(
+      <BaseContainer shape="clipped" shadowType="dense" {...props}>
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(outline()).toHaveClass(`[filter:var(--canvas-node-filter-${token})]`);
+  });
+
   it('casts nothing when the node is asked not to', () => {
     render(
-      <BaseContainer shape="document" shadow={false}>
+      <BaseContainer shape="document" shadow={false} shadowType="dense">
         <span>content</span>
       </BaseContainer>
     );

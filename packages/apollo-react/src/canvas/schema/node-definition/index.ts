@@ -36,6 +36,7 @@ export {
 export type {
   NodeIconSize,
   NodeLabelLines,
+  NodeShadowType,
   NodeShape,
   OutlineDrawnNodeShape,
   RoundEndedNodeShape,
@@ -48,6 +49,7 @@ export {
   nodeHeightSchema,
   nodeIconSizeSchema,
   nodeLabelLinesSchema,
+  nodeShadowTypeSchema,
   nodeShapeSchema,
   OUTLINE_DRAWN_NODE_SHAPES,
   ROUND_ENDED_NODE_SHAPES,

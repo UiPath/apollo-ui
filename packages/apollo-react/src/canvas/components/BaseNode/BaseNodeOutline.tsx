@@ -1,7 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import { memo, useEffect, useRef, useState } from 'react';
 import { DEFAULT_NODE_SIZE, DEFAULT_RECTANGLE_NODE_WIDTH } from '../../constants';
-import type { OutlineDrawnNodeShape } from '../../schema';
+import type { NodeShadowType, OutlineDrawnNodeShape } from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
@@ -88,8 +88,13 @@ export const getStatusStroke = (
  * The canvas elevation tokens, not tailwind's generic drop-shadows: those are a few percent black
  * and vanish on a dark canvas, while every other node is lifted by `--canvas-node-shadow-*`.
  */
-const outlineShadow = (isDragging?: boolean, isHovered?: boolean) => {
+const outlineShadow = (isDragging?: boolean, isHovered?: boolean, dense?: boolean) => {
   if (isDragging) return '[filter:var(--canvas-node-filter-lifted)]';
+  if (dense) {
+    return isHovered
+      ? '[filter:var(--canvas-node-filter-dense-hover)]'
+      : '[filter:var(--canvas-node-filter-dense-rest)]';
+  }
   return isHovered
     ? '[filter:var(--canvas-node-filter-hover)]'
     : '[filter:var(--canvas-node-filter-rest)]';
@@ -101,6 +106,7 @@ interface BaseNodeOutlineProps {
   isHovered?: boolean;
   isDragging?: boolean;
   shadow?: boolean;
+  shadowType?: NodeShadowType;
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType;
 }
 
@@ -113,7 +119,15 @@ interface BaseNodeOutlineProps {
  * have to be drawn here too.
  */
 export const BaseNodeOutline = memo(
-  ({ shape, isSelected, isHovered, isDragging, shadow, status }: BaseNodeOutlineProps) => {
+  ({
+    shape,
+    isSelected,
+    isHovered,
+    isDragging,
+    shadow,
+    shadowType,
+    status,
+  }: BaseNodeOutlineProps) => {
     const ref = useRef<SVGSVGElement>(null);
     // Seeded with the wide-card default so the shape is drawn even before it is measured, and in
     // any environment without a ResizeObserver. Measurement refines it.
@@ -151,7 +165,7 @@ export const BaseNodeOutline = memo(
           // whatever the DOM order, so without it this opaque fill covers the node's icon and
           // label — and a label nobody can see is a label nobody can double-click to edit.
           'pointer-events-none absolute inset-0 -z-10 h-full w-full transition-[filter] duration-150',
-          shadow && outlineShadow(isDragging, isHovered)
+          shadow && outlineShadow(isDragging, isHovered, shadowType === 'dense')
         )}
         viewBox={`0 0 ${box.width} ${box.height}`}
       >

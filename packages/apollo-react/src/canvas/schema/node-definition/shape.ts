@@ -30,6 +30,11 @@ export const nodeLabelLinesSchema = z.number().int().positive();
 
 export type NodeLabelLines = z.infer<typeof nodeLabelLinesSchema>;
 
+/** Which elevation a node with a shadow uses: `'default'`, or `'dense'` for graphs with many nodes. */
+export const nodeShadowTypeSchema = z.enum(['default', 'dense']);
+
+export type NodeShadowType = z.infer<typeof nodeShadowTypeSchema>;
+
 /** Shapes that lay out as a wide card with the icon beside the label. */
 export const WIDE_NODE_SHAPES = ['rectangle', 'pill', 'clipped', 'document'] as const;
 

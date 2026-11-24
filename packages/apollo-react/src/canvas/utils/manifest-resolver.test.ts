@@ -95,6 +95,22 @@ describe('resolveDisplay', () => {
     expect(resolveDisplay(manifest, { display: { labelLines: undefined } }).labelLines).toBe(2);
   });
 
+  it('lets an instance display.shadow override the manifest, and keeps it when undefined', () => {
+    const manifest = { label: 'Node', icon: 'box', shadow: false };
+    expect(resolveDisplay(manifest, { display: { shadow: true } }).shadow).toBe(true);
+    expect(resolveDisplay(manifest, { display: { shadow: undefined } }).shadow).toBe(false);
+  });
+
+  it('lets an instance display.shadowType override the manifest, and keeps it when undefined', () => {
+    const manifest = { label: 'Node', icon: 'box', shadowType: 'dense' as const };
+    expect(resolveDisplay(manifest, { display: { shadowType: 'default' } }).shadowType).toBe(
+      'default'
+    );
+    expect(resolveDisplay(manifest, { display: { shadowType: undefined } }).shadowType).toBe(
+      'dense'
+    );
+  });
+
   it('uses manifest canvasLabel for canvas label when no instance override', () => {
     const result = resolveDisplay({
       label: 'Send Outlook Email',

@@ -109,14 +109,26 @@ body.dark-hc {
   --canvas-node-filter-hover: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.36));
   --canvas-node-filter-lifted: drop-shadow(0 16px 48px rgba(0, 0, 0, 0.72))
     drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+
+  /* The `display.shadowType: 'dense'` elevation for graphs with many nodes. On a dark canvas it is
+     wider and a little stronger than the default so it stays visible; light themes below set a
+     much lighter one. The hover doubles the rest; dragging keeps the lifted shadow. */
+  --canvas-node-shadow-dense-rest: 0 4px 12px rgba(0, 0, 0, 0.225);
+  --canvas-node-shadow-dense-hover: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --canvas-node-filter-dense-rest: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.225));
+  --canvas-node-filter-dense-hover: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
 }
 
-/* Softer lifted shadow for light core themes. */
+/* Softer lifted shadow and a much lighter dense shadow for light core themes. */
 body.light,
 body.light-hc {
   --canvas-node-shadow-lifted: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
   --canvas-node-filter-lifted: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12))
     drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+  --canvas-node-shadow-dense-rest: 0 4px 10px rgba(31, 41, 51, 0.06);
+  --canvas-node-shadow-dense-hover: 0 4px 10px rgba(31, 41, 51, 0.12);
+  --canvas-node-filter-dense-rest: drop-shadow(0 4px 10px rgba(31, 41, 51, 0.06));
+  --canvas-node-filter-dense-hover: drop-shadow(0 4px 10px rgba(31, 41, 51, 0.12));
 }
 
 /**
@@ -196,14 +208,26 @@ body.light-hc {
   --canvas-node-filter-hover: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.36));
   --canvas-node-filter-lifted: drop-shadow(0 16px 48px rgba(0, 0, 0, 0.72))
     drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+
+  /* The `display.shadowType: 'dense'` elevation for graphs with many nodes. On a dark canvas it is
+     wider and a little stronger than the default so it stays visible; light themes below set a
+     much lighter one. The hover doubles the rest; dragging keeps the lifted shadow. */
+  --canvas-node-shadow-dense-rest: 0 4px 12px rgba(0, 0, 0, 0.225);
+  --canvas-node-shadow-dense-hover: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --canvas-node-filter-dense-rest: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.225));
+  --canvas-node-filter-dense-hover: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
 }
 
-/* Softer lifted shadow for light element themes. */
+/* Softer lifted shadow and a much lighter dense shadow for light element themes. */
 .future-light,
 .wireframe {
   --canvas-node-shadow-lifted: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
   --canvas-node-filter-lifted: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12))
     drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+  --canvas-node-shadow-dense-rest: 0 4px 10px rgba(31, 41, 51, 0.06);
+  --canvas-node-shadow-dense-hover: 0 4px 10px rgba(31, 41, 51, 0.12);
+  --canvas-node-filter-dense-rest: drop-shadow(0 4px 10px rgba(31, 41, 51, 0.06));
+  --canvas-node-filter-dense-hover: drop-shadow(0 4px 10px rgba(31, 41, 51, 0.12));
 }
 
 /**

@@ -74,3 +74,24 @@ describe('display.labelLines', () => {
     expect(() => displayConfigSchema.parse({ labelLines })).toThrow();
   });
 });
+
+describe('display.shadowType', () => {
+  const manifestWithShadowType = (shadowType: unknown) => ({
+    nodeType: 'uipath.test.node',
+    version: '1.0.0',
+    display: { label: 'Test Node', shadowType },
+    tags: [],
+    sortOrder: 0,
+    handleConfiguration: [],
+  });
+
+  it.each(['default', 'dense'])('accepts %s', (shadowType) => {
+    expect(() => nodeManifestSchema.parse(manifestWithShadowType(shadowType))).not.toThrow();
+    expect(() => displayConfigSchema.parse({ shadowType })).not.toThrow();
+  });
+
+  it.each(['none', true])('rejects %s', (shadowType) => {
+    expect(() => nodeManifestSchema.parse(manifestWithShadowType(shadowType))).toThrow();
+    expect(() => displayConfigSchema.parse({ shadowType })).toThrow();
+  });
+});

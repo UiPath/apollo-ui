@@ -4,6 +4,7 @@ import {
   isOutlineDrawnShape,
   isRoundEndedShape,
   isWideNodeShape,
+  type NodeShadowType,
   type NodeShape,
 } from '../../schema';
 import type { SuggestionType } from '../../types';
@@ -53,6 +54,8 @@ interface BaseContainerProps {
   background?: string;
   loading?: boolean;
   shadow?: boolean;
+  /** `'dense'` uses the `--canvas-node-shadow-dense-*` elevation at rest and on hover. */
+  shadowType?: NodeShadowType;
   children: React.ReactNode;
 }
 
@@ -69,6 +72,7 @@ export const BaseContainer = ({
   background,
   loading,
   shadow = true,
+  shadowType,
   children,
 }: BaseContainerProps) => {
   const activeStatus = suggestionType ?? validationStatus ?? executionStatus;
@@ -93,13 +97,22 @@ export const BaseContainer = ({
           ),
       'w-(--node-w) h-(--node-h)',
       'outline-offset-0 transition-[box-shadow,border-color] duration-150',
-      shadow && !drawnByOutline && 'shadow-(--canvas-node-shadow-rest)',
+      shadow &&
+        !drawnByOutline &&
+        (shadowType === 'dense'
+          ? 'shadow-(--canvas-node-shadow-dense-rest)'
+          : 'shadow-(--canvas-node-shadow-rest)'),
       isWideNodeShape(shape)
         ? 'flex-row justify-start gap-3 p-(--node-gap)'
         : 'flex-col justify-center',
       hasFooter && 'flex-wrap',
       !drawnByOutline && statusBorder,
-      shadow && !drawnByOutline && isHovered && 'shadow-(--canvas-node-shadow-hover)',
+      shadow &&
+        !drawnByOutline &&
+        isHovered &&
+        (shadowType === 'dense'
+          ? 'shadow-(--canvas-node-shadow-dense-hover)'
+          : 'shadow-(--canvas-node-shadow-hover)'),
       isHovered && !hasStatusBorder && !drawnByOutline && 'border-border-hover',
       isSelected && !drawnByOutline && 'outline outline-2 outline-foreground-accent-muted',
       interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
@@ -111,7 +124,17 @@ export const BaseContainer = ({
       isStacked &&
         'before:content-[""] before:absolute before:inset-x-0 before:top-0 before:h-full before:rounded-[inherit] before:bg-surface-overlay before:border before:border-brand before:translate-y-[6px] before:-z-10 before:pointer-events-none'
     );
-  }, [shape, hasFooter, activeStatus, isSelected, isHovered, isStacked, interactionState, shadow]);
+  }, [
+    shape,
+    hasFooter,
+    activeStatus,
+    isSelected,
+    isHovered,
+    isStacked,
+    interactionState,
+    shadow,
+    shadowType,
+  ]);
 
   return (
     <div
@@ -132,6 +155,7 @@ export const BaseContainer = ({
           isHovered={isHovered}
           isDragging={interactionState === 'drag'}
           shadow={shadow}
+          shadowType={shadowType}
           status={activeStatus}
         />
       )}
