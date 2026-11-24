@@ -35,11 +35,6 @@ export interface BpmnNodeData extends Record<string, unknown> {
   triggeredByEvent?: boolean;
   /** `false` turns a pool or lane vertical: header band along the top, lanes side by side. */
   isHorizontal?: boolean;
-  /**
-   * Host class names, appended to the family's own: `body` on the element that paints the node's
-   * fill and border, `label` on the label, `multiplicity` on a pool's multiplicity marker.
-   */
-  classNames?: { body?: string; label?: string; multiplicity?: string };
   /** Participant multiplicity marker on a pool. */
   multiplicity?: boolean;
   /** A black-box pool: no header band, the label centred in the pool. */

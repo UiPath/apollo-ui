@@ -271,7 +271,6 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
             validationStatus={data.validationStatus}
             suggestionType={data.modification}
             background={data.backgroundColor ?? ELEMENT_FILL}
-            className={data.classNames?.body}
             outlinePath={outlinePath}
             borderStyle={borderStyle}
             // BPMN borders carry meaning (event and activity kinds), so they read darker than Flow's.
@@ -393,7 +392,6 @@ const LABEL_HALO = {
 export const BpmnLabel = memo(function BpmnLabel({
   nodeId,
   label = '',
-  className,
   placement,
   selected,
   dragging,
@@ -402,8 +400,6 @@ export const BpmnLabel = memo(function BpmnLabel({
 }: {
   nodeId: string;
   label?: string;
-  /** Appended to the label element's own classes. */
-  className?: string;
   placement: keyof typeof LABEL_PLACEMENT;
   selected?: boolean;
   dragging?: boolean;
@@ -480,7 +476,7 @@ export const BpmnLabel = memo(function BpmnLabel({
 
   if (!lifted) {
     return (
-      <div data-node-part="label" className={cx(LABEL_PLACEMENT[placement], className)}>
+      <div data-node-part="label" className={LABEL_PLACEMENT[placement]}>
         {edit.isEditing ? (
           editor
         ) : (
@@ -500,7 +496,7 @@ export const BpmnLabel = memo(function BpmnLabel({
   // and typed into is drawn in the overlay, above any flow that crosses it.
   return (
     <>
-      <div data-node-part="label" className={cx(LABEL_PLACEMENT[placement], className)}>
+      <div data-node-part="label" className={LABEL_PLACEMENT[placement]}>
         <div
           onDoubleClick={readonly ? undefined : edit.handleDoubleClick(edit.labelInputRef)}
           className={cx(textClassName, 'opacity-0')}

@@ -15,7 +15,6 @@ import {
   type BpmnNodeData,
   BpmnOverlayProvider,
   BpmnStringsProvider,
-  BpmnSwimlaneNode,
   BpmnTextAnnotationNode,
   bpmnEdgeTypes,
   bpmnNodeTypes,
@@ -432,34 +431,6 @@ describe('BPMN element family', () => {
         );
       }
       expect(screen.queryByTestId('quick-add-handle-task-left')).not.toBeInTheDocument();
-    });
-
-    it('appends host class names to the body and the label', () => {
-      renderActivity({
-        label: 'Review',
-        backgroundColor: 'rgb(1, 2, 3)',
-        classNames: { body: 'host-body', label: 'host-label' },
-      });
-
-      const body = document.querySelector('.host-body') as HTMLElement;
-      expect(body.style.background).toBe('rgb(1, 2, 3)');
-      const label = document.querySelector('.host-label') as HTMLElement;
-      expect(label).toHaveAttribute('data-node-part', 'label');
-      expect(label).toHaveTextContent('Review');
-    });
-
-    it('appends host class names to a pool frame and its multiplicity marker', () => {
-      renderNode(BpmnSwimlaneNode, requiredActions, {
-        type: 'bpmn:Participant',
-        data: {
-          label: 'Sales',
-          multiplicity: true,
-          classNames: { body: 'host-body', multiplicity: 'host-marker' },
-        },
-      });
-
-      expect(document.querySelector('.host-body')).toHaveClass('border');
-      expect(document.querySelector('.host-marker')).toHaveAttribute('data-bpmn-multiplicity');
     });
 
     it('gives the drill-in button of a collapsed sub-process a test id', () => {

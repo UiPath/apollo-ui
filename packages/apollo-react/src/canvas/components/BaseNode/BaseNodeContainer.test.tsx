@@ -429,15 +429,3 @@ describe('custom background', () => {
     );
   });
 });
-
-describe('className', () => {
-  it('is appended to the container that paints the fill and border', () => {
-    render(
-      <BaseContainer className="host-body">
-        <span>content</span>
-      </BaseContainer>
-    );
-
-    expect(screen.getByTestId('base-container')).toHaveClass('host-body', 'border');
-  });
-});

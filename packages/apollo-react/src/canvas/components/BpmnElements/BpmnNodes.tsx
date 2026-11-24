@@ -229,7 +229,6 @@ export const BpmnEventNode = memo(function BpmnEventNode(props: Props) {
         <BpmnLabel
           nodeId={id}
           label={data.label}
-          className={data.classNames?.label}
           placement={EXTERNAL_LABEL[data.labelPlacement ?? 'bottom']}
           selected={selected}
           dragging={dragging}
@@ -290,7 +289,6 @@ export const BpmnGatewayNode = memo(function BpmnGatewayNode(props: Props) {
         <BpmnLabel
           nodeId={id}
           label={data.label}
-          className={data.classNames?.label}
           placement={EXTERNAL_LABEL[data.labelPlacement ?? 'bottom']}
           selected={selected}
           dragging={dragging}
@@ -403,7 +401,6 @@ export const BpmnActivityNode = memo(function BpmnActivityNode(props: Props) {
       <BpmnLabel
         nodeId={id}
         label={data.label}
-        className={data.classNames?.label}
         placement={isExpanded ? 'top' : 'inside'}
         selected={selected}
         dragging={dragging}
@@ -466,7 +463,6 @@ export const BpmnDataNode = memo(function BpmnDataNode(props: Props) {
         <BpmnLabel
           nodeId={id}
           label={data.label}
-          className={data.classNames?.label}
           placement={EXTERNAL_LABEL[data.labelPlacement ?? 'bottom']}
           selected={selected}
           dragging={dragging}
@@ -506,18 +502,11 @@ export const BpmnTextAnnotationNode = memo(function BpmnTextAnnotationNode(props
       addSides={NO_ADD}
       toolbar={toolbar}
     >
-      <div
-        className={cx(
-          'relative h-full w-full rounded-sm',
-          selected && selectedOutline,
-          data.classNames?.body
-        )}
-      >
+      <div className={cx('relative h-full w-full rounded-sm', selected && selectedOutline)}>
         <span className="absolute inset-y-0 left-0 w-2 rounded-l-sm border-y border-l border-foreground-muted" />
         <BpmnLabel
           nodeId={id}
           label={data.label}
-          className={data.classNames?.label}
           placement="annotation"
           selected={selected}
           dragging={dragging}
@@ -550,14 +539,12 @@ export const BpmnGroupNode = memo(function BpmnGroupNode(props: Props) {
       <div
         className={cx(
           'h-full w-full rounded-xl border-2 border-dashed border-foreground-muted',
-          selected && selectedOutline,
-          data.classNames?.body
+          selected && selectedOutline
         )}
       >
         <BpmnLabel
           nodeId={id}
           label={data.label}
-          className={data.classNames?.label}
           placement="top-left"
           selected={selected}
           dragging={dragging}
@@ -605,15 +592,13 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
           divided && (vertical ? 'border-l' : 'border-t'),
           selected && selectedOutline,
           selected && !isPool && 'bg-foreground-accent-muted/5',
-          data.dropTarget && DROP_TARGET,
-          data.classNames?.body
+          data.dropTarget && DROP_TARGET
         )}
       >
         {blackBox ? (
           <BpmnLabel
             nodeId={id}
             label={data.label}
-            className={data.classNames?.label}
             placement="center"
             selected={selected}
             dragging={dragging}
@@ -628,7 +613,6 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
             <BpmnLabel
               nodeId={id}
               label={data.label}
-              className={data.classNames?.label}
               placement={vertical ? 'header-top' : 'header'}
               selected={selected}
               dragging={dragging}
@@ -638,10 +622,7 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
         {isPool && data.multiplicity && (
           <span
             data-bpmn-multiplicity
-            className={cx(
-              'pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-foreground',
-              data.classNames?.multiplicity
-            )}
+            className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-foreground"
           >
             <BpmnGlyphMarkerParallel size={14} />
           </span>

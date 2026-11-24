@@ -51,8 +51,6 @@ interface BaseContainerProps {
   suggestionType?: SuggestionType;
   hasFooter?: boolean;
   background?: string;
-  /** Appended to the container's own classes. */
-  className?: string;
   loading?: boolean;
   shadow?: boolean;
   /**
@@ -87,7 +85,6 @@ export const BaseContainer = ({
   suggestionType,
   hasFooter,
   background,
-  className: hostClassName,
   loading,
   shadow = true,
   outlinePath,
@@ -140,8 +137,7 @@ export const BaseContainer = ({
       // a ::before pseudo inherits the container's radius/size, sits behind at
       // -z-10, and is offset down so only a thin arc peeks out below the card.
       isStacked &&
-        'before:content-[""] before:absolute before:inset-x-0 before:top-0 before:h-full before:rounded-[inherit] before:bg-surface-overlay before:border before:border-brand before:translate-y-[6px] before:-z-10 before:pointer-events-none',
-      hostClassName
+        'before:content-[""] before:absolute before:inset-x-0 before:top-0 before:h-full before:rounded-[inherit] before:bg-surface-overlay before:border before:border-brand before:translate-y-[6px] before:-z-10 before:pointer-events-none'
     );
   }, [
     shape,
@@ -155,7 +151,6 @@ export const BaseContainer = ({
     outlinePath,
     borderStyle,
     borderTone,
-    hostClassName,
   ]);
 
   const hasOutline = !!outlinePath || isOutlineDrawnShape(shape);
