@@ -410,24 +410,44 @@ describe('DecisionText', () => {
         expect(end?.lastElementChild).toHaveAttribute('data-rule-action', 'clear');
       });
 
-      it("keeps a floating card's actions one slot in from the edge, its first line's glyph column after them", () => {
+      it("floats an unmarked card's actions at the edge, its first line's remove actions left of them", () => {
+        render(view({ selected: null, onSelect: vi.fn(), edit: editWith() }));
+        const actions = card('m3').querySelector('[data-rule-actions]');
+        expect(actions?.className.split(' ')).toContain('end-3');
+        const end = card('m3').querySelector('[data-sentence] [data-line-end]');
+        expect(end?.lastElementChild).toHaveAttribute('data-actions-reserve');
+        expect(
+          end?.querySelector('[data-actions-reserve] ~ [data-rule-action="clear"]')
+        ).toBeNull();
+      });
+
+      it.each<[string, RowMark]>([
+        ['a warning', { tone: 'warning', title: 'Overlaps', glyph: true }],
+        ['an error', { tone: 'error', title: 'Unreachable', glyph: true }],
+        [
+          'a warning and an error',
+          {
+            tone: 'error',
+            title: 'Unreachable',
+            glyph: true,
+            cells: { score: { tone: 'warning', title: 'Overlaps', glyph: true } },
+          },
+        ],
+      ])("moves a card's floating actions one slot in when its first line has %s, the mark at the edge", (_, mark) => {
         render(
           view({
             selected: null,
             onSelect: vi.fn(),
             edit: editWith(),
-            marks: rowMarks({ m3: { tone: 'warning', title: 'Overlaps', glyph: true } }),
+            marks: rowMarks({ m3: mark }),
           })
         );
-        for (const rowId of ['m1', 'm3']) {
-          const end = card(rowId).querySelector('[data-sentence] [data-line-end]');
-          const reserve = end?.querySelector('[data-actions-reserve]');
-          expect(reserve?.nextElementSibling).toBe(end?.lastElementChild);
-          expect(end?.lastElementChild?.className).toContain('size-[var(--sentence-line)]');
-        }
-        expect(card('m1').querySelector('[data-rule-actions]')?.className).toContain(
-          'end-[calc(0.75rem+var(--sentence-line))]'
-        );
+        const actions = card('m3').querySelector('[data-rule-actions]');
+        expect(actions?.className).toContain('end-[calc(0.75rem+var(--sentence-line))]');
+        const end = card('m3').querySelector('[data-sentence] [data-line-end]');
+        const reserve = end?.querySelector('[data-actions-reserve]');
+        expect(reserve?.nextElementSibling?.querySelector('[data-glyph]')).not.toBeNull();
+        expect(end?.lastElementChild?.querySelector('[data-glyph]')).not.toBeNull();
       });
 
       it("puts a title row's actions at the edge", () => {

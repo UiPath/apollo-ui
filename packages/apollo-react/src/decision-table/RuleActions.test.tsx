@@ -15,7 +15,7 @@ const labels = {
 describe('RuleActions', () => {
   it('offers only add condition and the rule menu', () => {
     render(
-      <RuleActions position={2} selected labels={labels} floating={false} openMenu={undefined} />
+      <RuleActions position={2} selected labels={labels} placement="title" openMenu={undefined} />
     );
     expect(
       screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'))
@@ -27,7 +27,7 @@ describe('RuleActions', () => {
     'Rule 2 actions',
   ])('names %s in a tooltip on hover', async (name) => {
     render(
-      <RuleActions position={2} selected labels={labels} floating={false} openMenu={undefined} />
+      <RuleActions position={2} selected labels={labels} placement="title" openMenu={undefined} />
     );
     await userEvent.hover(screen.getByRole('button', { name }));
     expect(await screen.findByRole('tooltip')).toHaveTextContent(name);
