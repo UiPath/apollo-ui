@@ -8,10 +8,12 @@ export interface LineEndProps {
   badges: readonly MarkBadgeProps[];
   /** Leaves room for the floating card actions, before the glyph column. */
   reserve: boolean;
+  /** Whether the line's rule is selected, so its glyphs are in the tab order. */
+  selected: boolean;
 }
 
-/** A line's end slot: its remove actions, the floating actions' room, then its glyph; an unmarked line keeps a glyph column only beside the floating actions. */
-export const LineEnd: React.FC<LineEndProps> = ({ removals, badges, reserve }) => {
+/** A line's end slot: its remove actions, the floating actions' room, then its glyphs. */
+export const LineEnd: React.FC<LineEndProps> = ({ removals, badges, reserve, selected }) => {
   if (removals.length === 0 && badges.length === 0 && !reserve) return null;
   return (
     <span className={LINE_END_CLASS} data-line-end>
@@ -20,7 +22,7 @@ export const LineEnd: React.FC<LineEndProps> = ({ removals, badges, reserve }) =
       ))}
       {reserve && <span aria-hidden className={ACTIONS_RESERVE_CLASS} data-actions-reserve />}
       {badges.map((badge) => (
-        <MarkBadge key={badge.id} {...badge} />
+        <MarkBadge key={badge.id} {...badge} focus={{ kind: 'own', tabbable: selected }} />
       ))}
     </span>
   );

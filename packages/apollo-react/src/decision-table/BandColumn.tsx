@@ -64,7 +64,9 @@ export const BandColumn: React.FC<BandColumnProps> = ({
       <span className={BAND_COLUMN_NAME_CLASS} title={column.name}>
         {column.name}
       </span>
-      {columnMarks && <MarkBadge id={badgeId} marks={columnMarks} labels={labels} />}
+      {columnMarks && (
+        <MarkBadge id={badgeId} marks={columnMarks} labels={labels} focus={{ kind: 'none' }} />
+      )}
     </>
   );
   if (pill.kind === 'plain') {

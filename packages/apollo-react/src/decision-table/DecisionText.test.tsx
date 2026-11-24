@@ -1165,6 +1165,31 @@ describe('DecisionText', () => {
       expect(tooltip()).toBeNull();
     });
 
+    it("shows a glyph's message while it has keyboard focus, in a selected rule's tab order", async () => {
+      const { container } = renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        marks: scoreMarks,
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
+      });
+      act(() => card('m5').focus());
+      expect(tooltip()).toBeNull();
+      const glyph = within(card('m5')).getByRole('button', { name: 'Warning: Unreachable' });
+      expect(glyph).toHaveAttribute('tabindex', '0');
+      expect(
+        within(card('m3')).getByRole('button', { name: 'Warning: Overlaps row 1' })
+      ).toHaveAttribute('tabindex', '-1');
+      fireEvent.pointerOver(card('m1'));
+      act(() => glyph.focus());
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      act(() => card('m5').focus());
+      expect(tooltip()).toBeNull();
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
     it("shows a selected rule's message once the pointer is on its glyph", () => {
       renderSelectable({
         rules: MULTI_SENTENCE_RULES,

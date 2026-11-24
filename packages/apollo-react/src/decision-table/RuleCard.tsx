@@ -251,6 +251,7 @@ export const RuleCard = memo<RuleCardProps>(
                   removals={card.removals.lead}
                   badges={firstLineBadges}
                   reserve={actions !== null && !titleRow}
+                  selected={rowSelected}
                 />
               </div>
             </div>

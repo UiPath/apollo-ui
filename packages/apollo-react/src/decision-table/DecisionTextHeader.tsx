@@ -162,7 +162,7 @@ export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderP
           labels={labels}
           dataTestId={dataTestId}
         />
-        {marks && <MarkBadge id={badgeId} marks={marks} labels={labels} />}
+        {marks && <MarkBadge id={badgeId} marks={marks} labels={labels} focus={{ kind: 'none' }} />}
         <span id={hintId} className="sr-only">
           {hint}
         </span>
