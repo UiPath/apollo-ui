@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AUTOSCROLL_EDGE_PX, AUTOSCROLL_STEP_PX, RULE_DRAG_PREVIEW_OFFSET_PX } from './constants';
-import { followPointerDrag, type PointerPoint } from './pointerDrag';
+import { RULE_DRAG_PREVIEW_OFFSET_PX } from './constants';
+import { edgeScrollRows, followPointerDrag, type PointerPoint } from './pointerDrag';
 import { dropIndex } from './useDragReorder';
 
 /** A rule drag: the dragged rule, and the boundary (`0..count`) it would drop before. */
@@ -40,11 +40,6 @@ const boundaryAt = (
   return boundary;
 };
 
-const visibleRowsOf = (scroller: HTMLElement): { top: number; bottom: number } =>
-  scroller === scroller.ownerDocument.scrollingElement
-    ? { top: 0, bottom: scroller.ownerDocument.defaultView?.innerHeight ?? 0 }
-    : scroller.getBoundingClientRect();
-
 const copyOf = (card: HTMLElement): Node => {
   const copy = card.cloneNode(true);
   if (copy instanceof HTMLElement) {
@@ -75,7 +70,7 @@ export const useRuleDrag = (rowIds: readonly string[]) => {
         event.target instanceof Element
           ? event.target.closest<HTMLElement>('li[data-row-id]')
           : null;
-      if (!onMoveRule || !view || from < 0 || !card) return false;
+      if (event.button !== 0 || !onMoveRule || !view || from < 0 || !card) return false;
       cancelRef.current?.();
       event.preventDefault();
       const indexOf = new Map(rowIds.map((id, index) => [id, index]));
@@ -104,17 +99,7 @@ export const useRuleDrag = (rowIds: readonly string[]) => {
         container: target,
         pointerId: event.pointerId,
         pointer,
-        edgeScroll: ({ y }) => {
-          if (!target) return false;
-          const { top, bottom } = visibleRowsOf(target);
-          const before = target.scrollTop;
-          if (y > bottom - AUTOSCROLL_EDGE_PX) {
-            target.scrollTop += AUTOSCROLL_STEP_PX;
-          } else if (y < top + stickyTopPx() + AUTOSCROLL_EDGE_PX) {
-            target.scrollTop -= AUTOSCROLL_STEP_PX;
-          }
-          return target.scrollTop !== before;
-        },
+        edgeScroll: ({ y }) => target !== null && edgeScrollRows(target, y, stickyTopPx()),
         onPointer: retarget,
         onDrop: (at) => {
           retarget(at);
