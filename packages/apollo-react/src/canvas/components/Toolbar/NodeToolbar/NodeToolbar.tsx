@@ -182,6 +182,7 @@ const NodeToolbarComponent = ({
             exit={toolbarAnimationVariants.exit}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             role="toolbar"
+            data-testid={config.testId}
           >
             {actionsToDisplay.map((item, i) =>
               isSeparator(item) ? (
@@ -252,6 +253,7 @@ const NodeToolbarComponent = ({
                                 }
                               }}
                               aria-label={item.label}
+                              data-testid={item.testId}
                               aria-disabled={item.disabled}
                               disabled={item.disabled}
                               role="menuitem"

@@ -6,6 +6,8 @@ export interface NodeToolbarConfig {
   overflowLabel?: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
   align?: 'start' | 'center' | 'end'; // start = left/top, center = middle, end = right/bottom
+  /** `data-testid` for the element that holds the toolbar's buttons. */
+  testId?: string;
 }
 
 export interface NodeToolbarProps {

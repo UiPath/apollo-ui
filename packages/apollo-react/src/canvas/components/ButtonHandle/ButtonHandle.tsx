@@ -74,6 +74,8 @@ type ButtonHandleProps = {
   nodeHeight?: number;
   portalAction?: boolean;
   addButtonTitle?: string;
+  /** `data-testid` for the add button. */
+  addButtonTestId?: string;
   /**
    * `outer` starts a connection only from the half of the handle outside the node, so small
    * nodes stay draggable by their body. Defaults to `full`.
@@ -197,6 +199,7 @@ const ButtonHandleBase = ({
   nodeHeight,
   portalAction = false,
   addButtonTitle,
+  addButtonTestId,
   hitArea = 'full',
   buttonReveal = 'always',
   buttonShape = 'rounded',
@@ -432,6 +435,7 @@ const ButtonHandleBase = ({
             onMouseLeave={handleButtonMouseLeave}
             handleRef={handleRef}
             title={addButtonTitle}
+            testId={addButtonTestId}
             label={label}
             renderLabel={false}
           />
@@ -478,6 +482,7 @@ const ButtonHandleBase = ({
           onMouseLeave={handleButtonMouseLeave}
           handleRef={handleRef}
           title={addButtonTitle}
+          testId={addButtonTestId}
           label={label}
           labelIcon={labelIcon}
           labelBackgroundColor={labelBackgroundColor}

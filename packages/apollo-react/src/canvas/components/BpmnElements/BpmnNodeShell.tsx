@@ -205,7 +205,12 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
     () =>
       // Every toolbar action edits the diagram, so there is none outside design mode.
       canEdit && toolbar?.length
-        ? { actions: toolbar, position: 'top' as const, align: toolbarAlign }
+        ? {
+            actions: toolbar,
+            position: 'top' as const,
+            align: toolbarAlign,
+            testId: 'node-toolbar',
+          }
         : null,
     [canEdit, toolbar, toolbarAlign]
   );
@@ -266,6 +271,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
             validationStatus={data.validationStatus}
             suggestionType={data.modification}
             background={data.backgroundColor ?? ELEMENT_FILL}
+            className={data.classNames?.body}
             outlinePath={outlinePath}
             borderStyle={borderStyle}
             // BPMN borders carry meaning (event and activity kinds), so they read darker than Flow's.
@@ -346,6 +352,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
               buttonReveal={buttonReveal}
               buttonShape={buttonShape}
               onAction={sidesWithAdd.includes(side) ? onAdd : undefined}
+              addButtonTestId={`quick-add-handle-${id}-${side}`}
               visualsContainer={overlayContainer}
             />
           ))}
@@ -386,6 +393,7 @@ const LABEL_HALO = {
 export const BpmnLabel = memo(function BpmnLabel({
   nodeId,
   label = '',
+  className,
   placement,
   selected,
   dragging,
@@ -394,6 +402,8 @@ export const BpmnLabel = memo(function BpmnLabel({
 }: {
   nodeId: string;
   label?: string;
+  /** Appended to the label element's own classes. */
+  className?: string;
   placement: keyof typeof LABEL_PLACEMENT;
   selected?: boolean;
   dragging?: boolean;
@@ -470,7 +480,7 @@ export const BpmnLabel = memo(function BpmnLabel({
 
   if (!lifted) {
     return (
-      <div data-node-part="label" className={LABEL_PLACEMENT[placement]}>
+      <div data-node-part="label" className={cx(LABEL_PLACEMENT[placement], className)}>
         {edit.isEditing ? (
           editor
         ) : (
@@ -490,7 +500,7 @@ export const BpmnLabel = memo(function BpmnLabel({
   // and typed into is drawn in the overlay, above any flow that crosses it.
   return (
     <>
-      <div data-node-part="label" className={LABEL_PLACEMENT[placement]}>
+      <div data-node-part="label" className={cx(LABEL_PLACEMENT[placement], className)}>
         <div
           onDoubleClick={readonly ? undefined : edit.handleDoubleClick(edit.labelInputRef)}
           className={cx(textClassName, 'opacity-0')}

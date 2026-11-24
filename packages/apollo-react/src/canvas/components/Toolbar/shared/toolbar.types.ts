@@ -13,6 +13,8 @@ export interface ToolbarActionItem {
   color?: string;
   /** Prevents lockToolbarConfig from force-disabling this action when a node is locked. */
   allowWhenLocked?: boolean;
+  /** `data-testid` for the action's button or overflow menu item. */
+  testId?: string;
   onAction: (nodeId: string) => void;
 }
 

@@ -38,7 +38,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 import { BaseBadgeSlot } from '../BaseNode/BaseNodeBadgeSlot';
 import type { NodeOutlinePath } from '../BaseNode/BaseNodeOutline';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
-import type { ToolbarAction } from '../Toolbar/shared/toolbar.types';
+import type { ToolbarAction, ToolbarActionItem } from '../Toolbar/shared/toolbar.types';
 import { BpmnLabel, BpmnNodeShell } from './BpmnNodeShell';
 import {
   type BpmnEventDefinition,
@@ -100,61 +100,94 @@ const NO_ADD: Position[] = [];
 const EXTERNAL_LABEL = { bottom: 'below', top: 'above', left: 'left', right: 'right' } as const;
 const DROP_TARGET = 'outline outline-2 outline-brand';
 
+/** The ids PO.Frontend's toolbar gives its buttons, so one end-to-end suite drives both. */
+const tested = (action: Omit<ToolbarActionItem, 'testId'>): ToolbarActionItem => ({
+  ...action,
+  testId: `toolbar-item-${action.id}`,
+});
+
 function useToolbar(kind: 'activity' | 'element' | 'container', data: BpmnNodeData) {
   const actions = useBpmnActions();
   const strings = useBpmnStrings();
   return useMemo<ToolbarAction[]>(() => {
     const remove: ToolbarAction[] = actions.deleteNode
-      ? [{ id: 'delete', icon: 'trash-2', label: strings.delete, onAction: actions.deleteNode }]
+      ? [
+          tested({
+            id: 'delete',
+            icon: 'trash-2',
+            label: strings.delete,
+            onAction: actions.deleteNode,
+          }),
+        ]
       : [];
     if (kind === 'container') return remove;
 
     // An action the host leaves out takes its button with it.
     const leading: ToolbarAction[] = [];
     if (actions.changeElement) {
-      leading.push({
-        id: 'change-element',
-        icon: 'replace',
-        label: strings.changeElement,
-        onAction: actions.changeElement,
-      });
+      leading.push(
+        tested({
+          id: 'change-element',
+          icon: 'replace',
+          label: strings.changeElement,
+          onAction: actions.changeElement,
+        })
+      );
     }
     if (kind === 'activity') {
       if (actions.toggleLoop) {
-        leading.push({
-          id: 'iteration',
-          icon: 'repeat',
-          label: strings.iteration,
-          isToggled: !!data.loopCharacteristics,
-          onAction: actions.toggleLoop,
-        });
+        leading.push(
+          tested({
+            id: 'iteration',
+            icon: 'repeat',
+            label: strings.iteration,
+            isToggled: !!data.loopCharacteristics,
+            onAction: actions.toggleLoop,
+          })
+        );
       }
       if (actions.addBoundaryEvent) {
-        leading.push({
-          id: 'boundary-event',
-          icon: 'circle-dot',
-          label: strings.addBoundaryEvent,
-          onAction: actions.addBoundaryEvent,
-        });
+        leading.push(
+          tested({
+            id: 'boundary-event',
+            icon: 'circle-dot',
+            label: strings.addBoundaryEvent,
+            onAction: actions.addBoundaryEvent,
+          })
+        );
       }
-      if (actions.toggleBreakpoint) {
-        leading.push({
+    }
+    if (actions.addAnnotation) {
+      leading.push(
+        tested({
+          id: 'bpmn:TextAnnotation',
+          icon: 'message-square-text',
+          label: strings.addAnnotation,
+          onAction: actions.addAnnotation,
+        })
+      );
+    }
+    if (kind === 'activity' && actions.toggleBreakpoint) {
+      leading.push(
+        tested({
           id: 'breakpoint',
           icon: 'octagon-pause',
           label: strings.toggleBreakpoint,
           isToggled: !!data.breakpoint,
           onAction: actions.toggleBreakpoint,
-        });
-      }
+        })
+      );
     }
     const trailing: ToolbarAction[] = [];
     if (actions.duplicate) {
-      trailing.push({
-        id: 'duplicate',
-        icon: 'copy',
-        label: strings.duplicate,
-        onAction: actions.duplicate,
-      });
+      trailing.push(
+        tested({
+          id: 'duplicate',
+          icon: 'copy',
+          label: strings.duplicate,
+          onAction: actions.duplicate,
+        })
+      );
     }
     trailing.push(...remove);
     return leading.length && trailing.length
@@ -196,6 +229,7 @@ export const BpmnEventNode = memo(function BpmnEventNode(props: Props) {
         <BpmnLabel
           nodeId={id}
           label={data.label}
+          className={data.classNames?.label}
           placement={EXTERNAL_LABEL[data.labelPlacement ?? 'bottom']}
           selected={selected}
           dragging={dragging}
@@ -256,6 +290,7 @@ export const BpmnGatewayNode = memo(function BpmnGatewayNode(props: Props) {
         <BpmnLabel
           nodeId={id}
           label={data.label}
+          className={data.classNames?.label}
           placement={EXTERNAL_LABEL[data.labelPlacement ?? 'bottom']}
           selected={selected}
           dragging={dragging}
@@ -320,6 +355,7 @@ export const BpmnActivityNode = memo(function BpmnActivityNode(props: Props) {
           <Button
             size="3xs"
             aria-label={data.label ? `${strings.view} ${data.label}` : strings.view}
+            data-testid={`drill-down-button-${id}`}
             onClick={(event) => {
               event.stopPropagation();
               view(id);
@@ -367,6 +403,7 @@ export const BpmnActivityNode = memo(function BpmnActivityNode(props: Props) {
       <BpmnLabel
         nodeId={id}
         label={data.label}
+        className={data.classNames?.label}
         placement={isExpanded ? 'top' : 'inside'}
         selected={selected}
         dragging={dragging}
@@ -429,6 +466,7 @@ export const BpmnDataNode = memo(function BpmnDataNode(props: Props) {
         <BpmnLabel
           nodeId={id}
           label={data.label}
+          className={data.classNames?.label}
           placement={EXTERNAL_LABEL[data.labelPlacement ?? 'bottom']}
           selected={selected}
           dragging={dragging}
@@ -468,11 +506,18 @@ export const BpmnTextAnnotationNode = memo(function BpmnTextAnnotationNode(props
       addSides={NO_ADD}
       toolbar={toolbar}
     >
-      <div className={cx('relative h-full w-full rounded-sm', selected && selectedOutline)}>
+      <div
+        className={cx(
+          'relative h-full w-full rounded-sm',
+          selected && selectedOutline,
+          data.classNames?.body
+        )}
+      >
         <span className="absolute inset-y-0 left-0 w-2 rounded-l-sm border-y border-l border-foreground-muted" />
         <BpmnLabel
           nodeId={id}
           label={data.label}
+          className={data.classNames?.label}
           placement="annotation"
           selected={selected}
           dragging={dragging}
@@ -505,12 +550,14 @@ export const BpmnGroupNode = memo(function BpmnGroupNode(props: Props) {
       <div
         className={cx(
           'h-full w-full rounded-xl border-2 border-dashed border-foreground-muted',
-          selected && selectedOutline
+          selected && selectedOutline,
+          data.classNames?.body
         )}
       >
         <BpmnLabel
           nodeId={id}
           label={data.label}
+          className={data.classNames?.label}
           placement="top-left"
           selected={selected}
           dragging={dragging}
@@ -558,13 +605,15 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
           divided && (vertical ? 'border-l' : 'border-t'),
           selected && selectedOutline,
           selected && !isPool && 'bg-foreground-accent-muted/5',
-          data.dropTarget && DROP_TARGET
+          data.dropTarget && DROP_TARGET,
+          data.classNames?.body
         )}
       >
         {blackBox ? (
           <BpmnLabel
             nodeId={id}
             label={data.label}
+            className={data.classNames?.label}
             placement="center"
             selected={selected}
             dragging={dragging}
@@ -579,6 +628,7 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
             <BpmnLabel
               nodeId={id}
               label={data.label}
+              className={data.classNames?.label}
               placement={vertical ? 'header-top' : 'header'}
               selected={selected}
               dragging={dragging}
@@ -588,7 +638,10 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
         {isPool && data.multiplicity && (
           <span
             data-bpmn-multiplicity
-            className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-foreground"
+            className={cx(
+              'pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-foreground',
+              data.classNames?.multiplicity
+            )}
           >
             <BpmnGlyphMarkerParallel size={14} />
           </span>

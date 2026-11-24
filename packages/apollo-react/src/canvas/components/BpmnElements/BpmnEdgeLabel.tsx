@@ -1,4 +1,8 @@
-import { EdgeLabelRenderer, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  EdgeLabelRenderer,
+  useReactFlow,
+  useStoreApi,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useRef, useState } from 'react';
 import { useInlineLabelEditing } from '../BaseNode/useInlineLabelEditing';
 import { EDGE_LABEL_BASE_CLASS } from '../Edges/shared/primitives/EdgeLabel';
@@ -43,6 +47,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
 }) {
   const strings = useBpmnStrings();
   const { screenToFlowPosition } = useReactFlow();
+  const store = useStoreApi();
 
   const onChange = useCallback(
     (values: { label: string }) => onRename?.(edgeId, values.label),
@@ -100,6 +105,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
     <EdgeLabelRenderer>
       <div
         data-bpmn-edge-label={edgeId}
+        data-id={edgeId}
         className={EDGE_LABEL_BASE_CLASS}
         style={{
           transform: `translate(-50%, -50%) translate(${at.x}px, ${at.y}px)`,
@@ -107,6 +113,11 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
           zIndex,
           cursor: draggable ? 'move' : undefined,
           color: text || edit.isEditing ? undefined : 'var(--foreground-muted)',
+        }}
+        // The label sits outside the edge's own element, so a click selects the flow here.
+        onClick={() => {
+          const { elementsSelectable, addSelectedEdges } = store.getState();
+          if (elementsSelectable && !selected) addSelectedEdges([edgeId]);
         }}
         onDoubleClick={onRename ? edit.handleDoubleClick(edit.labelInputRef) : undefined}
         onPointerDown={onPointerDown}

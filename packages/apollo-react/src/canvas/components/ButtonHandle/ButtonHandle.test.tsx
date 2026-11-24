@@ -786,6 +786,12 @@ describe('ButtonHandle host options', () => {
     expect(visuals()).toBeNull();
   });
 
+  it('puts addButtonTestId on the add button', () => {
+    renderHandle({ addButtonTestId: 'add-right' });
+
+    expect(screen.getByTestId('add-right')).toBe(screen.getByRole('button'));
+  });
+
   describe('anchor="node"', () => {
     it('fills the node so edges anchor on its border', () => {
       renderHandle({ anchor: 'node' });

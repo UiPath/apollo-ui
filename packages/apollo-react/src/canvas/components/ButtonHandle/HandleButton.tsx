@@ -63,6 +63,7 @@ export const HandleButton = memo(
     renderLabel = true,
     portal,
     title,
+    testId,
     compact,
     shape = 'rounded',
     edgeOffset = HANDLE_REACH_PX,
@@ -94,6 +95,8 @@ export const HandleButton = memo(
     portal?: HandleButtonPortal;
     /** Native tooltip for the add button. The accessible name stays `label`-driven. */
     title?: string;
+    /** `data-testid` for the add button. */
+    testId?: string;
     /**
      * Set to make the button stand in for the handle, anchored against the node: `true` small,
      * `false` full size. Leave undefined for the default button beyond the handle.
@@ -190,6 +193,7 @@ export const HandleButton = memo(
       <CanvasInlineButton
         aria-label={accessibleName}
         title={title}
+        data-testid={testId}
         aria-hidden={visible ? undefined : true}
         disabled={visible ? undefined : true}
         onClick={handleClick}
@@ -208,6 +212,7 @@ export const HandleButton = memo(
         <CanvasInlineButton
           aria-label={accessibleName}
           title={title}
+          data-testid={testId}
           onClick={handleClick}
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}

@@ -39,6 +39,7 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
       className="nodrag nopan"
       onClick={handleClick}
       aria-label={action.label}
+      data-testid={action.testId}
       aria-disabled={!isEnabled}
       aria-pressed={action.isToggled}
       disabled={!isEnabled}

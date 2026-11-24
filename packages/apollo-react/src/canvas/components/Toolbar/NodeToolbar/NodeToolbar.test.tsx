@@ -169,6 +169,35 @@ describe('NodeToolbar', () => {
     });
   });
 
+  describe('test ids', () => {
+    it('has none by default', () => {
+      render(<NodeToolbar {...defaultProps} />);
+
+      expect(screen.getByRole('toolbar')).not.toHaveAttribute('data-testid');
+      expect(screen.getByLabelText('Edit')).not.toHaveAttribute('data-testid');
+    });
+
+    it('puts the config testId on the toolbar and each action testId on its button', async () => {
+      const user = userEvent.setup();
+      render(
+        <NodeToolbar
+          {...defaultProps}
+          config={{
+            actions: [{ ...mockAction1, testId: 'item-edit' }],
+            overflowActions: [{ ...mockAction2, testId: 'item-delete' }],
+            testId: 'toolbar',
+          }}
+        />
+      );
+
+      expect(screen.getByTestId('toolbar')).toHaveAttribute('role', 'toolbar');
+      expect(screen.getByTestId('item-edit')).toBe(screen.getByLabelText('Edit'));
+
+      await user.click(screen.getByLabelText('More options'));
+      expect(screen.getByTestId('item-delete')).toHaveAttribute('role', 'menuitem');
+    });
+  });
+
   describe('Overflow menu', () => {
     let user: UserEvent;
 

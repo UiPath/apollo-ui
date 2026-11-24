@@ -35,6 +35,11 @@ export interface BpmnNodeData extends Record<string, unknown> {
   triggeredByEvent?: boolean;
   /** `false` turns a pool or lane vertical: header band along the top, lanes side by side. */
   isHorizontal?: boolean;
+  /**
+   * Host class names, appended to the family's own: `body` on the element that paints the node's
+   * fill and border, `label` on the label, `multiplicity` on a pool's multiplicity marker.
+   */
+  classNames?: { body?: string; label?: string; multiplicity?: string };
   /** Participant multiplicity marker on a pool. */
   multiplicity?: boolean;
   /** A black-box pool: no header band, the label centred in the pool. */
@@ -89,6 +94,8 @@ export const handleSide = (id?: string | null) =>
 export interface BpmnActions {
   addAfter: (nodeId: string, side: Position) => void;
   addBoundaryEvent?: (nodeId: string) => void;
+  /** Attach a new text annotation to the element. */
+  addAnnotation?: (nodeId: string) => void;
   changeElement?: (nodeId: string) => void;
   toggleLoop?: (nodeId: string) => void;
   toggleBreakpoint?: (nodeId: string) => void;
@@ -134,6 +141,7 @@ export interface BpmnStrings {
   changeElement: string;
   iteration: string;
   addBoundaryEvent: string;
+  addAnnotation: string;
   toggleBreakpoint: string;
   duplicate: string;
   addElement: string;
@@ -149,6 +157,7 @@ export const DEFAULT_BPMN_STRINGS: BpmnStrings = {
   changeElement: 'Change element',
   iteration: 'Iteration',
   addBoundaryEvent: 'Add boundary event',
+  addAnnotation: 'Add text annotation',
   toggleBreakpoint: 'Toggle breakpoint',
   duplicate: 'Duplicate',
   addElement: 'Add element',

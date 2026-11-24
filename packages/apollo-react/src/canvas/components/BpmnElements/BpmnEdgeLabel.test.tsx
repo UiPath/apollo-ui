@@ -1,4 +1,4 @@
-import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ReactFlowProvider, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '../../utils/testing';
 import { BpmnStringsProvider } from '.';
@@ -10,12 +10,19 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   EdgeLabelRenderer: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+let store: ReturnType<typeof useStoreApi>;
+function StoreProbe() {
+  store = useStoreApi();
+  return null;
+}
+
 const renderLabel = (
   props: Partial<React.ComponentProps<typeof BpmnEdgeLabel>> = {},
   strings?: React.ComponentProps<typeof BpmnStringsProvider>['strings']
 ) =>
   render(
     <ReactFlowProvider>
+      <StoreProbe />
       <BpmnStringsProvider strings={strings}>
         <BpmnEdgeLabel edgeId="flow" x={160} y={40} borderColor="red" selected {...props} />
       </BpmnStringsProvider>
@@ -72,6 +79,39 @@ describe('BPMN edge label', () => {
       fireEvent.doubleClick(screen.getByText('Yes'));
 
       expect(screen.queryByLabelText('Edit label')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('selecting', () => {
+    const selectEdges = () => {
+      const addSelectedEdges = vi.fn();
+      store.setState({ addSelectedEdges });
+      return addSelectedEdges;
+    };
+
+    it('carries the flow id, as an edge element does', () => {
+      renderLabel({ text: 'Yes' });
+
+      expect(label()).toHaveAttribute('data-id', 'flow');
+    });
+
+    it('selects its flow on click', () => {
+      renderLabel({ text: 'Yes', selected: false });
+      const addSelectedEdges = selectEdges();
+
+      fireEvent.click(label());
+
+      expect(addSelectedEdges).toHaveBeenCalledWith(['flow']);
+    });
+
+    it('leaves the selection alone when elements are not selectable', () => {
+      renderLabel({ text: 'Yes', selected: false });
+      const addSelectedEdges = selectEdges();
+      store.setState({ elementsSelectable: false });
+
+      fireEvent.click(label());
+
+      expect(addSelectedEdges).not.toHaveBeenCalled();
     });
   });
 

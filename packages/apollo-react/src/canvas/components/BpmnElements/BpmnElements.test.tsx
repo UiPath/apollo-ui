@@ -15,6 +15,7 @@ import {
   type BpmnNodeData,
   BpmnOverlayProvider,
   BpmnStringsProvider,
+  BpmnSwimlaneNode,
   BpmnTextAnnotationNode,
   bpmnEdgeTypes,
   bpmnNodeTypes,
@@ -235,6 +236,7 @@ describe('BPMN element family', () => {
         'Change element',
         'Iteration',
         'Add boundary event',
+        'Add text annotation',
         'Toggle breakpoint',
         'Duplicate',
         'Delete',
@@ -382,6 +384,93 @@ describe('BPMN element family', () => {
 
       expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('end-to-end hooks', () => {
+    it('gives the toolbar and each of its buttons a test id', () => {
+      renderActivity({ label: 'Review' }, 'bpmn:UserTask', { selected: true });
+
+      expect(screen.getByTestId('node-toolbar')).toHaveAttribute('role', 'toolbar');
+      expect(
+        ['change-element', 'iteration', 'boundary-event', 'breakpoint', 'duplicate', 'delete'].map(
+          (id) => screen.getByTestId(`toolbar-item-${id}`).getAttribute('aria-label')
+        )
+      ).toEqual([
+        'Change element',
+        'Iteration',
+        'Add boundary event',
+        'Toggle breakpoint',
+        'Duplicate',
+        'Delete',
+      ]);
+    });
+
+    it('offers a text annotation only when the host adds them, after the boundary event', () => {
+      const addAnnotation = vi.fn();
+      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
+        selected: true,
+        value: { ...requiredActions, addBoundaryEvent: vi.fn(), duplicate: vi.fn(), addAnnotation },
+        strings: { addAnnotation: 'Kommentar' },
+      });
+
+      expect(toolbarButtons()).toEqual(['Add boundary event', 'Kommentar', 'Duplicate', 'Delete']);
+      fireEvent.click(screen.getByTestId('toolbar-item-bpmn:TextAnnotation'));
+      expect(addAnnotation).toHaveBeenCalledWith('task');
+    });
+
+    it('names the "+" on each side that has one after the node and the side', async () => {
+      const user = userEvent.setup();
+      renderActivity({ label: 'Review' });
+
+      await user.hover(screen.getByText('Review'));
+
+      for (const side of ['top', 'right', 'bottom']) {
+        expect(screen.getByTestId(`quick-add-handle-task-${side}`)).toHaveAttribute(
+          'aria-label',
+          'Add node'
+        );
+      }
+      expect(screen.queryByTestId('quick-add-handle-task-left')).not.toBeInTheDocument();
+    });
+
+    it('appends host class names to the body and the label', () => {
+      renderActivity({
+        label: 'Review',
+        backgroundColor: 'rgb(1, 2, 3)',
+        classNames: { body: 'host-body', label: 'host-label' },
+      });
+
+      const body = document.querySelector('.host-body') as HTMLElement;
+      expect(body.style.background).toBe('rgb(1, 2, 3)');
+      const label = document.querySelector('.host-label') as HTMLElement;
+      expect(label).toHaveAttribute('data-node-part', 'label');
+      expect(label).toHaveTextContent('Review');
+    });
+
+    it('appends host class names to a pool frame and its multiplicity marker', () => {
+      renderNode(BpmnSwimlaneNode, requiredActions, {
+        type: 'bpmn:Participant',
+        data: {
+          label: 'Sales',
+          multiplicity: true,
+          classNames: { body: 'host-body', multiplicity: 'host-marker' },
+        },
+      });
+
+      expect(document.querySelector('.host-body')).toHaveClass('border');
+      expect(document.querySelector('.host-marker')).toHaveAttribute('data-bpmn-multiplicity');
+    });
+
+    it('gives the drill-in button of a collapsed sub-process a test id', () => {
+      const view = vi.fn();
+      renderActivity({ label: 'Fulfil' }, 'bpmn:SubProcess', {
+        value: { ...requiredActions, view },
+      });
+
+      fireEvent.click(screen.getByTestId('drill-down-button-task'));
+
+      expect(view).toHaveBeenCalledWith('task');
     });
   });
 
