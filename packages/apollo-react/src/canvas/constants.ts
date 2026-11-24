@@ -55,6 +55,13 @@ export const NODE_CONTAINER_RADIUS_RATIO = 32 / DEFAULT_NODE_SIZE;
 export const NODE_INNER_SHAPE_RATIO = 80 / DEFAULT_NODE_SIZE;
 export const NODE_INNER_ICON_RATIO = 40 / DEFAULT_NODE_SIZE;
 export const NODE_INNER_RADIUS_RATIO = 24 / DEFAULT_NODE_SIZE;
+/**
+ * Compact icon (`display.iconSize: 'compact'`): the icon tile is about two-thirds of the node
+ * (snapped to 4px, so 44 on a 64px node) and the icon 60% of the tile (snapped to 2px, 26 on 44),
+ * instead of 80/96 and half. Leaves more room around the tile on short nodes.
+ */
+export const NODE_COMPACT_INNER_SHAPE_RATIO = 2 / 3;
+export const NODE_COMPACT_ICON_RATIO = 0.6;
 export const NODE_BORDER_SIZE = 1; // px
 
 /** Icon size used in the "manifest not found" error fallback (px). */

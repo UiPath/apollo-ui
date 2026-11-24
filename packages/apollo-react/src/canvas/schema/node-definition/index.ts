@@ -34,6 +34,7 @@ export {
   nodeRuntimeConstraintsManifestSchema,
 } from './node-manifest';
 export type {
+  NodeIconSize,
   NodeShape,
   OutlineDrawnNodeShape,
   RoundEndedNodeShape,
@@ -44,6 +45,7 @@ export {
   isRoundEndedShape,
   isWideNodeShape,
   nodeHeightSchema,
+  nodeIconSizeSchema,
   nodeShapeSchema,
   OUTLINE_DRAWN_NODE_SHAPES,
   ROUND_ENDED_NODE_SHAPES,

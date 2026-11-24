@@ -7,6 +7,8 @@ import {
   GRID_SPACING,
   NODE_BADGE_SIZE,
   NODE_BORDER_SIZE,
+  NODE_COMPACT_ICON_RATIO,
+  NODE_COMPACT_INNER_SHAPE_RATIO,
   NODE_CONTAINER_RADIUS_RATIO,
   NODE_HEIGHT_DEFAULT,
   NODE_HEIGHT_FOOTER_BUTTON,
@@ -320,6 +322,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayBackground = display.background;
   const displayColor = display.color;
   const displayShadow = display.shadow ?? true;
+  const displayCompactIcon = display.iconSize === 'compact';
   const displayIconBackground = isDarkMode
     ? (display.iconBackgroundDark ?? display.iconBackground)
     : display.iconBackground;
@@ -371,16 +374,24 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     const effectiveW = hasFooter ? DEFAULT_NODE_SIZE : containerWidth;
 
     const innerBasis = Math.min(effectiveH, effectiveW);
+    // The icon tile: 80/96 of the node, or about two-thirds of it for a compact icon.
+    const tile = displayCompactIcon
+      ? Math.round((innerBasis * NODE_COMPACT_INNER_SHAPE_RATIO) / 4) * 4
+      : innerBasis * NODE_INNER_SHAPE_RATIO;
     // A pill's ends are fully round, so a rounded-square icon tile reads as a mistake inside it.
+    // Otherwise the tile's corner is 24/80 of the tile, at either tile size.
     const innerRadius = isRoundEndedShape(displayShape)
       ? '9999px'
-      : getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
+      : getRadius(tile, NODE_INNER_RADIUS_RATIO / NODE_INNER_SHAPE_RATIO);
+    const iconSize = displayCompactIcon
+      ? Math.round((tile * NODE_COMPACT_ICON_RATIO) / 2) * 2
+      : innerBasis * NODE_INNER_ICON_RATIO;
 
     // Uniform gap: derive a fixed gap from the reference (smallest) dimension
     // so spacing is consistent on all sides regardless of aspect ratio.
     // Circles and wide cards keep the inner shape square (based on innerBasis).
     // Square nodes let the inner shape grow with the container.
-    const gap = innerBasis * (1 - NODE_INNER_SHAPE_RATIO);
+    const gap = innerBasis - tile;
     const keepSquare = displayShape === 'circle' || isWideNodeShape(displayShape);
     const innerW = keepSquare ? innerBasis - gap : effectiveW - gap;
     const innerH = keepSquare ? innerBasis - gap : effectiveH - gap;
@@ -393,9 +404,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       '--inner-w': `${innerW}px`,
       '--inner-h': `${innerH}px`,
       '--inner-radius': innerRadius,
-      '--icon-size': `${innerBasis * NODE_INNER_ICON_RATIO}px`,
+      '--icon-size': `${iconSize}px`,
     } as React.CSSProperties;
-  }, [containerWidth, containerHeight, displayShape, hasFooter]);
+  }, [containerWidth, containerHeight, displayShape, hasFooter, displayCompactIcon]);
 
   const interactionState = useMemo(() => {
     if (disabled) return 'disabled';

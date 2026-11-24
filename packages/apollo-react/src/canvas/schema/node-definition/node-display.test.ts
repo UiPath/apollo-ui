@@ -32,3 +32,24 @@ describe('display.height', () => {
     expect(() => displayConfigSchema.parse({})).not.toThrow();
   });
 });
+
+describe('display.iconSize', () => {
+  const manifestWithIconSize = (iconSize: unknown) => ({
+    nodeType: 'uipath.test.node',
+    version: '1.0.0',
+    display: { label: 'Test Node', iconSize },
+    tags: [],
+    sortOrder: 0,
+    handleConfiguration: [],
+  });
+
+  it.each(['default', 'compact'])('accepts %s', (iconSize) => {
+    expect(() => nodeManifestSchema.parse(manifestWithIconSize(iconSize))).not.toThrow();
+    expect(() => displayConfigSchema.parse({ iconSize })).not.toThrow();
+  });
+
+  it('rejects other values', () => {
+    expect(() => nodeManifestSchema.parse(manifestWithIconSize('small'))).toThrow();
+    expect(() => displayConfigSchema.parse({ iconSize: 'small' })).toThrow();
+  });
+});

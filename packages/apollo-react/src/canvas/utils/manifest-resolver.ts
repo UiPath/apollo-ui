@@ -141,6 +141,7 @@ export function resolveDisplay(
     shape,
     // The instance height wins when set; otherwise the manifest's applies.
     height: context?.display?.height ?? manifestDisplay.height,
+    iconSize: context?.display?.iconSize ?? manifestDisplay.iconSize,
   };
 }
 
