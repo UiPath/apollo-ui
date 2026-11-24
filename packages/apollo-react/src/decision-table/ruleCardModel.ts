@@ -5,7 +5,13 @@ import type { MarkBadgeLabels, MarkBadgeProps } from './MarkBadge';
 import { markIds } from './MarkBadge';
 import type { RowMark } from './marks';
 import type { RemoveConditionButtonProps } from './RemoveConditionButton';
-import { type LineMarks, lineMarksOf, type MarkFields, unplacedColumnIds } from './sentenceMarks';
+import {
+  isLineMark,
+  type LineMarks,
+  lineMarksOf,
+  type MarkFields,
+  unplacedColumnIds,
+} from './sentenceMarks';
 import {
   boundedParts,
   columnNameOf,
@@ -241,7 +247,7 @@ export const ruleCardModel = ({
   return {
     tone,
     dim,
-    title,
+    title: isLineMark(mark) ? undefined : title,
     cells,
     number: numbered ? number : null,
     changeStatus,
