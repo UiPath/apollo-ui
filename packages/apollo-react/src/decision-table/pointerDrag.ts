@@ -20,8 +20,6 @@ export interface PointerDragOptions {
   onDrop: (pointer: PointerPoint) => void;
   /** The drag ended: dropped, cancelled, or torn down. */
   onEnd: () => void;
-  /** Drops where the pointer is released, after an `onPointer` there; otherwise where it last moved. */
-  dropAtRelease?: boolean;
 }
 
 /** The rows `scroller` shows: the viewport for the page's scrolling element. */
@@ -51,7 +49,6 @@ export const followPointerDrag = ({
   onPointer,
   onDrop,
   onEnd,
-  dropAtRelease = false,
 }: PointerDragOptions): (() => void) => {
   let pointer = start;
   let frame: number | null = null;
@@ -100,10 +97,6 @@ export const followPointerDrag = ({
       return;
     }
     try {
-      if (dropAtRelease) {
-        pointer = { x: up.clientX, y: up.clientY };
-        onPointer(pointer);
-      }
       onDrop(pointer);
     } finally {
       end();
