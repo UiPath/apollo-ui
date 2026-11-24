@@ -45,6 +45,8 @@ export interface CentralizedGuardrailParameterDefinition {
   label?: string;
   /** Keyed by the raw wire value. */
   optionLabels?: Record<string, string>;
+  /** Raw values whose label reads as Preview. */
+  previewOptions?: string[];
   /** For `map-enum`: id of the sibling `enum-list` whose selection provides the keys. */
   keySource?: string;
 }

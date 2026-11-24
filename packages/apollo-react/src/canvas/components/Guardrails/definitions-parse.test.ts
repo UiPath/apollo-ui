@@ -6,6 +6,7 @@ import { CLASSIFIER_QUESTIONS_WIRE } from './__fixtures__/classifier-questions.f
 import {
   ALL_BUILT_IN_WIRE,
   CLASSIFIER_WIRE,
+  HARMFUL_CONTENT_FILE_SCOPE_WIRE,
   LLM_AS_JUDGE_WIRE,
   PII_DETECTION_PREVIEW_WIRE,
   PII_DETECTION_WIRE,
@@ -46,6 +47,12 @@ describe('parseGuardrailDefinitions', () => {
     const result = parseGuardrailDefinitions([PII_DETECTION_PREVIEW_WIRE]);
 
     expect(result.definitions[0]).toEqual(PII_DETECTION_PREVIEW_WIRE);
+  });
+
+  it('keeps the preview options of an enum', () => {
+    const result = parseGuardrailDefinitions([HARMFUL_CONTENT_FILE_SCOPE_WIRE]);
+
+    expect(result.definitions[0]).toEqual(HARMFUL_CONTENT_FILE_SCOPE_WIRE);
   });
 
   describe('disabledReason', () => {

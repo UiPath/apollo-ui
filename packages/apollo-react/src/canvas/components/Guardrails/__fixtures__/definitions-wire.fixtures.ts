@@ -237,6 +237,24 @@ export const HARMFUL_CONTENT_WIRE: GuardrailDefinitionWire = {
   ],
 };
 
+/** `HARMFUL_CONTENT_WIRE` with the detection scope Agents adds while file support is on. */
+export const HARMFUL_CONTENT_FILE_SCOPE_WIRE: GuardrailDefinitionWire = {
+  ...HARMFUL_CONTENT_WIRE,
+  parameters: [
+    ...HARMFUL_CONTENT_WIRE.parameters,
+    {
+      id: 'detectionScope',
+      type: 'enum',
+      required: false,
+      defaultValue: 'Text',
+      options: ['Text', 'Files', 'Both'],
+      displayName: 'Detection scope',
+      optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
+      previewOptions: ['Files', 'Both'],
+    },
+  ],
+};
+
 export const PROMPT_INJECTION_WIRE: GuardrailDefinitionWire = {
   validator: 'prompt_injection',
   allowedScopes: ['Llm'],

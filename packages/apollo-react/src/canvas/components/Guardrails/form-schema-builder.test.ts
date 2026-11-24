@@ -173,6 +173,28 @@ describe('buildGuardrailFormSchema', () => {
     });
   });
 
+  it('suffixes the preview options of an enum select', () => {
+    const field = fieldFor({
+      id: 'detectionScope',
+      type: 'enum',
+      label: 'Detection scope',
+      required: false,
+      defaultValue: 'Text',
+      options: ['Text', 'Files', 'Both'],
+      optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
+      previewOptions: ['Files', 'Both'],
+    });
+
+    expect(field).toMatchObject({
+      type: 'select',
+      options: [
+        { value: 'Text', label: 'Text only' },
+        { value: 'Files', label: 'Files only (Preview)' },
+        { value: 'Both', label: 'Text and files (Preview)' },
+      ],
+    });
+  });
+
   it('declares a valueType for host-overridden fields, matching the parameter type', () => {
     const overridden = (type: GuardrailParameterDefinition['type']) =>
       buildGuardrailFormSchema(

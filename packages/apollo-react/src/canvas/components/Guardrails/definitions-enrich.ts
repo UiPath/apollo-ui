@@ -172,8 +172,6 @@ function toParameterDefinition(
 
   switch (param.type) {
     case 'enum':
-      definition.options = param.options;
-      break;
     case 'enum-list':
       definition.options = param.options;
       if (param.previewOptions !== undefined) definition.previewOptions = param.previewOptions;

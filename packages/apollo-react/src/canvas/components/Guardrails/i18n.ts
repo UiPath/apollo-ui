@@ -1556,6 +1556,8 @@ export interface CentralizedGuardrailsLabels {
   detectionScopeText?: string;
   detectionScopeFiles?: string;
   detectionScopeBoth?: string;
+  /** An option its definition lists in `previewOptions`: `{{label}}` is the option's own label. */
+  previewOptionLabel?: string;
   /** The row's summary line, worded as on the hosts' own guardrail rows; Both reads "Text, Files". */
   scope?: string;
   detection?: string;
@@ -1673,6 +1675,12 @@ function buildCentralizedGuardrailsLabels(
     detectionScopeBoth: _({
       id: 'guardrails.centralized.detection-scope-both',
       message: 'Text and files',
+    }),
+    // The form's string, so the catalogs carry one translation of it.
+    previewOptionLabel: _({
+      id: 'guardrails.form.preview-option-label',
+      message: '{label} (Preview)',
+      values: TEMPLATE_TOKENS,
     }),
     scope: _({ id: 'guardrails.centralized.scope', message: 'Scope' }),
     detection: _({ id: 'guardrails.centralized.detection', message: 'Detection' }),

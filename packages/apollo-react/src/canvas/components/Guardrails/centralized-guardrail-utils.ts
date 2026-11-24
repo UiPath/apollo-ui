@@ -9,6 +9,7 @@ import type {
 } from './centralized-types';
 import type { GuardrailCopyTable, GuardrailValidatorCopy } from './definitions-copy';
 import type { CentralizedGuardrailsLabels } from './i18n';
+import { formatGuardrailFormMessage } from './i18n';
 import type { GuardrailDetectionScope } from './types';
 import { GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID } from './utils';
 
@@ -143,6 +144,8 @@ export interface CentralizedParameterFallbackLabels {
    * renders raw.
    */
   detectionScope?: { label: string; options: Record<GuardrailDetectionScope, string> };
+  /** Wraps an option its definition lists in `previewOptions`; `{{label}}` is its own label. */
+  previewOption?: string;
 }
 
 /**
@@ -295,11 +298,15 @@ export function resolveCentralizedGuardrailParameters(
     option: string
   ): string => {
     const optionLabels = parameterDefinition?.optionLabels;
-    const label =
+    const ownLabel =
       optionLabels !== undefined && Object.hasOwn(optionLabels, option)
         ? optionLabels[option]
         : undefined;
-    return typeof label === 'string' ? label : option;
+    const label = typeof ownLabel === 'string' ? ownLabel : option;
+    return labels.previewOption !== undefined &&
+      parameterDefinition?.previewOptions?.includes(option)
+      ? formatGuardrailFormMessage(labels.previewOption, { label })
+      : label;
   };
 
   const formatValue = (

@@ -134,10 +134,14 @@ const SINGLE_SOURCE: Array<keyof CentralizedGuardrailsLabels> = [
   'detectionScopeBoth',
 ];
 
-/** Neither product's centralized section has these; they are `GuardrailList`'s status chips. */
+/**
+ * Neither product's centralized section has these: `GuardrailList`'s status chips, and the form's
+ * Preview template.
+ */
 const OWN_ADDITIONS: Array<keyof CentralizedGuardrailsLabels> = [
   'statusUnavailable',
   'statusDisabled',
+  'previewOptionLabel',
 ];
 
 describe('centralized guardrails copy', () => {

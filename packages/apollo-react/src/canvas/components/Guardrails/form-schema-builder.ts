@@ -4,9 +4,9 @@ import type { GuardrailValidatorFormLabels } from './i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from './types';
 
 /**
- * An enum-list option's label in the option list and the chip editor: its friendly label (the
- * raw value when unmapped), wrapped in the preview template when the definition lists it in
- * `previewOptions`.
+ * An enum or enum-list option's label in the select, the option list and the chip editor: its
+ * friendly label (the raw value when unmapped), wrapped in the preview template when the
+ * definition lists it in `previewOptions`.
  */
 export function guardrailOptionLabel(
   def: GuardrailParameterDefinition,
@@ -231,7 +231,7 @@ function buildGuardrailField(
           : ((def.defaultValue as string | null) ?? '');
       const catalog = (def.options ?? []).map((opt) => ({
         value: opt,
-        label: def.optionLabels?.[opt] ?? opt,
+        label: guardrailOptionLabel(def, opt, labels),
       }));
       const synthetic = options?.enumSyntheticValues?.[def.id];
       const opts =
