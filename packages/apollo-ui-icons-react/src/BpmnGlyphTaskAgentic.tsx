@@ -1,0 +1,25 @@
+// Auto-generated from ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-agentic.svg
+import React from 'react';
+
+export interface BpmnGlyphTaskAgenticProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
+
+export const BpmnGlyphTaskAgentic = React.forwardRef<SVGSVGElement, BpmnGlyphTaskAgenticProps>(
+  ({ size, ...props }, ref) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path d="M15.5 13.4C15.5 12.6268 16.0596 12 16.75 12C17.4404 12 18 12.6268 18 13.4V14.6C18 15.3732 17.4404 16 16.75 16C16.0596 16 15.5 15.3732 15.5 14.6V13.4Z" fill="currentColor" />
+<path d="M11.5 13.4C11.5 12.6268 12.0596 12 12.75 12C13.4404 12 14 12.6268 14 13.4V14.6C14 15.3732 13.4404 16 12.75 16C12.0596 16 11.5 15.3732 11.5 14.6V13.4Z" fill="currentColor" />
+<path d="M20 4C21.1046 4 22 4.89543 22 6V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4H4.5V5.5H4C3.72386 5.5 3.5 5.72386 3.5 6V18C3.5 18.2761 3.72386 18.5 4 18.5H20C20.2761 18.5 20.5 18.2761 20.5 18V6C20.5 5.72386 20.2761 5.5 20 5.5H12.5V4H20Z" fill="currentColor" />
+<path d="M7.90414 1.45485C8.12054 0.848383 8.94768 0.848383 9.16408 1.45485L9.82999 3.32112L11.6296 4.0117C12.2144 4.23611 12.2144 5.09389 11.6296 5.3183L9.82999 6.00888L9.16408 7.87515C8.94768 8.48162 8.12054 8.48162 7.90414 7.87515L7.23822 6.00888L5.43861 5.3183C4.8538 5.09389 4.8538 4.23611 5.43861 4.0117L7.23822 3.32112L7.90414 1.45485Z" fill="#FA4616" />
+    </svg>
+  )
+);
+
+BpmnGlyphTaskAgentic.displayName = 'BpmnGlyphTaskAgentic';
+
+export default BpmnGlyphTaskAgentic;
