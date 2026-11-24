@@ -403,6 +403,22 @@ describe('DecisionText', () => {
         expect(document.querySelector('li[data-row-id] [style*="padding-inline-end"]')).toBeNull();
       });
 
+      it("puts an unmarked line's remove action at the edge, reserving no glyph slot", () => {
+        render(view({ selected: null, onSelect: vi.fn(), edit: editWith() }));
+        const line = card('m1').querySelector('li[data-column-id]');
+        const end = line?.querySelector(':scope > [data-line-end]');
+        expect(end?.lastElementChild).toHaveAttribute('data-rule-action', 'clear');
+      });
+
+      it("puts a title row's actions at the edge", () => {
+        const named = MULTI_SENTENCE_RULES.map((rule, index) =>
+          index === 0 ? { ...rule, name: 'Prime' } : rule
+        );
+        render(view({ rules: named, selected: null, onSelect: vi.fn(), edit: editWith() }));
+        const title = card('m1').querySelector('[data-rule-title]');
+        expect(title?.lastElementChild).toHaveAttribute('data-rule-actions');
+      });
+
       it("shares one slot size between a line's remove action, glyph and the card's actions", () => {
         editable();
         const slot = (element: Element | null | undefined) =>
