@@ -96,7 +96,9 @@ export const followPointerDrag = ({
     if (!isOwner(up)) {
       return;
     }
+    pointer = { x: up.clientX, y: up.clientY };
     try {
+      onPointer(pointer);
       onDrop(pointer);
     } finally {
       end();
