@@ -6,6 +6,7 @@ import type { CellCommitMove } from './gridTypes';
 import type { HitPolicyLabels } from './hitPolicyMenu';
 import type { RefusalContext } from './hostValues';
 import type { RuleCardEditLabels } from './RuleCard';
+import type { RenameRule } from './RuleName';
 import type { RuleCardLabels } from './ruleCardModel';
 import type { RuleMenuActions, RuleMenuLabels } from './ruleMenuEntries';
 import type { SentenceCellId, SentenceValueId } from './sentenceTypes';
@@ -59,6 +60,8 @@ export interface DecisionTextEdit<Op, Type, Refusal> extends RuleMenuActions {
   renderEditor?: ValuePopoverProps['renderEditor'];
   /** Editing of a band's input or output from its pill; without it the pills stay plain. */
   column?: ColumnEdit<Type>;
+  /** The rule's name field: Enter or blur renames it to the trimmed text, Escape restores it; without it names stay read-only. */
+  onRenameRule?: RenameRule;
   /** A condition's remove action, or Delete or Backspace on a selected value: the grid's clear, for one cell; a refusal is announced. */
   onClearCell: (cell: SentenceCellId) => Refusal | void;
   /** A refusal's words, given the refused cell's column name and the values it refused. */

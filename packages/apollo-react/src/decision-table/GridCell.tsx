@@ -7,6 +7,7 @@ import {
   BODY_CELL_CLASS,
   CELL_MARK_CLASS,
   CELL_SURFACE_CLASS,
+  EMPTY_HINT_CLASS,
   IN_RANGE_CLASS,
   MONO_CELL_TEXT_CLASS,
   OMIT_BORDER_CLASS,
@@ -73,7 +74,7 @@ export const renderRestingCellContent = (
   if (value) {
     return value;
   }
-  return placeholder ? <span className="text-foreground-de-emp italic">{placeholder}</span> : null;
+  return placeholder ? <span className={EMPTY_HINT_CLASS}>{placeholder}</span> : null;
 };
 
 /**

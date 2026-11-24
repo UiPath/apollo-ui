@@ -477,3 +477,9 @@ export const FOOTER_ACTION_CLASS = 'sticky left-0 w-fit';
 export const CELL_EDITOR_CLASS =
   'box-border h-[calc(var(--grid-row-height)_-_1px)] w-full border-0 bg-background px-2 ' +
   'py-[calc((var(--grid-row-height)_-_1px_-_17px)_/_2)] [font:inherit] text-foreground outline-none';
+
+/** An empty cell's hint, as the column shows it in place of a value. */
+export const EMPTY_HINT_CLASS = 'text-foreground-de-emp italic';
+
+/** `EMPTY_HINT_CLASS` as a text field's placeholder. */
+export const EMPTY_HINT_PLACEHOLDER_CLASS = 'placeholder:text-foreground-de-emp placeholder:italic';

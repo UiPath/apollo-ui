@@ -5995,6 +5995,56 @@ describe('DecisionText', () => {
     });
   });
 
+  describe('rule name', () => {
+    const named = GRID_SENTENCE_RULES.map((rule) =>
+      rule.rowId === 'r1' ? { ...rule, name: 'Young' } : rule
+    );
+    const nameField = (rowId: string) =>
+      within(card(rowId)).queryByRole('textbox', { name: 'Rule name' });
+
+    it('names a named rule, and an unnamed one once selected, in a field; others keep their heading', () => {
+      const onRenameRule = vi.fn();
+      render(
+        view({
+          rules: named,
+          selected: { kind: 'rule', rowId: 'r2' },
+          onSelect: vi.fn(),
+          edit: editWith({ onRenameRule }),
+        })
+      );
+      expect(nameField('r1')).toHaveValue('Young');
+      expect(nameField('r2')).toHaveValue('');
+      expect(nameField('r2')).toHaveAttribute('placeholder', 'Name this rule…');
+      expect(nameField('r3')).toBeNull();
+      fireEvent.change(nameField('r1') as HTMLElement, { target: { value: ' Old ' } });
+      fireEvent.keyDown(nameField('r1') as HTMLElement, { key: 'Enter' });
+      expect(onRenameRule.mock.calls).toEqual([['r1', 'Old']]);
+    });
+
+    it('keeps a name read-only without the callback', () => {
+      render(view({ rules: named, selected: null, onSelect: vi.fn(), edit: editWith() }));
+      expect(nameField('r1')).toBeNull();
+      expect(card('r1')).toHaveTextContent('Young');
+    });
+
+    it("keeps focus in the field a click selects its rule from, and leaves the field's keys out of navigation", () => {
+      const { onSelect } = renderSelectable({
+        rules: named,
+        edit: editWith({ onRenameRule: vi.fn() }),
+      });
+      const field = nameField('r1') as HTMLElement;
+      act(() => field.focus());
+      fireEvent.click(field);
+      expect(onSelect).toHaveBeenCalledWith({ kind: 'rule', rowId: 'r1' });
+      expect(document.activeElement).toBe(field);
+      onSelect.mockClear();
+      fireEvent.keyDown(field, { key: 'ArrowDown' });
+      fireEvent.keyDown(field, { key: 'Delete' });
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(field);
+    });
+  });
+
   describe('policy', () => {
     const FIRST: FixturePick = { kind: 'policy', policy: 'first' };
     const trigger = () => screen.getByRole('button', { name: /Hit policy/ });

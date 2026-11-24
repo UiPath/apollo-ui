@@ -7,6 +7,7 @@ import { ConditionLine } from './ConditionLine';
 import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
 import { RuleLine, type RuleLineProps } from './RuleLine';
+import { type RenameRule, RuleName, type RuleNameLabels } from './RuleName';
 import {
   type CardMode,
   type RuleCardBase,
@@ -70,7 +71,7 @@ const ChangeSign: React.FC<{ diff: RuleDiff }> = ({ diff }) => {
 };
 
 /** A card's editing strings: its actions', and its remove and clear buttons'. */
-export interface RuleCardEditLabels extends RuleActionsLabels, RuleRemovalLabels {}
+export interface RuleCardEditLabels extends RuleActionsLabels, RuleRemovalLabels, RuleNameLabels {}
 
 /** A card's mode: read, editable with its strings, open menu and pending line, or a diff's. */
 export type RuleCardMode =
@@ -82,6 +83,8 @@ export type RuleCardMode =
       openMenu: RuleMenuKind | undefined;
       /** The line of the condition the open editor adds, if any. */
       pendingColumnId: string | undefined;
+      /** Renames the rule from its name field; without it the name is read-only. */
+      onRenameRule: RenameRule | undefined;
     };
 
 export type RuleCardProps = RuleCardBase &
@@ -183,13 +186,25 @@ export const RuleCard = memo<RuleCardProps>(
               {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
             </span>
           )}
-          {title !== null && (
-            <div
-              className={cn(RULE_TITLE_CLASS, edit && HEADING_ACTIONS_SPACE_CLASS)}
-              data-rule-title
-            >
-              {title}
+          {edit?.onRenameRule && (title !== null || rowSelected) ? (
+            <div className={cn(RULE_TITLE_CLASS, HEADING_ACTIONS_SPACE_CLASS)}>
+              <RuleName
+                rowId={rule.rowId}
+                name={title ?? ''}
+                selected={rowSelected}
+                labels={edit.editLabels}
+                onRename={edit.onRenameRule}
+              />
             </div>
+          ) : (
+            title !== null && (
+              <div
+                className={cn(RULE_TITLE_CLASS, edit && HEADING_ACTIONS_SPACE_CLASS)}
+                data-rule-title
+              >
+                {title}
+              </div>
+            )
           )}
           <CitedLine citations={lined ? null : citationButtons}>
             <div
