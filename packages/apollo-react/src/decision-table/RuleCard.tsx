@@ -6,7 +6,8 @@ import { CitationButtons } from './CitationButton';
 import { ConditionLine } from './ConditionLine';
 import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
-import { RuleLine, type RuleLineProps } from './RuleLine';
+import { LineEnd } from './LineEnd';
+import { RuleLine } from './RuleLine';
 import { type RenameRule, RuleName, type RuleNameLabels } from './RuleName';
 import {
   type CardMode,
@@ -21,7 +22,8 @@ import {
   CITED_LINE_CLASS,
   CITED_LINES_CLASS,
   CLAUSE_CLASS,
-  HEADING_ACTIONS_SPACE_CLASS,
+  CLAUSE_TEXT_CLASS,
+  EMPTY_SLOT_CLASS,
   INLINE_LINE_CLASS,
   LINES_CLASS,
   MOVED_ICON_CLASS,
@@ -53,8 +55,6 @@ const CitedLine: React.FC<{ citations: React.ReactNode; children: React.ReactNod
   ) : (
     children
   );
-
-const NO_REMOVALS: RuleLineProps['removals'] = [];
 
 /** A diff's sign for each change, as the Business Rules table diff marks them. */
 const CHANGE_SIGNS = { add: '+', update: '~', delete: '−' } satisfies Record<DiffChange, string>;
@@ -167,6 +167,17 @@ export const RuleCard = memo<RuleCardProps>(
         </div>
       ) : null;
 
+    const titleRow = title !== null || (rowSelected && edit?.onRenameRule !== undefined);
+    const actions = edit ? (
+      <RuleActions
+        position={position}
+        selected={rowSelected}
+        floating={!titleRow}
+        labels={edit.editLabels}
+        openMenu={edit.openMenu}
+      />
+    ) : null;
+
     return (
       <li
         tabIndex={selectable ? (ruleSelected ? 0 : -1) : undefined}
@@ -203,60 +214,53 @@ export const RuleCard = memo<RuleCardProps>(
               )}
             </span>
           )}
-          {edit?.onRenameRule && (title !== null || rowSelected) ? (
-            <div className={cn(RULE_TITLE_CLASS, HEADING_ACTIONS_SPACE_CLASS)}>
-              <RuleName
-                rowId={rule.rowId}
-                name={title ?? ''}
-                selected={rowSelected}
-                labels={edit.editLabels}
-                onRename={edit.onRenameRule}
-              />
+          {titleRow ? (
+            <div className={RULE_TITLE_CLASS} data-rule-title>
+              {edit?.onRenameRule ? (
+                <RuleName
+                  rowId={rule.rowId}
+                  name={title ?? ''}
+                  selected={rowSelected}
+                  labels={edit.editLabels}
+                  onRename={edit.onRenameRule}
+                />
+              ) : (
+                <span className={CLAUSE_TEXT_CLASS}>{title}</span>
+              )}
+              {actions && (
+                <>
+                  {actions}
+                  <span aria-hidden className={EMPTY_SLOT_CLASS} />
+                </>
+              )}
             </div>
-          ) : (
-            title !== null && (
-              <div
-                className={cn(RULE_TITLE_CLASS, edit && HEADING_ACTIONS_SPACE_CLASS)}
-                data-rule-title
-              >
-                {title}
-              </div>
-            )
-          )}
+          ) : null}
           <CitedLine citations={lined ? null : citationButtons}>
             <div
-              className={cn(
-                SENTENCE_CLASS,
-                edit && HEADING_ACTIONS_SPACE_CLASS,
-                citationButtons && !lined && CITED_LINE_CLASS
-              )}
+              className={cn(SENTENCE_CLASS, citationButtons && !lined && CITED_LINE_CLASS)}
               data-sentence
             >
-              <div
-                className={CLAUSE_CLASS}
-                style={
-                  card.removals.lead.length > 1
-                    ? { paddingInlineEnd: `calc(${card.removals.lead.length} * 1.25rem + 0.5rem)` }
-                    : undefined
-                }
-              >
-                <RuleLine
-                  heading
-                  parts={rule.heading}
-                  title={card.title}
-                  badge={card.badges.heading}
-                  removals={NO_REMOVALS}
-                  unworded={diff?.removedOutcomes}
-                  className={INLINE_LINE_CLASS}
-                  {...lineProps}
-                />{' '}
-                <RuleLine
-                  verdicts
-                  className={INLINE_LINE_CLASS}
-                  parts={rule.lead}
-                  badge={card.badges.lead}
+              <div className={CLAUSE_CLASS}>
+                <div className={CLAUSE_TEXT_CLASS}>
+                  <RuleLine
+                    heading
+                    parts={rule.heading}
+                    title={card.title}
+                    unworded={diff?.removedOutcomes}
+                    className={INLINE_LINE_CLASS}
+                    {...lineProps}
+                  />{' '}
+                  <RuleLine
+                    verdicts
+                    className={INLINE_LINE_CLASS}
+                    parts={rule.lead}
+                    {...lineProps}
+                  />
+                </div>
+                <LineEnd
                   removals={card.removals.lead}
-                  {...lineProps}
+                  badges={[card.badges.heading, card.badges.lead].filter((badge) => badge !== null)}
+                  reserve={actions !== null && !titleRow}
                 />
               </div>
             </div>
@@ -291,14 +295,7 @@ export const RuleCard = memo<RuleCardProps>(
               </ul>
             </CitedLine>
           )}
-          {edit && (
-            <RuleActions
-              position={position}
-              selected={rowSelected}
-              labels={edit.editLabels}
-              openMenu={edit.openMenu}
-            />
-          )}
+          {!titleRow && actions}
         </div>
         {card.stops.length > 0 && <StopLabels stops={card.stops} />}
       </li>

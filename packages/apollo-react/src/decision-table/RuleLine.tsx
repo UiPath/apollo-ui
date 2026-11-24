@@ -1,9 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import { LineText, type LineTextProps } from './LineText';
-import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
 import { type RemovedLine, removedLineKey } from './decisionTextDiff';
-import { type RemoveConditionButtonProps, RemoveConditionButtons } from './RemoveConditionButton';
 import { ADDED_LINE_CLASS, LINE_CLASS, REMOVED_LINE_CLASS } from './sentenceStyles';
 
 export interface RuleLineProps
@@ -20,18 +18,14 @@ export interface RuleLineProps
     | 'labels'
   > {
   title?: string;
-  badge: MarkBadgeProps | null;
-  removals: readonly RemoveConditionButtonProps[];
   /** The cells a diff changed that the line does not word, struck or added after its text. */
   unworded?: readonly RemovedLine[];
   className?: string;
 }
 
-/** A card's heading or lead: its text, the cells a diff changed that it does not word, the remove action of each condition it words, then its glyph. */
+/** A card's heading or lead: its text, then the cells a diff changed that it does not word. */
 export const RuleLine: React.FC<RuleLineProps> = ({
   title,
-  badge,
-  removals,
   unworded = [],
   className,
   ...lineProps
@@ -49,7 +43,5 @@ export const RuleLine: React.FC<RuleLineProps> = ({
         <LineText {...lineProps} parts={line.parts} />
       </span>
     ))}
-    <RemoveConditionButtons removals={removals} />
-    {badge && <MarkBadge {...badge} />}
   </div>
 );
