@@ -289,13 +289,16 @@ export const DELETE_RULE_CLASS = cn(
 
 export const GLYPH_COLUMN_END = '1.75rem';
 
-/** Its end padding must stay `GLYPH_COLUMN_END`, where every line's glyph ends. */
+/** Its end padding must stay `GLYPH_COLUMN_END`, the slot every line's glyph or lone remove action takes. */
 export const CLAUSE_CLASS = 'group/clause relative pe-[1.75rem]';
+
+/** A clause with a glyph and a remove action keeps a slot for each. */
+export const CLAUSE_WITH_MARK_CLASS = 'pe-[3.5rem]';
 
 export const LINE_END_MARK_CLASS = 'absolute top-0 flex';
 
 export const REMOVE_CONDITIONS_CLASS =
-  'absolute end-0 top-0.5 flex opacity-0 group-hover/clause:opacity-100 group-has-[[data-selected]]/row:opacity-100 group-focus-within/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
+  'absolute top-0.5 flex opacity-0 group-hover/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
 export const REMOVE_CONDITION_CLASS =
   'size-5 shrink-0 text-foreground-de-emp hover:text-foreground';

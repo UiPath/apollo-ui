@@ -15,12 +15,14 @@ export interface RemoveConditionButtonProps {
   label: string;
 }
 
-/** A clause's remove actions at its right edge, shown while the clause is hovered or focused. */
+/** A clause's remove actions left of its status glyphs, shown while the clause is hovered or focused. */
 export const RemoveConditionButtons: React.FC<{
   removals: readonly RemoveConditionButtonProps[];
-}> = ({ removals }) =>
+  /** How far from the clause's end they sit: clear of the status glyphs that keep the edge. */
+  end: string;
+}> = ({ removals, end }) =>
   removals.length > 0 ? (
-    <span className={REMOVE_CONDITIONS_CLASS}>
+    <span className={REMOVE_CONDITIONS_CLASS} style={{ insetInlineEnd: end }}>
       {removals.map((condition) => (
         <RemoveConditionButton key={condition.columnId} {...condition} />
       ))}

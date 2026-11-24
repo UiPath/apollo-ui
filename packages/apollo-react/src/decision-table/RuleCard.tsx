@@ -154,7 +154,9 @@ export const RuleCard = memo<RuleCardProps>(
     const glyphs = [card.badges.heading, card.badges.lead].filter(Boolean).length;
     const clauseEnd =
       leadRemovals > 1
-        ? `calc(${leadRemovals} * 1.25rem + 0.5rem)`
+        ? glyphs > 0
+          ? `calc(${leadRemovals} * 1.25rem + 0.5rem + ${glyphs} * ${GLYPH_SLOT})`
+          : `calc(${leadRemovals} * 1.25rem + 0.5rem)`
         : glyphs > 0
           ? `calc(${GLYPH_COLUMN_END} + ${glyphs} * ${GLYPH_SLOT})`
           : undefined;
@@ -250,7 +252,8 @@ export const RuleCard = memo<RuleCardProps>(
                   parts={rule.heading}
                   title={isLineMark(mark) ? undefined : card.title}
                   badge={card.badges.heading}
-                  badgeEnd={GLYPH_COLUMN_END}
+                  badgeEnd="0px"
+                  removalsEnd="0px"
                   removals={NO_REMOVALS}
                   unworded={diff?.removedOutcomes}
                   className={INLINE_LINE_CLASS}
@@ -261,11 +264,8 @@ export const RuleCard = memo<RuleCardProps>(
                   className={INLINE_LINE_CLASS}
                   parts={rule.lead}
                   badge={card.badges.lead}
-                  badgeEnd={
-                    card.badges.heading
-                      ? `calc(${GLYPH_COLUMN_END} + ${GLYPH_SLOT})`
-                      : GLYPH_COLUMN_END
-                  }
+                  badgeEnd={card.badges.heading ? GLYPH_SLOT : '0px'}
+                  removalsEnd={glyphs > 0 ? `calc(${glyphs} * ${GLYPH_SLOT} + 0.375rem)` : '0px'}
                   removals={card.removals.lead}
                   {...lineProps}
                 />

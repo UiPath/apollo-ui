@@ -7,7 +7,10 @@ import { type RemoveConditionButtonProps, RemoveConditionButtons } from './Remov
 import {
   ADDED_LINE_CLASS,
   CLAUSE_CLASS,
+  CLAUSE_WITH_MARK_CLASS,
+  GLYPH_COLUMN_END,
   LINE_CLASS,
+  LINE_END_MARK_CLASS,
   MATCHED_LINE_CLASS,
   PENDING_LINE_CLASS,
   REMOVED_LINE_CLASS,
@@ -26,7 +29,7 @@ export interface ConditionLineProps
   removal: RemoveConditionButtonProps | null;
 }
 
-/** One condition line of a card: its bullet or its run's verdict, its text, its remove action, then its glyph. */
+/** One condition line of a card: its bullet or its run's verdict, its text, its glyph at the edge, its remove action one slot in. */
 export const ConditionLine: React.FC<ConditionLineProps> = ({
   line,
   state,
@@ -41,6 +44,7 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
       className={cn(
         LINE_CLASS,
         CLAUSE_CLASS,
+        removal && badge && CLAUSE_WITH_MARK_CLASS,
         MATCHED_LINE_CLASS,
         state === 'pending' && PENDING_LINE_CLASS,
         change === 'delete' && REMOVED_LINE_CLASS,
@@ -54,8 +58,14 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
       <LineLead matched={matched} labels={lineProps.labels} />
       {change && <span className="sr-only">{lineProps.labels.changeStatus(change)}</span>}
       <LineText parts={line.parts} {...lineProps} />
-      {removal && <RemoveConditionButtons removals={[removal]} />}
-      {badge && <MarkBadge {...badge} />}
+      {removal && (
+        <RemoveConditionButtons removals={[removal]} end={badge ? GLYPH_COLUMN_END : '0px'} />
+      )}
+      {badge && (
+        <span className={LINE_END_MARK_CLASS} style={{ insetInlineEnd: '0px' }} data-line-end-mark>
+          <MarkBadge {...badge} />
+        </span>
+      )}
     </li>
   );
 };

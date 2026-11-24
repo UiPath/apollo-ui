@@ -72,7 +72,7 @@ import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
-import { GLYPH_COLUMN_END, HEADING_ACTIONS_SPACE_CLASS } from './sentenceStyles';
+import { HEADING_ACTIONS_SPACE_CLASS } from './sentenceStyles';
 import type {
   SentenceCellId,
   SentencePart,
@@ -871,7 +871,7 @@ describe('DecisionText', () => {
         }),
       });
       const [, debtLine] = card('m1').querySelectorAll('li');
-      const badge = debtLine?.lastElementChild;
+      const badge = debtLine?.lastElementChild?.firstElementChild;
       expect(badge?.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'error');
       expect(badge).toHaveAttribute('data-mark-title', '"-" never matches');
       expect(card('m1')).toHaveAccessibleDescription('Error: "-" never matches');
@@ -988,10 +988,7 @@ describe('DecisionText', () => {
       expect(
         slots.map((slot) => slot.querySelector('[data-glyph]')?.getAttribute('data-glyph'))
       ).toEqual(['error', 'warning']);
-      expect(slots.map((slot) => slot.style.insetInlineEnd)).toEqual([
-        '1.75rem',
-        'calc(1.75rem + 1.375rem)',
-      ]);
+      expect(slots.map((slot) => slot.style.insetInlineEnd)).toEqual(['0px', '1.375rem']);
       expect(clause?.style.paddingInlineEnd).toBe('calc(1.75rem + 2 * 1.375rem)');
     });
 
@@ -5162,6 +5159,29 @@ describe('DecisionText', () => {
       expect(lead?.style.paddingInlineEnd).toBe('calc(2 * 1.25rem + 0.5rem)');
     });
 
+    it("keeps a condition line's glyph at the edge and its remove action one slot in", () => {
+      render(
+        view({
+          edit: editWith({ onClearCell: vi.fn() }),
+          selected: null,
+          onSelect: vi.fn(),
+          marks: rowMarks({
+            m1: { cells: { debt: { tone: 'error', title: 'Bad', glyph: true } } },
+          }),
+        })
+      );
+      const marked = card('m1').querySelector<HTMLElement>('li[data-column-id="debt"]');
+      const plain = card('m1').querySelector<HTMLElement>('li[data-column-id="score"]');
+      const glyph = marked?.querySelector<HTMLElement>('[data-line-end-mark]');
+      expect(glyph?.style.insetInlineEnd).toBe('0px');
+      const removeEnd = (line: HTMLElement | null | undefined) =>
+        line?.querySelector('[data-rule-action="clear"]')?.parentElement?.style.insetInlineEnd;
+      expect(removeEnd(marked)).toBe('1.75rem');
+      expect(marked).toHaveClass('pe-[3.5rem]');
+      expect(removeEnd(plain)).toBe('0px');
+      expect(plain).not.toHaveClass('pe-[3.5rem]');
+    });
+
     it('puts one remove action on each condition line, revealed by that clause alone', () => {
       renderConditions();
       const lines = [...card('m1').querySelectorAll<HTMLElement>('li[data-column-id]')];
@@ -5171,7 +5191,9 @@ describe('DecisionText', () => {
         expect(removes).toHaveLength(1);
         const reveal = removes[0]?.parentElement;
         expect(reveal?.className).toContain('group-hover/clause:opacity-100');
-        expect(reveal?.className).toContain('group-has-[[data-selected]]/row:opacity-100');
+        expect(reveal?.className).toContain('has-focus-visible:opacity-100');
+        expect(reveal?.className).toContain('opacity-0');
+        expect(reveal?.className).not.toContain('group-has-[[data-selected]]/row');
         expect(reveal?.className).not.toContain('group-hover/row');
         expect(removes[0]).toHaveClass('text-foreground-de-emp');
         expect(reveal?.closest('.group\\/clause')).toBe(line);
@@ -5578,9 +5600,9 @@ describe('DecisionText', () => {
       );
       const slot = card('x').querySelector<HTMLElement>('[data-line-end-mark]');
       const line = card('x').querySelector<HTMLElement>('li[data-column-id="debt"]');
-      expect(slot?.style.insetInlineEnd).toBe(GLYPH_COLUMN_END);
+      expect(slot?.style.insetInlineEnd).toBe('0px');
       expect(line?.querySelector('[data-glyph="error"]')).not.toBeNull();
-      expect(line?.className.split(' ')).toContain(`pe-[${GLYPH_COLUMN_END}]`);
+      expect(line?.className.split(' ')).toContain('pe-[3.5rem]');
     });
 
     describe('dragging a rule', () => {
