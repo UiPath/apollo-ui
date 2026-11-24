@@ -68,7 +68,6 @@ export const RuleActions: React.FC<RuleActionsProps> = ({
               {...sortable.listeners}
               tabIndex={selected ? 0 : -1}
               aria-label={labels.dragRule(position)}
-              aria-describedby={undefined}
               className={RULE_DRAG_HANDLE_CLASS}
               data-rule-drag
               data-rule-action="drag"

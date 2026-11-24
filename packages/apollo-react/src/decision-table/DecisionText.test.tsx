@@ -5631,6 +5631,13 @@ describe('DecisionText', () => {
         expect(onMoveRule.mock.calls).toEqual([[0, 1]]);
       });
 
+      it('describes the drag handle with the drag instructions', () => {
+        renderMenus({ onMoveRule: vi.fn() });
+        const describedBy = handle('r1').getAttribute('aria-describedby');
+        const description = describedBy ? document.getElementById(describedBy) : null;
+        expect(description?.textContent).toMatch(/space/i);
+      });
+
       it('keeps the selection on the rule while the keyboard carries it', async () => {
         const onSelect = vi.fn();
         render(
