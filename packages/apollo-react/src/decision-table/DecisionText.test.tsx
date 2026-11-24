@@ -5623,6 +5623,15 @@ describe('DecisionText', () => {
         expect(within(card('r2')).queryByRole('button', { name: /^Drag rule/ })).toBeNull();
       });
 
+      it('puts the drag handle in the rule number gutter, not in the rule actions', () => {
+        renderMenus({ onMoveRule: vi.fn() });
+        const grip = handle('r2');
+        expect(grip.closest('[data-rule-gutter]')).not.toBeNull();
+        expect(
+          card('r2').querySelector('[data-rule-action="rule"]')?.parentElement?.contains(grip)
+        ).toBe(false);
+      });
+
       it.each([
         'mouse',
         'touch',

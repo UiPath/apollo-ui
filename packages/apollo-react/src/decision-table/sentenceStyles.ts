@@ -106,6 +106,9 @@ export const ROW_SURFACE_CLASS = cn(
 export const ROW_NUMBER_CLASS =
   'absolute end-[calc(100%+4px)] top-[9px] flex h-[22px] min-w-5 items-center justify-center rounded-md border border-border-de-emp bg-background px-1 text-xs leading-5 whitespace-nowrap text-foreground-de-emp tabular-nums shadow-sm opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100';
 
+export const ROW_NUMBER_DRAG_CLASS =
+  'gap-px ps-1 pe-0.5 group-has-[[data-row-selected]]/row:opacity-100 group-data-[dragging]/row:opacity-100 [@media(hover:none)]:opacity-100';
+
 export const LINE_CLASS = cn(
   'flex min-h-[var(--sentence-line)] items-start gap-2',
   'group-data-[change=delete]/row:**:text-foreground-de-emp! group-data-[change=delete]/row:**:line-through'
@@ -275,10 +278,8 @@ export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
 export const HEADER_CITATION_REVEAL_CLASS =
   'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
-export const RULE_DRAG_HANDLE_CLASS = cn(
-  RULE_ACTION_CLASS,
-  'cursor-grab touch-none active:cursor-grabbing'
-);
+export const RULE_DRAG_HANDLE_CLASS =
+  'h-5 w-3.5 min-w-0 cursor-grab touch-none rounded p-0 text-foreground-de-emp hover:text-foreground active:cursor-grabbing [&_svg]:size-3.5';
 
 export const DELETE_RULE_CLASS = cn(
   RULE_ACTION_CLASS,

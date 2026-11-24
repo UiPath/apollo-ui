@@ -35,9 +35,7 @@ describe('rule action tooltips', () => {
     'Rule 2 actions',
     'Delete rule 2',
   ])('names %s on hover', (name) => {
-    render(
-      <RuleActions position={2} selected labels={labels} openMenu={undefined} sortable={null} />
-    );
+    render(<RuleActions position={2} selected labels={labels} openMenu={undefined} />);
     hoverShowsTooltip(name);
   });
 

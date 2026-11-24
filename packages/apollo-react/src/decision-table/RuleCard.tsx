@@ -7,6 +7,7 @@ import { CitationButtons } from './CitationButton';
 import { ConditionLine } from './ConditionLine';
 import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
+import { RuleDragHandle } from './RuleDragHandle';
 import { RuleLine, type RuleLineProps } from './RuleLine';
 import type { RuleSortable } from './RuleSortable';
 import {
@@ -32,6 +33,7 @@ import {
   ROW_CHANGE_CLASS,
   ROW_NUMBER_CHANGE_CLASS,
   ROW_NUMBER_CLASS,
+  ROW_NUMBER_DRAG_CLASS,
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
   RULE_CITATIONS_CLASS,
@@ -204,11 +206,25 @@ export const RuleCard = memo<RuleCardProps>(
           data-selected={ruleSelected || undefined}
           data-row-selected={rowSelected || undefined}
         >
-          {(card.number !== null || card.changeStatus) && (
-            <span className={cn(ROW_NUMBER_CLASS, diff && ROW_NUMBER_CHANGE_CLASS)}>
+          {(card.number !== null || card.changeStatus || sortable) && (
+            <span
+              className={cn(
+                ROW_NUMBER_CLASS,
+                diff && ROW_NUMBER_CHANGE_CLASS,
+                sortable && ROW_NUMBER_DRAG_CLASS
+              )}
+              data-rule-gutter
+            >
               {diff && <ChangeSign diff={diff} />}
               {card.number}
               {card.changeStatus && <span className="sr-only">{card.changeStatus}</span>}
+              {edit && sortable && (
+                <RuleDragHandle
+                  label={edit.editLabels.dragRule(position)}
+                  selected={rowSelected}
+                  sortable={sortable}
+                />
+              )}
             </span>
           )}
           {title !== null && (
@@ -298,7 +314,6 @@ export const RuleCard = memo<RuleCardProps>(
               selected={rowSelected}
               labels={edit.editLabels}
               openMenu={edit.openMenu}
-              sortable={sortable}
             />
           )}
         </div>

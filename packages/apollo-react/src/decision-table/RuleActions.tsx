@@ -6,15 +6,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@uipath/apollo-wind';
-import { Ellipsis, GripVertical, Plus, Trash2 } from 'lucide-react';
+import { Ellipsis, Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
-import type { RuleSortable } from './RuleSortable';
-import {
-  DELETE_RULE_CLASS,
-  RULE_ACTION_CLASS,
-  RULE_ACTIONS_CLASS,
-  RULE_DRAG_HANDLE_CLASS,
-} from './sentenceStyles';
+import { DELETE_RULE_CLASS, RULE_ACTION_CLASS, RULE_ACTIONS_CLASS } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
 
 /** A card's action strings. */
@@ -36,8 +30,6 @@ export interface RuleActionsProps {
   labels: RuleActionsLabels;
   /** The card's menu that is open, if any. */
   openMenu: RuleMenuKind | undefined;
-  /** The card's sortable, when its rules can be dragged to reorder them. */
-  sortable: RuleSortable | null;
 }
 
 const ACTIONS = [
@@ -52,34 +44,9 @@ export const RuleActions: React.FC<RuleActionsProps> = ({
   selected,
   labels,
   openMenu,
-  sortable,
 }) => (
   <div className={RULE_ACTIONS_CLASS}>
     <TooltipProvider>
-      {sortable && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              ref={sortable.setActivatorNodeRef}
-              variant="ghost"
-              size="3xs"
-              icon
-              {...sortable.attributes}
-              {...sortable.listeners}
-              tabIndex={selected ? 0 : -1}
-              aria-label={labels.dragRule(position)}
-              className={RULE_DRAG_HANDLE_CLASS}
-              data-rule-drag
-              data-rule-action="drag"
-            >
-              <GripVertical aria-hidden />
-            </Button>
-          </TooltipTrigger>
-          <TooltipPortal>
-            <TooltipContent>{labels.dragRule(position)}</TooltipContent>
-          </TooltipPortal>
-        </Tooltip>
-      )}
       {ACTIONS.map(({ action, Icon, label, className }) => (
         <Tooltip key={action}>
           <TooltipTrigger asChild>
