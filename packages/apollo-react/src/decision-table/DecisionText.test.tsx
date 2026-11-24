@@ -5630,6 +5630,32 @@ describe('DecisionText', () => {
         await key('Space', ' ');
         expect(onMoveRule.mock.calls).toEqual([[0, 1]]);
       });
+
+      it('keeps the selection on the rule while the keyboard carries it', async () => {
+        const onSelect = vi.fn();
+        render(
+          view({
+            rules: GRID_SENTENCE_RULES,
+            ...GRID_SENTENCE_COLUMNS,
+            selected: { kind: 'rule', rowId: 'r1' },
+            onSelect,
+            edit: editWith({ onMoveRule: vi.fn() }),
+          })
+        );
+        const grip = handle('r1');
+        act(() => grip.focus());
+        for (const [code, key] of [
+          ['Space', ' '],
+          ['ArrowDown', 'ArrowDown'],
+          ['Escape', 'Escape'],
+        ]) {
+          await act(async () => {
+            fireEvent.keyDown(grip, { code, key });
+            await new Promise((resolve) => setTimeout(resolve, 0));
+          });
+        }
+        expect(onSelect).not.toHaveBeenCalled();
+      });
     });
 
     const RULE_ACTIONS = [

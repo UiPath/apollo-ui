@@ -71,6 +71,7 @@ export const RuleActions: React.FC<RuleActionsProps> = ({
               aria-describedby={undefined}
               className={RULE_DRAG_HANDLE_CLASS}
               data-rule-drag
+              data-rule-action="drag"
             >
               <GripVertical aria-hidden />
             </Button>
