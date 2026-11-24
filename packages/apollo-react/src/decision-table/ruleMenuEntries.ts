@@ -1,11 +1,12 @@
 import type { DecisionTableProps } from './DecisionTable';
 import type { GridMenuEntry } from './GridMenu';
-import type { RuleActionsLabels } from './RuleActions';
 import { hasStop } from './sentenceParts';
 import type { SentenceBand, SentenceRule, SentenceValueId } from './sentenceTypes';
 
-/** The card menus' strings; a rule's delete entry reads as its delete button. */
-export interface RuleMenuLabels extends Pick<RuleActionsLabels, 'deleteRule'> {
+/** The card menus' strings. */
+export interface RuleMenuLabels {
+  /** A rule's delete entry, e.g. "Delete rule 2". */
+  deleteRule: (position: number) => string;
   insertRuleAbove: string;
   insertRuleBelow: string;
   duplicateRule: string;
@@ -28,7 +29,7 @@ export interface RuleMenuActions {
   onClearRule?: (rowId: string) => void;
   /** Move up and down, from the rule's index to its neighbour's. */
   onMoveRule?: DecisionTableProps['onRowMove'];
-  /** The rule card's delete action and its menu's last entry, as the grid row's delete button; the host selects what follows. */
+  /** The rule menu's last entry, as the grid row's delete button; the host selects what follows. */
   onDeleteRule: (rowId: string) => void;
 }
 

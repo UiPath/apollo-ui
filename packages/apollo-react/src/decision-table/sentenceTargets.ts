@@ -93,14 +93,8 @@ interface RuleMenuAction {
 /** Which of a card's menus: its add-condition or its rule actions. */
 export type RuleMenuKind = RuleMenuAction['action'];
 
-/** A card's delete action: the rule it removes. */
-interface RuleDeleteAction {
-  action: 'delete';
-  rowId: string;
-}
-
 /** A card's own action, as its `data-rule-action` button names it. */
-export type RuleAction = RuleClearAction | RuleMenuAction | RuleDeleteAction;
+export type RuleAction = RuleClearAction | RuleMenuAction;
 
 /** The card action a click on `target` hit. */
 export const clickedAction = (target: EventTarget | null): RuleAction | null => {
@@ -113,7 +107,6 @@ export const clickedAction = (target: EventTarget | null): RuleAction | null => 
     return columnId ? { action: 'clear', cell: { rowId, columnId } } : null;
   }
   const action = button.dataset.ruleAction;
-  if (action === 'delete') return { action, rowId };
   return action === 'conditions' || action === 'rule' ? { action, rowId, trigger: button } : null;
 };
 
