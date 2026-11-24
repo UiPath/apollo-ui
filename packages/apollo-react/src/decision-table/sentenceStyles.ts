@@ -199,6 +199,12 @@ export const EMPTY_OUTPUT_VALUE_CLASS =
 
 export const LINE_MARK_CLASS = LINE_SLOT_CLASS;
 
+/** A line's glyph as the keyboard's trigger for its message. */
+export const FOCUSABLE_LINE_MARK_CLASS = cn(
+  LINE_SLOT_CLASS,
+  'rounded border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
+);
+
 export const MARK_GLYPH_CLASS = 'size-3.5 forced-colors:text-[CanvasText]';
 
 export const MARK_TOOLTIP_ANCHOR_CLASS = 'pointer-events-none fixed';

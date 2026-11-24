@@ -58,7 +58,12 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
       <span className={CLAUSE_TEXT_CLASS}>
         <LineText parts={line.parts} {...lineProps} />
       </span>
-      <LineEnd removals={removal ? [removal] : []} badges={badge ? [badge] : []} reserve={false} />
+      <LineEnd
+        removals={removal ? [removal] : []}
+        badges={badge ? [badge] : []}
+        reserve={false}
+        selected={lineProps.selectedColumnId !== undefined}
+      />
     </li>
   );
 };
