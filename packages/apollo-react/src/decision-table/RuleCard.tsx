@@ -150,13 +150,11 @@ export const RuleCard = memo<RuleCardProps>(
     const title = ruleTitleOf(rule);
     const leadRemovals = card.removals.lead.length;
     const glyphs = [card.badges.heading, card.badges.lead].filter(Boolean).length;
-    const glyphsEnd = `calc(${GLYPH_COLUMN_END} + ${glyphs} * ${GLYPH_SLOT})`;
-    const removalsEnd = leadRemovals > 1 && glyphs > 0 ? glyphsEnd : undefined;
     const clauseEnd =
       leadRemovals > 1
-        ? `calc(${removalsEnd ? `${removalsEnd} + ` : ''}${leadRemovals} * 1.25rem + 0.5rem)`
+        ? `calc(${leadRemovals} * 1.25rem + 0.5rem)`
         : glyphs > 0
-          ? glyphsEnd
+          ? `calc(${GLYPH_COLUMN_END} + ${glyphs} * ${GLYPH_SLOT})`
           : undefined;
     const citationButtons =
       citations.kind === 'cited' && cited.length > 0 ? (
@@ -253,7 +251,6 @@ export const RuleCard = memo<RuleCardProps>(
                       : GLYPH_COLUMN_END
                   }
                   removals={card.removals.lead}
-                  removalsEnd={removalsEnd}
                   {...lineProps}
                 />
               </div>

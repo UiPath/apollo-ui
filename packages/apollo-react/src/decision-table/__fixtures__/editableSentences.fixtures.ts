@@ -73,7 +73,7 @@ const orderedConditions = (table: EditableTable, rule: EditableRule) =>
     return condition ? [{ input, condition }] : [];
   });
 
-/** The table's rules, worded: up to two conditions in the lead, more as lines. */
+/** The table's rules, worded: one condition in the lead, two or more as lines. */
 export const wordedRules = (table: EditableTable): SentenceRule[] =>
   table.rules.map((rule) => {
     const conditions = orderedConditions(table, rule);
@@ -86,9 +86,9 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
     if (conditions.length === 0) {
       return { rowId: rule.rowId, heading, lead: ['in every case'], lines: [] };
     }
-    if (conditions.length <= 2) {
-      const lead = conditions.flatMap(({ input, condition }, index): SentencePart[] => [
-        index === 0 ? 'when ' : ' and ',
+    if (conditions.length === 1) {
+      const lead = conditions.flatMap(({ input, condition }): SentencePart[] => [
+        'when ',
         ...conditionParts(input, condition),
       ]);
       return { rowId: rule.rowId, heading, lead, lines: [] };

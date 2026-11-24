@@ -5456,11 +5456,12 @@ describe('DecisionText', () => {
       const remove = button('r2', 'Remove channel from rule 2');
       act(() => remove.focus());
       fireEvent.click(remove);
-      expect(card('r2').querySelectorAll('li[data-column-id]')).toHaveLength(0);
+      expect(card('r2').querySelectorAll('li[data-column-id]')).toHaveLength(2);
       expect(document.activeElement).toBe(card('r2'));
       const removeAge = button('r2', 'Remove age from rule 2');
       act(() => removeAge.focus());
       fireEvent.click(removeAge);
+      expect(card('r2').querySelectorAll('li[data-column-id]')).toHaveLength(0);
       expect(document.activeElement).toBe(card('r2'));
     });
 
@@ -5554,29 +5555,6 @@ describe('DecisionText', () => {
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
       expect(screen.queryByRole('menu')).toBeNull();
       expect(document.activeElement).toBe(actions('r2'));
-    });
-
-    it('keeps the glyph column fixed when a lead has several remove actions', () => {
-      const ageWarning = {
-        cells: { age: { tone: 'warning', title: 'Odd', glyph: true } },
-      } as const;
-      render(
-        view({
-          rules: GRID_SENTENCE_RULES,
-          ...GRID_SENTENCE_COLUMNS,
-          selected: null,
-          onSelect: vi.fn(),
-          edit: editWith(),
-          marks: rowMarks({ r1: ageWarning, r3: ageWarning }),
-        })
-      );
-      const slotEnd = (rowId: string) =>
-        card(rowId).querySelector<HTMLElement>('[data-line-end-mark]')?.style.insetInlineEnd;
-      expect(
-        card('r1').querySelectorAll('[data-sentence] button[aria-label^="Remove"]')
-      ).toHaveLength(2);
-      expect(slotEnd('r1')).toBe('1.75rem');
-      expect(slotEnd('r3')).toBe('1.75rem');
     });
 
     it('lines up a multi-input lead glyph with its condition-line glyphs', () => {

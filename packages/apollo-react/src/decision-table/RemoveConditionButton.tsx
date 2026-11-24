@@ -18,10 +18,9 @@ export interface RemoveConditionButtonProps {
 /** A clause's remove actions at its right edge, shown while the clause is hovered or focused. */
 export const RemoveConditionButtons: React.FC<{
   removals: readonly RemoveConditionButtonProps[];
-  end?: string;
-}> = ({ removals, end }) =>
+}> = ({ removals }) =>
   removals.length > 0 ? (
-    <span className={REMOVE_CONDITIONS_CLASS} style={end ? { insetInlineEnd: end } : undefined}>
+    <span className={REMOVE_CONDITIONS_CLASS}>
       {removals.map((condition) => (
         <RemoveConditionButton key={condition.columnId} {...condition} />
       ))}
