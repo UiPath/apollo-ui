@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.42.0...@uipath/apollo-react@7.43.0) (2026-11-24)
+
+### Features
+
+* **apollo-react:** add setSpacing to the chat service ([5ea00b7](https://github.com/UiPath/apollo-ui/commit/5ea00b7bf37817b35cd69fbf2ef1e5f0adc9eb70))
+
 ## [@uipath/apollo-react-v7.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.41.1...@uipath/apollo-react@7.42.0) (2026-11-23)
 
 ### Features
