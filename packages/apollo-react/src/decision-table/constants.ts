@@ -28,3 +28,6 @@ export const NEAREST: ScrollIntoViewOptions = { block: 'nearest', inline: 'neare
 export const AUTOSCROLL_EDGE_PX = 32;
 /** Scroll advance per autoscroll frame. */
 export const AUTOSCROLL_STEP_PX = 14;
+
+/** How far below and right of the pointer a dragged rule's copy sits, clear of the drop line. */
+export const RULE_DRAG_PREVIEW_OFFSET_PX = 12;

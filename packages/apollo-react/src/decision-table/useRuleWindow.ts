@@ -92,6 +92,8 @@ export interface RuleWindow {
   attachSection: (element: HTMLElement | null) => void;
   /** The view's scroll container. */
   container: () => HTMLElement | null;
+  /** The element that scrolls the rules: the named container, else the page's scrolling element. */
+  scroller: () => HTMLElement | null;
   /** Scrolls a row the host selects into view, as the grid's host does for its selected row. */
   scrollRowIntoView: (rowIndex: number) => void;
   /** The first row the sticky header does not cover, where a first key lands. */
@@ -284,6 +286,7 @@ export const useRuleWindow = (
     selectedRow,
     attachSection,
     container,
+    scroller: scrollerOf,
     scrollRowIntoView,
     firstVisibleRow,
     scrollStopIntoView,
