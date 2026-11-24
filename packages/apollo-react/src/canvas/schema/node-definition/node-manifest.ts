@@ -8,7 +8,12 @@ import type { FormSchema } from '@uipath/apollo-wind';
 import { z } from 'zod';
 import { toolbarConfigurationSchema } from '../toolbar';
 import { handleGroupManifestSchema } from './handle';
-import { nodeHeightSchema, nodeIconSizeSchema, nodeShapeSchema } from './shape';
+import {
+  nodeHeightSchema,
+  nodeIconSizeSchema,
+  nodeLabelLinesSchema,
+  nodeShapeSchema,
+} from './shape';
 
 /**
  * Debug configuration for a node
@@ -106,6 +111,15 @@ export const nodeDisplayManifestSchema = z.object({
    * leaves more room around the tile on short nodes (44px tile, 26px icon on a 64px node).
    */
   iconSize: nodeIconSizeSchema.optional(),
+
+  /**
+   * Lines a wide node's name may take before it's cut off with "…" (default 1). The full name
+   * shows in a tooltip when it's cut off. With two or more, the description takes one line
+   * instead of two. Pick a `display.height` that fits the lines: each is 18px, so a 64px node
+   * fits three in all (two for the name, one for the description). Other shapes always wrap
+   * their name below the node.
+   */
+  labelLines: nodeLabelLinesSchema.optional(),
 
   /** Container presentation. Only read when `shape` is `'container'`. */
   container: nodeContainerDisplayManifestSchema.optional(),

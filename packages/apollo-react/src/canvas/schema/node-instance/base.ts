@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { nodeHeightSchema, nodeIconSizeSchema, nodeShapeSchema } from '../node-definition/shape';
+import {
+  nodeHeightSchema,
+  nodeIconSizeSchema,
+  nodeLabelLinesSchema,
+  nodeShapeSchema,
+} from '../node-definition/shape';
 
 /**
  * Unique identifier for nodes, types, and workflows
@@ -54,6 +59,8 @@ export const displayConfigSchema = z
     height: nodeHeightSchema.optional(),
     /** Per-node override of the manifest's `display.iconSize`. */
     iconSize: nodeIconSizeSchema.optional(),
+    /** Per-node override of the manifest's `display.labelLines`. */
+    labelLines: nodeLabelLinesSchema.optional(),
   })
   .catchall(z.unknown()); // Allow additional properties
 

@@ -35,6 +35,7 @@ export {
 } from './node-manifest';
 export type {
   NodeIconSize,
+  NodeLabelLines,
   NodeShape,
   OutlineDrawnNodeShape,
   RoundEndedNodeShape,
@@ -46,6 +47,7 @@ export {
   isWideNodeShape,
   nodeHeightSchema,
   nodeIconSizeSchema,
+  nodeLabelLinesSchema,
   nodeShapeSchema,
   OUTLINE_DRAWN_NODE_SHAPES,
   ROUND_ENDED_NODE_SHAPES,

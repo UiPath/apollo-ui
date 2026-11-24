@@ -73,6 +73,56 @@ describe('NodeLabel', () => {
     });
   });
 
+  describe('Label lines', () => {
+    const LONG = 'Customer vulnerability check across every open claim';
+
+    it("keeps a wide node's name on one line by default", () => {
+      render(<NodeLabel {...defaultProps} label={LONG} shape="rectangle" />);
+      const name = screen.getByTestId('node-label');
+      expect(name).toHaveClass('whitespace-nowrap', 'text-ellipsis');
+      expect(name).not.toHaveClass('line-clamp-(--node-label-lines)');
+      expect(name.style.getPropertyValue('--node-label-lines')).toBe('');
+    });
+
+    it.each([2, 4])("clamps a wide node's name at %i lines with labelLines", (labelLines) => {
+      render(<NodeLabel {...defaultProps} label={LONG} shape="clipped" labelLines={labelLines} />);
+      const name = screen.getByTestId('node-label');
+      expect(name).toHaveClass('line-clamp-(--node-label-lines)', 'wrap-break-word');
+      expect(name).not.toHaveClass('whitespace-nowrap');
+      expect(name.style.getPropertyValue('--node-label-lines')).toBe(String(labelLines));
+    });
+
+    it.each([2, 4])('gives the description one line when the name takes %i', (labelLines) => {
+      render(
+        <NodeLabel {...defaultProps} label={LONG} shape="rectangle" labelLines={labelLines} />
+      );
+      const description = screen.getByTestId('node-sublabel');
+      expect(description).toHaveClass('line-clamp-1');
+      expect(description).not.toHaveClass('line-clamp-2');
+    });
+
+    it('keeps two description lines with a one-line name', () => {
+      render(<NodeLabel {...defaultProps} label={LONG} shape="rectangle" />);
+      expect(screen.getByTestId('node-sublabel')).toHaveClass('line-clamp-2');
+    });
+
+    it('leaves names below other shapes as they are', () => {
+      render(<NodeLabel {...defaultProps} label={LONG} shape="square" labelLines={2} />);
+      expect(screen.getByTestId('node-label')).toHaveClass('line-clamp-3');
+    });
+
+    it('gives the name editor as many rows as labelLines, and the description one', async () => {
+      const user = userEvent.setup();
+      render(<NodeLabel {...defaultProps} shape="rectangle" labelLines={2} />);
+      await user.dblClick(screen.getByTestId('node-label'));
+      expect(screen.getByRole('textbox', { name: 'Edit node name' })).toHaveAttribute('rows', '2');
+      expect(screen.getByRole('textbox', { name: 'Edit node description' })).toHaveAttribute(
+        'rows',
+        '1'
+      );
+    });
+  });
+
   describe('Tooltips', () => {
     it('should use label and subLabel as tooltip content when labelTooltip is not provided', () => {
       render(<NodeLabel {...defaultProps} />);

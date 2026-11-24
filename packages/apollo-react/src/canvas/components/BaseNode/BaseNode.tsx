@@ -728,6 +728,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           labelPlaceholder={labelPlaceholder}
           subLabelPlaceholder={subLabelPlaceholder}
           shape={displayShape}
+          labelLines={display.labelLines}
           hasBottomHandles={hasVisibleBottomHandles}
           selected={selected}
           dragging={dragging}

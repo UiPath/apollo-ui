@@ -573,6 +573,17 @@ describe('BaseNode', () => {
     });
   });
 
+  describe('display.labelLines', () => {
+    it('passes the display labelLines to the label', () => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        display: { ...DEFAULT_MANIFEST.display, shape: 'rectangle', labelLines: 2 },
+      };
+      render(<BaseNode {...defaultProps} />);
+      expect(mockNodeLabel.mock.calls.at(-1)?.[0]?.labelLines).toBe(2);
+    });
+  });
+
   describe('Action needed badge', () => {
     it('renders as an accessible clickable control and invokes onActionNeeded', () => {
       const onActionNeeded = vi.fn();

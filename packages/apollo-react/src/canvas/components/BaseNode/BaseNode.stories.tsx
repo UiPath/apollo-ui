@@ -1109,6 +1109,36 @@ function LabelTooltipsStory() {
         width: 184,
         height: 64,
       },
+      // A long name on a 64px wide node: one line (the default), two (`display.labelLines`), and
+      // two with a description, which then takes one line.
+      ...(
+        [
+          { labelLines: 1, subLabel: undefined },
+          { labelLines: 2, subLabel: undefined },
+          {
+            labelLines: 2,
+            subLabel: 'Decides whether the claimant needs an assessment before payout',
+          },
+        ] as const
+      ).map(({ labelLines, subLabel }, index) => ({
+        ...createNode({
+          id: `label-tooltip-lines-${index}`,
+          type: 'uipath.blank-node',
+          position: { x: 160 + index * (DEFAULT_RECTANGLE_NODE_WIDTH + 64), y: 520 },
+          data: {
+            nodeType: 'uipath.blank-node',
+            version: '1.0.0',
+            display: {
+              label: 'Customer vulnerability check across every open claim',
+              subLabel,
+              shape: 'rectangle' as const,
+              height: 64,
+              labelLines,
+            },
+          },
+        }),
+        width: DEFAULT_RECTANGLE_NODE_WIDTH,
+      })),
     ],
     []
   );
@@ -1121,7 +1151,7 @@ function LabelTooltipsStory() {
       </Panel>
       <StoryInfoPanel
         title="Label Tooltips"
-        description="Hover the truncated node labels and sublabels. No labelTooltip override is provided, so each tooltip should use the corresponding label or sublabel text."
+        description="Hover the truncated node labels and sublabels. No labelTooltip override is provided, so each tooltip should use the corresponding label or sublabel text. The bottom row shows a wide node's long name on one line (the default) and on two (display.labelLines: 2), the last with a description, which then takes one line."
       />
     </BaseCanvas>
   );

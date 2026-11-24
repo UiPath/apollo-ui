@@ -25,6 +25,11 @@ export const nodeIconSizeSchema = z.enum(['default', 'compact']);
 
 export type NodeIconSize = z.infer<typeof nodeIconSizeSchema>;
 
+/** Lines a wide node's name may take before it's cut off: a whole number, 1 or more. */
+export const nodeLabelLinesSchema = z.number().int().positive();
+
+export type NodeLabelLines = z.infer<typeof nodeLabelLinesSchema>;
+
 /** Shapes that lay out as a wide card with the icon beside the label. */
 export const WIDE_NODE_SHAPES = ['rectangle', 'pill', 'clipped', 'document'] as const;
 
