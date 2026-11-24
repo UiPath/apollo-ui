@@ -254,10 +254,11 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   const shown = usePendingCondition({ edit, rules, bands });
   const listed = diffRows?.rules ?? shown.rules;
   const [focusedRowId, setFocusedRowId] = useState<string | undefined>(undefined);
+  const [draggedRowId, setDraggedRowId] = useState<string | undefined>(undefined);
   const retainedRowId = edit?.editing?.rowId ?? selected?.rowId;
   const retainedRowIds = useMemo(
-    () => [retainedRowId, focusedRowId],
-    [retainedRowId, focusedRowId]
+    () => [retainedRowId, focusedRowId, draggedRowId],
+    [retainedRowId, focusedRowId, draggedRowId]
   );
   const ruleWindow = useRuleWindow(listed, selected?.rowId, retainedRowIds, scroll);
   const citedRows = useMemo(
@@ -413,6 +414,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
                           openMenu: ruleMenus.state,
                           pending: shown.pending,
                           onMoveRule: edit.onMoveRule ?? null,
+                          onDragRow: setDraggedRowId,
                         }
                       : { kind: 'read' }
                 }

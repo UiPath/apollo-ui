@@ -1,4 +1,4 @@
-import { closestCenter, DndContext, type DragEndEvent } from '@dnd-kit/core';
+import { closestCenter, DndContext, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { forwardRef, useMemo } from 'react';
 import { DiffFoldRow, type DiffFoldRowProps } from './DiffFoldRow';
@@ -9,8 +9,8 @@ import type { SentenceListStyle } from './sentenceRuleHeights';
 import { GUTTER_CLASS } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
 import type { SentenceRule, SentenceValueId } from './sentenceTypes';
-import type { AxisSegment } from './useVirtualizedAxis';
 import { useRuleSensors } from './useRuleSensors';
+import type { AxisSegment } from './useVirtualizedAxis';
 
 /** Which card menu is open, and for which rule. */
 export interface OpenRuleMenu {
@@ -39,6 +39,8 @@ export interface RuleListProps {
         pending: SentenceValueId | null;
         /** Moves the rule at `from` to `to`, or null when rules cannot be dragged. */
         onMoveRule: ((from: number, to: number) => void) | null;
+        /** Called with the dragged rule's row id when a drag starts, and with undefined when it drops or cancels. */
+        onDragRow: (rowId: string | undefined) => void;
       }
     | {
         kind: 'diff';
@@ -106,6 +108,9 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
     let nextRuleIndex = 0;
     const sensors = useRuleSensors();
     const onMoveRule = mode.kind === 'edit' ? mode.onMoveRule : null;
+    const onDragRow = mode.kind === 'edit' ? mode.onDragRow : undefined;
+    const onDragStart = ({ active }: DragStartEvent) => onDragRow?.(String(active.id));
+    const onDragCancel = () => onDragRow?.(undefined);
     const rowIds = useMemo(() => rules.map((rule) => rule.rowId), [rules]);
     const cardModeOf = (rowId: string, ruleDiff: RuleDiff | undefined): RuleCardMode => {
       if (ruleDiff) return { kind: 'diff', diff: ruleDiff };
@@ -119,6 +124,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       };
     };
     const onDragEnd = ({ active, over }: DragEndEvent) => {
+      onDragRow?.(undefined);
       const from = rowIds.indexOf(String(active.id));
       const to = over ? rowIds.indexOf(String(over.id)) : -1;
       if (onMoveRule && from >= 0 && to >= 0 && from !== to) onMoveRule(from, to);
@@ -179,7 +185,13 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       </ul>
     );
     return onMoveRule ? (
-      <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={onDragEnd}>
+      <DndContext
+        collisionDetection={closestCenter}
+        sensors={sensors}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
+      >
         <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
           {list}
         </SortableContext>

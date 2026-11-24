@@ -5668,6 +5668,31 @@ describe('DecisionText', () => {
         expect(card('r1').style.zIndex).toBe('');
       });
 
+      it('keeps an unselected rule mounted while a touch drags it past the window', () => {
+        const rules = manySentenceRules(200);
+        render(
+          view({
+            rules,
+            selected: null,
+            onSelect: vi.fn(),
+            edit: editWith({ onMoveRule: vi.fn() }),
+          })
+        );
+        fireEvent.pointerDown(
+          within(card('row-0')).getByRole('button', { name: 'Drag rule 1 to reorder it' }),
+          { pointerType: 'touch', isPrimary: true, button: 0, clientX: 10, clientY: 10 }
+        );
+        moveTo(40);
+        moveTo(400);
+        expect(card('row-0')).toHaveAttribute('data-dragging', 'true');
+        act(() => scrollTo(sentenceRuleOffsets(rules)[150] ?? 0));
+        expect(screen.queryByTestId('nl-row-row-0')).toHaveAttribute('data-dragging', 'true');
+        act(() => {
+          fireEvent.pointerUp(document, { clientX: 10, clientY: 400 });
+        });
+        expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
+      });
+
       it('describes the drag handle with the drag instructions', () => {
         renderMenus({ onMoveRule: vi.fn() });
         const describedBy = handle('r1').getAttribute('aria-describedby');
