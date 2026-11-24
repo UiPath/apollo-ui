@@ -264,6 +264,20 @@ export const RULE_ACTION_CLASS = cn(
 export const REVEALED_ACTION_CLASS =
   'opacity-0 group-hover/row:opacity-100 group-has-[[data-selected]]/row:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
+export const CITATION_BUTTON_CLASS =
+  'gap-1 text-foreground-de-emp hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0';
+
+export const RULE_CITATIONS_CLASS = 'ms-auto flex flex-wrap justify-end gap-1';
+
+export const CITED_LINES_CLASS = 'flex flex-wrap items-end gap-x-2';
+
+export const CITED_LINE_CLASS = 'grow';
+
+export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
+
+export const HEADER_CITATION_REVEAL_CLASS =
+  'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
+
 export const RULE_DRAG_HANDLE_CLASS =
   'h-5 w-3.5 min-w-0 cursor-grab touch-none rounded p-0 text-foreground-de-emp hover:text-foreground active:cursor-grabbing [&_svg]:size-3.5';
 

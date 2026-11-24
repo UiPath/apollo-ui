@@ -1,4 +1,5 @@
 import type { Mark } from './marks';
+import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 
 /** A decision's logic as its heading shows it: a table's hit policy, worded by the host, and rule count, or nothing for any other logic. */
 export type DecisionGraphLogic =
@@ -51,3 +52,12 @@ export interface DecisionGraphBodyContext {
   /** Opens, scrolls to and flashes a decision in the graph, focusing its heading when `byKey`; an id not drawn in full goes to `onOpenDecision`. */
   revealDecision: (decisionId: string, byKey: boolean) => void;
 }
+
+/** The graph's citations: none, or each decision's list by id, opened by the host. */
+export type DecisionGraphCitations =
+  | { kind: 'none' }
+  | {
+      kind: 'cited';
+      decisions: ReadonlyMap<string, readonly SentenceCitation[]>;
+      onOpenCitation: OpenCitation;
+    };

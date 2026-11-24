@@ -334,6 +334,12 @@ describe('DecisionGraphText', () => {
             ...built,
             text: {
               ...built.text,
+              citations: {
+                kind: 'cited' as const,
+                decision: [{ kind: 'page' as const, page: 9 }],
+                rules: new Map(),
+                onOpenCitation: () => {},
+              },
               headerMark: { tone: 'error' as const, title: 'Broken', glyph: true as const },
             },
           }
@@ -346,11 +352,13 @@ describe('DecisionGraphText', () => {
     const showsTableHeading = () => {
       expect(policy().querySelector('[aria-describedby]')).not.toBeNull();
       expect(screen.getByTestId('graph-mark-risk')).toHaveAttribute('title', 'Broken');
+      expect(screen.getByTestId('graph-citation-risk')).toBeInTheDocument();
     };
     const showsNodeHeading = () => {
       expect(policy().querySelector('[aria-describedby]')).toBeNull();
       expect(policy()).toHaveTextContent('U');
       expect(screen.queryByTestId('graph-mark-risk')).toBeNull();
+      expect(screen.queryByTestId('graph-citation-risk')).toBeNull();
     };
     expect(renderBody).not.toHaveBeenCalled();
     showsNodeHeading();

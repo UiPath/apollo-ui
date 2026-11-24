@@ -2,7 +2,11 @@ import { cn } from '@uipath/apollo-wind';
 import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { DecisionGraphCard, DecisionGraphReference } from './DecisionGraphCard';
+import {
+  DecisionGraphCard,
+  type DecisionGraphCardProps,
+  DecisionGraphReference,
+} from './DecisionGraphCard';
 import {
   DecisionGraphMinimapSlot,
   type DecisionGraphMinimapSlotProps,
@@ -31,6 +35,7 @@ import {
 } from './decisionGraphStyles';
 import type {
   DecisionGraphBodyContext,
+  DecisionGraphCitations,
   DecisionGraphDecisionNode,
   DecisionGraphExpansion,
   DecisionGraphNode,
@@ -45,6 +50,8 @@ import { useDecisionGraphActions } from './useDecisionGraphActions';
 import { useDecisionGraphLabels } from './useDecisionGraphStrings';
 import { useDecisionTextLabels } from './useDecisionTextStrings';
 import { useTextAnnouncements } from './useTextAnnouncements';
+
+const NO_CITATIONS: DecisionGraphCitations = { kind: 'none' };
 
 /** An open decision's body: its table, shown as a `DecisionText` in the graph's scroll container with its links revealing decisions in the graph, or the host's own content for logic that is not a table. */
 export type DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> =
@@ -62,11 +69,13 @@ export interface DecisionGraphTextProps<Refusal, Logic, Op, Policy, Total, Type,
   nodes: readonly DecisionGraphNode[];
   /** Read only with the host's selected decision; `select` also tells the host what the view brought into view; `edit` adds the host's actions on the decisions, each shown in the cards' menus and keys only when listed; the host clears a selection whose rule or cell an edit removed, using `liveSelection`. */
   mode: DecisionGraphMode<Refusal, Logic>;
-  /** The body of an open decision, its table in any `DecisionText` mode; also called for a folded table card near the scrollport, whose heading takes the table's policy chip and a worse mark, while a card further away shows the node's. `context.revealDecision` takes a link to another decision in other content in place. */
+  /** The body of an open decision, its table in any `DecisionText` mode; also called for a folded table card near the scrollport, whose heading takes the table's policy chip, a worse mark and citations, while a card further away shows the node's. `context.revealDecision` takes a link to another decision in other content in place. */
   renderBody: (
     decisionId: string,
     context: DecisionGraphBodyContext
   ) => DecisionGraphBody<Op, Policy, Total, Type, TextRefusal>;
+  /** Where each decision was read from, on its heading and opened by the host; none when omitted. */
+  citations?: DecisionGraphCitations;
   /** The view folded this decision, unmounting its body: close what the host had open in it, such as its editor. */
   onFold?: (decisionId: string) => void;
   /** The open decisions as the host keeps them; without it the view keeps them, all folded at first. */
@@ -90,6 +99,16 @@ const markTargetOf = ({ id, mark }: DecisionGraphDecisionNode): DecisionGraphTar
   mark?.kind === 'rule'
     ? { kind: 'rule', decisionId: id, rowId: mark.rowId }
     : { kind: 'decision', decisionId: id };
+
+const citationOf = (
+  citations: DecisionGraphCitations,
+  decisionId: string
+): DecisionGraphCardProps['citations'] => {
+  const cited = citations.kind === 'cited' ? (citations.decisions.get(decisionId) ?? []) : [];
+  return citations.kind === 'cited' && cited.length > 0
+    ? { citations: cited, onOpen: citations.onOpenCitation }
+    : null;
+};
 
 const focuses = (mode: RevealMode): boolean => mode.kind === 'navigate' && mode.focus;
 
@@ -167,6 +186,7 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
   nodes,
   mode,
   renderBody,
+  citations = NO_CITATIONS,
   expansion,
   onFold,
   onOpenDecision,
@@ -458,6 +478,7 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
         ? renderBody(node.id, bodyContext)
         : null;
     const text = tableTextOf(built);
+    const textCitations = text?.citations;
     const textMark = text?.headerMark;
     const shown: DecisionGraphDecisionNode =
       textMark && (!node.mark || markSeverity(textMark) > markSeverity(node.mark.mark))
@@ -486,6 +507,12 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
           }
           onOpen={openOf(node.id)}
           actions={actions.cardOf(node, position)}
+          citations={
+            citationOf(citations, node.id) ??
+            (textCitations?.kind === 'cited' && textCitations.decision.length > 0
+              ? { citations: textCitations.decision, onOpen: textCitations.onOpenCitation }
+              : null)
+          }
           cardRef={cardRef(node.id)}
           dataTestId={dataTestId}
         />

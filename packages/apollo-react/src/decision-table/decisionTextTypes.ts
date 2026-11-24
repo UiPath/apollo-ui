@@ -23,6 +23,8 @@ export interface DecisionTextLabels
     HitPolicyLabels,
     TextAnnouncementLabels {
   emptyRules: string;
+  /** A read view's hint that Enter reaches its rules' citations. */
+  pressEnterForSources: string;
   addRule: string;
 }
 

@@ -82,3 +82,30 @@ export interface SentenceValueId extends SentenceCellId {
 export type SentenceSelection =
   | { kind: 'rule'; rowId: string }
   | ({ kind: 'cell' } & SentenceCellId);
+
+/** A box on a source page, in the extraction's page coordinates. */
+export interface CitationBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Where a decision or rule was read from, as the extraction's `uipdm:sourceRef` names it: a page, a box on it, or a block and its box. */
+export type SentenceCitation =
+  | { kind: 'page'; page: number }
+  | { kind: 'box'; page: number; box: CitationBox }
+  | { kind: 'block'; page: number; blockId: number; box: CitationBox };
+
+/** Opens a citation's source in the host's document viewer. */
+export type OpenCitation = (citation: SentenceCitation) => void;
+
+/** A table's citations: none, or the decision's and each rule's by row id, each a list, opened by the host. */
+export type DecisionTextCitations =
+  | { kind: 'none' }
+  | {
+      kind: 'cited';
+      decision: readonly SentenceCitation[];
+      rules: ReadonlyMap<string, readonly SentenceCitation[]>;
+      onOpenCitation: OpenCitation;
+    };

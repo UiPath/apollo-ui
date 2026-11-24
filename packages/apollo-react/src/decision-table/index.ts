@@ -15,6 +15,7 @@ export {
 } from './DecisionGraphText';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export { DecisionText, type DecisionTextMode, type DecisionTextProps } from './DecisionText';
+export type { DecisionTextDecisionActions } from './useDecisionTextHeaderActions';
 export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export type {
   DecisionGraphAction,
@@ -26,6 +27,7 @@ export type {
 } from './decisionGraphActionTypes';
 export type {
   DecisionGraphBodyContext,
+  DecisionGraphCitations,
   DecisionGraphDecisionNode,
   DecisionGraphExpansion,
   DecisionGraphLogic,
@@ -109,9 +111,13 @@ export {
 export type { GlyphTone } from './sentenceMarks';
 export { liveSelection } from './sentenceSelection';
 export type {
+  CitationBox,
+  DecisionTextCitations,
   DecisionTextTable,
+  OpenCitation,
   SentenceBandColumn,
   SentenceCellId,
+  SentenceCitation,
   SentenceLine,
   SentenceNameToken,
   SentencePart,
@@ -122,7 +128,6 @@ export type {
   SentenceValueToken,
 } from './sentenceTypes';
 export type { DecisionTextContainerProps } from './useContainerHandlers';
-export type { DecisionTextDecisionActions } from './useDecisionTextHeaderActions';
 export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {
