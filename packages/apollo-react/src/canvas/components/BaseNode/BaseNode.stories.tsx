@@ -184,6 +184,9 @@ const RECTANGLE_WIDTHS = [128, 160, 192, 256, 320] as const;
 
 const SQUARE_WIDTHS = [96, 128, 160] as const;
 
+/** Node heights set with `display.height`, in its 32px steps. */
+const NODE_HEIGHTS = [64, 96, 128] as const;
+
 // Circle height floor is (maxSideHandles * 2 + 2) * 16, so these counts yield
 // 96/128/160px. Width is set to match, keeping circles round.
 const SIZE_STEPS = [
@@ -225,13 +228,29 @@ const sizeGridManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] 
       display: { label: String(size), shape: 'circle' as const, icon: 'construction' },
       handleConfiguration: [{ position: 'left' as const, handles: sizeInputs(handles) }],
     })),
+    // One handle per side, so the side handles need only 64px and `display.height` decides.
+    {
+      nodeType: 'uipath.size-height',
+      version: '1.0.0',
+      category: 'sizing',
+      tags: ['sizing'],
+      sortOrder: 0,
+      display: { label: 'Height', shape: 'rectangle' as const, icon: 'construction' },
+      handleConfiguration: [
+        { position: 'left' as const, handles: sizeInputs(1) },
+        {
+          position: 'right' as const,
+          handles: [{ id: 'out', type: 'source' as const, handleType: 'output' as const }],
+        },
+      ],
+    },
   ],
 };
 
 /**
  * Creates nodes demonstrating sizing. Squares vary by width with a computed
  * height; circles grow proportionally with handle count (height is derived).
- * Rectangles vary by width at a fixed 96px height.
+ * Rectangles vary by width at a fixed 96px height, and by `display.height` at a fixed width.
  */
 function createSizeGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
@@ -294,6 +313,31 @@ function createSizeGrid(): Node<BaseNodeData>[] {
       height: 96,
     });
     rectX += width + 64;
+  });
+
+  // Heights: `display.height` replaces the 96px default; the icon tile and icon scale with it.
+  let hX = 80;
+  const heightY = rectY + 160;
+  NODE_HEIGHTS.forEach((height) => {
+    nodes.push({
+      ...createNode({
+        id: `h-${height}`,
+        type: 'uipath.size-height',
+        position: { x: hX, y: heightY },
+        data: {
+          nodeType: 'uipath.size-height',
+          version: '1.0.0',
+          display: {
+            label: `${DEFAULT_RECTANGLE_NODE_WIDTH}×${height}`,
+            subLabel: 'display.height',
+            shape: 'rectangle',
+            height,
+          },
+        },
+      }),
+      width: DEFAULT_RECTANGLE_NODE_WIDTH,
+    });
+    hX += DEFAULT_RECTANGLE_NODE_WIDTH + 64;
   });
 
   return nodes;
@@ -979,7 +1023,7 @@ function SizesStory() {
       </Panel>
       <StoryInfoPanel
         title="Sizes"
-        description="Node height is decided by the handle count, not the width prop: height is (maxSideHandles * 2 + 2) * 16, with a 96px minimum. Squares and rectangles vary by width at a computed height (96px with default handles). Circles grow 96 to 160px as handles increase (2 to 4 per side), staying round."
+        description="Node height is decided by the handle count, not the width prop: height is (maxSideHandles * 2 + 2) * 16, with a 96px minimum, or display.height in its place. Squares and rectangles vary by width at a computed height (96px with default handles). Circles grow 96 to 160px as handles increase (2 to 4 per side), staying round. The last row sets display.height (64 to 128px) on a node with one handle per side; the icon tile and icon scale with it."
       />
     </BaseCanvas>
   );

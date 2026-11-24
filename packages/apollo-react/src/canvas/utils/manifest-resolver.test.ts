@@ -67,6 +67,22 @@ describe('resolveDisplay', () => {
     expect(result.shape).toBe('circle');
   });
 
+  it('lets an instance display.height override the manifest height', () => {
+    const result = resolveDisplay(
+      { label: 'Node', icon: 'box', shape: 'rectangle', height: 64 },
+      { display: { height: 128 } }
+    );
+    expect(result.height).toBe(128);
+  });
+
+  it('keeps the manifest height when the instance height is undefined', () => {
+    const result = resolveDisplay(
+      { label: 'Node', icon: 'box', height: 64 },
+      { display: { height: undefined } }
+    );
+    expect(result.height).toBe(64);
+  });
+
   it('uses manifest canvasLabel for canvas label when no instance override', () => {
     const result = resolveDisplay({
       label: 'Send Outlook Email',

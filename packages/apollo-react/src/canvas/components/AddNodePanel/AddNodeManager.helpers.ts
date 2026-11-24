@@ -5,7 +5,6 @@ import type { NodeLayout } from '../../hooks/useCanvasNodeLayout';
 import type { PreviewNodeConnectionInfo } from '../../hooks/usePreviewNode';
 import type { NodeManifest } from '../../schema';
 import { resolveCollisions } from '../../utils';
-import { getExpandedSize } from '../../utils/node-size';
 import {
   CONTAINER_SEQUENCE_GAP_PX,
   collectLinearDownstreamSiblings,
@@ -17,6 +16,7 @@ import {
   placeContainerNode,
 } from '../../utils/container';
 import { snapUpToGrid } from '../../utils/NodeUtils';
+import { getNodeFallbackSize } from '../../utils/node-size';
 
 /**
  * Gap (px) used when shifting nodes around an Add Node insertion at the
@@ -65,7 +65,7 @@ export function alignNodeToPreview(
   nodeManifest: NodeManifest | undefined
 ): Node {
   const previewSize = getNodeDimensions(previewNode);
-  const nodeSize = getNodeDimensions(node, getExpandedSize(nodeManifest?.display.shape));
+  const nodeSize = getNodeDimensions(node, getNodeFallbackSize(node, nodeManifest));
 
   if (previewSize.width === nodeSize.width && previewSize.height === nodeSize.height) {
     return node;

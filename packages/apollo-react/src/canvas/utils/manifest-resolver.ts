@@ -139,6 +139,8 @@ export function resolveDisplay(
     canvasLabel: context?.display?.canvasLabel ?? manifestDisplay.canvasLabel,
     icon: context?.display?.icon ?? manifestDisplay.icon ?? '',
     shape,
+    // The instance height wins when set; otherwise the manifest's applies.
+    height: context?.display?.height ?? manifestDisplay.height,
   };
 }
 

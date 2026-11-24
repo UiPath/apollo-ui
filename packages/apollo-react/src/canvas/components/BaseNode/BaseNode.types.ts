@@ -29,6 +29,8 @@ export interface BaseNodeData extends Record<string, unknown> {
     iconBackground?: string;
     iconBackgroundDark?: string;
     iconColor?: string;
+    /** Per-node override of the manifest's `display.height` (64 to 160, in 32px steps). */
+    height?: number;
   };
 
   /**
