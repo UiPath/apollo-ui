@@ -1130,6 +1130,36 @@ describe('DecisionText', () => {
       m5: { tone: 'warning', title: 'Unreachable', glyph: true },
     });
 
+    it('shows no message for a marked rule selected or focused, nor for a focused marked value', () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        marks: scoreMarks,
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
+      });
+      act(() => card('m5').focus());
+      expect(tooltip()).toBeNull();
+      expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
+      act(() => valueChip('m3', 'score').focus());
+      expect(tooltip()).toBeNull();
+    });
+
+    it("shows a selected rule's message once the pointer is on its glyph", () => {
+      renderSelectable({
+        rules: MULTI_SENTENCE_RULES,
+        ...MULTI_SENTENCE_COLUMNS,
+        hitPolicy: MULTI_SENTENCE_POLICY,
+        marks: scoreMarks,
+        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
+      });
+      act(() => card('m5').focus());
+      const glyph = card('m5').querySelector('[data-mark-title="Unreachable"]');
+      if (!glyph) throw new Error('m5 glyph');
+      fireEvent.pointerOver(glyph);
+      expect(tooltip()).toHaveTextContent('Unreachable');
+    });
+
     it("shows a mark's message while the pointer is on it, and hides it off any mark", async () => {
       renderView({ marks: scoreMarks });
       expect(tooltip()).toBeNull();
@@ -1226,30 +1256,6 @@ describe('DecisionText', () => {
       expect(tooltip()).toHaveTextContent('Overlaps row 1');
     });
 
-    it("follows the host's change to the marks of the focused rule: a new message, none, then a mark added", async () => {
-      const shared = {
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
-      };
-      const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
-      act(() => card('m5').focus());
-      expect(tooltip()).toHaveTextContent('Unreachable');
-      rerender(
-        <Selectable
-          {...shared}
-          marks={rowMarks({ m5: { tone: 'error', title: 'Never matches', glyph: true } })}
-        />
-      );
-      await waitFor(() => expect(tooltip()).toHaveTextContent('Never matches'));
-      rerender(<Selectable {...shared} marks={rowMarks({})} />);
-      await waitFor(() => expect(tooltip()).toBeNull());
-      rerender(<Selectable {...shared} marks={scoreMarks} />);
-      await waitFor(() => expect(tooltip()).toHaveTextContent('Unreachable'));
-      expect(document.activeElement).toBe(card('m5'));
-    });
-
     it('keeps a message a scroll hid hidden when the host changes the marks under the pointer and focus', async () => {
       const shared = {
         rules: MULTI_SENTENCE_RULES,
@@ -1284,8 +1290,11 @@ describe('DecisionText', () => {
         initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
       };
       const { rerender } = render(<Selectable {...shared} marks={scoreMarks} />);
-      act(() => card('m5').focus());
-      press('Escape');
+      const glyph = card('m5').querySelector('[data-mark-title="Unreachable"]');
+      if (!glyph) throw new Error('m5 glyph');
+      fireEvent.pointerOver(glyph);
+      expect(tooltip()).toHaveTextContent('Unreachable');
+      fireEvent.keyDown(glyph, { key: 'Escape' });
       expect(tooltip()).toBeNull();
       rerender(
         <Selectable
@@ -1295,197 +1304,6 @@ describe('DecisionText', () => {
       );
       await act(() => new Promise((resolve) => setTimeout(resolve)));
       expect(tooltip()).toBeNull();
-    });
-
-    it('shows the mark a focused element carries or is described by, without adding to its description', () => {
-      renderSelectable({
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        marks: scoreMarks,
-        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
-      });
-      act(() => card('m5').focus());
-      expect(tooltip()).toHaveTextContent('Unreachable');
-      expect(card('m5')).toHaveAccessibleDescription('Warning: Unreachable');
-      act(() => valueChip('m3', 'score').focus());
-      expect(tooltip()).toHaveTextContent('Overlaps row 1');
-    });
-
-    it("shows every message a focused rule's marks on several lines describe it with", () => {
-      renderSelectable({
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        marks: rowMarks({
-          m1: {
-            cells: {
-              debt: { tone: 'error', title: 'Not a number', glyph: true },
-              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
-            },
-          },
-        }),
-        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
-      });
-      act(() => card('m1').focus());
-      expect(tooltip()).toHaveTextContent('Not a number');
-      expect(tooltip()).toHaveTextContent('Overlaps row 2');
-    });
-
-    it('shows every message of a focused rule whose first mark the pointer is on, until Escape', async () => {
-      renderSelectable({
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        marks: rowMarks({
-          m1: {
-            cells: {
-              debt: { tone: 'error', title: 'Not a number', glyph: true },
-              country: { tone: 'warning', title: 'Overlaps row 2', glyph: true },
-            },
-          },
-        }),
-        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
-      });
-      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
-      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
-      if (!first) throw new Error('m1 first badge');
-      fireEvent.pointerOver(first);
-      expect(tooltip()).not.toHaveTextContent('Overlaps row 2');
-      act(() => card('m1').focus());
-      expect(tooltip()).toHaveTextContent('Not a number');
-      expect(tooltip()).toHaveTextContent('Overlaps row 2');
-      await act(() => new Promise((resolve) => setTimeout(resolve)));
-      expect(tooltip()).toHaveTextContent('Not a number');
-      expect(tooltip()).toHaveTextContent('Overlaps row 2');
-      fireEvent.keyDown(card('m1'), { key: 'Escape' });
-      fireEvent.pointerOver(first);
-      expect(tooltip()).toBeNull();
-    });
-
-    it('keeps every message of a focused rule whose first mark the pointer is on when the host changes its marks', async () => {
-      const shared = {
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
-      };
-      const marksWith = (country: string) =>
-        rowMarks({
-          m1: {
-            cells: {
-              debt: { tone: 'error', title: 'Not a number', glyph: true },
-              country: { tone: 'warning', title: country, glyph: true },
-            },
-          },
-        });
-      const { rerender } = render(<Selectable {...shared} marks={marksWith('Overlaps row 2')} />);
-      const [firstId = ''] = card('m1').getAttribute('aria-describedby')?.split(' ') ?? [];
-      const first = document.getElementById(firstId)?.closest('[data-mark-title]');
-      if (!first) throw new Error('m1 first badge');
-      fireEvent.pointerOver(first);
-      act(() => card('m1').focus());
-      rerender(<Selectable {...shared} marks={marksWith('Overlaps row 3')} />);
-      await waitFor(() => expect(tooltip()).toHaveTextContent('Overlaps row 3'));
-      expect(tooltip()).toHaveTextContent('Not a number');
-    });
-
-    it('shows the mark a focused rule is described by when the view is in a shadow root', () => {
-      const host = document.createElement('div');
-      document.body.append(host);
-      onTestFinished(() => host.remove());
-      const container = document.createElement('div');
-      host.attachShadow({ mode: 'open' }).append(container);
-      render(
-        <Selectable
-          rules={MULTI_SENTENCE_RULES}
-          {...MULTI_SENTENCE_COLUMNS}
-          hitPolicy={MULTI_SENTENCE_POLICY}
-          marks={scoreMarks}
-          initial={{ kind: 'rule', rowId: 'm5' }}
-        />,
-        { container }
-      );
-      const inShadow = within(container);
-      act(() => inShadow.getByTestId('nl-row-m5').focus());
-      expect(inShadow.queryByTestId('nl-mark-tooltip')).toHaveTextContent('Unreachable');
-    });
-
-    it("keeps a focused rule's message once the pointer leaves the view or rests off any mark, back from another mark, until Escape", async () => {
-      renderSelectable({
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        marks: scoreMarks,
-        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
-      });
-      const restOffMarks = () => act(() => new Promise((resolve) => setTimeout(resolve, 400)));
-      act(() => card('m5').focus());
-      expect(tooltip()).toHaveTextContent('Unreachable');
-      fireEvent.pointerLeave(screen.getByTestId('nl'));
-      expect(tooltip()).toHaveTextContent('Unreachable');
-      fireEvent.pointerOver(card('m1'));
-      await restOffMarks();
-      expect(tooltip()).toHaveTextContent('Unreachable');
-      fireEvent.pointerOver(valueChip('m3', 'score'));
-      expect(tooltip()).toHaveTextContent('Overlaps row 1');
-      fireEvent.pointerLeave(screen.getByTestId('nl'));
-      expect(tooltip()).toHaveTextContent('Unreachable');
-      fireEvent.keyDown(card('m5'), { key: 'Escape' });
-      expect(tooltip()).toBeNull();
-      fireEvent.pointerOver(card('m1'));
-      fireEvent.pointerLeave(screen.getByTestId('nl'));
-      await restOffMarks();
-      expect(tooltip()).toBeNull();
-    });
-
-    it("keeps a focused rule's message dismissed after Escape once the pointer leaves another mark", () => {
-      renderSelectable({
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        marks: scoreMarks,
-        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
-      });
-      act(() => card('m5').focus());
-      fireEvent.keyDown(card('m5'), { key: 'Escape' });
-      expect(tooltip()).toBeNull();
-      fireEvent.pointerOver(valueChip('m3', 'score'));
-      expect(tooltip()).toHaveTextContent('Overlaps row 1');
-      fireEvent.pointerLeave(screen.getByTestId('nl'));
-      expect(tooltip()).toBeNull();
-    });
-
-    it('keeps the message of the mark under the pointer when focus moves to a rule with none', () => {
-      renderSelectable({
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        marks: scoreMarks,
-        initial: { kind: 'rule', rowId: 'm1' } satisfies SentenceSelection,
-      });
-      fireEvent.pointerOver(valueChip('m3', 'score'));
-      expect(tooltip()).toHaveTextContent('Overlaps row 1');
-      act(() => card('m1').focus());
-      expect(tooltip()).toHaveTextContent('Overlaps row 1');
-      act(() => card('m5').focus());
-      expect(tooltip()).toHaveTextContent('Unreachable');
-    });
-
-    it("brings a focused rule's message back once the pointer rests off any mark after another", async () => {
-      renderSelectable({
-        rules: MULTI_SENTENCE_RULES,
-        ...MULTI_SENTENCE_COLUMNS,
-        hitPolicy: MULTI_SENTENCE_POLICY,
-        marks: scoreMarks,
-        initial: { kind: 'rule', rowId: 'm5' } satisfies SentenceSelection,
-      });
-      act(() => card('m5').focus());
-      fireEvent.pointerOver(valueChip('m3', 'score'));
-      expect(tooltip()).toHaveTextContent('Overlaps row 1');
-      fireEvent.pointerOver(card('m1'));
-      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
-      expect(tooltip()).toHaveTextContent('Unreachable');
     });
 
     it('hides the message on Escape until another mark is reached', () => {
