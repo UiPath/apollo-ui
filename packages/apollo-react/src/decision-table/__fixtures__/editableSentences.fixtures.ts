@@ -32,6 +32,7 @@ interface EditableCondition {
 /** One rule of the story table: its outcome per output and its conditions. */
 interface EditableRule {
   rowId: string;
+  name?: string;
   outcomes: Readonly<Record<string, string>>;
   conditions: EditableCondition[];
 }
@@ -84,14 +85,14 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
       { kind: 'value', columnId: output.id, index: 0, text: rule.outcomes[output.id] ?? '' },
     ]);
     if (conditions.length === 0) {
-      return { rowId: rule.rowId, heading, lead: ['in every case'], lines: [] };
+      return { rowId: rule.rowId, name: rule.name, heading, lead: ['in every case'], lines: [] };
     }
     if (conditions.length <= 2) {
       const lead = conditions.flatMap(({ input, condition }, index): SentencePart[] => [
         index === 0 ? 'when ' : ' and ',
         ...conditionParts(input, condition),
       ]);
-      return { rowId: rule.rowId, heading, lead, lines: [] };
+      return { rowId: rule.rowId, name: rule.name, heading, lead, lines: [] };
     }
     const lines = conditions.map(
       ({ input, condition }): SentenceLine => ({
@@ -99,7 +100,13 @@ export const wordedRules = (table: EditableTable): SentenceRule[] =>
         parts: conditionParts(input, condition),
       })
     );
-    return { rowId: rule.rowId, heading, lead: ['when all of these are true:'], lines };
+    return {
+      rowId: rule.rowId,
+      name: rule.name,
+      heading,
+      lead: ['when all of these are true:'],
+      lines,
+    };
   });
 
 /** The table's inputs and outputs. */
@@ -270,6 +277,13 @@ export const tableWithDuplicate = (
 /** The table with a rule's outcomes and conditions emptied. */
 export const tableWithClearedRule = (table: EditableTable, rowId: string): EditableTable =>
   mapRule(table, rowId, (rule) => ({ ...rule, outcomes: {}, conditions: [] }));
+
+/** The table with a rule renamed; an empty name leaves it unnamed. */
+export const tableWithRuleName = (
+  table: EditableTable,
+  rowId: string,
+  name: string
+): EditableTable => mapRule(table, rowId, (rule) => ({ ...rule, name: name || undefined }));
 
 /** The table with the rule at `from` moved to `to`, kept inside the table. */
 export const tableWithMovedRule = (

@@ -482,4 +482,5 @@ export const CELL_EDITOR_CLASS =
 export const EMPTY_HINT_CLASS = 'text-foreground-de-emp italic';
 
 /** `EMPTY_HINT_CLASS` as a text field's placeholder. */
-export const EMPTY_HINT_PLACEHOLDER_CLASS = 'placeholder:text-foreground-de-emp placeholder:italic';
+export const EMPTY_HINT_PLACEHOLDER_CLASS =
+  'placeholder:font-normal placeholder:text-foreground-de-emp placeholder:italic';

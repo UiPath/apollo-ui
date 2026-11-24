@@ -14,6 +14,7 @@ import {
   tableWithDuplicate,
   tableWithExpression,
   tableWithMovedRule,
+  tableWithRuleName,
   tableWithNewInput,
   tableWithoutCell,
   tableWithoutRule,
@@ -312,6 +313,7 @@ export const storyTableProps = ({
     },
     onClearRule: (rowId) => setTable(tableWithClearedRule(table, rowId)),
     onMoveRule: (from, to) => setTable(tableWithMovedRule(table, from, to)),
+    onRenameRule: (rowId, name) => setTable(tableWithRuleName(table, rowId, name)),
     onDeleteRule: (rowId) => {
       setTable(tableWithoutRule(table, rowId));
       onSelect(neighbourOf(table, rowId));
