@@ -396,6 +396,30 @@ export const LogWithoutSeverity: Story = {
 };
 
 /**
+ * showMask offers the mask action. Picking it unticks LLM calls and disables that chip, since the
+ * AI Trust Layer policy already masks LLM calls; another action re-enables it, unticked.
+ */
+export const MaskAction: Story = {
+  args: {
+    ...EditInline.args,
+    hideHeader: true,
+    showMask: true,
+    guardrail: {
+      ...existingGuardrail,
+      selector: { scopes: ['Agent', 'Llm', 'Tool'], matchNames: ['Send email'] },
+    },
+  },
+};
+
+/** A saved mask guardrail: LLM calls is off and its chip disabled from the start. */
+export const MaskActionSaved: Story = {
+  args: {
+    ...MaskAction.args,
+    guardrail: { ...existingGuardrail, action: { $actionType: 'mask' } },
+  },
+};
+
+/**
  * Name and parameters only, for a host that runs the validator itself: hideAction drops the
  * action section, evalsTogglePlacement none drops the evaluations toggle, and the Llm scope
  * hides the scope selector. Save still hands back the full value with the default action.

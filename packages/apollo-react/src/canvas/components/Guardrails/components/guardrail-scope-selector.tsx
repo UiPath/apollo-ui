@@ -1,6 +1,13 @@
-import { cn, FormField, FormFieldError, Label, RequiredIndicator } from '@uipath/apollo-wind';
+import {
+  cn,
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  Label,
+  RequiredIndicator,
+} from '@uipath/apollo-wind';
 import { Check, Plus } from 'lucide-react';
-import { useCallback, useEffect, useId, useMemo } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useMemo } from 'react';
 import type {
   GuardrailScope,
   GuardrailScopeSelectorErrors,
@@ -26,6 +33,13 @@ export interface GuardrailScopeSelectorProps {
    * definition no longer allows. Without it the lone chip toggles off, leaving no scope to save.
    */
   lockSingleScope?: boolean;
+  /**
+   * Scopes whose chips render disabled, e.g. LLM calls under an action that cannot apply there.
+   * A disabled scope still in the value stays clickable, so the user can deselect it.
+   */
+  disabledScopes?: readonly GuardrailScope[];
+  /** Why `disabledScopes` are unavailable, shown under the chips while one of them is offered. */
+  disabledScopesHint?: ReactNode;
   /** Validation messages; each renders as soon as it is present. */
   errors?: GuardrailScopeSelectorErrors;
   /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
@@ -46,6 +60,8 @@ export function GuardrailScopeSelector({
   availableToolNames = [],
   allowedScopes,
   lockSingleScope = false,
+  disabledScopes,
+  disabledScopesHint,
   errors,
   labels: labelOverrides,
   className,
@@ -75,6 +91,15 @@ export function GuardrailScopeSelector({
     const scopes = allowedScopes ?? ALL_SCOPES;
     return hasTools ? scopes : scopes.filter((s) => s !== 'Tool');
   }, [allowedScopes, hasTools]);
+  const isScopeDisabled = (scope: GuardrailScope) =>
+    isScopeLocked || (disabledScopes?.includes(scope) === true && !selectedScopes.includes(scope));
+  const hint = visibleScopes.some((scope) => disabledScopes?.includes(scope))
+    ? disabledScopesHint
+    : undefined;
+  const scopesDescribedBy =
+    [hint ? `${uid}-scopes-hint` : '', errors?.scopes ? `${uid}-scopes-error` : '']
+      .filter(Boolean)
+      .join(' ') || undefined;
 
   // When tools disappear while Tool scope is selected, strip it from the selector to avoid
   // invisible invalid state the user can't fix via the UI. (Deliberate self-healing side
@@ -160,7 +185,7 @@ export function GuardrailScopeSelector({
             role="group"
             aria-labelledby={`${uid}-scopes-label`}
             aria-invalid={errors?.scopes ? true : undefined}
-            aria-describedby={errors?.scopes ? `${uid}-scopes-error` : undefined}
+            aria-describedby={scopesDescribedBy}
             className="flex flex-wrap gap-1.5"
           >
             {visibleScopes.map((scope) => (
@@ -168,13 +193,14 @@ export function GuardrailScopeSelector({
                 key={scope}
                 pressed={selectedScopes.includes(scope)}
                 onPressedChange={() => handleToggleScope(scope)}
-                disabled={isScopeLocked}
+                disabled={isScopeDisabled(scope)}
               >
                 {scopeLabels[scope]}
               </GuardrailChip>
             ))}
           </div>
         </FieldShell>
+        <FormFieldDescription id={`${uid}-scopes-hint`}>{hint}</FormFieldDescription>
         <FormFieldError id={`${uid}-scopes-error`}>{errors?.scopes}</FormFieldError>
       </FormField>
 

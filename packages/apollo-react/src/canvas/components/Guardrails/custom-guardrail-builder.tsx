@@ -7,10 +7,7 @@ import type {
   GuardrailStaticRecipientContext,
 } from './builder-types';
 import { createDefaultGuardrailAction, generateGuardrailId } from './builder-utils';
-import {
-  GuardrailActionSection,
-  type GuardrailActionSectionProps,
-} from './components/guardrail-action-section';
+import { GuardrailActionSection } from './components/guardrail-action-section';
 import { GuardrailEvalsToggle } from './components/guardrail-evals-toggle';
 import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { MixedScopesBanner } from './components/mixed-scopes-banner';
@@ -41,8 +38,11 @@ import { useSwallowEnter } from './use-swallow-enter';
 // Host rule errors merge over the internal ones rule by rule, and field by field within a rule.
 // The section emits a filter action only when the type switches to it, with no fields yet; the
 // filter selector edits them as field references from there.
+// The section never offers mask here (no `showMask`); the fallback only narrows the type.
 function toCustomGuardrailAction(action: GuardrailAction): CustomGuardrailAction {
-  return action.$actionType === 'filter' ? { $actionType: 'filter', fields: [] } : action;
+  if (action.$actionType === 'filter') return { $actionType: 'filter', fields: [] };
+  if (action.$actionType === 'mask') return { $actionType: 'log', severityLevel: 'Info' };
+  return action;
 }
 
 const CUSTOM_BUILDER_ERROR_MERGES: GuardrailErrorMerges<CustomGuardrailBuilderErrors> = {
@@ -113,9 +113,10 @@ export interface CustomGuardrailBuilderProps {
   evalsTogglePlacement?: 'form' | 'footer';
   /**
    * The action types to offer (e.g. log and block only, for a host with no escalation). A new
-   * guardrail starts on the first of them when log is not among them.
+   * guardrail starts on the first of them when log is not among them. Mask is not one: it is the
+   * built-in PII validator's.
    */
-  allowedActionTypes?: GuardrailActionSectionProps['allowedActionTypes'];
+  allowedActionTypes?: ReadonlyArray<Exclude<GuardrailAction['$actionType'], 'mask'>>;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
   /**
    * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to

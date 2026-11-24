@@ -9,9 +9,10 @@ import type { GuardrailFieldReference, GuardrailRule, GuardrailRulesErrors } fro
 /**
  * `GuardrailAction` with the filter arm's fields typed. This builder edits them, so they are the
  * field references rules use rather than the opaque pass-through the built-in builder carries.
+ * Mask is the built-in PII validator's alone, so it has no arm here.
  */
 export type CustomGuardrailAction =
-  | Exclude<GuardrailAction, { $actionType: 'filter' }>
+  | Exclude<GuardrailAction, { $actionType: 'filter' | 'mask' }>
   | { $actionType: 'filter'; fields: GuardrailFieldReference[] };
 
 /** The custom builder's in/out value: mirrors the persisted custom guardrail shape. */

@@ -105,12 +105,20 @@ export interface GuardrailBuilderLabels {
   scopeAgentLabel: string;
   scopeLlmLabel: string;
   scopeToolLabel: string;
+  /**
+   * Shown under the scope chips while the action is mask, which leaves LLM calls unavailable.
+   * Optional so a complete label object written before it existed still compiles; it always
+   * resolves.
+   */
+  scopeLlmMaskDisabledHint?: string;
   // Action section
   actionTypeLabel: string;
   actionLogLabel: string;
   actionBlockLabel: string;
   actionFilterLabel: string;
   actionEscalateLabel: string;
+  /** Optional like `scopeLlmMaskDisabledHint`. */
+  actionMaskLabel?: string;
   severityLabel: string;
   severityInfoLabel: string;
   severityWarningLabel: string;
@@ -181,11 +189,13 @@ export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
   scopeAgentLabel: 'Agent',
   scopeLlmLabel: 'LLM calls',
   scopeToolLabel: 'Tools',
+  scopeLlmMaskDisabledHint: 'LLM calls are masked by the AI Trust Layer policy.',
   actionTypeLabel: 'Action type',
   actionLogLabel: 'Log',
   actionBlockLabel: 'Block',
   actionFilterLabel: 'Filter',
   actionEscalateLabel: 'Escalate',
+  actionMaskLabel: 'Mask',
   severityLabel: 'Severity level',
   severityInfoLabel: 'Info',
   severityWarningLabel: 'Warning',
@@ -252,11 +262,11 @@ export function resolveGuardrailBuilderLabels(
 }
 
 /** Narrow a builder label set to the keys one of the builder's parts reads. */
-function pickGuardrailBuilderLabels<K extends keyof GuardrailBuilderLabels>(
-  source: GuardrailBuilderLabels,
-  keys: ReadonlyArray<K>
-): Pick<GuardrailBuilderLabels, K> {
-  const picked = {} as Pick<GuardrailBuilderLabels, K>;
+function pickGuardrailBuilderLabels<
+  S extends GuardrailBuilderLabels,
+  K extends keyof GuardrailBuilderLabels,
+>(source: S, keys: ReadonlyArray<K>): Pick<S, K> {
+  const picked = {} as Pick<S, K>;
   for (const key of keys) picked[key] = source[key];
   return picked;
 }
@@ -276,6 +286,7 @@ export const GUARDRAIL_ACTION_LABEL_KEYS = [
   'actionBlockLabel',
   'actionFilterLabel',
   'actionEscalateLabel',
+  'actionMaskLabel',
   'severityLabel',
   'severityInfoLabel',
   'severityWarningLabel',
@@ -301,17 +312,19 @@ export type GuardrailActionLabelKey = (typeof GUARDRAIL_ACTION_LABEL_KEYS)[numbe
 
 export type GuardrailActionLabels = Pick<GuardrailBuilderLabels, GuardrailActionLabelKey>;
 
-export const GUARDRAIL_ACTION_EN_LABELS: GuardrailActionLabels = pickGuardrailBuilderLabels(
-  GUARDRAIL_BUILDER_EN_LABELS,
-  GUARDRAIL_ACTION_LABEL_KEYS
-);
+export const GUARDRAIL_ACTION_EN_LABELS: Required<GuardrailActionLabels> =
+  pickGuardrailBuilderLabels(GUARDRAIL_BUILDER_EN_LABELS, GUARDRAIL_ACTION_LABEL_KEYS);
 
 /** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
 export function resolveGuardrailActionLabels(
   catalog?: Partial<GuardrailActionLabels>,
   overrides?: Partial<GuardrailActionLabels>
-): GuardrailActionLabels {
-  return mergeLabels(GUARDRAIL_ACTION_EN_LABELS, catalog, overrides);
+): Required<GuardrailActionLabels> {
+  return mergeLabels<Required<GuardrailActionLabels>>(
+    GUARDRAIL_ACTION_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 /** Interpolate `{{token}}` placeholders in a catalog message. Unknown tokens are left as-is. */
@@ -639,6 +652,10 @@ export function useGuardrailBuilderLabels(
           scopeAgentLabel: _({ id: 'guardrails.builder.scope-agent-label', message: 'Agent' }),
           scopeLlmLabel: _({ id: 'guardrails.builder.scope-llm-label', message: 'LLM calls' }),
           scopeToolLabel: _({ id: 'guardrails.builder.scope-tool-label', message: 'Tools' }),
+          scopeLlmMaskDisabledHint: _({
+            id: 'guardrails.builder.scope-llm-mask-disabled-hint',
+            message: 'LLM calls are masked by the AI Trust Layer policy.',
+          }),
           actionTypeLabel: _({
             id: 'guardrails.builder.action-type-label',
             message: 'Action type',
@@ -650,6 +667,7 @@ export function useGuardrailBuilderLabels(
             id: 'guardrails.builder.action-escalate-label',
             message: 'Escalate',
           }),
+          actionMaskLabel: _({ id: 'guardrails.builder.action-mask-label', message: 'Mask' }),
           severityLabel: _({ id: 'guardrails.builder.severity-label', message: 'Severity level' }),
           severityInfoLabel: _({ id: 'guardrails.builder.severity-info-label', message: 'Info' }),
           severityWarningLabel: _({
@@ -766,7 +784,7 @@ export function useGuardrailBuilderLabels(
 /** Localized chrome strings of the action section and its escalation fields; `overrides` win. */
 export function useGuardrailActionLabels(
   overrides?: Partial<GuardrailActionLabels>
-): GuardrailActionLabels {
+): Required<GuardrailActionLabels> {
   const catalog = useGuardrailBuilderLabels();
   return useMemo(
     () =>

@@ -25,7 +25,7 @@ import { EscalateActionFields } from './escalate-action-fields';
 
 type GuardrailActionType = GuardrailAction['$actionType'];
 
-const ACTION_TYPES: readonly GuardrailActionType[] = ['log', 'block', 'filter', 'escalate'];
+const ACTION_TYPES: readonly GuardrailActionType[] = ['log', 'block', 'filter', 'escalate', 'mask'];
 
 export interface GuardrailActionSectionProps {
   action: GuardrailAction;
@@ -34,9 +34,14 @@ export interface GuardrailActionSectionProps {
   /** Whether to include 'filter' as an option (custom guardrails only) */
   showFilter?: boolean;
   /**
+   * Whether to include 'mask' as an option (PII masking, for a host that supports it). A stored
+   * mask action stays listed without it.
+   */
+  showMask?: boolean;
+  /**
    * The action types to offer (e.g. log and block only, for a host with no escalation). Default:
-   * all of them, filter still gated on `showFilter`. The current type stays listed, so a stored
-   * action outside the list never blanks the select.
+   * all of them, filter and mask still gated on `showFilter` and `showMask`. The current type
+   * stays listed, so a stored action outside the list never blanks the select.
    */
   allowedActionTypes?: readonly GuardrailActionType[];
   /**
@@ -76,6 +81,7 @@ export function GuardrailActionSection({
   action,
   onActionChange,
   showFilter = false,
+  showMask = false,
   allowedActionTypes,
   hideLogSeverity = false,
   filterContent,
@@ -97,14 +103,17 @@ export function GuardrailActionSection({
     block: labels.actionBlockLabel,
     filter: labels.actionFilterLabel,
     escalate: labels.actionEscalateLabel,
+    mask: labels.actionMaskLabel,
   };
-  // The current type is kept only against `allowedActionTypes`; `showFilter` alone still drops
-  // a stored filter action from the list, as it always has.
-  const offeredActionTypes = ACTION_TYPES.filter(
-    (type) =>
-      (allowedActionTypes !== undefined && type === action.$actionType) ||
-      ((type !== 'filter' || showFilter) && (allowedActionTypes?.includes(type) ?? true))
-  );
+  // The current type is kept against `allowedActionTypes` and `showMask`; `showFilter` alone
+  // still drops a stored filter action from the list, as it always has.
+  const offeredActionTypes = ACTION_TYPES.filter((type) => {
+    if (type === action.$actionType && (allowedActionTypes !== undefined || type === 'mask')) {
+      return true;
+    }
+    if ((type === 'filter' && !showFilter) || (type === 'mask' && !showMask)) return false;
+    return allowedActionTypes?.includes(type) ?? true;
+  });
 
   const actionTypeSelect = (
     <FormField>

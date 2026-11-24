@@ -62,7 +62,10 @@ export type GuardrailAction =
   // Field references are product-shaped; the OOTB builder never edits them (pass-through
   // only, the filter option is custom-guardrail territory), so they stay opaque here.
   | { $actionType: 'filter'; fields: unknown[] }
-  | { $actionType: 'escalate'; app: GuardrailEscalateApp; recipient: GuardrailEscalateRecipient };
+  | { $actionType: 'escalate'; app: GuardrailEscalateApp; recipient: GuardrailEscalateRecipient }
+  // Replaces the detected values with placeholders before the call and restores them in the
+  // output. Agent and Tool scopes only: the AI Trust Layer policy already masks LLM calls.
+  | { $actionType: 'mask' };
 
 /** The escalate arm of `GuardrailAction`, for hosts holding one in their own state. */
 export type GuardrailEscalateAction = Extract<GuardrailAction, { $actionType: 'escalate' }>;
