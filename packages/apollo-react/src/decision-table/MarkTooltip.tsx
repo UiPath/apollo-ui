@@ -22,12 +22,6 @@ interface ShownMark {
   title: string;
 }
 
-/** The mark focus is on, and every message its element is described by. */
-interface FocusedMark {
-  element: HTMLElement;
-  title: string;
-}
-
 const MARKED = '[data-mark-title]';
 
 const TOOLTIP = '[data-mark-tooltip]';
@@ -40,25 +34,6 @@ const isOnTooltip = (target: EventTarget | null): boolean =>
 
 const markedAt = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>(MARKED) : null;
-
-/** A focused element's own mark, else the marks whose announcements describe it. */
-const markedFor = (target: EventTarget | null): HTMLElement[] => {
-  const own = markedAt(target);
-  if (own || !(target instanceof Element)) return own ? [own] : [];
-  const root = target.getRootNode();
-  const scope = root instanceof ShadowRoot ? root : document;
-  const ids = target.getAttribute('aria-describedby')?.split(' ') ?? [];
-  return ids.map((id) => markedAt(scope.getElementById(id))).filter((badge) => badge !== null);
-};
-
-const titlesOf = (badges: readonly HTMLElement[]): string =>
-  [...new Set(badges.flatMap((badge) => badge.dataset.markTitle?.split('\n') ?? []))].join('\n');
-
-const focusedMarkOf = (target: EventTarget | null): FocusedMark | null => {
-  const badges = markedFor(target);
-  const [element] = badges;
-  return element ? { element, title: titlesOf(badges) } : null;
-};
 
 const isMarked = (element: HTMLElement | null): element is HTMLElement =>
   element?.isConnected === true && element.matches(MARKED);
@@ -76,7 +51,7 @@ export interface MarkTooltipProps {
   dataTestId: string;
 }
 
-/** One tooltip for the view: the message of the mark the pointer is on, else of the one focus is on, as the host changes it, until Escape, a scroll or another element. */
+/** One tooltip for the view: the message of the mark the pointer is on, as the host changes it, until Escape, a scroll or the pointer resting off any mark. */
 export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId }) => {
   const [shown, setShown] = useState<ShownMark | null>(null);
   const [anchorRoot, setAnchorRoot] = useState<Element | ShadowRoot | null>(null);
@@ -87,17 +62,14 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
     setAnchorRoot(root instanceof ShadowRoot ? root : section.ownerDocument.body);
     let current: HTMLElement | null = null;
     let pointed: Element | null = null;
-    let hovered: HTMLElement | null = null;
-    let focusTarget: Element | null = null;
-    let focused: FocusedMark | null = null;
     let dismissed = false;
-    let byFocus = false;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
-    const show = (element: HTMLElement | null, title = element?.dataset.markTitle) => {
+    const show = (element: HTMLElement | null) => {
       clearTimeout(hideTimer);
       if (element === current && dismissed) return;
       current = element;
       dismissed = false;
+      const title = element?.dataset.markTitle;
       if (!element || !title) {
         setShown(null);
         return;
@@ -107,71 +79,40 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       setShown((was) => (was && sameShown(was, next) ? was : next));
     };
     const hide = () => show(null);
-    const showFocused = () => {
-      byFocus = true;
-      show(focused?.element ?? null, focused?.title);
-    };
     const onPointerOver = (event: PointerEvent) => {
       const marked = markedAt(event.target);
       pointed = event.target instanceof Element ? event.target : null;
-      hovered = marked;
       clearTimeout(hideTimer);
-      if (marked) byFocus = false;
       if (marked || !current) show(marked);
-      else if (current !== focused?.element && !isOnTooltip(event.target)) {
-        hideTimer = setTimeout(showFocused, HIDE_DELAY_MS);
-      }
-    };
-    const onFocusIn = (event: FocusEvent) => {
-      focusTarget = event.target instanceof Element ? event.target : null;
-      focused = focusedMarkOf(focusTarget);
-      if (focused || !hovered) showFocused();
+      else if (!isOnTooltip(event.target)) hideTimer = setTimeout(hide, HIDE_DELAY_MS);
     };
     const onMarksChange = () => {
-      hovered = pointed?.isConnected ? markedAt(pointed) : null;
-      const was = focused?.element;
-      if (focusTarget) focused = focusTarget.isConnected ? focusedMarkOf(focusTarget) : null;
-      if (byFocus && focused) showFocused();
-      else if (hovered) show(hovered);
-      else if (current === null ? focusTarget !== null : current === was || !isMarked(current)) {
-        showFocused();
-      } else if (isOnTooltip(pointed)) show(current);
+      const hovered = pointed?.isConnected ? markedAt(pointed) : null;
+      if (hovered) show(hovered);
+      else if (isOnTooltip(pointed) && isMarked(current)) show(current);
+      else if (current) hide();
     };
     const observer = new MutationObserver(onMarksChange);
     observer.observe(section, {
       subtree: true,
       childList: true,
       characterData: true,
-      attributeFilter: ['data-mark-title', 'aria-describedby'],
+      attributeFilter: ['data-mark-title'],
     });
-    const onFocusOut = (event: FocusEvent) => {
-      if (event.relatedTarget instanceof Node && section.contains(event.relatedTarget)) return;
-      focusTarget = null;
-      focused = null;
-      hide();
-    };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
-      focusTarget = null;
-      focused = null;
       dismissed = true;
       setShown(null);
     };
-    section.addEventListener('pointerover', onPointerOver);
     const onPointerLeave = () => {
       pointed = null;
-      hovered = null;
-      showFocused();
+      hide();
     };
+    section.addEventListener('pointerover', onPointerOver);
     section.addEventListener('pointerleave', onPointerLeave);
-    section.addEventListener('focusin', onFocusIn);
-    section.addEventListener('focusout', onFocusOut);
     section.addEventListener('keydown', onKeyDown);
     const onScroll = () => {
       pointed = null;
-      hovered = null;
-      focusTarget = null;
-      focused = null;
       hide();
     };
     const scrollRoots = scrollRootsOf(section);
@@ -181,8 +122,6 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
       observer.disconnect();
       section.removeEventListener('pointerover', onPointerOver);
       section.removeEventListener('pointerleave', onPointerLeave);
-      section.removeEventListener('focusin', onFocusIn);
-      section.removeEventListener('focusout', onFocusOut);
       section.removeEventListener('keydown', onKeyDown);
       for (const root of scrollRoots) root.removeEventListener('scroll', onScroll, true);
     };
