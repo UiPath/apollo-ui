@@ -286,7 +286,10 @@ export const DELETE_RULE_CLASS = cn(
   REVEALED_ACTION_CLASS
 );
 
-export const CLAUSE_CLASS = 'group/clause relative pe-7';
+export const GLYPH_COLUMN_END = '1.75rem';
+
+/** Its end padding must stay `GLYPH_COLUMN_END`, where every line's glyph ends. */
+export const CLAUSE_CLASS = 'group/clause relative pe-[1.75rem]';
 
 export const LINE_END_MARK_CLASS = 'absolute top-0 flex';
 

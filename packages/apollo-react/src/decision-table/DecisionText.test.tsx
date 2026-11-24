@@ -72,7 +72,7 @@ import type { CellCommitMove } from './gridTypes';
 import type { RowMark, TableMarks } from './marks';
 import { valueTokenOf } from './sentenceParts';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
-import { HEADING_ACTIONS_SPACE_CLASS } from './sentenceStyles';
+import { GLYPH_COLUMN_END, HEADING_ACTIONS_SPACE_CLASS } from './sentenceStyles';
 import type {
   SentenceCellId,
   SentencePart,
@@ -5577,6 +5577,32 @@ describe('DecisionText', () => {
       ).toHaveLength(2);
       expect(slotEnd('r1')).toBe('1.75rem');
       expect(slotEnd('r3')).toBe('1.75rem');
+    });
+
+    it('lines up a multi-input lead glyph with its condition-line glyphs', () => {
+      const [m1, , m3] = MULTI_SENTENCE_RULES;
+      if (!m1 || !m3) throw new Error('fixture');
+      render(
+        view({
+          rules: [{ ...m3, rowId: 'x', lines: m1.lines.slice(1, 2) }],
+          edit: editWith(),
+          selected: null,
+          onSelect: vi.fn(),
+          marks: rowMarks({
+            x: {
+              cells: {
+                score: { tone: 'warning', title: 'Low', glyph: true },
+                debt: { tone: 'error', title: 'High', glyph: true },
+              },
+            },
+          }),
+        })
+      );
+      const slot = card('x').querySelector<HTMLElement>('[data-line-end-mark]');
+      const line = card('x').querySelector<HTMLElement>('li[data-column-id="debt"]');
+      expect(slot?.style.insetInlineEnd).toBe(GLYPH_COLUMN_END);
+      expect(line?.querySelector('[data-glyph="error"]')).not.toBeNull();
+      expect(line?.className.split(' ')).toContain(`pe-[${GLYPH_COLUMN_END}]`);
     });
 
     describe('dragging a rule', () => {

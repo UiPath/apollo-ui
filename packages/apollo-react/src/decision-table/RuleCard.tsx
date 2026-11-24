@@ -23,6 +23,7 @@ import {
   CITED_LINE_CLASS,
   CITED_LINES_CLASS,
   CLAUSE_CLASS,
+  GLYPH_COLUMN_END,
   HEADING_ACTIONS_SPACE_CLASS,
   INLINE_LINE_CLASS,
   LINES_CLASS,
@@ -53,9 +54,6 @@ const CitedLine: React.FC<{ citations: React.ReactNode; children: React.ReactNod
   ) : (
     children
   );
-
-/** A clause's end padding that its single remove action sits in, as `CLAUSE_CLASS` sets it. */
-const CLAUSE_REMOVAL_END = '1.75rem';
 
 const GLYPH_SLOT = '1.375rem';
 
@@ -152,7 +150,7 @@ export const RuleCard = memo<RuleCardProps>(
     const title = ruleTitleOf(rule);
     const leadRemovals = card.removals.lead.length;
     const glyphs = [card.badges.heading, card.badges.lead].filter(Boolean).length;
-    const glyphsEnd = `calc(${CLAUSE_REMOVAL_END} + ${glyphs} * ${GLYPH_SLOT})`;
+    const glyphsEnd = `calc(${GLYPH_COLUMN_END} + ${glyphs} * ${GLYPH_SLOT})`;
     const removalsEnd = leadRemovals > 1 && glyphs > 0 ? glyphsEnd : undefined;
     const clauseEnd =
       leadRemovals > 1
@@ -238,7 +236,7 @@ export const RuleCard = memo<RuleCardProps>(
                   parts={rule.heading}
                   title={isLineMark(mark) ? undefined : card.title}
                   badge={card.badges.heading}
-                  badgeEnd={CLAUSE_REMOVAL_END}
+                  badgeEnd={GLYPH_COLUMN_END}
                   removals={NO_REMOVALS}
                   unworded={diff?.removedOutcomes}
                   className={INLINE_LINE_CLASS}
@@ -251,8 +249,8 @@ export const RuleCard = memo<RuleCardProps>(
                   badge={card.badges.lead}
                   badgeEnd={
                     card.badges.heading
-                      ? `calc(${CLAUSE_REMOVAL_END} + ${GLYPH_SLOT})`
-                      : CLAUSE_REMOVAL_END
+                      ? `calc(${GLYPH_COLUMN_END} + ${GLYPH_SLOT})`
+                      : GLYPH_COLUMN_END
                   }
                   removals={card.removals.lead}
                   removalsEnd={removalsEnd}
