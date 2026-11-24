@@ -413,6 +413,42 @@ describe('BaseNode', () => {
       });
     });
 
+    describe('display.iconSize compact', () => {
+      const nodeVar = (name: string) =>
+        screen.getByTestId('base-container').parentElement?.style.getPropertyValue(name);
+      const compact = (height: number, shape = 'rectangle') => {
+        mockManifest.current = {
+          ...DEFAULT_MANIFEST,
+          display: { ...DEFAULT_MANIFEST.display, shape, height, iconSize: 'compact' },
+        };
+      };
+
+      it('makes the tile about two-thirds of a 64px node and the icon 60% of the tile', () => {
+        compact(64);
+        render(<BaseNode {...defaultProps} />);
+        expect(nodeVar('--inner-w')).toBe('44px');
+        expect(nodeVar('--inner-h')).toBe('44px');
+        expect(nodeVar('--icon-size')).toBe('26px');
+        // Even padding around the tile: (64 - 44) / 2, less the 1px border.
+        expect(nodeVar('--node-gap')).toBe('9px');
+        // The default tile's corner ratio, 24/80.
+        expect(Number.parseFloat(nodeVar('--inner-radius') ?? '')).toBeCloseTo(44 * 0.3, 6);
+      });
+
+      it('scales on a 96px node', () => {
+        compact(96);
+        render(<BaseNode {...defaultProps} />);
+        expect(nodeVar('--inner-w')).toBe('64px');
+        expect(nodeVar('--icon-size')).toBe('38px');
+      });
+
+      it('keeps a pill tile round', () => {
+        compact(64, 'pill');
+        render(<BaseNode {...defaultProps} />);
+        expect(nodeVar('--inner-radius')).toBe('9999px');
+      });
+    });
+
     it('passes the computed height to handles, ignoring the measured height prop', () => {
       // 4 handles → computedHeight 160. A stale/small measured prop must be ignored so
       // handles are grid-aligned from the first render (no percentage→grid jump).

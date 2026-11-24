@@ -8,7 +8,7 @@ import type { FormSchema } from '@uipath/apollo-wind';
 import { z } from 'zod';
 import { toolbarConfigurationSchema } from '../toolbar';
 import { handleGroupManifestSchema } from './handle';
-import { nodeHeightSchema, nodeShapeSchema } from './shape';
+import { nodeHeightSchema, nodeIconSizeSchema, nodeShapeSchema } from './shape';
 
 /**
  * Debug configuration for a node
@@ -99,6 +99,13 @@ export const nodeDisplayManifestSchema = z.object({
    * make the node taller, and only wide shapes (rectangle, pill, clipped, document) use it.
    */
   height: nodeHeightSchema.optional(),
+
+  /**
+   * Icon tile size. `'default'` (the default) fills 80/96 of the node with an icon half the tile;
+   * `'compact'` makes the tile about two-thirds of the node and the icon 60% of the tile, which
+   * leaves more room around the tile on short nodes (44px tile, 26px icon on a 64px node).
+   */
+  iconSize: nodeIconSizeSchema.optional(),
 
   /** Container presentation. Only read when `shape` is `'container'`. */
   container: nodeContainerDisplayManifestSchema.optional(),

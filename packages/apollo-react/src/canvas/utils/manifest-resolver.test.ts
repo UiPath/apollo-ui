@@ -83,6 +83,12 @@ describe('resolveDisplay', () => {
     expect(result.height).toBe(64);
   });
 
+  it('lets an instance display.iconSize override the manifest, and keeps it when undefined', () => {
+    const manifest = { label: 'Node', icon: 'box', iconSize: 'compact' as const };
+    expect(resolveDisplay(manifest, { display: { iconSize: 'default' } }).iconSize).toBe('default');
+    expect(resolveDisplay(manifest, { display: { iconSize: undefined } }).iconSize).toBe('compact');
+  });
+
   it('uses manifest canvasLabel for canvas label when no instance override', () => {
     const result = resolveDisplay({
       label: 'Send Outlook Email',

@@ -340,6 +340,31 @@ function createSizeGrid(): Node<BaseNodeData>[] {
     hX += DEFAULT_RECTANGLE_NODE_WIDTH + 64;
   });
 
+  // The same heights with `display.iconSize: 'compact'`: a smaller tile, with the icon filling more of it.
+  let cX2 = 80;
+  NODE_HEIGHTS.forEach((height) => {
+    nodes.push({
+      ...createNode({
+        id: `hc-${height}`,
+        type: 'uipath.size-height',
+        position: { x: cX2, y: heightY + 176 },
+        data: {
+          nodeType: 'uipath.size-height',
+          version: '1.0.0',
+          display: {
+            label: `${DEFAULT_RECTANGLE_NODE_WIDTH}×${height}`,
+            subLabel: 'iconSize: compact',
+            shape: 'rectangle',
+            height,
+            iconSize: 'compact',
+          },
+        },
+      }),
+      width: DEFAULT_RECTANGLE_NODE_WIDTH,
+    });
+    cX2 += DEFAULT_RECTANGLE_NODE_WIDTH + 64;
+  });
+
   return nodes;
 }
 
@@ -1023,7 +1048,7 @@ function SizesStory() {
       </Panel>
       <StoryInfoPanel
         title="Sizes"
-        description="Node height is decided by the handle count, not the width prop: height is (maxSideHandles * 2 + 2) * 16, with a 96px minimum, or display.height in its place. Squares and rectangles vary by width at a computed height (96px with default handles). Circles grow 96 to 160px as handles increase (2 to 4 per side), staying round. The last row sets display.height (64 to 128px) on a node with one handle per side; the icon tile and icon scale with it."
+        description="Node height is decided by the handle count, not the width prop: height is (maxSideHandles * 2 + 2) * 16, with a 96px minimum, or display.height in its place. Squares and rectangles vary by width at a computed height (96px with default handles). Circles grow 96 to 160px as handles increase (2 to 4 per side), staying round. The last two rows set display.height (64 to 128px) on a node with one handle per side, with the default and the compact icon (display.iconSize); the icon tile and icon scale with it."
       />
     </BaseCanvas>
   );
