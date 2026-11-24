@@ -2,6 +2,7 @@ import { type DependencyList, useCallback, useEffect, useRef, useState } from 'r
 import { AUTOSCROLL_EDGE_PX, AUTOSCROLL_STEP_PX } from './constants';
 import { activeElementOf } from './gridEvents';
 import type { DragStartEvent } from './gridTypes';
+import { followPointerDrag, type PointerPoint } from './pointerDrag';
 
 /**
  * A live drag. Split by axis so a column drag cannot exist without its group: with the group
@@ -164,8 +165,6 @@ export const useDragReorder = (options: DragReorderOptions) => {
   // `dragState` only mirrors it for rendering. Reading React state from those listeners would
   // race the commit: a pointermove arriving before the pointerdown's state lands sees null.
   const dragRef = useRef<DragReorderState | null>(null);
-  const pointerRef = useRef<{ x: number; y: number } | null>(null);
-  const rafRef = useRef<number | null>(null);
   /** The live drag's teardown, so an unmount can detach its document listeners. */
   const cancelRef = useRef<(() => void) | null>(null);
 
@@ -300,48 +299,29 @@ export const useDragReorder = (options: DragReorderOptions) => {
     []
   );
 
-  const stopAutoscroll = useCallback(() => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-  }, []);
-
-  const autoscrollLoop = useCallback(() => {
-    rafRef.current = null;
-    const container = containerRef.current;
-    const pointer = pointerRef.current;
-    const state = dragRef.current;
-    if (!container || !pointer || !state) {
-      return;
-    }
-    const rect = container.getBoundingClientRect();
-    // Compared before and after the write, not inferred from the pointer being in the edge band:
-    // held against an already fully-scrolled edge, the band alone rescheduled the frame forever.
-    const before = state.axis === 'row' ? container.scrollTop : container.scrollLeft;
-    if (state.axis === 'row') {
-      if (pointer.y > rect.bottom - AUTOSCROLL_EDGE_PX) {
-        container.scrollTop += AUTOSCROLL_STEP_PX;
-      } else if (pointer.y < rect.top + headerHeight() + AUTOSCROLL_EDGE_PX) {
-        container.scrollTop -= AUTOSCROLL_STEP_PX;
+  const edgeScroll = useCallback(
+    (axis: DragReorderState['axis'], pointer: PointerPoint): boolean => {
+      const container = containerRef.current;
+      if (!container) {
+        return false;
       }
-    } else if (pointer.x > rect.right - AUTOSCROLL_EDGE_PX) {
-      container.scrollLeft += AUTOSCROLL_STEP_PX;
-    } else if (pointer.x < rect.left + columnLeading() + AUTOSCROLL_EDGE_PX) {
-      container.scrollLeft -= AUTOSCROLL_STEP_PX;
-    }
-    const moved = (state.axis === 'row' ? container.scrollTop : container.scrollLeft) !== before;
-    if (moved) {
-      reportPosition(state, pointer);
-      // Scrolling changed the content-space position under the still pointer — recompute.
-      const boundary = latestRef.current.boundaryFromPointer(state, pointer.x, pointer.y);
-      if (boundary !== state.boundary) {
-        dragRef.current = { ...state, boundary };
-        setDragState(dragRef.current);
+      const rect = container.getBoundingClientRect();
+      const before = axis === 'row' ? container.scrollTop : container.scrollLeft;
+      if (axis === 'row') {
+        if (pointer.y > rect.bottom - AUTOSCROLL_EDGE_PX) {
+          container.scrollTop += AUTOSCROLL_STEP_PX;
+        } else if (pointer.y < rect.top + headerHeight() + AUTOSCROLL_EDGE_PX) {
+          container.scrollTop -= AUTOSCROLL_STEP_PX;
+        }
+      } else if (pointer.x > rect.right - AUTOSCROLL_EDGE_PX) {
+        container.scrollLeft += AUTOSCROLL_STEP_PX;
+      } else if (pointer.x < rect.left + columnLeading() + AUTOSCROLL_EDGE_PX) {
+        container.scrollLeft -= AUTOSCROLL_STEP_PX;
       }
-      rafRef.current = requestAnimationFrame(autoscrollLoop);
-    }
-  }, [containerRef, headerHeight, columnLeading, reportPosition]);
+      return (axis === 'row' ? container.scrollTop : container.scrollLeft) !== before;
+    },
+    [containerRef, headerHeight, columnLeading]
+  );
 
   const beginDrag = useCallback(
     // Returns whether the drag began, as every start does; refusals belong to the callers above it.
@@ -382,19 +362,12 @@ export const useDragReorder = (options: DragReorderOptions) => {
         boundary: latestRef.current.boundaryFromPointer(initial, event.clientX, event.clientY),
       };
       setDragState(dragRef.current);
-      pointerRef.current = { x: event.clientX, y: event.clientY };
       reportPosition(initial, { x: event.clientX, y: event.clientY });
-
-      // The pointer the drag follows: the one that started it, or the first to move.
-      let owner = event.pointerId;
-      const isOwner = (pointerEvent: PointerEvent) => {
-        if (pointerEvent.pointerId === undefined) {
-          return true;
+      const retarget = (x: number, y: number) => {
+        const state = dragRef.current;
+        if (!state) {
+          return;
         }
-        owner ??= pointerEvent.pointerId;
-        return pointerEvent.pointerId === owner;
-      };
-      const retarget = (state: DragReorderState, x: number, y: number) => {
         reportPosition(state, { x, y });
         const boundary = latestRef.current.boundaryFromPointer(state, x, y);
         if (boundary !== state.boundary) {
@@ -402,116 +375,40 @@ export const useDragReorder = (options: DragReorderOptions) => {
           setDragState(dragRef.current);
         }
       };
-
-      const onPointerMove = (move: PointerEvent) => {
-        if (!isOwner(move)) {
-          return;
-        }
-        // A pointerup missed while the cursor was outside the window would otherwise leave the
-        // drag armed, and the user's next unrelated click would commit a move they never asked
-        // for. The first buttonless move ends it, exactly as the resize hook guards itself.
-        if ((move.buttons & 1) === 0) {
-          cleanup();
-          return;
-        }
-        pointerRef.current = { x: move.clientX, y: move.clientY };
-        const state = dragRef.current;
-        if (!state) {
-          return;
-        }
-        retarget(state, move.clientX, move.clientY);
-        if (rafRef.current === null) {
-          rafRef.current = requestAnimationFrame(autoscrollLoop);
-        }
-      };
-      // A wheel or trackpad scroll moves the content under a still pointer, as autoscroll does.
-      const onScroll = () => {
-        const state = dragRef.current;
-        const pointer = pointerRef.current;
-        if (state && pointer) {
-          retarget(state, pointer.x, pointer.y);
-        }
-      };
-      const onPointerCancel = (cancel: PointerEvent) => {
-        if (isOwner(cancel)) {
-          cleanup();
-        }
-      };
-      // The window losing focus can swallow the pointerup; the drag must not wait for it.
-      const onVisibilityChange = () => {
-        if (document.hidden) {
-          cleanup();
-        }
-      };
-      const cleanup = () => {
-        document.removeEventListener('pointermove', onPointerMove);
-        document.removeEventListener('pointerup', onPointerUp);
-        document.removeEventListener('pointercancel', onPointerCancel);
-        document.removeEventListener('keydown', onKeyDown, true);
-        document.removeEventListener('visibilitychange', onVisibilityChange);
-        window.removeEventListener('blur', cleanup);
-        container?.removeEventListener('scroll', onScroll);
-        stopAutoscroll();
-        const ended = dragRef.current;
-        if (ended) {
-          latestRef.current.onDragMove?.(ended, null);
-        }
-        pointerRef.current = null;
-        dragRef.current = null;
-        // Registered so an unmount mid-drag detaches the document listeners too — cleanup only
-        // runs from pointerup/cancel/Escape otherwise, none of which an unmount delivers.
-        cancelRef.current = null;
-        setDragState(null);
-      };
-      cancelRef.current = cleanup;
-      const onPointerUp = (up: PointerEvent) => {
-        if (!isOwner(up)) {
-          return;
-        }
-        const state = dragRef.current;
-        try {
-          if (state) {
-            const to = dropIndex(state.from, state.boundary);
-            if (to !== state.from) {
-              if (state.axis === 'row') {
-                latestRef.current.onDropRow(state.from, to);
-              } else {
-                latestRef.current.onDropColumn(state.groupIndex, state.from, to);
-              }
-            }
+      cancelRef.current = followPointerDrag({
+        container,
+        pointerId: event.pointerId,
+        pointer: { x: event.clientX, y: event.clientY },
+        edgeScroll: (pointer) => edgeScroll(initial.axis, pointer),
+        onPointer: ({ x, y }) => retarget(x, y),
+        onDrop: () => {
+          const state = dragRef.current;
+          if (!state) {
+            return;
           }
-        } finally {
-          // A drop handler that throws would otherwise leave the drag armed with its document
-          // listeners attached, and the next unrelated click would commit a move.
-          cleanup();
-        }
-      };
-      // No key reaches the grid while a unit is carried: typing would open an editor, Delete clear
-      // the selection, under a drag about to move it. Nor does a key's browser action: Ctrl/Cmd+X
-      // and V fire cut and paste, which bypass the grid's key handling. Escape cancels.
-      const onKeyDown = (key: KeyboardEvent) => {
-        key.stopPropagation();
-        key.preventDefault();
-        if (key.key === 'Escape') {
-          cleanup();
-        }
-      };
-      document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp);
-      // Touch/pen gestures the browser reclaims (scroll takeover, palm rejection) end the drag
-      // without a pointerup; without this the drag would stay armed with no way to finish it.
-      document.addEventListener('pointercancel', onPointerCancel);
-      document.addEventListener('keydown', onKeyDown, true);
-      document.addEventListener('visibilitychange', onVisibilityChange);
-      window.addEventListener('blur', cleanup);
-      container?.addEventListener('scroll', onScroll, { passive: true });
-      // The move that started the drag may already sit at an edge; the autoscroll must not wait for another.
-      if (rafRef.current === null) {
-        rafRef.current = requestAnimationFrame(autoscrollLoop);
-      }
+          const to = dropIndex(state.from, state.boundary);
+          if (to === state.from) {
+            return;
+          }
+          if (state.axis === 'row') {
+            latestRef.current.onDropRow(state.from, to);
+          } else {
+            latestRef.current.onDropColumn(state.groupIndex, state.from, to);
+          }
+        },
+        onEnd: () => {
+          const ended = dragRef.current;
+          if (ended) {
+            latestRef.current.onDragMove?.(ended, null);
+          }
+          dragRef.current = null;
+          cancelRef.current = null;
+          setDragState(null);
+        },
+      });
       return true;
     },
-    [autoscrollLoop, stopAutoscroll, containerRef, headerHeight, rowHeightPx, reportPosition]
+    [edgeScroll, containerRef, headerHeight, rowHeightPx, reportPosition]
   );
 
   // A position the table does not have would drop with indices the consumer cannot apply.
@@ -549,13 +446,7 @@ export const useDragReorder = (options: DragReorderOptions) => {
 
   // A drag left dangling by an unmount must not keep its document listeners (or the rAF loop)
   // alive — they hold this component's closures for the life of the page.
-  useEffect(
-    () => () => {
-      cancelRef.current?.();
-      stopAutoscroll();
-    },
-    [stopAutoscroll]
-  );
+  useEffect(() => () => cancelRef.current?.(), []);
 
   return { dragState, startRowDrag, startColumnDrag };
 };
