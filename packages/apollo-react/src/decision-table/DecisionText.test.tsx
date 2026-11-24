@@ -4714,7 +4714,6 @@ describe('DecisionText', () => {
       label: 'age',
       expression: 'applicant.age',
       type: 'text',
-      allowedValues: '',
     };
     const FIELDS: Record<string, ColumnFieldData<FixtureType>> = {
       age: AGE_FIELD,
@@ -4752,7 +4751,7 @@ describe('DecisionText', () => {
       expect(within(screen.getByTestId('nl-bands')).queryAllByRole('button')).toEqual([]);
     });
 
-    it("opens an input's popover from its pill, titled by its kind and name, over its label, expression, type and allowed values", async () => {
+    it("opens an input's popover from its pill, titled by its kind and name, over its label, expression and type, with no allowed values", async () => {
       const { container } = renderEditing({ column: columnEdit() });
       expect(pill('age')).toHaveAttribute('aria-expanded', 'false');
       fireEvent.click(pill('age'));
@@ -4764,11 +4763,7 @@ describe('DecisionText', () => {
       expect(field('Input expression')).toHaveValue('applicant.age');
       expect(field('Input expression')).toBeRequired();
       expect(typeSelect()).toHaveTextContent('Text');
-      expect(field('Allowed values')).toHaveValue('');
-      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. "web", "app"');
-      expect(field('Allowed values')).toHaveAccessibleDescription(
-        'Separate values with commas, and write each one as the example shows.'
-      );
+      expect(inPopover().queryByLabelText('Allowed values')).toBeNull();
       expect(
         inPopover()
           .getAllByRole('button')
@@ -4848,18 +4843,18 @@ describe('DecisionText', () => {
 
     it('applies only the changed fields from Apply, with the picked type, and returns focus to the pill', () => {
       const { onCommit } = renderColumns();
-      fireEvent.click(pill('age'));
-      fireEvent.change(field('Label'), { target: { value: '  Age  ' } });
+      fireEvent.click(pill('risk'));
+      fireEvent.change(field('Label'), { target: { value: '  Risk  ' } });
       fireEvent.click(typeSelect());
       fireEvent.click(screen.getByRole('option', { name: 'Number' }));
       expect(typeSelect()).toHaveTextContent('Number');
       expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. 10, 20');
       fireEvent.click(action('Apply'));
       expect(vi.mocked(onCommit).mock.calls).toEqual([
-        ['age', { kind: 'input', label: 'Age', type: 'number' }],
+        ['risk', { kind: 'output', label: 'Risk', type: 'number' }],
       ]);
       expect(screen.queryByTestId('nl-column-editor')).toBeNull();
-      expect(document.activeElement).toBe(pill('age'));
+      expect(document.activeElement).toBe(pill('risk'));
     });
 
     it('applies on Enter in a field, never mid-composition', () => {
@@ -4979,10 +4974,19 @@ describe('DecisionText', () => {
       expect(document.activeElement).not.toBe(pill('risk'));
     });
 
-    it("lets a column of a type the host's types lack pick one of them, with its allowed values", () => {
+    it("offers an output's allowed values, its placeholder its type's example", () => {
+      renderColumns();
+      fireEvent.click(pill('risk'));
+      expect(field('Allowed values')).toHaveValue('"high", "low"');
+      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. "web", "app"');
+      expect(field('Allowed values')).toHaveAccessibleDescription(
+        'Separate values with commas, and write each one as the example shows.'
+      );
+    });
+
+    it("lets a column of a type the host's types lack pick one of them", () => {
       const { onCommit } = renderColumns({ field: () => ({ ...AGE_FIELD, type: 'date' }) });
       fireEvent.click(pill('age'));
-      expect(field('Allowed values')).toHaveValue('');
       fireEvent.click(typeSelect());
       expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
         'Text',
