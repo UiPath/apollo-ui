@@ -29,3 +29,22 @@ describe('PolicyPicker trigger', () => {
     expect(screen.getByTestId('t-policy').textContent).toBe(text);
   });
 });
+
+describe('PolicyPicker trigger chip', () => {
+  it('is sized and focused as the column chips', () => {
+    render(
+      <PolicyPicker
+        groups={groupsWith('F')}
+        value="x"
+        onChange={() => {}}
+        label="Hit policy"
+        dataTestId="t"
+      />
+    );
+    const trigger = screen.getByTestId('t-policy');
+    const tokens = trigger.className.split(' ');
+    for (const token of ['h-6', 'text-xs', 'rounded-md', 'px-2', 'focus-visible:ring-1']) {
+      expect(tokens).toContain(token);
+    }
+  });
+});

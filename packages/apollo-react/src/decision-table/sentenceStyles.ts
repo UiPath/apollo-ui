@@ -294,8 +294,8 @@ export const ADD_RULE_LINK_CLASS = 'h-auto w-fit gap-1 rounded-md px-2 py-1.5 [&
 export const ADD_RULE_FOOTER_CLASS = cn('pb-4', GUTTER_CLASS);
 
 export const POLICY_TRIGGER_CLASS = cn(
-  HEADER_LABEL_CLASS,
-  '-my-0.5 -ms-1 gap-1 rounded bg-background-hover px-1.5 text-foreground-de-emp future:text-foreground-de-emp'
+  BAND_COLUMN_BUTTON_CLASS,
+  '-my-0.5 -ms-1 h-6 bg-background-hover text-foreground-de-emp future:text-foreground-de-emp [&_svg]:size-3.5'
 );
 
 export const POLICY_CODE_CLASS = 'font-mono text-foreground';
