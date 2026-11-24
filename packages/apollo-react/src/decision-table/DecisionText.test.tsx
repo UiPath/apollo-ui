@@ -1011,6 +1011,15 @@ describe('DecisionText', () => {
   });
 
   describe('mark tooltip', () => {
+    it('anchors a rule message to its glyph, not to the whole heading line', () => {
+      renderView({
+        marks: rowMarks({ m5: { tone: 'warning', title: 'Unreachable', glyph: true } }),
+      });
+      const carriers = card('m5').querySelectorAll('[data-mark-title="Unreachable"]');
+      expect(carriers).toHaveLength(1);
+      expect(carriers[0]?.querySelector(':scope > [data-glyph="warning"]')).not.toBeNull();
+    });
+
     const tooltip = () => screen.queryByTestId('nl-mark-tooltip');
     const scoreMarks = rowMarks({
       m3: { cells: { score: { tone: 'warning', title: 'Overlaps row 1', glyph: true } } },
