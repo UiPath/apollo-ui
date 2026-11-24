@@ -410,6 +410,26 @@ describe('DecisionText', () => {
         expect(end?.lastElementChild).toHaveAttribute('data-rule-action', 'clear');
       });
 
+      it("keeps a floating card's actions one slot in from the edge, its first line's glyph column after them", () => {
+        render(
+          view({
+            selected: null,
+            onSelect: vi.fn(),
+            edit: editWith(),
+            marks: rowMarks({ m3: { tone: 'warning', title: 'Overlaps', glyph: true } }),
+          })
+        );
+        for (const rowId of ['m1', 'm3']) {
+          const end = card(rowId).querySelector('[data-sentence] [data-line-end]');
+          const reserve = end?.querySelector('[data-actions-reserve]');
+          expect(reserve?.nextElementSibling).toBe(end?.lastElementChild);
+          expect(end?.lastElementChild?.className).toContain('size-[var(--sentence-line)]');
+        }
+        expect(card('m1').querySelector('[data-rule-actions]')?.className).toContain(
+          'end-[calc(0.75rem+var(--sentence-line))]'
+        );
+      });
+
       it("puts a title row's actions at the edge", () => {
         const named = MULTI_SENTENCE_RULES.map((rule, index) =>
           index === 0 ? { ...rule, name: 'Prime' } : rule
