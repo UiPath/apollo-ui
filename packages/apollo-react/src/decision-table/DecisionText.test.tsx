@@ -4841,6 +4841,9 @@ describe('DecisionText', () => {
       expect(field('Allowed values')).toHaveAccessibleDescription(
         'Separate values with commas, and write each one as the example shows.'
       );
+      fireEvent.click(typeSelect());
+      fireEvent.click(screen.getByRole('option', { name: 'Number' }));
+      expect(field('Allowed values')).toHaveAttribute('placeholder', 'e.g. 10, 20');
     });
 
     it('opens from Enter or Space on the pill, and closes from it again', async () => {
