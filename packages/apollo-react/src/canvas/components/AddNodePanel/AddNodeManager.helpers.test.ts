@@ -2,10 +2,12 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
 import { PREVIEW_NODE_ID } from '../../constants';
 import type { NodeLayout } from '../../hooks/useCanvasNodeLayout';
+import type { PreviewNodeConnectionInfo } from '../../hooks/usePreviewNode';
+import type { NodeManifest } from '../../schema';
 import type { NodeShape } from '../../schema/node-definition';
-import { getExpandedSize } from '../../utils/node-size';
 import { getContainerFitGeometry, getNodeDimensions } from '../../utils/container';
-import { placeAddedNode } from './AddNodeManager.helpers';
+import { getExpandedSize } from '../../utils/node-size';
+import { alignNodeToPreview, placeAddedNode } from './AddNodeManager.helpers';
 
 function buildLayout(manifestsByType: Record<string, { shape?: NodeShape }>): NodeLayout {
   const getShape = (nodeType: string | undefined): NodeShape | undefined =>
@@ -642,5 +644,60 @@ describe('placeAddedNode', () => {
         y: 0,
       });
     });
+  });
+});
+
+describe('alignNodeToPreview', () => {
+  // A 96px square preview at the origin, its input on the left: its centre line is y = 48.
+  const preview: Node = {
+    id: PREVIEW_NODE_ID,
+    type: 'preview',
+    position: { x: 0, y: 0 },
+    width: 96,
+    height: 96,
+    data: { inputHandlePosition: 'left' },
+  };
+  const incoming = [{ addNewNodeAsSource: false } as PreviewNodeConnectionInfo];
+  const manifestOf = (display: Partial<NodeManifest['display']>) =>
+    ({
+      display: { label: 'Node', ...display },
+      handleConfiguration: [],
+    }) as unknown as NodeManifest;
+  const newNode: Node = { id: 'new', type: 'dmn', position: { x: 0, y: 0 }, data: {} };
+
+  it("centres a node on the preview's line using its display height", () => {
+    const aligned = alignNodeToPreview(
+      newNode,
+      preview,
+      incoming,
+      manifestOf({ shape: 'rectangle', height: 64 })
+    );
+    expect(aligned.position).toEqual({ x: 0, y: 48 - 32 });
+  });
+
+  it('places a node by the height its side handles force, not just display.height', () => {
+    const input = (id: string) => ({ id, type: 'target' as const, handleType: 'input' as const });
+    const manifest = {
+      display: { label: 'Node', shape: 'rectangle', height: 64 },
+      handleConfiguration: [{ position: 'left', handles: [input('a'), input('b')] }],
+    } as NodeManifest;
+
+    // Two handles per side render it 96 tall, so it centres on y = 48 at y = 0.
+    expect(alignNodeToPreview(newNode, preview, incoming, manifest).position).toEqual({
+      x: 0,
+      y: 0,
+    });
+  });
+
+  it("puts the node's bottom on the preview's bottom when it attaches there", () => {
+    // A preview whose handle is on its bottom edge: the node ends where the preview ends.
+    const bottomPreview: Node = { ...preview, data: { inputHandlePosition: 'bottom' } };
+    const aligned = alignNodeToPreview(
+      newNode,
+      bottomPreview,
+      incoming,
+      manifestOf({ shape: 'rectangle', height: 64 })
+    );
+    expect(aligned.position).toEqual({ x: 48 - 144, y: 96 - 64 });
   });
 });

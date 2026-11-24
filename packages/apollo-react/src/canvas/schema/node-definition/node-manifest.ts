@@ -8,7 +8,7 @@ import type { FormSchema } from '@uipath/apollo-wind';
 import { z } from 'zod';
 import { toolbarConfigurationSchema } from '../toolbar';
 import { handleGroupManifestSchema } from './handle';
-import { nodeShapeSchema } from './shape';
+import { nodeHeightSchema, nodeShapeSchema } from './shape';
 
 /**
  * Debug configuration for a node
@@ -92,6 +92,13 @@ export const nodeDisplayManifestSchema = z.object({
    * flush with the canvas (e.g. trigger entry points).
    */
   shadow: z.boolean().optional(),
+
+  /**
+   * Node height in px, replacing the 96px default: 64 to 160 in 32px steps, which keep a single
+   * side handle on the centre line. A footer's fixed height replaces it, side handles can still
+   * make the node taller, and only wide shapes (rectangle, pill, clipped, document) use it.
+   */
+  height: nodeHeightSchema.optional(),
 
   /** Container presentation. Only read when `shape` is `'container'`. */
   container: nodeContainerDisplayManifestSchema.optional(),

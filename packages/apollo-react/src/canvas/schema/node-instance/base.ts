@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { nodeShapeSchema } from '../node-definition/shape';
+import { nodeHeightSchema, nodeShapeSchema } from '../node-definition/shape';
 
 /**
  * Unique identifier for nodes, types, and workflows
@@ -50,6 +50,8 @@ export const displayConfigSchema = z
     footerComponent: z.any().optional(), // React.ReactNode
     footerVariant: z.string().optional(), // FooterVariant enum
     shadow: z.boolean().optional(),
+    /** Per-node override of the manifest's `display.height`. */
+    height: nodeHeightSchema.optional(),
   })
   .catchall(z.unknown()); // Allow additional properties
 

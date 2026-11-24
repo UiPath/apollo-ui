@@ -360,6 +360,59 @@ describe('BaseNode', () => {
       expect(floorVar()).toBe('160px');
     });
 
+    describe('display.height', () => {
+      const withHeight = (height: number, shape = 'rectangle') => {
+        mockManifest.current = {
+          ...DEFAULT_MANIFEST,
+          display: { ...DEFAULT_MANIFEST.display, shape, height },
+        };
+      };
+
+      it('uses the display height when the handles fit within it', () => {
+        withHeight(64);
+        mockHandleConfigs.current = makeHandles(Position.Left, 1);
+        render(<BaseNode {...defaultProps} />);
+        expect(floorVar()).toBe('64px');
+        expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 64 });
+      });
+
+      it('scales the icon tile and icon with the height', () => {
+        withHeight(64);
+        render(<BaseNode {...defaultProps} />);
+        const vars = screen.getByTestId('base-container').parentElement?.style;
+        // Tile: the height less a 16/96 gap (80/96 of it). Icon: 40/96 of the height.
+        expect(vars?.getPropertyValue('--inner-w')).toBe(`${64 - 64 * (16 / 96)}px`);
+        expect(vars?.getPropertyValue('--icon-size')).toBe(`${(64 * 40) / 96}px`);
+      });
+
+      it('still grows to fit the side handles', () => {
+        // 2 handles → (2*2+2)*16 = 96 > 64
+        withHeight(64);
+        mockHandleConfigs.current = makeHandles(Position.Left, 2);
+        render(<BaseNode {...defaultProps} />);
+        expect(floorVar()).toBe('96px');
+      });
+
+      it('lets a footer keep its own fixed height', () => {
+        withHeight(64);
+        mockOverrideConfig.current = { footerComponent: 'footer', footerVariant: 'single' };
+        render(<BaseNode {...defaultProps} />);
+        expect(floorVar()).toBe('160px');
+      });
+
+      it('can be taller than the default', () => {
+        withHeight(128);
+        render(<BaseNode {...defaultProps} />);
+        expect(floorVar()).toBe('128px');
+      });
+
+      it.each(['square', 'circle'])('is ignored by a %s, which keeps the default', (shape) => {
+        withHeight(64, shape);
+        render(<BaseNode {...defaultProps} />);
+        expect(floorVar()).toBe('96px');
+      });
+    });
+
     it('passes the computed height to handles, ignoring the measured height prop', () => {
       // 4 handles → computedHeight 160. A stale/small measured prop must be ignored so
       // handles are grid-aligned from the first render (no percentage→grid jump).

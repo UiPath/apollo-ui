@@ -17,6 +17,9 @@ export const nodeShapeSchema = z.enum([
 
 export type NodeShape = z.infer<typeof nodeShapeSchema>;
 
+/** Node height in px: 64 to 160 in 32px steps. */
+export const nodeHeightSchema = z.number().min(64).max(160).multipleOf(32);
+
 /** Shapes that lay out as a wide card with the icon beside the label. */
 export const WIDE_NODE_SHAPES = ['rectangle', 'pill', 'clipped', 'document'] as const;
 

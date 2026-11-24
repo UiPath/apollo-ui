@@ -29,6 +29,7 @@ import { resolveAdornments } from '../../utils/adornment-resolver';
 import { CanvasIcon, getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { resolveNodeHandleAffordances, selectIsConnecting } from '../../utils/NodeUtils';
+import { getSideHandleFloor } from '../../utils/node-size';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
@@ -68,10 +69,12 @@ const getContainerWidth = (shape: NodeShape | undefined, width: number | undefin
   return defaultWidth;
 };
 
-// Intrinsic height: the fixed footer height when a footer is present, else the default.
+// Intrinsic height: the fixed footer height when a footer is present, else the display's own
+// height (`display.height`) or the default.
 const getIntrinsicHeight = (
   hasFooter: boolean,
-  footerVariant: FooterVariant | undefined
+  footerVariant: FooterVariant | undefined,
+  displayHeight: number | undefined
 ): number => {
   if (hasFooter) {
     switch (footerVariant) {
@@ -83,7 +86,7 @@ const getIntrinsicHeight = (
         return NODE_HEIGHT_FOOTER_DOUBLE;
     }
   }
-  return NODE_HEIGHT_DEFAULT;
+  return displayHeight ?? NODE_HEIGHT_DEFAULT;
 };
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
@@ -123,7 +126,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  // Height is driven by computedHeight (below), a pure function of handle count/footer.
+  // Height is driven by computedHeight (below), a pure function of handle count, footer and
+  // `display.height`.
   // It never reads the measured height, so writing it back can't loop.
 
   // Get execution status from external source
@@ -283,31 +287,22 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     };
   }, [adornmentsProp, statusContext]);
 
-  // Computed node height: max of the handle-count floor and the intrinsic default/footer
-  // height. Pure (never reads the measured `height`); written to node.height below as
-  // the authoritative size, so node content is expected to fit within it.
-  const computedHeight = useMemo(() => {
-    const leftHandles = handleConfigurations
-      .filter((config) => config.position === Position.Left && config.visible !== false)
-      .reduce(
-        (count, config) => count + config.handles.filter((h) => h.visible !== false).length,
-        0
-      );
-
-    const rightHandles = handleConfigurations
-      .filter((config) => config.position === Position.Right && config.visible !== false)
-      .reduce(
-        (count, config) => count + config.handles.filter((h) => h.visible !== false).length,
-        0
-      );
-
-    const leftRightHandles = Math.max(leftHandles, rightHandles);
-
-    // Each handle gets a 2-grid-space lane (32px), plus 2-grid-space padding at top + bottom of node.
-    const handleFloor = (leftRightHandles * 2 + 2) * GRID_SPACING;
-
-    return Math.max(getIntrinsicHeight(!!footerComponent, footerVariant), handleFloor);
-  }, [handleConfigurations, footerComponent, footerVariant]);
+  // Computed node height: max of the side-handle floor and the intrinsic height (a footer's,
+  // else a wide shape's `display.height`, else the default). Pure (never reads the measured
+  // `height`); written to node.height below as the authoritative size, so node content is
+  // expected to fit within it.
+  const computedHeight = useMemo(
+    () =>
+      Math.max(
+        getIntrinsicHeight(
+          !!footerComponent,
+          footerVariant,
+          isWideNodeShape(display.shape) ? display.height : undefined
+        ),
+        getSideHandleFloor(handleConfigurations)
+      ),
+    [handleConfigurations, footerComponent, footerVariant, display.shape, display.height]
+  );
 
   // Write computedHeight to node.height and recalculate handle positions. Compare
   // against node.height (not the measured `height` prop) so a lagging measurement

@@ -43,6 +43,7 @@ export {
   isOutlineDrawnShape,
   isRoundEndedShape,
   isWideNodeShape,
+  nodeHeightSchema,
   nodeShapeSchema,
   OUTLINE_DRAWN_NODE_SHAPES,
   ROUND_ENDED_NODE_SHAPES,
