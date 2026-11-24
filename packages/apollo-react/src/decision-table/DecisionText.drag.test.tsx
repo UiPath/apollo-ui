@@ -27,32 +27,33 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const dragView = (onMoveRule: ((from: number, to: number) => void) | undefined) => (
+  <DecisionText
+    name="Discount"
+    {...textPropsOf({
+      rules: GRID_SENTENCE_RULES,
+      ...GRID_SENTENCE_COLUMNS,
+      hitPolicy: GRID_SENTENCE_POLICY,
+      ariaLabel: 'Rules',
+      dataTestId: 'nl',
+      selected: null,
+      onSelect: vi.fn(),
+      edit: {
+        editing: null,
+        onStartEdit: vi.fn(),
+        onCommit: vi.fn(),
+        onCancel: vi.fn(),
+        onClearCell: vi.fn(),
+        onDeleteRule: vi.fn(),
+        valueField: outcomeField,
+        wordRefusal,
+        onMoveRule,
+      },
+    })}
+  />
+);
 const renderDrag = (onMoveRule: ((from: number, to: number) => void) | undefined) =>
-  render(
-    <DecisionText
-      name="Discount"
-      {...textPropsOf({
-        rules: GRID_SENTENCE_RULES,
-        ...GRID_SENTENCE_COLUMNS,
-        hitPolicy: GRID_SENTENCE_POLICY,
-        ariaLabel: 'Rules',
-        dataTestId: 'nl',
-        selected: null,
-        onSelect: vi.fn(),
-        edit: {
-          editing: null,
-          onStartEdit: vi.fn(),
-          onCommit: vi.fn(),
-          onCancel: vi.fn(),
-          onClearCell: vi.fn(),
-          onDeleteRule: vi.fn(),
-          valueField: outcomeField,
-          wordRefusal,
-          onMoveRule,
-        },
-      })}
-    />
-  );
+  render(dragView(onMoveRule));
 
 const handle = (rowId: string) =>
   screen.getByTestId(`nl-row-${rowId}`).querySelector<HTMLElement>('[data-rule-action="drag"]');
@@ -128,6 +129,38 @@ describe('DecisionText rule drag', () => {
     expect(dropEdges()).toEqual([]);
     pointer('pointerup', 280);
     expect(onMoveRule).not.toHaveBeenCalled();
+  });
+
+  it("drops with the host's move as it is at the drop, and none once the host stops moving rules", () => {
+    const first = vi.fn();
+    const later = vi.fn();
+    const { rerender } = renderDrag(first);
+    grab('r1', 50);
+    pointer('pointermove', 280);
+    rerender(dragView(later));
+    pointer('pointerup', 280);
+    expect(first).not.toHaveBeenCalled();
+    expect(later.mock.calls).toEqual([[0, 2]]);
+    grab('r1', 50);
+    pointer('pointermove', 280);
+    rerender(dragView(undefined));
+    pointer('pointerup', 280);
+    expect(later).toHaveBeenCalledTimes(1);
+    expect(dropEdges()).toEqual([]);
+  });
+
+  it('drops where the pointer is released, not where it last moved', () => {
+    const onMoveRule = vi.fn();
+    renderDrag(onMoveRule);
+    grab('r1', 50);
+    pointer('pointermove', 120);
+    pointer('pointerup', 280);
+    expect(onMoveRule.mock.calls).toEqual([[0, 2]]);
+  });
+
+  it("sizes the dragged copy with the list's line variables", () => {
+    renderDrag(vi.fn());
+    expect(preview()?.style.getPropertyValue('--sentence-line')).toBe('24px');
   });
 
   it('shows no line and moves nothing over its own card', () => {
