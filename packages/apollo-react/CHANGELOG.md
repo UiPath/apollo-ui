@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.44.0...@uipath/apollo-react@7.44.1) (2026-11-24)
+
+### Bug Fixes
+
+* **apollo-wind:** make each JsonTree row one screen reader stop [MST-14373] ([92bd3ea](https://github.com/UiPath/apollo-ui/commit/92bd3eaf248e2a9958f9f4b48112d8fd4e535bb0))
+
 ## [@uipath/apollo-react-v7.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.43.0...@uipath/apollo-react@7.44.0) (2026-11-24)
 
 ### Features
