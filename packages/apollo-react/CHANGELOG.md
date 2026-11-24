@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.44.2...@uipath/apollo-react@7.45.0) (2026-11-24)
+
+### Features
+
+* **apollo-react:** add a DMN flow manifest with token tile colours and icons [MST-18545] ([5212f3d](https://github.com/UiPath/apollo-ui/commit/5212f3d3978458961c1a43513ba3fcc9c2f511f4))
+
+### Bug Fixes
+
+* **apollo-react:** keep corner badges inside a pill node's round ends ([f5f6382](https://github.com/UiPath/apollo-ui/commit/f5f6382d60e88a4ed81bc5a08e4e8631733cb35b))
+
 ## [@uipath/apollo-react-v7.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.44.1...@uipath/apollo-react@7.44.2) (2026-11-24)
 
 ### Bug Fixes
