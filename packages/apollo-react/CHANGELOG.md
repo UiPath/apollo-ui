@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.44.1...@uipath/apollo-react@7.44.2) (2026-11-24)
+
+### Bug Fixes
+
+* **apollo-react:** draw the canvas dot grid on the snap grid ([5429e93](https://github.com/UiPath/apollo-ui/commit/5429e9325216fcde66d728ed387ab375b28332bf))
+
 ## [@uipath/apollo-react-v7.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.44.0...@uipath/apollo-react@7.44.1) (2026-11-24)
 
 ### Bug Fixes
