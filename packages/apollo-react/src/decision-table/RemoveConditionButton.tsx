@@ -1,4 +1,11 @@
-import { Button } from '@uipath/apollo-wind';
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@uipath/apollo-wind';
 import { X } from 'lucide-react';
 import type React from 'react';
 import { REMOVE_CONDITION_CLASS, REMOVE_CONDITIONS_CLASS } from './sentenceStyles';
@@ -25,16 +32,25 @@ export const RemoveConditionButton: React.FC<RemoveConditionButtonProps> = ({
   columnId,
   label,
 }) => (
-  <Button
-    variant="ghost"
-    size="4xs"
-    icon
-    tabIndex={-1}
-    aria-label={label}
-    className={REMOVE_CONDITION_CLASS}
-    data-rule-action="clear"
-    data-column-id={columnId}
-  >
-    <X aria-hidden />
-  </Button>
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="4xs"
+          icon
+          tabIndex={-1}
+          aria-label={label}
+          className={REMOVE_CONDITION_CLASS}
+          data-rule-action="clear"
+          data-column-id={columnId}
+        >
+          <X aria-hidden />
+        </Button>
+      </TooltipTrigger>
+      <TooltipPortal>
+        <TooltipContent>{label}</TooltipContent>
+      </TooltipPortal>
+    </Tooltip>
+  </TooltipProvider>
 );

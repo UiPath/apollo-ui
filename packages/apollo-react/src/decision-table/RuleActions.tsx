@@ -1,4 +1,11 @@
-import { Button } from '@uipath/apollo-wind';
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@uipath/apollo-wind';
 import { Ellipsis, Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { DELETE_RULE_CLASS, RULE_ACTION_CLASS, RULE_ACTIONS_CLASS } from './sentenceStyles';
@@ -37,21 +44,29 @@ export const RuleActions: React.FC<RuleActionsProps> = ({
   openMenu,
 }) => (
   <div className={RULE_ACTIONS_CLASS}>
-    {ACTIONS.map(({ action, Icon, label, className }) => (
-      <Button
-        key={action}
-        variant="ghost"
-        size="3xs"
-        icon
-        tabIndex={selected ? 0 : -1}
-        aria-label={labels[label](position)}
-        aria-haspopup={action === 'delete' ? undefined : 'menu'}
-        aria-expanded={action === 'delete' ? undefined : openMenu === action}
-        className={className}
-        data-rule-action={action}
-      >
-        <Icon aria-hidden />
-      </Button>
-    ))}
+    <TooltipProvider>
+      {ACTIONS.map(({ action, Icon, label, className }) => (
+        <Tooltip key={action}>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="3xs"
+              icon
+              tabIndex={selected ? 0 : -1}
+              aria-label={labels[label](position)}
+              aria-haspopup={action === 'delete' ? undefined : 'menu'}
+              aria-expanded={action === 'delete' ? undefined : openMenu === action}
+              className={className}
+              data-rule-action={action}
+            >
+              <Icon aria-hidden />
+            </Button>
+          </TooltipTrigger>
+          <TooltipPortal>
+            <TooltipContent>{labels[label](position)}</TooltipContent>
+          </TooltipPortal>
+        </Tooltip>
+      ))}
+    </TooltipProvider>
   </div>
 );
