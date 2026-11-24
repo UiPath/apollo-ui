@@ -53,6 +53,7 @@ const EDIT_CALLS: Calls<DecisionTextEditLabels> = {
   removeCondition: [['age', 2]],
   ruleActions: [[2]],
   deleteRule: [[2]],
+  dragRule: [[2]],
   newCondition: [['income', 3]],
   inputColumn: [['Score']],
   outputColumn: [['Risk']],

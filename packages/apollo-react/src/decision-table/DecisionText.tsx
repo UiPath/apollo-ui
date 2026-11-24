@@ -412,6 +412,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
                           editLabels: edit.labels,
                           openMenu: ruleMenus.state,
                           pending: shown.pending,
+                          onMoveRule: edit.onMoveRule ?? null,
                         }
                       : { kind: 'read' }
                 }

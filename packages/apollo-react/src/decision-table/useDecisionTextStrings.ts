@@ -179,6 +179,12 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
           message: 'Delete rule {position}',
           values: { position },
         }),
+      dragRule: (position) =>
+        _({
+          id: 'decision-text.drag_rule',
+          message: 'Drag rule {position} to reorder it',
+          values: { position },
+        }),
       insertRuleAbove: _({ id: 'decision-text.insert_rule_above', message: 'Insert rule above' }),
       insertRuleBelow: _({ id: 'decision-text.insert_rule_below', message: 'Insert rule below' }),
       duplicateRule: _({ id: 'decision-text.duplicate_rule', message: 'Duplicate rule' }),

@@ -5533,6 +5533,105 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(actions('r2'));
     });
 
+    describe('dragging a rule', () => {
+      const TOPS: Record<string, [number, number]> = { r1: [0, 60], r2: [70, 120], r3: [200, 80] };
+      beforeEach(() => {
+        const original = Element.prototype.getBoundingClientRect;
+        vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+          this: Element
+        ) {
+          const rowId = this.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId;
+          const box = rowId && this.matches('li[data-row-id]') ? TOPS[rowId] : undefined;
+          if (!box) return original.call(this);
+          const [top, height] = box;
+          return new DOMRect(0, top, 400, height);
+        });
+      });
+      afterEach(() => vi.restoreAllMocks());
+      const handle = (rowId: string) =>
+        within(card(rowId)).getByRole('button', {
+          name: `Drag rule ${rowId.slice(1)} to reorder it`,
+        });
+      const press = (rowId: string, pointerType: 'mouse' | 'touch', y: number) =>
+        fireEvent.pointerDown(handle(rowId), {
+          pointerType,
+          isPrimary: true,
+          button: 0,
+          clientX: 10,
+          clientY: y,
+        });
+      const moveTo = (y: number) =>
+        act(() => {
+          fireEvent.pointerMove(document, { clientX: 10, clientY: y });
+        });
+
+      it('shows a drag handle only in edit mode with a move action', () => {
+        renderMenus({ onMoveRule: vi.fn() });
+        expect(handle('r2')).toBeInTheDocument();
+        cleanup();
+        renderMenus();
+        expect(within(card('r2')).queryByRole('button', { name: /^Drag rule/ })).toBeNull();
+      });
+
+      it.each([
+        'mouse',
+        'touch',
+      ] as const)('moves a rule dropped by %s on another, calling onMoveRule with their indices', (pointerType) => {
+        const onMoveRule = vi.fn();
+        renderMenus({ onMoveRule });
+        press('r1', pointerType, 30);
+        moveTo(60);
+        moveTo(250);
+        act(() => {
+          fireEvent.pointerUp(document, { clientX: 10, clientY: 250 });
+        });
+        expect(onMoveRule.mock.calls).toEqual([[0, 2]]);
+      });
+
+      it('moves nothing when Escape cancels a pointer drag, or the rule lands on itself', () => {
+        const onMoveRule = vi.fn();
+        renderMenus({ onMoveRule });
+        press('r1', 'mouse', 30);
+        moveTo(60);
+        moveTo(250);
+        act(() => {
+          fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+        });
+        act(() => {
+          fireEvent.pointerUp(document, { clientX: 10, clientY: 250 });
+        });
+        press('r2', 'mouse', 100);
+        moveTo(110);
+        act(() => {
+          fireEvent.pointerUp(document, { clientX: 10, clientY: 110 });
+        });
+        expect(onMoveRule).not.toHaveBeenCalled();
+      });
+
+      it('moves a rule with the keyboard: Space picks it up, an arrow moves it, Space drops it, Escape cancels', async () => {
+        const onMoveRule = vi.fn();
+        renderMenus({ onMoveRule });
+        const grip = handle('r1');
+        act(() => grip.focus());
+        const key = async (code: string, key = code) => {
+          await act(async () => {
+            fireEvent.keyDown(grip, { code, key });
+            await new Promise((resolve) => setTimeout(resolve, 0));
+          });
+        };
+        await key('Space', ' ');
+        expect(card('r1')).toHaveAttribute('data-dragging', 'true');
+        await key('ArrowDown');
+        await key('Escape');
+        expect(card('r1')).not.toHaveAttribute('data-dragging');
+        expect(onMoveRule).not.toHaveBeenCalled();
+        await key('Space', ' ');
+        await key('ArrowDown');
+        await key('Space', ' ');
+        expect(onMoveRule.mock.calls).toEqual([[0, 1]]);
+      });
+    });
+
     const RULE_ACTIONS = [
       'onInsertRule',
       'onDuplicateRule',

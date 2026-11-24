@@ -247,7 +247,7 @@ export const POPOVER_APPLY_DIMMED_CLASS = 'aria-disabled:opacity-50';
 export const PENDING_LINE_CLASS =
   '[&_[data-kind=value]]:rounded-md [&_[data-kind=value]]:border [&_[data-kind=value]]:border-dashed [&_[data-kind=value]]:border-border [&_[data-kind=value]]:px-1.5 [&_[data-kind=value]]:font-normal [&_[data-kind=value]]:text-foreground-de-emp';
 
-export const HEADING_ACTIONS_SPACE_CLASS = 'pe-18';
+export const HEADING_ACTIONS_SPACE_CLASS = 'pe-24';
 
 export const RULE_ACTIONS_CLASS =
   'absolute end-2 top-[calc(var(--sentence-row-padding)-var(--sentence-row-border))] flex h-[var(--sentence-line)] items-center gap-0.5';
@@ -274,6 +274,11 @@ export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
 
 export const HEADER_CITATION_REVEAL_CLASS =
   'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
+
+export const RULE_DRAG_HANDLE_CLASS = cn(
+  RULE_ACTION_CLASS,
+  'cursor-grab touch-none active:cursor-grabbing'
+);
 
 export const DELETE_RULE_CLASS = cn(
   RULE_ACTION_CLASS,

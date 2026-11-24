@@ -18,6 +18,7 @@ const labels = {
   addCondition: (position: number) => `Add condition to rule ${position}`,
   ruleActions: (position: number) => `Rule ${position} actions`,
   deleteRule: (position: number) => `Delete rule ${position}`,
+  dragRule: (position: number) => `Drag rule ${position} to reorder it`,
 };
 
 const hoverShowsTooltip = (name: string) => {
@@ -34,7 +35,9 @@ describe('rule action tooltips', () => {
     'Rule 2 actions',
     'Delete rule 2',
   ])('names %s on hover', (name) => {
-    render(<RuleActions position={2} selected labels={labels} openMenu={undefined} />);
+    render(
+      <RuleActions position={2} selected labels={labels} openMenu={undefined} sortable={null} />
+    );
     hoverShowsTooltip(name);
   });
 

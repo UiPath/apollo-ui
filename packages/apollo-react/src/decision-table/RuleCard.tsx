@@ -1,4 +1,5 @@
 import { cn } from '@uipath/apollo-wind';
+import { CSS } from '@dnd-kit/utilities';
 import { ArrowUpDown } from 'lucide-react';
 import type React from 'react';
 import { memo } from 'react';
@@ -7,6 +8,7 @@ import { ConditionLine } from './ConditionLine';
 import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
 import { RuleLine, type RuleLineProps } from './RuleLine';
+import type { RuleSortable } from './RuleSortable';
 import {
   type CardMode,
   type RuleCardBase,
@@ -83,6 +85,8 @@ export type RuleCardMode =
       openMenu: RuleMenuKind | undefined;
       /** The line of the condition the open editor adds, if any. */
       pendingColumnId: string | undefined;
+      /** The card's sortable, when its rules can be dragged to reorder them. */
+      sortable: RuleSortable | null;
     };
 
 export type RuleCardProps = RuleCardBase &
@@ -115,6 +119,7 @@ export const RuleCard = memo<RuleCardProps>(
     const diff = mode.kind === 'diff' ? mode.diff : undefined;
     const edit = mode.kind === 'edit' ? mode : undefined;
     const pendingColumnId = edit?.pendingColumnId;
+    const sortable = edit?.sortable ?? null;
     const card = ruleCardModel({
       rule,
       position,
@@ -158,6 +163,15 @@ export const RuleCard = memo<RuleCardProps>(
 
     return (
       <li
+        ref={sortable?.setNodeRef}
+        style={
+          sortable
+            ? {
+                transform: CSS.Translate.toString(sortable.transform),
+                transition: sortable.transition,
+              }
+            : undefined
+        }
         tabIndex={selectable ? (ruleSelected ? 0 : -1) : undefined}
         aria-posinset={position}
         aria-setsize={setSize}
@@ -170,6 +184,7 @@ export const RuleCard = memo<RuleCardProps>(
         data-change={diff?.change}
         data-dim={card.dim}
         data-editable={edit !== undefined || undefined}
+        data-dragging={sortable?.isDragging || undefined}
         data-testid={`${dataTestId}-row-${rule.rowId}`}
       >
         <div
@@ -272,6 +287,7 @@ export const RuleCard = memo<RuleCardProps>(
               selected={rowSelected}
               labels={edit.editLabels}
               openMenu={edit.openMenu}
+              sortable={sortable}
             />
           )}
         </div>

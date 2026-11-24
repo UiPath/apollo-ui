@@ -70,6 +70,7 @@
   "decision-text.current_value": "now",
   "decision-text.data_type": "Data type",
   "decision-text.delete_rule": "Delete rule {position}",
+  "decision-text.drag_rule": "Drag rule {position} to reorder it",
   "decision-text.duplicate_rule": "Duplicate rule",
   "decision-text.edit_expression": "Edit expression",
   "decision-text.empty_rules": "No rules yet",
