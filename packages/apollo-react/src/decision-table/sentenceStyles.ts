@@ -275,12 +275,6 @@ export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
 export const HEADER_CITATION_REVEAL_CLASS =
   'opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
-export const DELETE_RULE_CLASS = cn(
-  RULE_ACTION_CLASS,
-  'hover:text-error-text future:hover:text-error-text',
-  REVEALED_ACTION_CLASS
-);
-
 export const CLAUSE_CLASS = 'group/clause relative pe-7';
 
 export const REMOVE_CONDITIONS_CLASS =

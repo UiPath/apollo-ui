@@ -79,6 +79,8 @@ export interface ValueEditing {
   onClick: (event: React.MouseEvent<HTMLElement>) => boolean;
   /** Forgets a cleared cell's or deleted rule's pending refocus, so focus stays where a press puts it. */
   onPointerDown: () => void;
+  /** Deletes a rule from its menu: the host removes it, its edit is cancelled, and focus follows the host's selection. */
+  deleteRule: (rowId: string) => void;
 }
 
 const isStartKey = (event: React.KeyboardEvent): boolean =>
@@ -261,13 +263,15 @@ export const useValueEditing = ({
       }
       return true;
     }
-    if (action.action !== 'delete') return false;
-    const deleted = ruleSelection(action.rowId);
+    return false;
+  };
+
+  const deleteRule = (rowId: string) => {
+    const deleted = ruleSelection(rowId);
     refocusRef.current = { cell: deleted, text: textIn(rules, deleted), scroll: true };
-    edit?.onDeleteRule(action.rowId);
+    edit?.onDeleteRule(rowId);
     cancelEditOf(deleted);
-    if (selected?.rowId === action.rowId && staysOn(action.rowId)) navigation.refocus();
-    return true;
+    if (selected?.rowId === rowId && staysOn(rowId)) navigation.refocus();
   };
 
   const onClick = (event: React.MouseEvent<HTMLElement>): boolean => {
@@ -289,5 +293,6 @@ export const useValueEditing = ({
     onKeyDown,
     onClick,
     onPointerDown,
+    deleteRule,
   };
 };

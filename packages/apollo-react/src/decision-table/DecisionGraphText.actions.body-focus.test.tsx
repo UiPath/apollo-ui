@@ -19,12 +19,13 @@ beforeEach(() => {
 const at = () => document.activeElement?.getAttribute('data-testid') ?? null;
 
 describe('focus when a focused rule in a graph body is deleted', () => {
-  it('keeps focus on the neighbouring rule after the inline delete', async () => {
+  it('keeps focus on the neighbouring rule after the menu delete', async () => {
     render(<Default />);
     await userEvent.click(screen.getByTestId('graph-toggle-risk'));
     const body = within(screen.getByTestId('graph-body-risk'));
     await userEvent.click(screen.getByTestId('text-risk-row-r1'));
-    await userEvent.click(body.getByRole('button', { name: 'Delete rule 1' }));
+    await userEvent.click(body.getByRole('button', { name: 'Rule 1 actions' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete rule 1' }));
     expect(screen.queryByTestId('text-risk-row-r1')).toBeNull();
     expect(at()).toBe('text-risk-row-r2');
   });

@@ -273,13 +273,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   const selectable = onSelect !== undefined;
   const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
-  const ruleMenus = useRuleMenus({
-    edit,
-    rules,
-    bands,
-    selectedRowId: selected?.rowId,
-    refocus: navigation.refocus,
-  });
   const valueEditing = useValueEditing({
     edit,
     rules,
@@ -288,6 +281,15 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
     onSelect,
     navigation,
     labels,
+    container: ruleWindow.container,
+  });
+  const ruleMenus = useRuleMenus({
+    edit,
+    rules,
+    bands,
+    selectedRowId: selected?.rowId,
+    refocus: navigation.refocus,
+    deleteRule: valueEditing.deleteRule,
     container: ruleWindow.container,
   });
   const sectionProps = useContainerHandlers({

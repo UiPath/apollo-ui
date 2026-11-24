@@ -183,6 +183,12 @@ const focusedStop = () => {
   if (rowId && element.dataset.columnId) return `${rowId}:${element.dataset.columnId}`;
   return element.dataset.rowId ?? element.dataset.testid ?? element.tagName;
 };
+const deleteFromMenu = (rule: HTMLElement, position: number) => {
+  fireEvent.click(within(rule).getByRole('button', { name: `Rule ${position} actions` }));
+  fireEvent.click(
+    within(screen.getByRole('menu')).getByRole('menuitem', { name: `Delete rule ${position}` })
+  );
+};
 const walk = (...keys: string[]) =>
   keys.map((key) => {
     press(key);
@@ -3416,13 +3422,13 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(screen.getByTestId('nl'));
     });
 
-    it('cancels the edit of a rule its delete action removes, as a clear of the edited cell does', () => {
+    it('cancels the edit of a rule its menu deletes, as a clear of the edited cell does', () => {
       const { onCancel } = renderEditing({
         initial: { kind: 'cell', rowId: 'r2', columnId: 'age' } satisfies SentenceSelection,
         initialEditing: r2Age(0),
         refuse: true,
       });
-      fireEvent.click(within(card('r2')).getByRole('button', { name: 'Delete rule 2' }));
+      deleteFromMenu(card('r2'), 2);
       expect(onCancel).toHaveBeenCalledTimes(1);
       expect(screen.queryByTestId('nl-editor')).toBeNull();
     });
@@ -5834,7 +5840,7 @@ describe('DecisionText', () => {
       expect(document.activeElement).toBe(card('row-0'));
     });
 
-    it("tabs from the selected stop to its rule's + to ⋯ to delete to Add rule and then out of the view, leaving their keys to the browser", () => {
+    it("tabs from the selected stop to its rule's + to ⋯ to Add rule and then out of the view, leaving their keys to the browser", () => {
       const { onSelect } = renderSelectable({
         initial: { kind: 'cell', rowId: 'r3', columnId: 'risk' } satisfies SentenceSelection,
         edit: editWith(),
@@ -5851,13 +5857,12 @@ describe('DecisionText', () => {
           (element === chip ||
             (chip.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)
       );
-      const remove = within(card('r3')).getByRole('button', { name: 'Delete rule 3' });
       const addRule = screen.getByRole('button', { name: 'Add rule' });
-      expect(tabbable).toEqual([chip, add, actions('r3'), remove, addRule]);
+      expect(tabbable).toEqual([chip, add, actions('r3'), addRule]);
       expect(
         within(card('r2')).getByRole('button', { name: 'Add condition to rule 2' })
       ).toHaveAttribute('tabindex', '-1');
-      for (const action of [add, actions('r3'), remove, addRule]) {
+      for (const action of [add, actions('r3'), addRule]) {
         act(() => action.focus());
         expect(press('Tab')).toBe(true);
       }
@@ -5867,16 +5872,14 @@ describe('DecisionText', () => {
       expect(onSelect).not.toHaveBeenCalled();
     });
 
-    it('deletes its rule from the delete action, leaves Delete on the rule to the host, and focuses the rule the host selects', () => {
+    it('deletes its rule from the menu, leaves Delete on the rule to the host, and focuses the rule the host selects', () => {
       const onDeleteRule = vi.fn();
       render(<RuleChangeHost change={removeRule} next="r3" onDeleteRule={onDeleteRule} />);
       act(() => card('r2').focus());
       expect(press('Delete')).toBe(true);
       expect(onDeleteRule).not.toHaveBeenCalled();
-      const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
-      expect(remove).toHaveAttribute('data-rule-action', 'delete');
-      act(() => remove.focus());
-      fireEvent.click(remove);
+      expect(within(card('r2')).queryByRole('button', { name: 'Delete rule 2' })).toBeNull();
+      deleteFromMenu(card('r2'), 2);
       expect(onDeleteRule.mock.calls).toEqual([['r2']]);
       expect(screen.queryByTestId('nl-row-r2')).toBeNull();
       expect(screen.queryByRole('menu')).toBeNull();
@@ -5890,9 +5893,7 @@ describe('DecisionText', () => {
         edit: editWith({ onDeleteRule: vi.fn() }),
       };
       const { rerender } = render(view({ ...props, selected: { kind: 'rule', rowId: 'r2' } }));
-      const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
-      act(() => remove.focus());
-      fireEvent.click(remove);
+      deleteFromMenu(card('r2'), 2);
       expect(props.edit.onDeleteRule).toHaveBeenCalledWith('r2');
       expect(document.activeElement).toBe(card('r2'));
       rerender(view({ ...props, selected: { kind: 'rule', rowId: 'r1' } }));
@@ -5925,11 +5926,9 @@ describe('DecisionText', () => {
       ['r1', 'selects the next rule', { next: 'r3' }, 'r3'],
       ['r1', 'selects the next rule a moment later', { next: 'r3', late: true }, 'r3'],
       ['r1', 'keeps its selection', {}, 'r1'],
-    ])('with %s selected, focuses what the host %s once it removes the rule of the delete action pressed', async (initial, _, answer, focused) => {
+    ])('with %s selected, focuses what the host %s once it removes the rule its menu deletes', async (initial, _, answer, focused) => {
       render(<RuleChangeHost change={removeRule} initial={initial} {...answer} />);
-      const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
-      act(() => remove.focus());
-      fireEvent.click(remove);
+      deleteFromMenu(card('r2'), 2);
       await settleLater();
       expect(screen.queryByTestId('nl-row-r2')).toBeNull();
       expect(focusedStop()).toBe(focused);
@@ -5940,13 +5939,11 @@ describe('DecisionText', () => {
       ['r2', 'a press', () => fireEvent.pointerDown(screen.getByTestId('nl'))],
       ['r1', 'a key', () => press('Shift')],
       ['r1', 'a press', () => fireEvent.pointerDown(screen.getByTestId('nl'))],
-    ])('with %s selected, leaves focus where the press of a refused delete action put it, and drops its refocus at %s', (initial, _, gesture) => {
+    ])('with %s selected, refocuses the rule or its ⋯ after a refused menu delete, and drops its refocus at %s', (initial, _, gesture) => {
       const props = { rules: GRID_SENTENCE_RULES, onSelect: vi.fn(), edit: editWith() };
       const { rerender } = render(view({ ...props, selected: { kind: 'rule', rowId: initial } }));
-      const remove = within(card('r2')).getByRole('button', { name: 'Delete rule 2' });
-      act(() => remove.focus());
-      fireEvent.click(remove);
-      expect(document.activeElement).toBe(initial === 'r2' ? card('r2') : remove);
+      deleteFromMenu(card('r2'), 2);
+      expect(document.activeElement).toBe(initial === 'r2' ? card('r2') : actions('r2'));
       gesture();
       rerender(
         view({
@@ -5961,7 +5958,7 @@ describe('DecisionText', () => {
     it.each([
       'the document',
       'a shadow root',
-    ])('leaves focus on the confirmation the host moves it to from the delete action, in %s', (scope) => {
+    ])('leaves focus on the confirmation the host moves it to from the menu delete, in %s', (scope) => {
       const confirm = document.body.appendChild(document.createElement('button'));
       onTestFinished(() => confirm.remove());
       const host = document.body.appendChild(document.createElement('div'));
@@ -5977,24 +5974,18 @@ describe('DecisionText', () => {
         }),
         { container }
       );
-      const remove = within(container).getByRole('button', { name: 'Delete rule 2' });
-      act(() => remove.focus());
-      fireEvent.click(remove);
+      deleteFromMenu(within(container).getByTestId('nl-row-r2'), 2);
       expect(document.activeElement).toBe(confirm);
     });
 
-    it('focuses the rule the host selects after the delete action removes its rule in a shadow root', () => {
+    it('focuses the rule the host selects after its menu deletes its rule in a shadow root', () => {
       const host = document.body.appendChild(document.createElement('div'));
       onTestFinished(() => host.remove());
       const shadow = host.attachShadow({ mode: 'open' });
       const container = shadow.appendChild(document.createElement('div'));
       render(<RuleChangeHost change={removeRule} next="r3" />, { container });
       const inView = within(container);
-      const remove = within(inView.getByTestId('nl-row-r2')).getByRole('button', {
-        name: 'Delete rule 2',
-      });
-      act(() => remove.focus());
-      fireEvent.click(remove);
+      deleteFromMenu(inView.getByTestId('nl-row-r2'), 2);
       expect(inView.queryByTestId('nl-row-r2')).toBeNull();
       expect(shadow.activeElement).toBe(inView.getByTestId('nl-row-r3'));
     });

@@ -2,6 +2,7 @@ import type React from 'react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ViewEdit } from './decisionTextTypes';
 import type { GridContextMenuProps, GridContextMenuState, GridMenuEntry } from './GridMenu';
+import { focusStays } from './gridEvents';
 import type { OpenRuleMenu } from './RuleList';
 import { renderedParentOf, scrollRootsOf } from './renderedTree';
 import { conditionEntriesOf, ruleEntriesOf } from './ruleMenuEntries';
@@ -16,6 +17,9 @@ export interface RuleMenusParams {
   selectedRowId: string | undefined;
   /** Focuses the selected stop, where focus goes when the menu's button is gone with its rule, scrolling it into view when `scroll`. */
   refocus: (scroll: boolean) => void;
+  /** Deletes a rule as its menu's delete entry, which then leaves focus to the delete. */
+  deleteRule: (rowId: string) => void;
+  container: () => HTMLElement | null;
 }
 
 /** The one open card menu: which, for which rule, the button it hangs from, and where it opens. */
@@ -26,7 +30,11 @@ interface RuleMenuState extends GridContextMenuState, OpenRuleMenu {
 }
 
 /** Where focus returns once a menu closes; `scroll` is false once the rules scrolled or the window resized the menu away. */
-type FocusReturn = Pick<RuleMenuState, 'trigger' | 'openedOnRowId'> & { scroll: boolean };
+type FocusReturn = Pick<RuleMenuState, 'trigger' | 'openedOnRowId' | 'rowId'> & {
+  scroll: boolean;
+  /** Closed by deleting its rule, whose own refocus wins once the rule is gone. */
+  deleted: boolean;
+};
 
 export interface RuleMenus extends Pick<GridContextMenuProps, 'label' | 'entries' | 'onClose'> {
   state: RuleMenuState | null;
@@ -72,13 +80,17 @@ export const useRuleMenus = ({
   bands,
   selectedRowId,
   refocus,
+  deleteRule,
+  container,
 }: RuleMenusParams): RuleMenus => {
   const [state, setState] = useState<RuleMenuState | null>(null);
   const restoreFocusRef = useRef<FocusReturn | null>(null);
+  const deletedRef = useRef(false);
   const position = state ? rules.findIndex((rule) => rule.rowId === state.rowId) + 1 : 0;
   const open = edit && position > 0 ? state : null;
   const close = (scroll: boolean) => {
-    restoreFocusRef.current = state && { ...state, scroll };
+    restoreFocusRef.current = state && { ...state, scroll, deleted: deletedRef.current };
+    deletedRef.current = false;
     setState(null);
   };
 
@@ -95,6 +107,12 @@ export const useRuleMenus = ({
     const restore = restoreFocusRef.current;
     if (!restore || state) return;
     restoreFocusRef.current = null;
+    if (restore.deleted) {
+      if (!restore.trigger.isConnected || !focusStays(container(), null)) return;
+      if (restore.rowId === selectedRowId) refocus(false);
+      else restore.trigger.focus({ preventScroll: true });
+      return;
+    }
     if (restore.trigger.isConnected && restore.openedOnRowId === selectedRowId) {
       restore.trigger.focus({ preventScroll: true });
     } else {
@@ -105,7 +123,7 @@ export const useRuleMenus = ({
   useEffect(() => {
     if (!state) return;
     const close = () => {
-      restoreFocusRef.current = { ...state, scroll: false };
+      restoreFocusRef.current = { ...state, scroll: false, deleted: false };
       setState(null);
     };
     const closeOnScroll = (event: Event) => {
@@ -125,7 +143,13 @@ export const useRuleMenus = ({
 
   const entriesOf = (menu: OpenRuleMenu['menu'], rowId: string): GridMenuEntry[] => {
     if (!edit) return [];
-    if (menu === 'rule') return ruleEntriesOf(edit, edit.labels, rules, rowId);
+    if (menu === 'rule') {
+      const onDeleteRule = (deleted: string) => {
+        deletedRef.current = true;
+        deleteRule(deleted);
+      };
+      return ruleEntriesOf({ ...edit, onDeleteRule }, edit.labels, rules, rowId);
+    }
     const rule = rules.find((candidate) => candidate.rowId === rowId);
     return conditionEntriesOf(edit, edit.labels, rule, bands, edit.onStartEdit);
   };
