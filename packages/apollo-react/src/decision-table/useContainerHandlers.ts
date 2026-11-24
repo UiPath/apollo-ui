@@ -312,7 +312,12 @@ export const useContainerHandlers = ({
       valueEditing.onClick(event);
     const selection = claimed ? null : clickedSelection(event.target);
     if (selection) {
-      navigation.select(selection, clickedCitationOf(event.target, event.currentTarget), false);
+      const { target } = event;
+      const focus =
+        isFromTextField(target) && target instanceof HTMLElement
+          ? () => target
+          : clickedCitationOf(target, event.currentTarget);
+      navigation.select(selection, focus, false);
     }
     consumerClick?.(event);
   };

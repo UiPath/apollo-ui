@@ -32,6 +32,7 @@ export interface RuleListProps {
     | {
         kind: 'edit';
         editLabels: Extract<RuleCardMode, { kind: 'edit' }>['editLabels'];
+        onRenameRule: Extract<RuleCardMode, { kind: 'edit' }>['onRenameRule'];
         openMenu: OpenRuleMenu | null;
         pending: SentenceValueId | null;
       }
@@ -74,6 +75,7 @@ export const RuleList = forwardRef<HTMLUListElement, RuleListProps>(
       return {
         kind: 'edit',
         editLabels: mode.editLabels,
+        onRenameRule: mode.onRenameRule,
         openMenu: mode.openMenu?.rowId === rowId ? mode.openMenu.menu : undefined,
         pendingColumnId: mode.pending?.rowId === rowId ? mode.pending.columnId : undefined,
       };

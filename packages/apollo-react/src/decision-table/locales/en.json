@@ -113,6 +113,8 @@
   "decision-text.remove_condition": "Remove {column} from rule {position}",
   "decision-text.rule_actions": "Rule {position} actions",
   "decision-text.rule_moved": "Rule moved from position {from} to {to}",
+  "decision-text.rule_name": "Rule name",
+  "decision-text.rule_name_placeholder": "Name this rule…",
   "decision-text.search_inputs": "{count, plural, one {Search # input} other {Search # inputs}}",
   "decision-text.search_outputs": "{count, plural, one {Search # output} other {Search # outputs}}",
   "decision-text.set_value": "Set a value",

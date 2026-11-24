@@ -183,6 +183,11 @@ export const useDecisionTextEditLabels = (): DecisionTextEditLabels => {
       insertRuleBelow: _({ id: 'decision-text.insert_rule_below', message: 'Insert rule below' }),
       duplicateRule: _({ id: 'decision-text.duplicate_rule', message: 'Duplicate rule' }),
       clearRule: _({ id: 'decision-text.clear_rule', message: 'Clear rule' }),
+      ruleNameLabel: _({ id: 'decision-text.rule_name', message: 'Rule name' }),
+      ruleNamePlaceholder: _({
+        id: 'decision-text.rule_name_placeholder',
+        message: 'Name this rule…',
+      }),
       moveRuleUp: _({ id: 'decision-text.move_rule_up', message: 'Move up' }),
       moveRuleDown: _({ id: 'decision-text.move_rule_down', message: 'Move down' }),
       addInput: _({ id: 'decision-text.add_input', message: 'Add input column' }),
