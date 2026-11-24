@@ -2,7 +2,6 @@ import { cn } from '@uipath/apollo-wind';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import type React from 'react';
 import { forwardRef, useId } from 'react';
-import { CitationButtons, type CitationLabels } from './CitationButton';
 import { type DecisionGraphCardActions, NameField, NodeMenu } from './DecisionGraphCard';
 import {
   GRAPH_NAME_CLASS,
@@ -18,13 +17,10 @@ import { isLineMark, type LineMarks } from './sentenceMarks';
 import {
   CHANGED_CHIP_CLASS,
   DECISION_TEXT_HEADER_CLASS,
-  HEADER_CITATION_REVEAL_CLASS,
-  HEADER_CITATIONS_CLASS,
   HEADER_LABEL_CLASS,
   HIT_POLICY_CHANGE_CLASS,
   STRUCK_VALUE_CLASS,
 } from './sentenceStyles';
-import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 
 /** A hit policy as a chip shows it: its code, or its label when it has none, and its label for assistive technology. */
 export interface PolicyShown {
@@ -56,11 +52,7 @@ export interface DecisionTextHeaderProps {
   hint: string;
   /** The mark of the decision as a whole. */
   mark: Mark | undefined;
-  /** Where the decision was read from, or null. */
-  citations: { citations: readonly SentenceCitation[]; onOpen: OpenCitation } | null;
-  labels: MarkBadgeProps['labels'] &
-    Pick<DiffLabels, 'previousValue' | 'currentValue'> &
-    CitationLabels;
+  labels: MarkBadgeProps['labels'] & Pick<DiffLabels, 'previousValue' | 'currentValue'>;
   /** How many rules the table has, e.g. "5 rules". */
   ruleCount: string;
   /** The decision's menu, keys and name field, or null when the host offers no action on it. */
@@ -116,10 +108,7 @@ export const HitPolicyChip: React.FC<HitPolicyChipProps> = ({
 
 /** The sticky line above the rules: its label, or the picker in its place, then its mark; its hint describes the policy. */
 export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderProps>(
-  (
-    { name, fold, title, hint, mark, citations, ruleCount, actions, labels, sticky, dataTestId },
-    ref
-  ) => {
+  ({ name, fold, title, hint, mark, ruleCount, actions, labels, sticky, dataTestId }, ref) => {
     const badgeId = useId();
     const hintId = useId();
     const marks: LineMarks | null = isLineMark(mark) ? [mark] : null;
@@ -169,20 +158,6 @@ export const DecisionTextHeader = forwardRef<HTMLDivElement, DecisionTextHeaderP
         <span className={RULE_COUNT_CLASS} data-testid={`${dataTestId}-rule-count`}>
           {ruleCount}
         </span>
-        {citations && (
-          <span className={HEADER_CITATIONS_CLASS}>
-            <CitationButtons
-              citations={citations.citations}
-              owner={{ kind: 'table' }}
-              onOpen={citations.onOpen}
-              selected
-              tabIndex={0}
-              className={HEADER_CITATION_REVEAL_CLASS}
-              labels={labels}
-              dataTestId={`${dataTestId}-citation`}
-            />
-          </span>
-        )}
         {actions && (
           <NodeMenu
             actions={actions}

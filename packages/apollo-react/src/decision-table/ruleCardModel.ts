@@ -1,4 +1,3 @@
-import type { CitationLabels } from './CitationButton';
 import type { DiffLabels, RuleDiff } from './decisionTextDiff';
 import type { LineTextLabels, LineTextProps } from './LineText';
 import type { MarkBadgeLabels, MarkBadgeProps } from './MarkBadge';
@@ -21,7 +20,6 @@ import type { CellStop } from './TokenChip';
 export interface RuleCardLabels
   extends MarkBadgeLabels,
     LineTextLabels,
-    CitationLabels,
     Pick<DiffLabels, 'movedFrom'> {
   /** A cell's name as a keyboard stop, e.g. "age 25 and 60, rule 2": its column, its values as shown and its row's 1-based position. */
   cell: (column: string, values: string, position: number) => string;

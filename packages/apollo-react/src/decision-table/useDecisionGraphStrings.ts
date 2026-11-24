@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { useSafeLingui } from '../i18n/useSafeLingui';
-import type { CitationLabels } from './CitationButton';
-import type { DecisionGraphActionLabels } from './decisionGraphActionTypes';
 import type { DecisionGraphMinimapLabels } from './DecisionGraphMinimap';
+import type { DecisionGraphActionLabels } from './decisionGraphActionTypes';
 import type { MarkBadgeLabels } from './MarkBadge';
 import { useDecisionTextLabels } from './useDecisionTextStrings';
 
@@ -10,7 +9,6 @@ import { useDecisionTextLabels } from './useDecisionTextStrings';
 export interface DecisionGraphLabels
   extends DecisionGraphMinimapLabels,
     MarkBadgeLabels,
-    CitationLabels,
     DecisionGraphActionLabels {
   /** The view's name, e.g. "Decisions". */
   graph: string;
@@ -28,7 +26,7 @@ export interface DecisionGraphLabels
 /** The graph view's strings in the active locale. */
 export const useDecisionGraphLabels = (): DecisionGraphLabels => {
   const { _ } = useSafeLingui();
-  const { markStatus, openCitation, citationPage } = useDecisionTextLabels();
+  const { markStatus } = useDecisionTextLabels();
   return useMemo(
     (): DecisionGraphLabels => ({
       graph: _({ id: 'decision-graph.graph', message: 'Decisions' }),
@@ -50,8 +48,6 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
           values: { status },
         }),
       markStatus,
-      openCitation,
-      citationPage,
       minimap: _({ id: 'decision-graph.minimap', message: 'Browse rules' }),
       minimapSearch: _({
         id: 'decision-graph.minimap_search',
@@ -150,6 +146,6 @@ export const useDecisionGraphLabels = (): DecisionGraphLabels => {
         message: 'No other decisions',
       }),
     }),
-    [_, markStatus, openCitation, citationPage]
+    [_, markStatus]
   );
 };

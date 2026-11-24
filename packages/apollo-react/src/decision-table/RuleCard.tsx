@@ -3,7 +3,6 @@ import { cn } from '@uipath/apollo-wind';
 import { ArrowUpDown } from 'lucide-react';
 import type React from 'react';
 import { memo } from 'react';
-import { CitationButtons } from './CitationButton';
 import { ConditionLine } from './ConditionLine';
 import { type DiffChange, type RuleDiff, removedLineKey } from './decisionTextDiff';
 import { RuleActions, type RuleActionsLabels } from './RuleActions';
@@ -21,41 +20,22 @@ import { isLineMark } from './sentenceMarks';
 import { ruleTitleOf } from './sentenceParts';
 import {
   CHANGE_SIGN_CLASS,
-  CITED_LINE_CLASS,
-  CITED_LINES_CLASS,
   CLAUSE_CLASS,
   GLYPH_SLOT,
   HEADING_ACTIONS_SPACE_CLASS,
   INLINE_LINE_CLASS,
   LINES_CLASS,
   MOVED_ICON_CLASS,
-  REVEALED_ACTION_CLASS,
   ROW_CHANGE_CLASS,
   ROW_NUMBER_CHANGE_CLASS,
   ROW_NUMBER_CLASS,
   ROW_NUMBER_DRAG_CLASS,
   ROW_SURFACE_CLASS,
   RULE_CARD_CLASS,
-  RULE_CITATIONS_CLASS,
   RULE_TITLE_CLASS,
   SENTENCE_CLASS,
 } from './sentenceStyles';
 import type { RuleMenuKind } from './sentenceTargets';
-import type { DecisionTextCitations } from './sentenceTypes';
-
-/** A card's last line with its citation buttons after it, beside it when they fit, else below. */
-const CitedLine: React.FC<{ citations: React.ReactNode; children: React.ReactNode }> = ({
-  citations,
-  children,
-}) =>
-  citations ? (
-    <div className={CITED_LINES_CLASS}>
-      {children}
-      {citations}
-    </div>
-  ) : (
-    children
-  );
 
 const NO_REMOVALS: RuleLineProps['removals'] = [];
 
@@ -97,8 +77,6 @@ export type RuleCardProps = RuleCardBase &
     setSize: number;
     /** The selected cell, null when the rule is selected, undefined when the row is not. */
     selectedColumnId: string | null | undefined;
-    /** The table's citations; this card shows its rule's. */
-    citations: DecisionTextCitations;
     dataTestId: string;
   };
 
@@ -113,7 +91,6 @@ export const RuleCard = memo<RuleCardProps>(
     selectedColumnId,
     selectable,
     decisionLinks,
-    citations,
     idPrefix,
     dataTestId,
     labels,
@@ -145,7 +122,6 @@ export const RuleCard = memo<RuleCardProps>(
     const removedLines = diff?.removedLines ?? [];
     const ruleSelected = selectedColumnId === null;
     const rowSelected = selectedColumnId !== undefined;
-    const cited = citations.kind === 'cited' ? (citations.rules.get(rule.rowId) ?? []) : [];
     const lined = rule.lines.length + removedLines.length > 0;
     const title = ruleTitleOf(rule);
     const leadRemovals = card.removals.lead.length;
@@ -158,22 +134,6 @@ export const RuleCard = memo<RuleCardProps>(
         : glyphs > 0
           ? `calc((${glyphs} + 1) * ${GLYPH_SLOT})`
           : undefined;
-    const citationButtons =
-      citations.kind === 'cited' && cited.length > 0 ? (
-        <div className={RULE_CITATIONS_CLASS}>
-          <CitationButtons
-            citations={cited}
-            owner={{ kind: 'rule', position: diff?.number ?? position }}
-            onOpen={citations.onOpenCitation}
-            selected={rowSelected}
-            tabIndex={rowSelected && selectable ? 0 : -1}
-            className={cn(!rowSelected && REVEALED_ACTION_CLASS)}
-            labels={labels}
-            dataTestId={`${dataTestId}-citation-${rule.rowId}`}
-          />
-        </div>
-      ) : null;
-
     return (
       <li
         ref={sortable?.setNodeRef}
@@ -235,66 +195,57 @@ export const RuleCard = memo<RuleCardProps>(
               {title}
             </div>
           )}
-          <CitedLine citations={lined ? null : citationButtons}>
-            <div
-              className={cn(SENTENCE_CLASS, citationButtons && !lined && CITED_LINE_CLASS)}
-              data-sentence
-            >
-              <div className={CLAUSE_CLASS} style={{ paddingInlineEnd: clauseEnd }}>
-                <RuleLine
-                  heading
-                  parts={rule.heading}
-                  title={isLineMark(mark) ? undefined : card.title}
-                  badge={card.badges.heading}
-                  badgeEnd="0px"
-                  removalsEnd="0px"
-                  removals={NO_REMOVALS}
-                  unworded={diff?.removedOutcomes}
-                  className={INLINE_LINE_CLASS}
-                  {...lineProps}
-                />{' '}
-                <RuleLine
-                  verdicts
-                  className={INLINE_LINE_CLASS}
-                  parts={rule.lead}
-                  badge={card.badges.lead}
-                  badgeEnd={card.badges.heading ? GLYPH_SLOT : '0px'}
-                  removalsEnd={glyphs > 0 ? `calc(${glyphs} * ${GLYPH_SLOT})` : '0px'}
-                  removals={card.removals.lead}
+          <div className={SENTENCE_CLASS} data-sentence>
+            <div className={CLAUSE_CLASS} style={{ paddingInlineEnd: clauseEnd }}>
+              <RuleLine
+                heading
+                parts={rule.heading}
+                title={isLineMark(mark) ? undefined : card.title}
+                badge={card.badges.heading}
+                badgeEnd="0px"
+                removalsEnd="0px"
+                removals={NO_REMOVALS}
+                unworded={diff?.removedOutcomes}
+                className={INLINE_LINE_CLASS}
+                {...lineProps}
+              />{' '}
+              <RuleLine
+                verdicts
+                className={INLINE_LINE_CLASS}
+                parts={rule.lead}
+                badge={card.badges.lead}
+                badgeEnd={card.badges.heading ? GLYPH_SLOT : '0px'}
+                removalsEnd={glyphs > 0 ? `calc(${glyphs} * ${GLYPH_SLOT})` : '0px'}
+                removals={card.removals.lead}
+                {...lineProps}
+              />
+            </div>
+          </div>
+          {lined && (
+            <ul className={LINES_CLASS}>
+              {rule.lines.map((line, index) => (
+                <ConditionLine
+                  key={line.columnId}
+                  line={line}
+                  state={line.columnId === pendingColumnId ? 'pending' : 'held'}
+                  badge={card.badges.lines[index] ?? null}
+                  removal={
+                    line.columnId === pendingColumnId ? null : (card.removals.lines[index] ?? null)
+                  }
                   {...lineProps}
                 />
-              </div>
-            </div>
-          </CitedLine>
-          {lined && (
-            <CitedLine citations={citationButtons}>
-              <ul className={cn(LINES_CLASS, citationButtons && CITED_LINE_CLASS)}>
-                {rule.lines.map((line, index) => (
-                  <ConditionLine
-                    key={line.columnId}
-                    line={line}
-                    state={line.columnId === pendingColumnId ? 'pending' : 'held'}
-                    badge={card.badges.lines[index] ?? null}
-                    removal={
-                      line.columnId === pendingColumnId
-                        ? null
-                        : (card.removals.lines[index] ?? null)
-                    }
-                    {...lineProps}
-                  />
-                ))}
-                {removedLines.map((line) => (
-                  <ConditionLine
-                    key={removedLineKey(line)}
-                    line={line}
-                    state={line.change}
-                    badge={null}
-                    removal={null}
-                    {...lineProps}
-                  />
-                ))}
-              </ul>
-            </CitedLine>
+              ))}
+              {removedLines.map((line) => (
+                <ConditionLine
+                  key={removedLineKey(line)}
+                  line={line}
+                  state={line.change}
+                  badge={null}
+                  removal={null}
+                  {...lineProps}
+                />
+              ))}
+            </ul>
           )}
           {edit && (
             <RuleActions

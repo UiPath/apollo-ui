@@ -21,23 +21,6 @@ import type { RuleWindow } from './useRuleWindow';
 import { isIgnoredKey, type SentenceNavigation } from './useSentenceNavigation';
 import type { ValueEditing } from './useValueEditing';
 
-/** What of its card a click keeps focused: the citation it hit, unless its host moved focus out of the view, else the card's own stop. */
-const clickedCitationOf = (
-  target: EventTarget | null,
-  view: HTMLElement
-): Parameters<SentenceNavigation['select']>[1] => {
-  const button =
-    target instanceof Element ? target.closest<HTMLElement>('[data-rule-action="citation"]') : null;
-  if (!button) return undefined;
-  return (card) => {
-    const active = button.ownerDocument.activeElement;
-    const movedOut =
-      active !== null && active !== button.ownerDocument.body && !view.contains(active);
-    if (movedOut) return null;
-    return card.contains(button) ? button : card;
-  };
-};
-
 /** The scroll container's props a host may add; the view names the region and owns its tab stop. */
 export type DecisionTextContainerProps = Omit<
   React.HTMLAttributes<HTMLElement>,
@@ -66,64 +49,7 @@ export interface ContainerHandlersParams {
   focusRow: (rowId: string | undefined) => void;
   /** The edit mode's history; null while the view does not edit. */
   history: TextHistory | null;
-  /** The view selects nothing, so Enter on it reaches its rules' citations and the arrows move among them. */
-  citationKeys: boolean;
-  /** The listed rules with citations, in order. */
-  citedRows: readonly CitedRow[];
-  /** Scrolls a listed rule into view by its index, mounting it. */
-  revealRow: RuleWindow['scrollRowIntoView'];
-  /** Scrolls a stop of a listed rule into view, clear of the sticky header. */
-  revealStop: RuleWindow['scrollStopIntoView'];
 }
-
-/** A listed rule with citations: its id, its place among the listed rules and how many it has. */
-export interface CitedRow {
-  rowId: string;
-  index: number;
-  count: number;
-}
-
-/** A read view's citation stop: one of a cited rule's buttons, or the view itself. */
-type CitationStop = { kind: 'citation'; row: CitedRow; button: number } | { kind: 'view' };
-
-const citationButtonsOf = (view: HTMLElement, rowId: string): HTMLElement[] =>
-  [...view.querySelectorAll<HTMLElement>('li[data-row-id]')]
-    .filter((card) => card.dataset.rowId === rowId)
-    .flatMap((card) => [...card.querySelectorAll<HTMLElement>('[data-rule-action="citation"]')]);
-
-const firstStop = (row: CitedRow | undefined): CitationStop | undefined =>
-  row && { kind: 'citation', row, button: 0 };
-
-const lastStop = (row: CitedRow | undefined): CitationStop | undefined =>
-  row && { kind: 'citation', row, button: row.count - 1 };
-
-/** Where a read view's unmodified key moves focus among its rules' citations, in rule order. */
-const citationStopOf = (
-  event: React.KeyboardEvent<HTMLElement>,
-  citedRows: readonly CitedRow[]
-): CitationStop | undefined => {
-  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return undefined;
-  const view = event.currentTarget;
-  if (event.target === view) return event.key === 'Enter' ? firstStop(citedRows[0]) : undefined;
-  const target = event.target instanceof HTMLElement ? event.target : null;
-  const rowId = target?.closest<HTMLElement>('li[data-row-id]')?.dataset.rowId;
-  const at = citedRows.findIndex((row) => row.rowId === rowId);
-  const row = citedRows[at];
-  const button =
-    target && rowId !== undefined ? citationButtonsOf(view, rowId).indexOf(target) : -1;
-  if (!row || button < 0) return undefined;
-  if (event.key === 'ArrowDown') {
-    return button + 1 < row.count
-      ? { kind: 'citation', row, button: button + 1 }
-      : firstStop(citedRows[at + 1]);
-  }
-  if (event.key === 'ArrowUp') {
-    return button > 0 ? { kind: 'citation', row, button: button - 1 } : lastStop(citedRows[at - 1]);
-  }
-  if (event.key === 'Home') return firstStop(citedRows[0]);
-  if (event.key === 'End') return lastStop(citedRows[citedRows.length - 1]);
-  return event.key === 'Escape' ? { kind: 'view' } : undefined;
-};
 
 /** Whether a key is a forward Tab pressed on the view itself. */
 const isTabOnView = (event: React.KeyboardEvent<HTMLElement>): boolean =>
@@ -141,23 +67,7 @@ export const useContainerHandlers = ({
   stopTabbable,
   focusRow,
   history,
-  citationKeys,
-  citedRows,
-  revealRow,
-  revealStop,
 }: ContainerHandlersParams) => {
-  const pendingCitationRef = useRef<{ row: CitedRow; button: number } | null>(null);
-  const focusPendingCitation = (): boolean => {
-    const pending = pendingCitationRef.current;
-    const view = container();
-    const button =
-      pending && view ? citationButtonsOf(view, pending.row.rowId)[pending.button] : undefined;
-    if (!pending || !button) return false;
-    pendingCitationRef.current = null;
-    button.focus({ preventScroll: true });
-    revealStop(pending.row.index, button);
-    return true;
-  };
   const focusWithinRef = useRef(false);
   const pressedRef = useRef(false);
   const stopPressRef = useRef<(() => void) | null>(null);
@@ -179,9 +89,6 @@ export const useContainerHandlers = ({
       document.removeEventListener('keyup', onDocumentKey, true);
     };
   }, []);
-  useEffect(() => {
-    focusPendingCitation();
-  });
 
   const endPress = () => {
     stopPressRef.current?.();
@@ -250,31 +157,15 @@ export const useContainerHandlers = ({
     step();
     return true;
   };
-  const moveAmongCitations = (event: React.KeyboardEvent<HTMLElement>): boolean => {
-    const stop =
-      citationKeys && !event.defaultPrevented ? citationStopOf(event, citedRows) : undefined;
-    if (!stop) return false;
-    event.preventDefault();
-    const view = event.currentTarget;
-    if (stop.kind === 'view') {
-      view.focus();
-      return true;
-    }
-    pendingCitationRef.current = { row: stop.row, button: stop.button };
-    focusRow(stop.row.rowId);
-    if (!focusPendingCitation()) revealRow(stop.row.index);
-    return true;
-  };
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (stopTabbable && isTabOnView(event)) {
       event.preventDefault();
       navigation.refocus();
     } else if (
-      !moveAmongCitations(event) &&
-      (openStopDecision(event) ||
-        valueEditing.onKeyDown(event) ||
-        navigation.onKeyDown(event) ||
-        stepHistory(event))
+      openStopDecision(event) ||
+      valueEditing.onKeyDown(event) ||
+      navigation.onKeyDown(event) ||
+      stepHistory(event)
     ) {
       return;
     }
@@ -298,7 +189,6 @@ export const useContainerHandlers = ({
       !event.currentTarget.contains(event.relatedTarget)
     ) {
       focusWithinRef.current = false;
-      pendingCitationRef.current = null;
       endPress();
       setFocusInside(false);
       focusRow(undefined);
@@ -312,7 +202,7 @@ export const useContainerHandlers = ({
       valueEditing.onClick(event);
     const selection = claimed ? null : clickedSelection(event.target);
     if (selection) {
-      navigation.select(selection, clickedCitationOf(event.target, event.currentTarget), false);
+      navigation.select(selection, undefined, false);
     }
     consumerClick?.(event);
   };

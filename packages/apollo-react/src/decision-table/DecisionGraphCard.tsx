@@ -2,7 +2,6 @@ import { cn, Input } from '@uipath/apollo-wind';
 import { ChevronDown, ChevronRight, CornerDownRight, Ellipsis, Network } from 'lucide-react';
 import type React from 'react';
 import { useId, useLayoutEffect, useRef } from 'react';
-import { CitationButtons } from './CitationButton';
 import {
   GRAPH_BODY_CLASS,
   GRAPH_CARD_CLASS,
@@ -15,7 +14,6 @@ import {
   GRAPH_NAME_CLASS,
   GRAPH_REFERENCE_CHIP_CLASS,
   GRAPH_REFERENCE_CLASS,
-  GRAPH_REVEAL_CLASS,
   GRAPH_RULE_COUNT_CLASS,
   GRAPH_TOGGLE_CLASS,
 } from './decisionGraphStyles';
@@ -24,7 +22,6 @@ import { GridMenuButton, type GridMenuEntry } from './GridMenu';
 import { isComposing } from './gridEvents';
 import { MarkGlyph } from './MarkGlyph';
 import { isLineMark } from './sentenceMarks';
-import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 import type { DecisionGraphLabels } from './useDecisionGraphStrings';
 
 /** The open rename field: the host's last refusal of it, worded, and what it proposes. */
@@ -73,8 +70,6 @@ export interface DecisionGraphCardProps {
   onShowProblem: (byKey: boolean) => void;
   onOpen: (() => void) | undefined;
   actions: DecisionGraphCardActions | null;
-  /** Where the decision was read from, or null. */
-  citations: { citations: readonly SentenceCitation[]; onOpen: OpenCitation } | null;
   cardRef: (element: HTMLElement | null) => void;
   dataTestId: string;
 }
@@ -205,7 +200,6 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
   onShowProblem,
   onOpen,
   actions,
-  citations,
   cardRef,
   dataTestId,
 }) => {
@@ -275,22 +269,6 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
         >
           {logic.kind === 'table' && labels.ruleCount(logic.ruleCount)}
         </span>
-        {citations && (
-          <CitationButtons
-            citations={citations.citations}
-            owner={{ kind: 'decision', name: node.label }}
-            onOpen={citations.onOpen}
-            selected={active}
-            tabIndex={0}
-            className={cn(
-              'shrink-0',
-              !active && GRAPH_REVEAL_CLASS,
-              '[@media(hover:none)]:opacity-100'
-            )}
-            labels={labels}
-            dataTestId={`${dataTestId}-citation-${node.id}`}
-          />
-        )}
         {actions && (
           <NodeMenu
             actions={actions}

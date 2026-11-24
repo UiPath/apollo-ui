@@ -30,7 +30,6 @@ import {
   TEXT_COLUMN_CLASS,
 } from './sentenceStyles';
 import type {
-  DecisionTextCitations,
   DecisionTextTable,
   SentenceBand,
   SentenceNameToken,
@@ -40,7 +39,6 @@ import { useAddRule } from './useAddRule';
 import { useCellHover } from './useCellHover';
 import { useColumnEditing } from './useColumnEditing';
 import {
-  type CitedRow,
   type ContainerHandlersParams,
   type DecisionTextContainerProps,
   type TextHistory,
@@ -63,12 +61,6 @@ import { ValueEditorOverlay } from './ValueEditorOverlay';
 
 /** A click or key asks for this selection, or null on Escape. */
 type SelectHandler = NonNullable<SentenceNavigationSource['onSelect']>;
-
-const NO_CITATIONS: DecisionTextCitations = { kind: 'none' };
-
-/** The host's own value for an attribute, with the view's hint after it. */
-const withHint = (host: string | undefined, hint: string | false): string | undefined =>
-  [host, hint].filter(Boolean).join(' ') || undefined;
 
 /** The hit policy chip's content for a table in a mode: the picker while editing, its change in a diff, else its label; `fallback` stands in for a pick the catalog lacks. */
 export const policyTitleOf = <Op, Policy, Total, Type, Refusal>(
@@ -130,8 +122,6 @@ export interface DecisionTextProps<Op, Policy, Total, Type, Refusal> {
   hitPolicies: HitPolicyCatalog<Policy, Total>;
   /** The host's column types, worded and each told apart by `===`, which the band glyphs and the column popover's select show. */
   columnTypes: readonly ColumnTypeOption<Type>[];
-  /** Where the decision and its rules were read from, each opened by the host; none when omitted. */
-  citations?: DecisionTextCitations;
   /** Shows each rule's 1-based position before its heading. */
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
@@ -178,7 +168,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   mode,
   hitPolicies,
   columnTypes,
-  citations = NO_CITATIONS,
   numbered = false,
   marks = EMPTY_MARKS,
   onCellHover,
@@ -261,16 +250,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
     [retainedRowId, focusedRowId, draggedRowId]
   );
   const ruleWindow = useRuleWindow(listed, selected?.rowId, retainedRowIds, scroll);
-  const citedRows = useMemo(
-    (): CitedRow[] =>
-      citations.kind === 'cited'
-        ? listed.flatMap((rule, index) => {
-            const count = citations.rules.get(rule.rowId)?.length ?? 0;
-            return count > 0 ? [{ rowId: rule.rowId, index, count }] : [];
-          })
-        : [],
-    [citations, listed]
-  );
   const selectable = onSelect !== undefined;
   const addRuleAction = useAddRule({ ...ruleWindow, addRule, ruleCount: rules.length });
   const navigation = useSentenceNavigation({ ...ruleWindow, rules, selected, onSelect });
@@ -302,12 +281,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
     stopTabbable: selectable && ruleWindow.selectedRow !== null,
     focusRow: setFocusedRowId,
     history: mode.kind === 'edit' ? { onUndo: mode.onUndo, onRedo: mode.onRedo } : null,
-    citationKeys: !selectable,
-    citedRows,
-    revealRow: ruleWindow.scrollRowIntoView,
-    revealStop: ruleWindow.scrollStopIntoView,
   });
-  const citationKeysHinted = !selectable && citedRows.length > 0;
   const columnEditing = useColumnEditing({
     column: mode.kind === 'edit' ? mode.edit.column : undefined,
     bands,
@@ -333,11 +307,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
       {...sectionProps}
       style={frameStyle}
       aria-label={ariaLabel}
-      aria-keyshortcuts={withHint(sectionProps['aria-keyshortcuts'], citationKeysHinted && 'Enter')}
-      aria-description={withHint(
-        sectionProps['aria-description'],
-        citationKeysHinted && labels.pressEnterForSources
-      )}
       className={cn(
         scroll === 'self' ? DECISION_TEXT_FRAME_CLASS : DECISION_TEXT_INLINE_FRAME_CLASS,
         header.kind === 'own' && NUMBER_MARGIN_CLASS,
@@ -362,11 +331,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
             title={title}
             hint={policyHeader.hint}
             mark={headerMark}
-            citations={
-              citations.kind === 'cited' && citations.decision.length > 0
-                ? { citations: citations.decision, onOpen: citations.onOpenCitation }
-                : null
-            }
             ruleCount={graphLabels.ruleCount(rules.length)}
             actions={headerActions.actions}
             labels={labels}
@@ -425,7 +389,6 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
                 selectedColumnId={navigation.selectedColumnId}
                 selectable={selectable}
                 decisionLinks={onOpenDecision !== undefined}
-                citations={citations}
                 style={SENTENCE_LIST_STYLE}
                 idPrefix={idPrefix}
                 dataTestId={dataTestId}
