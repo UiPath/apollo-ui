@@ -1,4 +1,4 @@
-import type { ListItem, ToolboxEmptyStateRenderer } from '../Toolbox';
+import type { ListItem, ToolboxBelowSearchRenderer, ToolboxEmptyStateRenderer } from '../Toolbox';
 
 export interface NodeItemData {
   type: string;
@@ -33,6 +33,12 @@ export interface AddNodePanelProps {
    * When provided, replaces the built-in icon + message empty state.
    */
   renderEmptyState?: ToolboxEmptyStateRenderer<NodeItemData>;
+  /**
+   * Custom content between the search field and the list, such as suggested
+   * nodes. Receives whether a search is active and the current category, so it
+   * can hide itself (return null). Takes its height from the list.
+   */
+  renderBelowSearch?: ToolboxBelowSearchRenderer<NodeItemData>;
   /**
    * Placeholder for the search input. Should describe what will be searched,
    * such as "Search agents". Defaults to "Search nodes".

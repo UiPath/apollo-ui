@@ -22,11 +22,13 @@ vi.mock('../Toolbox', () => ({
     onClose,
     onItemSelect,
     renderEmptyState,
+    renderBelowSearch,
     searchPlaceholder,
   }: ToolboxProps<NodeItemData>) => (
     <div data-testid="toolbox-mock">
       <div data-testid="toolbox-title">{title}</div>
       <div data-testid="toolbox-search-placeholder">{searchPlaceholder}</div>
+      {renderBelowSearch?.({ isSearching: false, currentCategory: undefined })}
       <div data-testid="toolbox-items">{JSON.stringify(initialItems)}</div>
       <button type="button" data-testid="toolbox-close" onClick={onClose}>
         Close
@@ -261,6 +263,17 @@ describe('AddNodePanel', () => {
     // Should only have 1 category (agents), empty category should be filtered out
     expect(items).toHaveLength(1);
     expect(items[0].id).toBe('agent-node');
+  });
+
+  it('should forward renderBelowSearch to Toolbox', () => {
+    const renderBelowSearch = vi.fn(() => <div data-testid="below-search">suggested</div>);
+    render(<AddNodePanel {...defaultProps} renderBelowSearch={renderBelowSearch} />);
+
+    expect(screen.getByTestId('below-search')).toBeInTheDocument();
+    expect(renderBelowSearch).toHaveBeenCalledWith({
+      isSearching: false,
+      currentCategory: undefined,
+    });
   });
 
   it('should forward renderEmptyState through to Toolbox when items are empty', () => {
