@@ -1,3 +1,30 @@
+## [@uipath/apollo-react-v7.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.45.0...@uipath/apollo-react@7.46.0) (2026-11-24)
+
+### Features
+
+* **apollo-react:** drag rules to reorder them in the Text view [ECS-2139] ([da91004](https://github.com/UiPath/apollo-ui/commit/da91004decf0dc49c97432d75e4b70832a8105e0))
+* **apollo-react:** name a rule in place from its card [ECS-2139] ([e90f2e2](https://github.com/UiPath/apollo-ui/commit/e90f2e24e7f1fce075d50417d04fe6fa90917379))
+* **apollo-react:** reach a line's mark message from the keyboard on its glyph [ECS-2139] ([fcd6e26](https://github.com/UiPath/apollo-ui/commit/fcd6e26ce064e22fb827d805be951fd1a9d72a11))
+
+### Bug Fixes
+
+* **apollo-react:** anchor a rule's message to its glyph [ECS-2139] ([d15d3f4](https://github.com/UiPath/apollo-ui/commit/d15d3f4e867d19435aa1f69c33e0c648a53781dc))
+* **apollo-react:** centre a rule drag's drop line in its gap with one indicator [ECS-2139] ([1881827](https://github.com/UiPath/apollo-ui/commit/1881827e1a90785673063333d80ddec50f294b6f))
+* **apollo-react:** drop a drag where the pointer is released [ECS-2139] ([cea188f](https://github.com/UiPath/apollo-ui/commit/cea188ffea97bcea1894b4e153339ea8025256da))
+* **apollo-react:** drop a rule drag where the pointer last moved, as the grid does [ECS-2139] ([4251b95](https://github.com/UiPath/apollo-ui/commit/4251b95c3d62721740d7c88a3752024f5ef4e933))
+* **apollo-react:** drop a rule with the host's current move at the card under the pointer [ECS-2139] ([39042d7](https://github.com/UiPath/apollo-ui/commit/39042d77ea456fc5f45d1e066b2cadc26e55c399))
+* **apollo-react:** drop at release only for rule drags, leaving the grid as it was [ECS-2139] ([57d3ff7](https://github.com/UiPath/apollo-ui/commit/57d3ff7e6b77551e545d7f2129157012708d486a))
+* **apollo-react:** end an unmarked line and a title row at the card edge [ECS-2139] ([b0e3fa1](https://github.com/UiPath/apollo-ui/commit/b0e3fa19e526882fc018c4d8b2e0c40ac0ccd650))
+* **apollo-react:** end each card line in one slot and float an unnamed rule's actions [ECS-2139] ([ec0dbd5](https://github.com/UiPath/apollo-ui/commit/ec0dbd50fdd31ad349889ac27540a6e2073eea25))
+* **apollo-react:** float a card's actions at its edge unless its first line has a mark [ECS-2139] ([6f410f9](https://github.com/UiPath/apollo-ui/commit/6f410f9e026fc450e34e0d7be75a7b54d2d017a8))
+* **apollo-react:** follow a drop gap that moves under a rule drag [ECS-2139] ([9ee7e90](https://github.com/UiPath/apollo-ui/commit/9ee7e902bbed8ba8be0bc6b3b94c47febdfe6cf0))
+* **apollo-react:** keep a floating card's actions left of its glyph column [ECS-2139] ([21640cc](https://github.com/UiPath/apollo-ui/commit/21640cc66a5093fd1b382fe91829a69b6644978b))
+* **apollo-react:** leave a focused glyph's keys out of cell editing [ECS-2139] ([22a74e9](https://github.com/UiPath/apollo-ui/commit/22a74e967f914b9c9c5ea0398a13560c781d1217))
+* **apollo-react:** leave rule deletion to its menu and name the card actions in tooltips [ECS-2139] ([d0b2f7d](https://github.com/UiPath/apollo-ui/commit/d0b2f7daf5cae7f93393237709f7ac4ab178e780))
+* **apollo-react:** offer allowed values only on output columns [ECS-2139] ([1aa8052](https://github.com/UiPath/apollo-ui/commit/1aa805225d187f51737c2b4a51f095942c8aa08b))
+* **apollo-react:** show a mark's message only while the pointer is on it [ECS-2139] ([2a2d937](https://github.com/UiPath/apollo-ui/commit/2a2d937b82aa5218996a5b55dd8ea060f8a535d0))
+* **apollo-react:** size the hit-policy chip as the column chips [ECS-2139] ([44652cf](https://github.com/UiPath/apollo-ui/commit/44652cf2964fde0bc8eab5fa5a01a89441a6c5f6))
+
 ## [@uipath/apollo-react-v7.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.44.2...@uipath/apollo-react@7.45.0) (2026-11-24)
 
 ### Features
