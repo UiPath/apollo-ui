@@ -988,8 +988,8 @@ describe('DecisionText', () => {
       expect(
         slots.map((slot) => slot.querySelector('[data-glyph]')?.getAttribute('data-glyph'))
       ).toEqual(['error', 'warning']);
-      expect(slots.map((slot) => slot.style.insetInlineEnd)).toEqual(['0px', '1.375rem']);
-      expect(clause?.style.paddingInlineEnd).toBe('calc(1.75rem + 2 * 1.375rem)');
+      expect(slots.map((slot) => slot.style.insetInlineEnd)).toEqual(['0px', '1.75rem']);
+      expect(clause?.style.paddingInlineEnd).toBe('calc((2 + 1) * 1.75rem)');
     });
 
     it('puts the glyph of a cell its sentence leaves out on the heading line, once', () => {
@@ -1801,13 +1801,14 @@ describe('DecisionText', () => {
   });
 
   describe('band lists', () => {
-    it('ends the heading and every condition line of an editable card at one glyph column', () => {
+    it('runs the heading and every condition line of an editable card to the card edge', () => {
       renderView({ selected: null, onSelect: vi.fn(), edit: editWith() });
-      const edge = (element: Element | null | undefined) =>
+      const inset = (element: Element | null | undefined) =>
         element?.classList.contains(HEADING_ACTIONS_SPACE_CLASS);
       const lined = mountedRows().find((row) => row.querySelector('ul li[data-column-id]'));
-      expect(edge(lined?.querySelector('[data-sentence]'))).toBe(true);
-      expect(edge(lined?.querySelector('ul'))).toBe(true);
+      expect(inset(lined?.querySelector('[data-sentence]'))).toBe(false);
+      expect(inset(lined?.querySelector('ul'))).toBe(false);
+      expect(lined?.querySelector('ul li[data-column-id]')).toHaveClass('pe-7');
     });
 
     it('underlines every input and output name with a wave, and values while editable or on a warning', () => {
@@ -5177,9 +5178,9 @@ describe('DecisionText', () => {
       const removeEnd = (line: HTMLElement | null | undefined) =>
         line?.querySelector('[data-rule-action="clear"]')?.parentElement?.style.insetInlineEnd;
       expect(removeEnd(marked)).toBe('1.75rem');
-      expect(marked).toHaveClass('pe-[3.5rem]');
+      expect(marked).toHaveClass('pe-14');
       expect(removeEnd(plain)).toBe('0px');
-      expect(plain).not.toHaveClass('pe-[3.5rem]');
+      expect(plain).not.toHaveClass('pe-14');
     });
 
     it('puts one remove action on each condition line, revealed by that clause alone', () => {
@@ -5602,7 +5603,7 @@ describe('DecisionText', () => {
       const line = card('x').querySelector<HTMLElement>('li[data-column-id="debt"]');
       expect(slot?.style.insetInlineEnd).toBe('0px');
       expect(line?.querySelector('[data-glyph="error"]')).not.toBeNull();
-      expect(line?.className.split(' ')).toContain('pe-[3.5rem]');
+      expect(line?.className.split(' ')).toContain('pe-14');
     });
 
     describe('dragging a rule', () => {

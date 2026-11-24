@@ -8,7 +8,7 @@ import {
   ADDED_LINE_CLASS,
   CLAUSE_CLASS,
   CLAUSE_WITH_MARK_CLASS,
-  GLYPH_COLUMN_END,
+  GLYPH_SLOT,
   LINE_CLASS,
   LINE_END_MARK_CLASS,
   MATCHED_LINE_CLASS,
@@ -58,9 +58,7 @@ export const ConditionLine: React.FC<ConditionLineProps> = ({
       <LineLead matched={matched} labels={lineProps.labels} />
       {change && <span className="sr-only">{lineProps.labels.changeStatus(change)}</span>}
       <LineText parts={line.parts} {...lineProps} />
-      {removal && (
-        <RemoveConditionButtons removals={[removal]} end={badge ? GLYPH_COLUMN_END : '0px'} />
-      )}
+      {removal && <RemoveConditionButtons removals={[removal]} end={badge ? GLYPH_SLOT : '0px'} />}
       {badge && (
         <span className={LINE_END_MARK_CLASS} style={{ insetInlineEnd: '0px' }} data-line-end-mark>
           <MarkBadge {...badge} />

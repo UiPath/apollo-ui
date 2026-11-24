@@ -267,11 +267,7 @@ export const REVEALED_ACTION_CLASS =
 export const CITATION_BUTTON_CLASS =
   'gap-1 text-foreground-de-emp hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0';
 
-export const RULE_CITATIONS_CLASS = 'ms-auto flex flex-wrap justify-end gap-1';
-
-export const CITED_LINES_CLASS = 'flex flex-wrap items-end gap-x-2';
-
-export const CITED_LINE_CLASS = 'grow';
+export const RULE_CITATIONS_CLASS = 'flex flex-wrap gap-1 pb-1.5';
 
 export const HEADER_CITATIONS_CLASS = 'flex gap-1 self-center';
 
@@ -287,18 +283,18 @@ export const DELETE_RULE_CLASS = cn(
   REVEALED_ACTION_CLASS
 );
 
-export const GLYPH_COLUMN_END = '1.75rem';
+export const GLYPH_SLOT = '1.75rem';
 
-/** Its end padding must stay `GLYPH_COLUMN_END`, the slot every line's glyph or lone remove action takes. */
-export const CLAUSE_CLASS = 'group/clause relative pe-[1.75rem]';
+/** Its end padding must stay `GLYPH_SLOT`, the slot every line's glyph or lone remove action takes. */
+export const CLAUSE_CLASS = 'group/clause relative pe-7';
 
 /** A clause with a glyph and a remove action keeps a slot for each. */
-export const CLAUSE_WITH_MARK_CLASS = 'pe-[3.5rem]';
+export const CLAUSE_WITH_MARK_CLASS = 'pe-14';
 
-export const LINE_END_MARK_CLASS = 'absolute top-0 flex';
+export const LINE_END_MARK_CLASS = 'absolute top-0 flex w-6 justify-center';
 
 export const REMOVE_CONDITIONS_CLASS =
-  'absolute top-0.5 flex opacity-0 group-hover/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
+  'absolute top-1 flex opacity-0 group-hover/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
 export const REMOVE_CONDITION_CLASS =
   'size-5 shrink-0 text-foreground-de-emp hover:text-foreground';
