@@ -50,11 +50,17 @@ const sameShown = (a: ShownMark, b: ShownMark): boolean =>
 export interface MarkTooltipProps {
   /** The view whose marks it shows, and where it renders, so it reads in the view's type. */
   container: RuleWindow['container'];
+  /** Where the message renders when the view itself sits in a stacking layer; defaults to the view. */
+  portalContainer?: RuleWindow['container'];
   dataTestId: string;
 }
 
 /** One tooltip for the view: the message of the mark the pointer is on, or of the line glyph keyboard focus is on, as the host changes it, until Escape, a scroll, blur or the pointer resting off any mark. */
-export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId }) => {
+export const MarkTooltip: React.FC<MarkTooltipProps> = ({
+  container,
+  portalContainer = container,
+  dataTestId,
+}) => {
   const [shown, setShown] = useState<ShownMark | null>(null);
   const [anchorRoot, setAnchorRoot] = useState<Element | ShadowRoot | null>(null);
   useEffect(() => {
@@ -155,7 +161,7 @@ export const MarkTooltip: React.FC<MarkTooltipProps> = ({ container, dataTestId 
             style={shown ? shown.rect : { display: 'none' }}
           />
         </TooltipTrigger>
-        <TooltipPortal container={container()}>
+        <TooltipPortal container={portalContainer()}>
           <TooltipContent
             side="bottom"
             align="start"

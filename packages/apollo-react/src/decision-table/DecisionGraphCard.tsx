@@ -1,7 +1,7 @@
 import { cn, Input } from '@uipath/apollo-wind';
 import { ChevronDown, ChevronRight, CornerDownRight, Ellipsis, Network } from 'lucide-react';
 import type React from 'react';
-import { useId, useLayoutEffect, useRef } from 'react';
+import { useCallback, useId, useLayoutEffect, useRef } from 'react';
 import { CitationButtons } from './CitationButton';
 import {
   GRAPH_BODY_CLASS,
@@ -23,6 +23,7 @@ import type { DecisionGraphDecisionNode, DecisionGraphReferenceNode } from './de
 import { GridMenuButton, type GridMenuEntry } from './GridMenu';
 import { isComposing } from './gridEvents';
 import { MarkGlyph } from './MarkGlyph';
+import { MarkTooltip } from './MarkTooltip';
 import { isLineMark } from './sentenceMarks';
 import type { OpenCitation, SentenceCitation } from './sentenceTypes';
 import type { DecisionGraphLabels } from './useDecisionGraphStrings';
@@ -214,6 +215,9 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
   const headingMark = node.mark?.mark;
   const mark = isLineMark(headingMark) ? headingMark : undefined;
   const Heading = HEADINGS[Math.min(depth, HEADINGS.length - 1)] ?? 'h6';
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const headingContainer = useCallback(() => headingRef.current, []);
+  const cardContainer = useCallback(() => headingRef.current?.parentElement ?? null, []);
   return (
     <section
       ref={cardRef}
@@ -230,6 +234,7 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
       data-testid={`${dataTestId}-decision-${node.id}`}
     >
       <Heading
+        ref={headingRef}
         className={GRAPH_HEADER_CLASS}
         onDoubleClick={
           onOpen &&
@@ -302,7 +307,8 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
           <button
             type="button"
             className={GRAPH_MARK_BUTTON_CLASS}
-            title={mark.title}
+            data-mark-title={mark.title}
+            data-mark-focus
             aria-label={labels.showProblem(labels.markStatus(mark.tone, mark.title))}
             data-tone={mark.tone}
             onClick={(event) => onShowProblem(event.detail === 0)}
@@ -310,6 +316,13 @@ export const DecisionGraphCard: React.FC<DecisionGraphCardProps> = ({
           >
             <MarkGlyph tone={mark.tone} className="size-3.5" />
           </button>
+        )}
+        {mark && (
+          <MarkTooltip
+            container={headingContainer}
+            portalContainer={cardContainer}
+            dataTestId={`${dataTestId}-${node.id}`}
+          />
         )}
       </Heading>
       {open && (

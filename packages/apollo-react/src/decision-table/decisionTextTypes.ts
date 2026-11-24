@@ -62,6 +62,8 @@ export interface DecisionTextEdit<Op, Type, Refusal> extends RuleMenuActions {
   column?: ColumnEdit<Type>;
   /** The rule's name field: Enter or blur renames it to the trimmed text, Escape restores it; without it names stay read-only. */
   onRenameRule?: RenameRule;
+  /** The name field's accessible name, such as the host's annotation column name; without it "Rule name". */
+  ruleNameLabel?: string;
   /** A condition's remove action, or Delete or Backspace on a selected value: the grid's clear, for one cell; a refusal is announced. */
   onClearCell: (cell: SentenceCellId) => Refusal | void;
   /** A refusal's words, given the refused cell's column name and the values it refused. */

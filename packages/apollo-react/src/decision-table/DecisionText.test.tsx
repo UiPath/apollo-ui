@@ -6022,6 +6022,30 @@ describe('DecisionText', () => {
       expect(onRenameRule.mock.calls).toEqual([['r1', 'Old']]);
     });
 
+    it('names the field after the host\'s label, and "Rule name" without one', () => {
+      const { rerender } = render(
+        view({
+          rules: named,
+          selected: null,
+          onSelect: vi.fn(),
+          edit: editWith({ onRenameRule: vi.fn(), ruleNameLabel: 'Notes' }),
+        })
+      );
+      expect(within(card('r1')).getByRole('textbox', { name: 'Notes' })).toHaveAttribute(
+        'placeholder',
+        'Name this rule…'
+      );
+      rerender(
+        view({
+          rules: named,
+          selected: null,
+          onSelect: vi.fn(),
+          edit: editWith({ onRenameRule: vi.fn() }),
+        })
+      );
+      expect(nameField('r1')).toHaveValue('Young');
+    });
+
     it('keeps a name read-only without the callback', () => {
       render(view({ rules: named, selected: null, onSelect: vi.fn(), edit: editWith() }));
       expect(nameField('r1')).toBeNull();

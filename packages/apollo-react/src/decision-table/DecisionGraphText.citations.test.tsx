@@ -221,7 +221,7 @@ describe('DecisionGraphText citations', () => {
         mode: { kind: 'select', selected: null, onReveal },
       })
     );
-    expect(screen.getByTestId(`graph-mark-${firstId()}`)).toHaveAttribute('title', shown);
+    expect(screen.getByTestId(`graph-mark-${firstId()}`)).toHaveAttribute('data-mark-title', shown);
     screen.getByTestId(`graph-mark-${firstId()}`).focus();
     await userEvent.keyboard('{Enter}');
     expect(onReveal).toHaveBeenCalledWith({ ...target, decisionId: firstId() });
