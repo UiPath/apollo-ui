@@ -123,7 +123,7 @@ describe('DecisionTable drag: the drop slot', () => {
     pointer('pointermove', 0, H * 0.2);
     // Back where it was pressed: the copy sits on its own row again.
     pointer('pointermove', 0, H * 1.6);
-    pointer('pointerup', 0, H * 1.6);
+    pointer('pointerup');
     expect(onRowMove).not.toHaveBeenCalled();
   });
 });
@@ -475,7 +475,7 @@ describe('DecisionTable drag: ways it ends', () => {
       handle().startRowDrag(0, press(0, H * 0.6));
     });
     pointer('pointermove', 0, H * 1.6);
-    pointer('pointerup', 0, H * 1.6);
+    pointer('pointerup');
     expect(onRowMove).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('table-drag-preview').childElementCount).toBe(0);
     expect(screen.getByTestId('row-1').parentElement!.style.transform).toBe('');

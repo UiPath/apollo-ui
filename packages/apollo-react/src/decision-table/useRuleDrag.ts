@@ -117,6 +117,7 @@ export const useRuleDrag = (rowIds: readonly string[], onMoveRule: MoveRule | un
         pointer,
         edgeScroll: ({ y }) => target !== null && edgeScrollRows(target, y, stickyTopPx()),
         onPointer: retarget,
+        dropAtRelease: true,
         onDrop: () => {
           const state = dragRef.current;
           if (!state) return;
