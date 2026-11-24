@@ -1,3 +1,36 @@
+## [@uipath/apollo-wind-v2.96.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.95.3...@uipath/apollo-wind@2.96.0) (2026-11-24)
+
+### Features
+
+* **apollo-react:** switch a saved AWS connection to Bedrock once the user agrees [LLM-4518] ([ea2c2d4](https://github.com/UiPath/apollo-ui/commit/ea2c2d4746a9b78af63f8bcd4bc506b5337670bf))
+* **apollo-wind:** keep the BYO dialog's steps in order and try failed loads again [LLM-4518] ([d0bc50f](https://github.com/UiPath/apollo-ui/commit/d0bc50ff3148f4f2bfc973e0b426654f576c6c4f))
+* **apollo-wind:** name the button past a BYO failure, retry only what can change [LLM-4518] ([f666d0c](https://github.com/UiPath/apollo-ui/commit/f666d0c06655385bbd52ca1bb6dd3da5e03c30cb))
+* **apollo-wind:** name the model first in the BYO dialog, as AI Trust Layer does [LLM-4518] ([a8286ca](https://github.com/UiPath/apollo-ui/commit/a8286cac27e3bbf5b57705bafe67fc448f05670e))
+
+### Bug Fixes
+
+* **apollo-react:** check a BYO AWS connection's auth type again when switching it [LLM-4518] ([fe12d00](https://github.com/UiPath/apollo-ui/commit/fe12d0025adbdf5c391fdb86245408c09b393848))
+* **apollo-react:** suggest no retry for a BYO connection refused for good [LLM-4518] ([e404502](https://github.com/UiPath/apollo-ui/commit/e4045028cacdc5552e84adea80d3a934d51adc15))
+* **apollo-wind:** edit a custom alias from a pencil on its row [LLM-4518] ([f87b20f](https://github.com/UiPath/apollo-ui/commit/f87b20f8739633abebfe941f08b4754a6c931674))
+* **apollo-wind:** go back to the alias list on Escape in a BYO custom alias editor [LLM-4518] ([f578983](https://github.com/UiPath/apollo-ui/commit/f5789832f07f412c82b092a22654438f54705399))
+* **apollo-wind:** keep a rejected connection check from enabling save [LLM-4518] ([2156e09](https://github.com/UiPath/apollo-ui/commit/2156e09ba0705606092d69b29c3afbea1ee125ac))
+* **apollo-wind:** keep an edited model's API type across a change of provider [LLM-4518] ([dcfff2c](https://github.com/UiPath/apollo-ui/commit/dcfff2c0f81fb6179ffddb35ae4e2cba26c7d61e))
+* **apollo-wind:** keep every dismissed failure hidden in the BYO dialog [LLM-4518] ([77ed253](https://github.com/UiPath/apollo-ui/commit/77ed253f8ca3834ff2456114fcbb02d3149398ab))
+* **apollo-wind:** keep focus in a BYO alias list after leaving its custom alias editor [LLM-4518] ([323909e](https://github.com/UiPath/apollo-ui/commit/323909e58a54d760f847d24eb92a73d41be1fc33))
+* **apollo-wind:** lead the alias list with Custom, edit on a listed connection [LLM-4518] ([249dee1](https://github.com/UiPath/apollo-ui/commit/249dee1c982f93eab6a4198a1c30f37456c9c9ba))
+* **apollo-wind:** list a BYO dialog's models without a heading when none is unusable [LLM-4518] ([ec1febc](https://github.com/UiPath/apollo-ui/commit/ec1febc6ad179fa54ce43d275f8bd6c6651319bb))
+* **apollo-wind:** offer a custom alias first and stop naming connections personal [LLM-4518] ([d4961f2](https://github.com/UiPath/apollo-ui/commit/d4961f22309f58d2eaabea2a5ddf9e573b6c7598))
+* **apollo-wind:** open the alias editor when Enter is pressed on its pencil [LLM-4518] ([1afeff4](https://github.com/UiPath/apollo-ui/commit/1afeff439f041f9d9a746c6a629916adddac0706))
+* **apollo-wind:** pick a matching model on Enter in the BYO alias search [LLM-4518] ([580f637](https://github.com/UiPath/apollo-ui/commit/580f637f6e80a926b65e849e17caeeaa067edaf0))
+* **apollo-wind:** pick the model again when an edit falls back to another connection [LLM-4518] ([d2ba666](https://github.com/UiPath/apollo-ui/commit/d2ba66690df46ad0fc96c0b66fae7bf67cbf953a))
+* **apollo-wind:** restore an edited model's API type when its alias is restored [LLM-4518] ([de28683](https://github.com/UiPath/apollo-ui/commit/de286831c893384bfcc095905602c838f9144804))
+* **apollo-wind:** show a BYO failure again when a retry returns the same object [LLM-4518] ([74212d0](https://github.com/UiPath/apollo-ui/commit/74212d081b209b511358cbba66703b220fb4d2d0))
+* **apollo-wind:** show a cleared choice as cleared in the BYO dialog [LLM-4518] ([51e4394](https://github.com/UiPath/apollo-ui/commit/51e4394f59138bf914042d42f0b278d3f290d21d))
+* **apollo-wind:** show a saved BYO connection's form failure with Try again [LLM-4518] ([b4bc8c4](https://github.com/UiPath/apollo-ui/commit/b4bc8c41bcfe9db5038a29067f3016025ed5e476))
+* **apollo-wind:** take the new choice's API type and keep later failures shown [LLM-4518] ([dfd2da7](https://github.com/UiPath/apollo-ui/commit/dfd2da7f9e583b580c31e4eb2f117be787f0e3f6))
+* **apollo-wind:** use a BYO connection only once its check clears it [LLM-4518] ([4e3b74b](https://github.com/UiPath/apollo-ui/commit/4e3b74ba9877759366964120cc7a58f770059158))
+* **apollo-wind:** use a switched BYO connection as the host returned it [LLM-4518] ([24f3b44](https://github.com/UiPath/apollo-ui/commit/24f3b44b69132112a69bdc4e7c5beb36e4032f7b))
+
 ## [@uipath/apollo-wind-v2.95.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.95.2...@uipath/apollo-wind@2.95.3) (2026-11-23)
 
 ### Bug Fixes

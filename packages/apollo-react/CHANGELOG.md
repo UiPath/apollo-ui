@@ -1,3 +1,29 @@
+## [@uipath/apollo-react-v7.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.43.0...@uipath/apollo-react@7.44.0) (2026-11-24)
+
+### Features
+
+* **apollo-react:** label the BYO dialog's model alias step [LLM-4518] ([c7c2d5a](https://github.com/UiPath/apollo-ui/commit/c7c2d5a879352790e3713e448e57deee166fdbef))
+* **apollo-react:** switch a saved AWS connection to Bedrock once the user agrees [LLM-4518] ([ea2c2d4](https://github.com/UiPath/apollo-ui/commit/ea2c2d4746a9b78af63f8bcd4bc506b5337670bf))
+* **apollo-wind:** keep the BYO dialog's steps in order and try failed loads again [LLM-4518] ([d0bc50f](https://github.com/UiPath/apollo-ui/commit/d0bc50ff3148f4f2bfc973e0b426654f576c6c4f))
+* **apollo-wind:** name the button past a BYO failure, retry only what can change [LLM-4518] ([f666d0c](https://github.com/UiPath/apollo-ui/commit/f666d0c06655385bbd52ca1bb6dd3da5e03c30cb))
+
+### Bug Fixes
+
+* **apollo-react:** check a BYO AWS connection's auth type again when switching it [LLM-4518] ([fe12d00](https://github.com/UiPath/apollo-ui/commit/fe12d0025adbdf5c391fdb86245408c09b393848))
+* **apollo-react:** connect Bedrock with access keys only, for its runtime [LLM-4518] ([497d15b](https://github.com/UiPath/apollo-ui/commit/497d15b6867f6e32b3788353f5a7cbd05ecbdea2))
+* **apollo-react:** leave a saved AWS connection for another service unedited [LLM-4518] ([fe50262](https://github.com/UiPath/apollo-ui/commit/fe502627e00a8de107888ff83d3689094ea77fb1))
+* **apollo-react:** never resubmit a BYO AWS connection with an unoffered auth type [LLM-4518] ([8946741](https://github.com/UiPath/apollo-ui/commit/89467419970155a521d6598247e8a22b13f66768))
+* **apollo-react:** read a missing BYO auth type as the connector default [LLM-4518] ([a295106](https://github.com/UiPath/apollo-ui/commit/a295106b273656973b9f4a4649b1699c2f33185b))
+* **apollo-react:** read a saved BYO connection through a fresh session [LLM-4518] ([8d3bb96](https://github.com/UiPath/apollo-ui/commit/8d3bb968fb6582809363c9065e43ba7cb7cb8552))
+* **apollo-react:** read every page of folders in the BYO dialog [LLM-4518] ([38d0bf7](https://github.com/UiPath/apollo-ui/commit/38d0bf78f4ef83ef75b3e5623972e4f75fcaebab))
+* **apollo-react:** refuse BYO edits that would stay outside offered folders [LLM-4518] ([32f6d66](https://github.com/UiPath/apollo-ui/commit/32f6d66b70e100e4ffed5c3becbd4fe454971fd1))
+* **apollo-react:** save BYO connections only in folders AI Trust Layer allows [LLM-4518] ([a91796e](https://github.com/UiPath/apollo-ui/commit/a91796e03c22116bcbac65b3750cd3ab257e8317))
+* **apollo-react:** show the folder guidance in the BYO dialog's message [LLM-4518] ([4922798](https://github.com/UiPath/apollo-ui/commit/49227981d7a8dab915b23e962abfe594cc5fb2fa))
+* **apollo-react:** stop guessing from its name which BYO model can be used [LLM-4518] ([75fccc6](https://github.com/UiPath/apollo-ui/commit/75fccc6e6baad9338dcab7571e174d1b03c63ccc))
+* **apollo-react:** suggest no retry for a BYO connection refused for good [LLM-4518] ([e404502](https://github.com/UiPath/apollo-ui/commit/e4045028cacdc5552e84adea80d3a934d51adc15))
+* **apollo-react:** switch a BYO AWS connection only for an offered auth type [LLM-4518] ([a542da2](https://github.com/UiPath/apollo-ui/commit/a542da2bdb1c9cf845269b5974fca6433e2ec318))
+* **apollo-react:** word a BYO AWS connection switch without its setting name [LLM-4518] ([56520ab](https://github.com/UiPath/apollo-ui/commit/56520ab278ad8f31209d80977ce9f821203f5df9))
+
 ## [@uipath/apollo-react-v7.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.42.0...@uipath/apollo-react@7.43.0) (2026-11-24)
 
 ### Features
