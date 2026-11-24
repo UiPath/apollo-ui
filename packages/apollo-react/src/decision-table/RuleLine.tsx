@@ -1,10 +1,15 @@
 import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
+import { type RemovedLine, removedLineKey } from './decisionTextDiff';
 import { LineText, type LineTextProps } from './LineText';
 import { MarkBadge, type MarkBadgeProps } from './MarkBadge';
-import { type RemovedLine, removedLineKey } from './decisionTextDiff';
 import { type RemoveConditionButtonProps, RemoveConditionButtons } from './RemoveConditionButton';
-import { ADDED_LINE_CLASS, LINE_CLASS, REMOVED_LINE_CLASS } from './sentenceStyles';
+import {
+  ADDED_LINE_CLASS,
+  LINE_CLASS,
+  LINE_END_MARK_CLASS,
+  REMOVED_LINE_CLASS,
+} from './sentenceStyles';
 
 export interface RuleLineProps
   extends Pick<
@@ -21,16 +26,19 @@ export interface RuleLineProps
   > {
   title?: string;
   badge: MarkBadgeProps | null;
+  /** How far from its clause's end the glyph sits, in the column the condition lines' glyphs share. */
+  badgeEnd: string;
   removals: readonly RemoveConditionButtonProps[];
   /** The cells a diff changed that the line does not word, struck or added after its text. */
   unworded?: readonly RemovedLine[];
   className?: string;
 }
 
-/** A card's heading or lead: its text, the cells a diff changed that it does not word, the remove action of each condition it words, then its glyph. */
+/** A card's heading or lead: its text, the cells a diff changed that it does not word, the remove action of each condition it words, then its glyph in the card's glyph column. */
 export const RuleLine: React.FC<RuleLineProps> = ({
   title,
   badge,
+  badgeEnd,
   removals,
   unworded = [],
   className,
@@ -50,6 +58,10 @@ export const RuleLine: React.FC<RuleLineProps> = ({
       </span>
     ))}
     <RemoveConditionButtons removals={removals} />
-    {badge && <MarkBadge {...badge} />}
+    {badge && (
+      <span className={LINE_END_MARK_CLASS} style={{ insetInlineEnd: badgeEnd }} data-line-end-mark>
+        <MarkBadge {...badge} />
+      </span>
+    )}
   </div>
 );

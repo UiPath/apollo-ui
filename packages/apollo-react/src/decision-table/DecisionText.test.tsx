@@ -972,6 +972,29 @@ describe('DecisionText', () => {
       expect(carriers[0]?.querySelector(':scope > [data-glyph="warning"]')).not.toBeNull();
     });
 
+    it('puts the heading and lead glyphs in the end column the condition glyphs use', () => {
+      renderView({
+        marks: rowMarks({
+          m3: {
+            cells: {
+              score: { tone: 'warning', title: 'Overlaps row 1', glyph: true },
+              debt: { tone: 'error', title: 'Not a number', glyph: true },
+            },
+          },
+        }),
+      });
+      const clause = card('m3').querySelector<HTMLElement>('[data-sentence] > div');
+      const slots = [...card('m3').querySelectorAll<HTMLElement>('[data-line-end-mark]')];
+      expect(
+        slots.map((slot) => slot.querySelector('[data-glyph]')?.getAttribute('data-glyph'))
+      ).toEqual(['error', 'warning']);
+      expect(slots.map((slot) => slot.style.insetInlineEnd)).toEqual([
+        '1.75rem',
+        'calc(1.75rem + 1.375rem)',
+      ]);
+      expect(clause?.style.paddingInlineEnd).toBe('calc(1.75rem + 2 * 1.375rem)');
+    });
+
     it('puts the glyph of a cell its sentence leaves out on the heading line, once', () => {
       renderView({
         marks: rowMarks({

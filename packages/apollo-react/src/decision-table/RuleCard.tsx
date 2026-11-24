@@ -1,5 +1,5 @@
-import { cn } from '@uipath/apollo-wind';
 import { CSS } from '@dnd-kit/utilities';
+import { cn } from '@uipath/apollo-wind';
 import { ArrowUpDown } from 'lucide-react';
 import type React from 'react';
 import { memo } from 'react';
@@ -53,6 +53,11 @@ const CitedLine: React.FC<{ citations: React.ReactNode; children: React.ReactNod
   ) : (
     children
   );
+
+/** A clause's end padding that its single remove action sits in, as `CLAUSE_CLASS` sets it. */
+const CLAUSE_REMOVAL_END = '1.75rem';
+
+const GLYPH_SLOT = '1.375rem';
 
 const NO_REMOVALS: RuleLineProps['removals'] = [];
 
@@ -145,6 +150,16 @@ export const RuleCard = memo<RuleCardProps>(
     const cited = citations.kind === 'cited' ? (citations.rules.get(rule.rowId) ?? []) : [];
     const lined = rule.lines.length + removedLines.length > 0;
     const title = ruleTitleOf(rule);
+    const leadRemovals = card.removals.lead.length;
+    const removalsEnd =
+      leadRemovals > 1 ? `calc(${leadRemovals} * 1.25rem + 0.5rem)` : CLAUSE_REMOVAL_END;
+    const glyphs = [card.badges.heading, card.badges.lead].filter(Boolean).length;
+    const clauseEnd =
+      glyphs > 0
+        ? `calc(${removalsEnd} + ${glyphs} * ${GLYPH_SLOT})`
+        : leadRemovals > 1
+          ? removalsEnd
+          : undefined;
     const citationButtons =
       citations.kind === 'cited' && cited.length > 0 ? (
         <div className={RULE_CITATIONS_CLASS}>
@@ -216,19 +231,13 @@ export const RuleCard = memo<RuleCardProps>(
               )}
               data-sentence
             >
-              <div
-                className={CLAUSE_CLASS}
-                style={
-                  card.removals.lead.length > 1
-                    ? { paddingInlineEnd: `calc(${card.removals.lead.length} * 1.25rem + 0.5rem)` }
-                    : undefined
-                }
-              >
+              <div className={CLAUSE_CLASS} style={{ paddingInlineEnd: clauseEnd }}>
                 <RuleLine
                   heading
                   parts={rule.heading}
                   title={isLineMark(mark) ? undefined : card.title}
                   badge={card.badges.heading}
+                  badgeEnd={removalsEnd}
                   removals={NO_REMOVALS}
                   unworded={diff?.removedOutcomes}
                   className={INLINE_LINE_CLASS}
@@ -239,6 +248,9 @@ export const RuleCard = memo<RuleCardProps>(
                   className={INLINE_LINE_CLASS}
                   parts={rule.lead}
                   badge={card.badges.lead}
+                  badgeEnd={
+                    card.badges.heading ? `calc(${removalsEnd} + ${GLYPH_SLOT})` : removalsEnd
+                  }
                   removals={card.removals.lead}
                   {...lineProps}
                 />

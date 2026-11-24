@@ -288,6 +288,8 @@ export const DELETE_RULE_CLASS = cn(
 
 export const CLAUSE_CLASS = 'group/clause relative pe-7';
 
+export const LINE_END_MARK_CLASS = 'absolute top-0 flex';
+
 export const REMOVE_CONDITIONS_CLASS =
   'absolute end-0 top-0.5 flex opacity-0 group-hover/clause:opacity-100 group-has-[[data-selected]]/row:opacity-100 group-focus-within/clause:opacity-100 has-focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
