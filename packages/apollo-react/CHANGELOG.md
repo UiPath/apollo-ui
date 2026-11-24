@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.46.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.46.0...@uipath/apollo-react@7.46.1) (2026-11-24)
+
+### Bug Fixes
+
+* **apollo-react:** set the rule drag preview inert from the DOM for React 18 ([7ab9757](https://github.com/UiPath/apollo-ui/commit/7ab9757dce238fb14be0123862c5600a68727fb7))
+
 ## [@uipath/apollo-react-v7.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.45.0...@uipath/apollo-react@7.46.0) (2026-11-24)
 
 ### Features
