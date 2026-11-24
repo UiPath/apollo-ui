@@ -59,6 +59,7 @@ export const MarkBadge: React.FC<MarkBadgeProps & { focus: MarkBadgeFocus }> = (
       data-tone={tone}
       data-mark-title={markTitle}
       data-mark-focus
+      data-rule-action="mark"
     >
       {content}
     </button>
