@@ -12,6 +12,7 @@ import {
   nodeHeightSchema,
   nodeIconSizeSchema,
   nodeLabelLinesSchema,
+  nodeShadowTypeSchema,
   nodeShapeSchema,
 } from './shape';
 
@@ -97,6 +98,14 @@ export const nodeDisplayManifestSchema = z.object({
    * flush with the canvas (e.g. trigger entry points).
    */
   shadow: z.boolean().optional(),
+
+  /**
+   * Which elevation a node with a shadow uses at rest and on hover: `'default'`, or `'dense'` for
+   * graphs with many nodes. `'dense'` is much lighter than the default in light themes, and wider
+   * and a little stronger in dark ones so it stays visible. Dragging keeps the lifted shadow.
+   * Ignored when `shadow` is `false`.
+   */
+  shadowType: nodeShadowTypeSchema.optional(),
 
   /**
    * Node height in px, replacing the 96px default: 64 to 160 in 32px steps, which keep a single

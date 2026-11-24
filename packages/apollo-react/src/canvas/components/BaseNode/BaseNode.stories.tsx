@@ -1054,6 +1054,56 @@ function SizesStory() {
   );
 }
 
+function ShadowStory() {
+  // The default shadow next to `display.shadowType: 'dense'`, on a card (box-shadow) and on a
+  // clipped outline (drop-shadow filter).
+  const initialNodes = useMemo<Node<BaseNodeData>[]>(
+    () =>
+      (
+        [
+          { id: 'shadow-default', shadowType: 'default', shape: 'rectangle' },
+          { id: 'shadow-dense', shadowType: 'dense', shape: 'rectangle' },
+          { id: 'shadow-default-clipped', shadowType: 'default', shape: 'clipped' },
+          { id: 'shadow-dense-clipped', shadowType: 'dense', shape: 'clipped' },
+        ] as const
+      ).map(({ id, shadowType, shape }, index) => ({
+        ...createNode({
+          id,
+          type: 'uipath.blank-node',
+          position: {
+            x: 160 + (index % 2) * (DEFAULT_RECTANGLE_NODE_WIDTH + 96),
+            y: 180 + Math.floor(index / 2) * 192,
+          },
+          data: {
+            nodeType: 'uipath.blank-node',
+            version: '1.0.0',
+            display: {
+              label: `shadowType: '${shadowType}'`,
+              subLabel: shape,
+              shape,
+              shadowType,
+            },
+          },
+        }),
+        width: DEFAULT_RECTANGLE_NODE_WIDTH,
+      })),
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Shadow"
+        description="The default node shadow (left) next to display.shadowType: 'dense' (right), on a rectangle and on a clipped outline. In light themes 'dense' is much lighter than the default; in dark themes it is wider and a little stronger. Hover a node to compare the hover shadows. display.shadow: false removes the shadow."
+      />
+    </BaseCanvas>
+  );
+}
+
 function LabelTooltipsStory() {
   const initialNodes = useMemo<Node<BaseNodeData>[]>(
     () => [
@@ -1617,6 +1667,11 @@ export const Sizes: Story = {
 export const LabelTooltips: Story = {
   name: 'Label Tooltips',
   render: () => <LabelTooltipsStory />,
+};
+
+export const Shadow: Story = {
+  name: 'Shadow',
+  render: () => <ShadowStory />,
 };
 
 export const Handles: Story = {

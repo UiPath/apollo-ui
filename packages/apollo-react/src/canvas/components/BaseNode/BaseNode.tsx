@@ -689,6 +689,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         background={displayBackground}
         loading={data.loading}
         shadow={displayShadow}
+        shadowType={display.shadowType}
       >
         {(Icon || data.loading) && (
           <BaseInnerShape

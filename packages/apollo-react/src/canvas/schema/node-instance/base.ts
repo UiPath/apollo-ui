@@ -3,6 +3,7 @@ import {
   nodeHeightSchema,
   nodeIconSizeSchema,
   nodeLabelLinesSchema,
+  nodeShadowTypeSchema,
   nodeShapeSchema,
 } from '../node-definition/shape';
 
@@ -55,6 +56,8 @@ export const displayConfigSchema = z
     footerComponent: z.any().optional(), // React.ReactNode
     footerVariant: z.string().optional(), // FooterVariant enum
     shadow: z.boolean().optional(),
+    /** Per-node override of the manifest's `display.shadowType`. */
+    shadowType: nodeShadowTypeSchema.optional(),
     /** Per-node override of the manifest's `display.height`. */
     height: nodeHeightSchema.optional(),
     /** Per-node override of the manifest's `display.iconSize`. */

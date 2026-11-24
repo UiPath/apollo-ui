@@ -584,6 +584,19 @@ describe('BaseNode', () => {
     });
   });
 
+  describe('display.shadowType', () => {
+    it('passes the display shadowType to the container', () => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        display: { ...DEFAULT_MANIFEST.display, shadowType: 'dense' },
+      };
+      render(<BaseNode {...defaultProps} />);
+      expect(screen.getByTestId('base-container')).toHaveClass(
+        'shadow-(--canvas-node-shadow-dense-rest)'
+      );
+    });
+  });
+
   describe('Action needed badge', () => {
     it('renders as an accessible clickable control and invokes onActionNeeded', () => {
       const onActionNeeded = vi.fn();
