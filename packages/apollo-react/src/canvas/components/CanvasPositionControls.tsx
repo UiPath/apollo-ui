@@ -8,6 +8,7 @@ import { Button } from '@uipath/apollo-wind';
 import { memo, useCallback } from 'react';
 import type { CanvasTranslations } from '../types';
 import { CanvasIcon } from '../utils/icon-registry';
+import { withViewportMotion } from '../utils/transitions';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from './BaseCanvas/BaseCanvas.types';
 import { CanvasTooltip } from './CanvasTooltip';
@@ -33,10 +34,16 @@ export const CanvasPositionControls = memo(
   }: CanvasPositionControlsProps) => {
     const { zoomIn, zoomOut, fitView } = useReactFlow();
 
-    const handleZoomIn = useCallback(() => zoomIn(zoomInOptions), [zoomIn, zoomInOptions]);
-    const handleZoomOut = useCallback(() => zoomOut(zoomOutOptions), [zoomOut, zoomOutOptions]);
+    const handleZoomIn = useCallback(
+      () => zoomIn(withViewportMotion(BASE_CANVAS_DEFAULTS.zoomOptions, zoomInOptions)),
+      [zoomIn, zoomInOptions]
+    );
+    const handleZoomOut = useCallback(
+      () => zoomOut(withViewportMotion(BASE_CANVAS_DEFAULTS.zoomOptions, zoomOutOptions)),
+      [zoomOut, zoomOutOptions]
+    );
     const handleFitToView = useCallback(
-      () => fitView(fitViewOptions ?? BASE_CANVAS_DEFAULTS.fitViewOptions),
+      () => fitView(withViewportMotion(BASE_CANVAS_DEFAULTS.fitViewOptions, fitViewOptions)),
       [fitView, fitViewOptions]
     );
     const handleOrganize = useCallback(() => onOrganize?.(), [onOrganize]);

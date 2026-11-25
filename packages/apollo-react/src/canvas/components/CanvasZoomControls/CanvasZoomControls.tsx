@@ -3,6 +3,8 @@ import { BrushCleaning, Scan, ZoomIn, ZoomOut } from 'lucide-react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ToolbarButton } from '../ToolbarButton';
 import { useSafeLingui } from '../../../i18n';
+import { withViewportMotion } from '../../utils/transitions';
+import { BASE_CANVAS_DEFAULTS } from '../BaseCanvas/BaseCanvas.constants';
 
 export interface CanvasZoomControlsLabels {
   zoomIn?: string;
@@ -13,8 +15,11 @@ export interface CanvasZoomControlsLabels {
 
 export interface CanvasZoomControlsProps {
   orientation?: 'vertical' | 'horizontal';
+  /** Laid over `BASE_CANVAS_DEFAULTS.fitViewOptions` (300 ms). Any duration drops to 0 under reduced motion. */
   fitViewOptions?: { duration?: number; padding?: number; maxZoom?: number };
+  /** Laid over `BASE_CANVAS_DEFAULTS.zoomOptions` (200 ms). Any duration drops to 0 under reduced motion. */
   zoomInOptions?: { duration?: number };
+  /** Laid over `BASE_CANVAS_DEFAULTS.zoomOptions` (200 ms). Any duration drops to 0 under reduced motion. */
   zoomOutOptions?: { duration?: number };
   onOrganize?: () => void;
   onFitView?: () => void;
@@ -47,18 +52,18 @@ export const CanvasZoomControls = memo(
     const tooltipSide = isVertical ? 'left' : ('top' as const);
 
     const handleZoomIn = useCallback(() => {
-      zoomIn(zoomInOptions);
+      zoomIn(withViewportMotion(BASE_CANVAS_DEFAULTS.zoomOptions, zoomInOptions));
     }, [zoomIn, zoomInOptions]);
 
     const handleZoomOut = useCallback(() => {
-      zoomOut(zoomOutOptions);
+      zoomOut(withViewportMotion(BASE_CANVAS_DEFAULTS.zoomOptions, zoomOutOptions));
     }, [zoomOut, zoomOutOptions]);
 
     const handleFitView = useCallback(() => {
       if (onFitView) {
         onFitView();
       } else {
-        fitView(fitViewOptions);
+        fitView(withViewportMotion(BASE_CANVAS_DEFAULTS.fitViewOptions, fitViewOptions));
       }
     }, [onFitView, fitView, fitViewOptions]);
 
