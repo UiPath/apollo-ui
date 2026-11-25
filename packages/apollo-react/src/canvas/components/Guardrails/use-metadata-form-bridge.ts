@@ -64,6 +64,20 @@ function valuesEqual(a: unknown, b: unknown): boolean {
   );
 }
 
+/**
+ * Put the host's message back on a field unless it is already there.
+ *
+ * Keyed on the field's actual state rather than on what we last wrote: the schema runs in
+ * `onChange` mode, so the resolver replaces a manually-set error on the next keystroke, and
+ * a "did the message change?" guard would then never restore it — the host's verdict would
+ * vanish on the first edit and stay gone while `errors` sat unchanged.
+ */
+function applyHostError(form: NonNullable<FormContext['form']>, name: string, message: string) {
+  const current = form.getFieldState(name).error;
+  if (current?.type === 'external' && current.message === message) return;
+  form.setError(name, { type: 'external', message });
+}
+
 export function useMetadataFormBridge({
   values,
   errors,
@@ -135,24 +149,6 @@ export function useMetadataFormBridge({
   // Errors in. Only entries this hook applied are cleared, so nothing else's errors are lost.
   const appliedRef = useRef<Record<string, string>>({});
 
-  /**
-   * Put the host's message back on a field unless it is already there.
-   *
-   * Keyed on the field's actual state rather than on what we last wrote: the schema runs in
-   * `onChange` mode, so the resolver replaces a manually-set error on the next keystroke, and
-   * a "did the message change?" guard would then never restore it — the host's verdict would
-   * vanish on the first edit and stay gone while `errors` sat unchanged.
-   */
-  const applyHostError = (
-    form: NonNullable<FormContext['form']>,
-    name: string,
-    message: string
-  ) => {
-    const current = form.getFieldState(name).error;
-    if (current?.type === 'external' && current.message === message) return;
-    form.setError(name, { type: 'external', message });
-  };
-
   useEffect(() => {
     const form = formRef.current;
     if (!form) return;
@@ -204,7 +200,15 @@ export function useMetadataFormBridge({
     const openedGate = validateLive && !wasValidatingLiveRef.current;
     wasValidatingLiveRef.current = validateLive;
     if (!openedGate) return;
-    void formRef.current?.trigger();
+    // The resolver's result overwrites the external errors applied above, and a field it finds
+    // valid would lose the host's verdict on the very Save that revealed it; put them back.
+    void formRef.current?.trigger().then(() => {
+      const current = formRef.current;
+      if (!current) return;
+      for (const [name, message] of Object.entries(appliedRef.current)) {
+        applyHostError(current, name, message);
+      }
+    });
   }, [validateLive]);
 
   // Range constraints are only worth declaring if something evaluates them: this form has no

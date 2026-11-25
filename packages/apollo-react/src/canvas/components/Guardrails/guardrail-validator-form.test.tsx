@@ -1598,6 +1598,29 @@ describe('GuardrailValidatorForm', () => {
 
       expect(await screen.findByText('Must be at most 1')).toBeInTheDocument();
     });
+
+    it('keeps a host error on a value the resolver accepts when it flips true', async () => {
+      const props = {
+        parameterDefinitions: rangeDefs,
+        parameters: [{ $parameterType: 'number' as const, id: 'threshold', value: 0.5 }],
+        onChange: () => {},
+      };
+      const { rerender } = render(<GuardrailValidatorForm {...props} validateLive={false} />);
+
+      // Errors and the gate arrive together, as from the builder's first failed Save.
+      rerender(
+        <GuardrailValidatorForm
+          {...props}
+          validateLive={true}
+          errors={{ threshold: 'Rejected by the host' }}
+        />
+      );
+
+      expect(await screen.findByText('Rejected by the host')).toBeInTheDocument();
+      // The resolver settles after the gate opens; the host verdict must outlast it.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(screen.getByText('Rejected by the host')).toBeInTheDocument();
+    });
   });
 
   describe('accessibility', () => {
