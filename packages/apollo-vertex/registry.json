@@ -2006,7 +2006,7 @@
       "name": "feedback-vote-widget",
       "type": "registry:ui",
       "title": "Feedback Vote Widget",
-      "description": "A thumbs up/down feedback control with an optional comment textarea, designed for the UiPath Platform Feedback API.",
+      "description": "A thumbs up/down feedback control with an optional comment textarea. Apps submit the feedback with @uipath/vs-feedback, which routes it through the Vertical Solution Service feedback gateway.",
       "dependencies": ["lucide-react"],
       "registryDependencies": ["@uipath/button", "@uipath/textarea"],
       "files": [

@@ -4,7 +4,7 @@ title: "Feedback Vote Widget"
 
 import { FeedbackVoteWidgetTemplate } from '../../../templates/FeedbackVoteWidgetTemplate';
 
-A thumbs up / thumbs down control with an optional comment textarea. Designed to capture user sentiment on AI-generated content and integrate with the UiPath Platform Feedback API via [`@uipath/vs-feedback`](https://github.com/UiPath/vertical-solutions).
+A thumbs up / thumbs down control with an optional comment textarea, designed to capture user sentiment on AI-generated content.
 
 <div className="not-prose my-8 rounded-lg border overflow-hidden bg-gradient-to-br from-muted/40 via-background to-muted/40 dark:from-muted/20 dark:via-background dark:to-muted/20">
   <FeedbackVoteWidgetTemplate />
@@ -63,37 +63,89 @@ const [comment, setComment] = React.useState("");
 
 When `showComment` is `true`, `comment`, `onCommentChange`, and `commentPlaceholder` become required (enforced via the props' discriminated union). When omitted or `false`, the comment-related props can't be passed at all — the type system prevents inconsistent states.
 
-### Wiring to the Platform Feedback API
+### Wiring to VSS feedback
 
-Use `@uipath/vs-feedback`'s `PlatformFeedbackClient` to submit. The vote becomes `FeedbackDraft.isPositive`; the comment goes into the typed `comment` field — your mapper stringifies it on the wire.
+The widget only renders the vote; your app submits it with `@uipath/vs-feedback` 5.0.0 or later ([README](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md)), which writes through the VSS feedback service.
 
-```tsx
-import type { FeedbackDraft } from "@uipath/vs-feedback";
-import { client } from "./feedback-client"; // your PlatformFeedbackClient<MyCustom, MyComment>
-import { resolveTraceContext } from "./trace-context";
+**1. Declare the feedback type.** Keep every feedback type in one module that exports `solutionId` and `feedbackTypes`. The schema check reads this module, and every client is built from its exports.
 
-async function handleSubmit(args: {
-  vote: "up" | "down";
-  comment: string;
-  maestroInstanceId: string;
-  sectionName: string;
+```ts
+import { defineFeedbackType } from "@uipath/vs-feedback";
+
+type VoteMetadata = { itemId: string };
+type VoteComment = { text?: string };
+
+// Your solution package GUID (SolutionId in the solution's SolutionStorage.json).
+export const solutionId = "00000000-0000-0000-0000-000000000000";
+
+export const answerVote = defineFeedbackType<VoteMetadata, VoteComment>()({
+  name: "my-vertical-answer-vote",
+  metadataSchemaVersion: "1.0.0",
+  commentSchemaVersion: "1.0.0",
+});
+
+export const feedbackTypes = [answerVote] as const;
+```
+
+**2. Build the client from those exports.**
+
+```ts
+import { PlatformFeedbackClient } from "@uipath/vs-feedback";
+
+import { feedbackTypes, solutionId } from "./feedbackTypes";
+
+export function createFeedbackClient(platform: {
+  baseUrl: string; // e.g. https://cloud.uipath.com
+  orgName: string;
+  tenantName: string;
+  orgId: string;
+  tenantId: string;
+  folderKey: string; // the deployment's Orchestrator folder
+  getAuthToken: () => Promise<string>;
 }) {
-  const { traceId } = await resolveTraceContext(args.maestroInstanceId);
-
-  const draft: FeedbackDraft<MyCustom, MyComment> = {
-    traceId,
-    spanId: "", // Feedback API auto-resolves the root span
-    isPositive: args.vote === "up",
-    customFields: {
-      sectionName: args.sectionName,
-      aiProducedFields: { aiSeverity: null, aiTriaged: false },
-    },
-    comment: { text: args.comment },
-  };
-
-  await client.submit(draft);
+  return new PlatformFeedbackClient({
+    solutionId,
+    solutionName: "My Vertical",
+    feedbackTypes,
+    ...platform,
+  });
 }
 ```
+
+**3. Submit the vote.** The widget's `value` becomes `isPositive` and its `comment` goes into the comment schema you declared. `traceId` is required: use the trace id your app stored next to the agent output. Pass `agentId` and VSS tries to fill in the span and agent version from that run; if it can't, the write goes ahead without them.
+
+```ts
+import type { createFeedbackClient } from "./feedbackClient";
+
+type FeedbackClient = ReturnType<typeof createFeedbackClient>;
+
+export async function submitVote(
+  client: FeedbackClient,
+  args: {
+    vote: "up" | "down";
+    comment: string;
+    traceId: string;
+    agentId: string;
+    itemId: string;
+  },
+) {
+  await client.submit({
+    feedbackType: "my-vertical-answer-vote",
+    traceId: args.traceId,
+    agentId: args.agentId,
+    isPositive: args.vote === "up",
+    metadata: { itemId: args.itemId },
+    comment: args.comment ? { text: args.comment } : {},
+  });
+}
+```
+
+### Before you release
+
+- **Register the schema versions in VSS first.** A write is accepted only when its solution, feedback type and schema versions are registered. Open a registry PR in `vertical-solution-service` under `packages/feedback/src/registry/<vertical>/`, and get it deployed to production before you ship the app that declares those versions. See the [registry README](https://github.com/UiPath/vertical-solution-service/blob/main/packages/feedback/src/registry/README.md).
+- **Dev tenants are lenient; customer tenants are not.** In a dev tenant, an unregistered version is accepted, the row is stamped `isDev: true` and the response carries `validation: "unregistered"`. A customer tenant rejects the same write with a 400.
+- **Turn on the schema checks.** With `@uipath/vs-feedback` 6.0.0 or later, `vs-feedback declared-versions` lists the versions your types module declares, and two opt-in checks compare them with VSS, so a missing registration fails the PR or the release instead of a customer's first write. For PRs, call the shared [`vertical-solutions-check-feedback-schemas`](https://github.com/UiPath/.github/blob/master/.github/workflows/vertical-solutions-check-feedback-schemas.yml) workflow; its header lists the per-repo identity setup it needs. For releases, add [`write-declared-versions`](https://github.com/UiPath/vertical-solutions-tools/blob/main/cicd/steps/write-declared-versions.steps.yml) to the build and [`check-feedback-schemas`](https://github.com/UiPath/vertical-solutions-tools/blob/main/cicd/steps/check-feedback-schemas.steps.yml) to each deploy stage. The deploy check reads the artifact the build step publishes, so add both. The [cicd README](https://github.com/UiPath/vertical-solutions-tools/blob/main/cicd/README.md#declaring-and-checking-feedback-schema-versions) covers the deploy setup, and the SDK README section [Declaring feedback types for the schema check](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md#declaring-feedback-types-for-the-schema-check) covers what your types module must export.
+- **Read more:** the [tech spec](https://uipath.atlassian.net/wiki/spaces/VA/pages/91090157583/Feedback+capture+via+VSS+-+tech+spec) and the [`@uipath/vs-feedback` README](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md).
 
 ## API Reference
 
