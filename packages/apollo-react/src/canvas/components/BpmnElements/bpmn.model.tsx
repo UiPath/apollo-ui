@@ -34,7 +34,8 @@ export type BpmnLoop = 'loop' | 'parallel' | 'sequential';
 export type BpmnConnectionState = 'target' | 'target-picked' | 'anchor' | 'unavailable';
 
 /**
- * - `valid`: a primary wash over the element.
+ * - `valid`: a primary wash over the element, say an expanded sub-process, pool or lane that
+ *   would take the dragged node as its child.
  * - `valid-border`: a primary border and ring, for a drop onto the element's border.
  * - `invalid`: tinted error.
  *
@@ -60,8 +61,6 @@ export interface BpmnNodeData extends Record<string, unknown> {
   isEmpty?: boolean;
   /** Position of a lane among its siblings; every lane after the first draws a divider. */
   laneIndex?: number;
-  /** A node is being dragged over this expanded sub-process, pool or lane. */
-  dropTarget?: boolean;
   /** The element's part in a connection the host has in progress. The host decides validity. */
   connectionState?: BpmnConnectionState;
   /**

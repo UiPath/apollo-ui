@@ -108,7 +108,6 @@ const LOOP_GLYPH: Record<'loop' | 'parallel' | 'sequential', Glyph> = {
 const BADGE_INSET = 2;
 const NO_ADD: Position[] = [];
 const EXTERNAL_LABEL = { bottom: 'below', top: 'above', left: 'left', right: 'right' } as const;
-const DROP_TARGET = 'outline outline-2 outline-brand';
 
 type ToolbarItem = Omit<ToolbarActionItem, 'testId' | 'id' | 'onHoverChange'> & {
   id: BpmnToolbarActionId;
@@ -389,12 +388,6 @@ export const BpmnActivityNode = memo(function BpmnActivityNode(props: Props) {
       toolbar={toolbar}
     >
       {type === 'bpmn:CallActivity' && <Ring className="-inset-px border-[3px]" />}
-      {isExpanded && data.dropTarget && (
-        <span
-          data-bpmn-drop-target
-          className="pointer-events-none absolute -inset-px rounded-[inherit] border-2 border-brand"
-        />
-      )}
       {(data.icon || TaskGlyph) && (
         <BaseBadgeSlot position="top-left" inset={BADGE_INSET}>
           {data.icon ?? (TaskGlyph && <TaskGlyph size={16} />)}
@@ -617,7 +610,6 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
       toolbarOnHover={false}
     >
       <div
-        data-bpmn-drop-target={data.dropTarget || undefined}
         className={cx(
           'relative flex h-full w-full',
           ELEMENT_BORDER,
@@ -628,8 +620,7 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
           selected && selectedOutline,
           tintsFill(data)
             ? ELEMENT_STATE_FILL
-            : selected && !isPool && 'bg-foreground-accent-muted/5',
-          data.dropTarget && DROP_TARGET
+            : selected && !isPool && 'bg-foreground-accent-muted/5'
         )}
       >
         {blackBox ? (
