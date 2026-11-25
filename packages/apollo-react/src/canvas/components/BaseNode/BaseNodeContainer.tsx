@@ -190,6 +190,7 @@ export const BaseContainer = ({
           status={activeStatus}
           fill={background}
           stroke={borderColor}
+          borderStyle={borderStyle}
           borderTone={borderTone}
         />
       )}

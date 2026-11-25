@@ -109,8 +109,9 @@ const HANDLE_ID_SEPARATOR = '____';
 export const handleId = (nodeId: string, kind: 'source' | 'target', position: Position) =>
   [nodeId, kind, position].join(HANDLE_ID_SEPARATOR);
 
+// The last segment, since a node id may itself contain the separator.
 export const handleSide = (id?: string | null) =>
-  id?.split(HANDLE_ID_SEPARATOR)[2] as Position | undefined;
+  id?.split(HANDLE_ID_SEPARATOR).at(-1) as Position | undefined;
 
 /**
  * What the host (Redux thunks in PO.Frontend, story state here) does when a primitive fires.
@@ -190,6 +191,8 @@ export interface BpmnStrings {
   breakpoint: string;
   annotationPlaceholder: string;
   edgeLabelPlaceholder: string;
+  /** Accessible name of the "+" on a node's side. */
+  quickAdd: string;
 }
 
 export const DEFAULT_BPMN_STRINGS: BpmnStrings = {
@@ -206,6 +209,7 @@ export const DEFAULT_BPMN_STRINGS: BpmnStrings = {
   breakpoint: 'Breakpoint',
   annotationPlaceholder: 'Add text',
   edgeLabelPlaceholder: 'Add label',
+  quickAdd: 'Add node',
 };
 
 const BpmnStringsContext = createContext<BpmnStrings>(DEFAULT_BPMN_STRINGS);
@@ -246,6 +250,8 @@ export interface BpmnControls {
   selectedButtonOutline?: boolean;
   /** Moves the expanding "+" this many px further out from the node. */
   buttonOutset?: number;
+  /** The smallest size a resize leaves an element at. Defaults to 60x40. */
+  resizeMinimums?: { width: number; height: number };
 }
 const NO_CONTROLS: BpmnControls = {};
 const BpmnControlsContext = createContext<BpmnControls>(NO_CONTROLS);

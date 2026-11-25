@@ -97,6 +97,16 @@ export type EdgeGeometry = {
  * waypoint routing it is fed constant inputs — its memo never invalidates and
  * no smooth-step path is recomputed on coordinate changes.
  */
+/** Direction of travel along the last segment with any length, in the arrow's convention. */
+function lastSegmentAngle(points: readonly { x: number; y: number }[]) {
+  for (let i = points.length - 1; i > 0; i--) {
+    const to = points[i]!;
+    const from = points[i - 1]!;
+    if (to.x !== from.x || to.y !== from.y) return Math.atan2(to.y - from.y, to.x - from.x);
+  }
+  return undefined;
+}
+
 export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
   const {
     routing,
@@ -195,7 +205,12 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     [isHandle, handle.labelX, handle.labelY, pathPoints]
   );
 
-  const arrow = { angle: ARROW_ANGLE_MAP[targetPosition], offset: arrowOffset };
+  // A verbatim route can end at any angle, so the arrow follows its last segment.
+  const angle =
+    isWaypoint && verbatimWaypoints
+      ? (lastSegmentAngle(pathPoints) ?? ARROW_ANGLE_MAP[targetPosition])
+      : ARROW_ANGLE_MAP[targetPosition];
+  const arrow = { angle, offset: arrowOffset };
 
   if (isHandle) {
     return {

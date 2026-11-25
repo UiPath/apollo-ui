@@ -10,6 +10,7 @@ import { useBaseCanvasModeOr } from '../BaseCanvas';
 import { EDGE_CONSTANTS, EMPTY_WAYPOINTS } from '../Edges/shared/constants';
 import {
   buildPathVertices,
+  getPathArcMidpoint,
   isSegmentInteractable,
   isSegmentPerpendicular,
 } from '../Edges/shared/geometry';
@@ -233,8 +234,7 @@ function BpmnEdgeBase({
   const orthogonal = kind === 'sequence' || kind === 'message';
   // As in BPMN today: the path is only adjustable once the edge is selected.
   const editingEnabled = orthogonal && canEdit && !!selected;
-  const stored =
-    orthogonal && data?.waypoints && data.waypoints.length >= 2 ? data.waypoints : null;
+  const stored = data?.waypoints && data.waypoints.length >= 2 ? data.waypoints : null;
   const { bends, cache } = useBendWaypoints(data?.waypoints);
 
   const endDragging = useStore(
@@ -325,6 +325,15 @@ function BpmnEdgeBase({
     const first = stored[0]!;
     const last = stored[stored.length - 1]!;
     if (first.x === startX && first.y === startY && last.x === endX && last.y === endY) return;
+    // A straight kind keeps its bends as they are; routing them would make it orthogonal.
+    if (!orthogonal) {
+      setWaypoints(id, [
+        { x: startX, y: startY },
+        ...bends.map(({ x, y }) => ({ x, y })),
+        { x: endX, y: endY },
+      ]);
+      return;
+    }
     onWaypointsChange(bends);
   });
 
@@ -392,17 +401,21 @@ function BpmnEdgeBase({
   const pathPoints = geometry.pathPoints;
   const pathStart = orthogonal ? pathPoints[0] : undefined;
   const pathEnd = orthogonal ? pathPoints[pathPoints.length - 1] : undefined;
-  const originX = pathStart?.x ?? sourceAnchorX;
-  const originY = pathStart?.y ?? sourceAnchorY;
-  const tipX = pathEnd?.x ?? targetAnchorX;
-  const tipY = pathEnd?.y ?? targetAnchorY;
+  // Without a stored route these are the anchors; with one, its docks.
+  const originX = pathStart?.x ?? startX;
+  const originY = pathStart?.y ?? startY;
+  const tipX = pathEnd?.x ?? endX;
+  const tipY = pathEnd?.y ?? endY;
   const origin = useMemo(() => ({ x: originX, y: originY }), [originX, originY]);
   const tip = useMemo(() => ({ x: tipX, y: tipY }), [tipX, tipY]);
-  const straight = `M${origin.x},${origin.y} L${tip.x},${tip.y}`;
+  // A straight kind is drawn through its stored bends as given.
+  const line = useMemo(() => [origin, ...bends, tip], [origin, bends, tip]);
+  const straight = `M${line.map((point) => `${point.x},${point.y}`).join(' L')}`;
 
   // Markers follow the first and last segments, which a stored route may run at any angle.
-  const afterStart = (orthogonal && pathPoints[1]) || tip;
-  const beforeEnd = (orthogonal && pathPoints[pathPoints.length - 2]) || origin;
+  const afterStart = (orthogonal ? pathPoints[1] : line[1]) || tip;
+  const beforeEnd =
+    (orthogonal ? pathPoints[pathPoints.length - 2] : line[line.length - 2]) || origin;
   const startLength = Math.hypot(afterStart.x - origin.x, afterStart.y - origin.y);
   const startDirection = useMemo(
     () =>
@@ -417,9 +430,8 @@ function BpmnEdgeBase({
       : Math.atan2(tip.y - beforeEnd.y, tip.x - beforeEnd.x);
 
   const midPoint = useMemo(
-    () =>
-      orthogonal ? geometry.labelPoint : { x: (origin.x + tip.x) / 2, y: (origin.y + tip.y) / 2 },
-    [orthogonal, geometry.labelPoint, origin, tip]
+    () => (orthogonal ? geometry.labelPoint : getPathArcMidpoint(line)),
+    [orthogonal, geometry.labelPoint, line]
   );
   const labelPoint = data?.labelPosition ?? midPoint;
   // The toolbar stays on the path; it only clears the label when the label sits there too.
@@ -428,8 +440,8 @@ function BpmnEdgeBase({
   const hasLabel = !!data?.label || labelPlaceholder;
   const labelOnPath = hasLabel && !data?.labelPosition;
   const toolbarPosition = useMemo(
-    () => toolbarPositionAt(midPoint, orthogonal ? pathPoints : [origin, tip], labelOnPath),
-    [midPoint, orthogonal, pathPoints, origin, tip, labelOnPath]
+    () => toolbarPositionAt(midPoint, orthogonal ? pathPoints : line, labelOnPath),
+    [midPoint, orthogonal, pathPoints, line, labelOnPath]
   );
   const associationDirection = data?.associationDirection ?? 'none';
   const sourceMarker =

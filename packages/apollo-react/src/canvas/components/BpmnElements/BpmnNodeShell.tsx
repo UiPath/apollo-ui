@@ -56,6 +56,8 @@ const selectTargetSide = (nodeId: string) => (state: ReactFlowState) => {
 const ELEMENT_FILL = 'color-mix(in srgb, var(--canvas-background) 92%, transparent)';
 const noop = () => {};
 // Important, since the button's own rest and hover border colours are equally specific.
+// Flow's container minimums are sized for its cards and would snap a small BPMN element up.
+const DEFAULT_RESIZE_MINIMUMS = { width: 60, height: 40 };
 const SELECTED_BUTTON_OUTLINE = 'border-(color:--canvas-primary)!';
 // A target takes a drop anywhere on its quarter of the node, but never starts a connection, so
 // xyflow leaves it inert and the body draggable until one is in progress.
@@ -247,7 +249,21 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
   const buttonShape = useBpmnButtonShape();
   const handleStyle = buttonReveal === 'always' ? 'always' : buttonShape;
   const lifted = useBpmnOverlay();
-  const { maxZoomScale, selectedButtonOutline, buttonOutset = 0 } = useBpmnControls();
+  const {
+    maxZoomScale,
+    selectedButtonOutline,
+    buttonOutset = 0,
+    resizeMinimums = DEFAULT_RESIZE_MINIMUMS,
+  } = useBpmnControls();
+  const resizeLimits = useMemo(
+    () => ({
+      left: resizeMinimums.width,
+      right: resizeMinimums.width,
+      top: resizeMinimums.height,
+      bottom: resizeMinimums.height,
+    }),
+    [resizeMinimums.width, resizeMinimums.height]
+  );
   // Only a selected node follows the zoom, so zooming re-renders that node alone.
   const zoom = useStore(selected && maxZoomScale ? selectZoom : selectNoZoom);
   const controlScale = Math.min(Math.max(1 / zoom, 1), maxZoomScale ?? 1);
@@ -319,7 +335,8 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
       Object.fromEntries(
         SIDES.map((side) => [
           side,
-          startConnection
+          // Connecting edits the diagram, so the host is only told in design mode.
+          startConnection && canEdit
             ? {
                 ...SOURCE_HANDLE_PROPS,
                 onPointerDown: (event: React.PointerEvent) => startConnection(id, side, event),
@@ -327,7 +344,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
             : SOURCE_HANDLE_PROPS,
         ])
       ) as Record<Position, ButtonHandleHandleProps>,
-    [id, startConnection]
+    [id, startConnection, canEdit]
   );
 
   const toolbarNode = toolbarConfig && (
@@ -420,7 +437,12 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
         )}
         {/* Only with a host `resize`, so a host that draws its own resizers gets no second set. */}
         {resizable && selected && canEdit && resize && (
-          <ResizeControls onResize={onResize} onResizeStart={noop} onResizeEnd={noop} />
+          <ResizeControls
+            minimums={resizeLimits}
+            onResize={onResize}
+            onResizeStart={noop}
+            onResizeEnd={noop}
+          />
         )}
         {/* Keeps hover alive across the gap between the node and its "+" / toolbar. */}
         {connectable &&
@@ -470,6 +492,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
               buttonShape={buttonShape}
               onAction={sidesWithAdd.includes(side) ? onAdd : undefined}
               addButtonTestId={`quick-add-handle-${id}-${side}`}
+              addButtonAriaLabel={strings.quickAdd}
               addButtonClassName={
                 selectedButtonOutline && selected ? SELECTED_BUTTON_OUTLINE : undefined
               }
@@ -603,7 +626,9 @@ export const BpmnLabel = memo(function BpmnLabel({
       ? 'whitespace-nowrap'
       : multiline
         ? 'whitespace-pre-wrap wrap-break-word'
-        : 'line-clamp-3 wrap-break-word'
+        : 'line-clamp-3 wrap-break-word',
+    // An empty label still needs somewhere to double-click to add one.
+    !label && !showPlaceholder && !readonly && 'min-h-4 min-w-12'
   );
   const text = showPlaceholder ? placeholder : label;
   const textStyle = outside ? LABEL_HALO : undefined;

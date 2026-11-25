@@ -372,7 +372,7 @@ export const BpmnActivityNode = memo(function BpmnActivityNode(props: Props) {
               view(id);
             }}
             className={cx(
-              'nodrag nopan pointer-events-auto absolute top-2.5 left-1/2 h-4.5 -translate-x-1/2 gap-0.5 rounded-sm px-1.5 text-[10px] transition-opacity group-hover/bpmn-node:opacity-100',
+              'nodrag nopan pointer-events-auto absolute top-2.5 left-1/2 h-4.5 -translate-x-1/2 gap-0.5 rounded-sm px-1.5 text-[10px] transition-opacity group-hover/bpmn-node:opacity-100 focus-visible:opacity-100',
               selected ? 'opacity-100' : 'opacity-0'
             )}
           >

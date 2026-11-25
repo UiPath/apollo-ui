@@ -6,6 +6,8 @@ import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
 
+// Close to a CSS dashed border at 1px.
+const OUTLINE_DASH = '4 3';
 /** Inset so the stroke sits inside the box rather than half-outside it. */
 const EDGE = 0.5;
 /**
@@ -111,6 +113,8 @@ interface BaseNodeOutlineProps {
   fill?: string;
   /** A stroke colour that wins over the rest, hover, selection and status colours. */
   stroke?: string;
+  /** `dashed` dashes the stroke, as `BaseContainer` does a border. */
+  borderStyle?: 'solid' | 'dashed';
   /** `strong` draws a full-strength stroke at rest. Defaults to `default`. */
   borderTone?: 'default' | 'strong';
 }
@@ -134,6 +138,7 @@ export const BaseNodeOutline = memo(
     status,
     fill,
     stroke,
+    borderStyle,
     borderTone = 'default',
   }: BaseNodeOutlineProps) => {
     const strong = borderTone === 'strong';
@@ -196,6 +201,7 @@ export const BaseNodeOutline = memo(
                     : 'stroke-border')
           )}
           strokeWidth={isSelected ? 2 : 1}
+          strokeDasharray={borderStyle === 'dashed' ? OUTLINE_DASH : undefined}
           style={fill || stroke ? { fill, stroke } : undefined}
         />
       </svg>

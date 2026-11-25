@@ -26,6 +26,7 @@ import {
   bpmnEdgeTypes,
   bpmnNodeTypes,
   handleId,
+  handleSide,
 } from '.';
 
 // The shared setup mocks XYFlow; these components are checked against the real one.
@@ -889,6 +890,66 @@ describe('BPMN element family', () => {
       expect(box).toHaveAttribute('data-connection-state', 'unavailable');
       expect(box.className).toContain('opacity-30');
       expect(box.querySelector('[data-bpmn-label-overlay]')).not.toBeNull();
+    });
+  });
+
+  describe('review fixes', () => {
+    it('reads the side of a handle whose node id contains the separator', () => {
+      expect(handleSide(handleId('Task____1', 'source', Position.Right))).toBe(Position.Right);
+    });
+
+    it("leaves the host's startConnection alone outside design mode", () => {
+      const startConnection = vi.fn();
+      render(
+        <ReactFlowProvider>
+          <BaseCanvasModeProvider mode="view">
+            <BpmnActionsProvider value={{ ...requiredActions, startConnection }}>
+              <BpmnActivityNode
+                {...({
+                  id: 'task',
+                  type: 'bpmn:UserTask',
+                  data: {},
+                  width: 100,
+                  height: 80,
+                } as NodeProps<BpmnNode>)}
+              />
+            </BpmnActionsProvider>
+          </BaseCanvasModeProvider>
+        </ReactFlowProvider>
+      );
+
+      fireEvent.pointerDown(handle('source', Position.Bottom));
+      expect(startConnection).not.toHaveBeenCalled();
+    });
+
+    it('shows the sub-process "View" button while it has keyboard focus', () => {
+      renderActivity({ label: 'Ship' }, 'bpmn:SubProcess');
+
+      expect(screen.getByRole('button', { name: 'View Ship' }).className).toContain(
+        'focus-visible:opacity-100'
+      );
+    });
+
+    it('gives an empty editable label somewhere to double-click', () => {
+      renderActivity({}, 'bpmn:UserTask', { selected: true });
+
+      const text = document.querySelector('[data-node-part="label"]')!.firstElementChild!;
+      expect(text.className).toContain('min-w-12');
+      fireEvent.doubleClick(text);
+      expect(screen.getByLabelText('Edit label')).toBeInTheDocument();
+    });
+
+    it('translates the accessible name of the "+"', async () => {
+      const user = userEvent.setup();
+      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
+        strings: { quickAdd: 'Knoten hinzufügen' },
+      });
+
+      await user.hover(screen.getByText('Review'));
+      expect(screen.getAllByRole('button', { name: 'Knoten hinzufügen' }).length).toBeGreaterThan(
+        0
+      );
+      expect(screen.queryByRole('button', { name: 'Add node' })).toBeNull();
     });
   });
 });

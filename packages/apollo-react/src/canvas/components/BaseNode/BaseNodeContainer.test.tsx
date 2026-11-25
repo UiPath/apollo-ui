@@ -463,3 +463,35 @@ describe('border colour override', () => {
     );
   });
 });
+
+describe('dashed outline', () => {
+  it('dashes the stroke of an outline-drawn node', () => {
+    render(
+      <BaseContainer borderStyle="dashed" outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(
+      screen
+        .getByTestId('base-node-outline')
+        .querySelector('path')
+        ?.getAttribute('stroke-dasharray')
+    ).toBeTruthy();
+  });
+
+  it('keeps it solid by default', () => {
+    render(
+      <BaseContainer outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(
+      screen
+        .getByTestId('base-node-outline')
+        .querySelector('path')
+        ?.hasAttribute('stroke-dasharray')
+    ).toBe(false);
+  });
+});

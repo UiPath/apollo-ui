@@ -70,6 +70,7 @@ export const HandleButton = memo(
     renderLabel = true,
     portal,
     title,
+    ariaLabel,
     testId,
     buttonClassName,
     outset = 0,
@@ -105,6 +106,8 @@ export const HandleButton = memo(
     portal?: HandleButtonPortal;
     /** Native tooltip for the add button. The accessible name stays `label`-driven. */
     title?: string;
+    /** Overrides the built-in accessible name. */
+    ariaLabel?: string;
     /** `data-testid` for the add button. */
     testId?: string;
     /** Appended to the add button's own classes. */
@@ -127,7 +130,7 @@ export const HandleButton = memo(
      */
     edgeOffset?: number;
   }) => {
-    const accessibleName = label ? `Add node from ${label} handle` : 'Add node';
+    const accessibleName = ariaLabel ?? (label ? `Add node from ${label} handle` : 'Add node');
     const didDragRef = useRef(false);
     const teardownRef = useRef<(() => void) | null>(null);
 

@@ -47,6 +47,20 @@ describe('BPMN edge label', () => {
       expect(screen.queryByLabelText('Edit label')).not.toBeInTheDocument();
     });
 
+    it('keeps editing on a click or double-click inside the editor', () => {
+      const onRename = vi.fn();
+      renderLabel({ text: 'Yes', onRename });
+
+      fireEvent.doubleClick(screen.getByText('Yes'));
+      const editor = screen.getByLabelText('Edit label');
+      fireEvent.change(editor, { target: { value: 'Approved' } });
+      fireEvent.click(editor);
+      fireEvent.doubleClick(editor);
+
+      expect(screen.getByLabelText('Edit label')).toHaveValue('Approved');
+      expect(onRename).not.toHaveBeenCalled();
+    });
+
     it('stores on blur and discards on Escape', () => {
       const onRename = vi.fn();
       renderLabel({ text: 'Yes', onRename });

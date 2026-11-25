@@ -897,6 +897,12 @@ describe('ButtonHandle host options', () => {
         expect(notch()).not.toHaveClass('bg-brand');
       });
 
+      it('anchors on the node even when a different connection side is given', () => {
+        renderHandle({ anchor: 'node', position: Position.Left, connectionPosition: Position.Top });
+
+        expect(grabZone()).toHaveAttribute('data-handlepos', 'left');
+      });
+
       it('fills the notch while highlighted, as hover does', () => {
         const { unmount } = renderHandle({ anchor: 'node' });
         expect(grabZone().querySelector('.border-2')).not.toHaveClass('bg-brand');

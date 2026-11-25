@@ -176,12 +176,17 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
           // The label sits outside the edge's own element, so a click selects the flow here. It
           // also takes focus to the edge, where xyflow listens for Escape to deselect.
           onClick={() => {
+            // A click in the editor places the caret; taking focus to the edge would commit.
+            if (edit.isEditing) return;
             const { elementsSelectable, addSelectedEdges, domNode } = store.getState();
             if (!elementsSelectable) return;
             if (!selected) addSelectedEdges([edgeId]);
             focusEdge(domNode, edgeId);
           }}
-          onDoubleClick={onRename ? edit.handleDoubleClick(edit.labelInputRef) : undefined}
+          // While editing, a double-click selects a word instead of restarting from the stored text.
+          onDoubleClick={
+            onRename && !edit.isEditing ? edit.handleDoubleClick(edit.labelInputRef) : undefined
+          }
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}

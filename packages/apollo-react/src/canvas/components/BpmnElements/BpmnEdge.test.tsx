@@ -434,4 +434,23 @@ describe('BPMN association', () => {
     association({ associationDirection: 'both' });
     expect(chevrons()).toEqual(['220,40', '100,40']);
   });
+
+  it('draws an association through its stored docks and bends', () => {
+    render(
+      tree(
+        edgeProps({
+          waypoints: [
+            { x: 100, y: 30 },
+            { x: 160, y: 10 },
+            { x: 220, y: 50 },
+          ],
+        }),
+        baseActions,
+        undefined,
+        BpmnAssociationEdge
+      )
+    );
+
+    expect(path().getAttribute('d')).toBe('M100,30 L160,10 L220,50');
+  });
 });

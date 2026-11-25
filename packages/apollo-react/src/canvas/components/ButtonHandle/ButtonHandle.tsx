@@ -76,6 +76,8 @@ type ButtonHandleProps = {
   nodeHeight?: number;
   portalAction?: boolean;
   addButtonTitle?: string;
+  /** Accessible name of the add button, in place of the built-in English one. */
+  addButtonAriaLabel?: string;
   /** `data-testid` for the add button. */
   addButtonTestId?: string;
   /** Appended to the add button's own classes. */
@@ -185,7 +187,7 @@ const ButtonHandleBase = ({
   nodeId,
   type,
   position,
-  connectionPosition = position,
+  connectionPosition: requestedConnectionPosition = position,
   handleType,
   label,
   labelIcon,
@@ -208,6 +210,7 @@ const ButtonHandleBase = ({
   nodeHeight,
   portalAction = false,
   addButtonTitle,
+  addButtonAriaLabel,
   addButtonTestId,
   addButtonClassName,
   buttonOutset,
@@ -222,6 +225,8 @@ const ButtonHandleBase = ({
   handleProps,
   elementRef,
 }: ButtonHandleProps) => {
+  // A node-anchored handle always connects on its own side, as documented.
+  const connectionPosition = anchor === 'node' ? position : requestedConnectionPosition;
   const handleRef = useRef<HTMLDivElement>(null);
   // Where node-anchored visuals are portalled: beside the handle, out of reach of its clip.
   const [handleParent, setVisualsContainer] = useState<HTMLElement | null>(null);
@@ -447,6 +452,7 @@ const ButtonHandleBase = ({
             onMouseLeave={handleButtonMouseLeave}
             handleRef={handleRef}
             title={addButtonTitle}
+            ariaLabel={addButtonAriaLabel}
             testId={addButtonTestId}
             buttonClassName={addButtonClassName}
             outset={buttonOutset}
@@ -497,6 +503,7 @@ const ButtonHandleBase = ({
           onMouseLeave={handleButtonMouseLeave}
           handleRef={handleRef}
           title={addButtonTitle}
+          ariaLabel={addButtonAriaLabel}
           testId={addButtonTestId}
           buttonClassName={addButtonClassName}
           outset={buttonOutset}
