@@ -106,11 +106,11 @@ export type BpmnEdge = Edge<BpmnEdgeData>;
 
 const HANDLE_ID_SEPARATOR = '____';
 
-export const handleId = (nodeId: string, kind: 'source' | 'target', position: Position) =>
+export const bpmnHandleId = (nodeId: string, kind: 'source' | 'target', position: Position) =>
   [nodeId, kind, position].join(HANDLE_ID_SEPARATOR);
 
 // The last segment, since a node id may itself contain the separator.
-export const handleSide = (id?: string | null) =>
+export const bpmnHandleSide = (id?: string | null) =>
   id?.split(HANDLE_ID_SEPARATOR).at(-1) as Position | undefined;
 
 /** The node toolbar's buttons, as named in `hoverToolbarAction` and their `toolbar-item-` test ids. */
@@ -230,17 +230,17 @@ export const useBpmnStrings = () => useContext(BpmnStringsContext);
 
 /** How the "+" on a handle appears: full size at once, or small until the handle is hovered. */
 export type BpmnButtonReveal = 'always' | 'expand-on-hover';
-const BpmnButtonRevealContext = createContext<BpmnButtonReveal>('expand-on-hover');
-export const BpmnButtonRevealProvider = BpmnButtonRevealContext.Provider;
-export const useBpmnButtonReveal = () => useContext(BpmnButtonRevealContext);
-
 export type BpmnButtonShape = 'rounded' | 'circle';
-const BpmnButtonShapeContext = createContext<BpmnButtonShape>('circle');
-export const BpmnButtonShapeProvider = BpmnButtonShapeContext.Provider;
-export const useBpmnButtonShape = () => useContext(BpmnButtonShapeContext);
 
-/** How a node's toolbar and "+" buttons look and sit. Every field is off unless given. */
+/** How a node's toolbar and "+" buttons look and sit. */
 export interface BpmnControls {
+  /**
+   * How the "+" on a handle appears: full size at once, or small until the handle is hovered.
+   * Defaults to `expand-on-hover`.
+   */
+  buttonReveal?: BpmnButtonReveal;
+  /** With `expand-on-hover`, the shape of the expanding "+". Defaults to `circle`. */
+  buttonShape?: BpmnButtonShape;
   /**
    * Keeps a selected node's toolbar and "+" buttons from shrinking as the canvas zooms out:
    * they scale by the inverse of the zoom, up to this factor.

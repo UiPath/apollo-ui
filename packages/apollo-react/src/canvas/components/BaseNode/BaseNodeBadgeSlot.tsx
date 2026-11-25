@@ -3,7 +3,7 @@ import { NODE_BADGE_SIZE } from '../../constants';
 import type { NodeShape } from '../../schema';
 import { getNodeBadgeInset } from './BaseNodeBadgeSlot.utils';
 
-interface BaseBadgeSlotProps {
+export interface BaseBadgeSlotProps {
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   shape?: NodeShape;
   /** Distance from the corner. Defaults to the inset for `shape`. */

@@ -10,6 +10,7 @@ import { cx } from '../../utils/CssUtil';
 import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
 import {
   getHandleActionPortal,
+  getHandleHitRegionClipPath,
   getInwardHandleLayout,
   type InwardHandleLayout,
 } from './ButtonHandleLayoutUtils';
@@ -87,11 +88,6 @@ type ButtonHandleProps = {
   /** Scales the "+" and its label, growing away from the node. Defaults to 1. */
   buttonScale?: number;
   /**
-   * `outer` starts a connection only from the half of the handle outside the node, so small
-   * nodes stay draggable by their body. Defaults to `full`.
-   */
-  hitArea?: 'full' | 'outer';
-  /**
    * `expand-on-hover` makes the "+" the handle itself: a small button against the node in place
    * of the notch, growing outward to full size while the pointer is over it or the node is
    * selected. Defaults to `always` (notch plus a full-size button beyond it).
@@ -103,8 +99,8 @@ type ButtonHandleProps = {
    * `node` makes the xyflow handle fill the node's box, so edges anchor on the node's border
    * instead of 12px outside it. The notch, "+" and label are then portalled into the handle's
    * parent, so `hitRegion`'s clip cannot hide them, and a shown notch starts a connection like
-   * the handle itself. Supports one handle per side; ignores `hitArea` and a `connectionPosition`
-   * that differs from `position`.
+   * the handle itself. Supports one handle per side; ignores a `connectionPosition` that differs
+   * from `position`.
    * Defaults to `edge` (a box straddling the node's edge).
    */
   anchor?: 'edge' | 'node';
@@ -115,8 +111,6 @@ type ButtonHandleProps = {
    * lands on the nearest side. Defaults to `strip`.
    */
   hitRegion?: 'strip' | 'quadrant';
-  /** Depth of the `strip` hit region in px. Defaults to 8. */
-  hitRegionDepth?: number;
   /**
    * With `anchor="node"`, where the notch, "+" and label are portalled instead of the handle's
    * parent: an element the size of the node, for a host that draws them in a layer above the
@@ -130,11 +124,7 @@ type ButtonHandleProps = {
    * `onMouseLeave` only cover the "+" button.
    */
   handleProps?: ButtonHandleHandleProps;
-  /** Receives the handle's DOM element. */
-  elementRef?: React.Ref<HTMLDivElement>;
 };
-
-const DEFAULT_HIT_REGION_DEPTH_PX = 8;
 
 const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation();
 
@@ -147,40 +137,6 @@ const NODE_ANCHOR_STYLE = {
   height: '100%',
   transform: 'none',
 } as const;
-
-const QUADRANT_CLIP_PATH: Record<Position, string> = {
-  [Position.Top]: 'polygon(50% 50%, 0% 0%, 100% 0%)',
-  [Position.Right]: 'polygon(50% 50%, 100% 0%, 100% 100%)',
-  [Position.Bottom]: 'polygon(50% 50%, 100% 100%, 0% 100%)',
-  [Position.Left]: 'polygon(50% 50%, 0% 100%, 0% 0%)',
-};
-
-/** `clip-path` limiting a node-filling handle to its `hitRegion`. */
-export const getHandleHitRegionClipPath = (
-  position: Position,
-  hitRegion: 'strip' | 'quadrant' = 'strip',
-  depth: number = DEFAULT_HIT_REGION_DEPTH_PX
-): string => {
-  if (hitRegion === 'quadrant') return QUADRANT_CLIP_PATH[position];
-  const rest = `calc(100% - ${depth}px)`;
-  switch (position) {
-    case Position.Top:
-      return `inset(0 0 ${rest} 0)`;
-    case Position.Right:
-      return `inset(0 0 0 ${rest})`;
-    case Position.Bottom:
-      return `inset(${rest} 0 0 0)`;
-    default:
-      return `inset(0 ${rest} 0 0)`;
-  }
-};
-
-const OUTER_HIT_AREA: Record<Position, string> = {
-  [Position.Top]: 'inset-x-0 top-0 h-1/2',
-  [Position.Bottom]: 'inset-x-0 bottom-0 h-1/2',
-  [Position.Left]: 'inset-y-0 left-0 w-1/2',
-  [Position.Right]: 'inset-y-0 right-0 w-1/2',
-};
 
 const ButtonHandleBase = ({
   id,
@@ -215,15 +171,12 @@ const ButtonHandleBase = ({
   addButtonClassName,
   buttonOutset,
   buttonScale,
-  hitArea = 'full',
   buttonReveal = 'always',
   buttonShape = 'rounded',
   anchor = 'edge',
   hitRegion = 'strip',
-  hitRegionDepth = DEFAULT_HIT_REGION_DEPTH_PX,
   visualsContainer: hostVisualsContainer,
   handleProps,
-  elementRef,
 }: ButtonHandleProps) => {
   // A node-anchored handle always connects on its own side, as documented.
   const connectionPosition = anchor === 'node' ? position : requestedConnectionPosition;
@@ -235,13 +188,8 @@ const ButtonHandleBase = ({
     (element: HTMLDivElement | null) => {
       handleRef.current = element;
       if (anchor === 'node' && element) setVisualsContainer(element.parentElement);
-      if (typeof elementRef === 'function') {
-        elementRef(element);
-      } else if (elementRef) {
-        (elementRef as React.MutableRefObject<HTMLDivElement | null>).current = element;
-      }
     },
-    [anchor, elementRef]
+    [anchor]
   );
   const {
     className: hostClassName,
@@ -549,7 +497,7 @@ const ButtonHandleBase = ({
         )}
         style={{
           ...NODE_ANCHOR_STYLE,
-          clipPath: getHandleHitRegionClipPath(position, hitRegion, hitRegionDepth),
+          clipPath: getHandleHitRegionClipPath(position, hitRegion),
           ...hostStyle,
         }}
       >
@@ -617,8 +565,6 @@ const ButtonHandleBase = ({
       className={cx(
         'flex! items-center! justify-center! border-0! rounded-none! bg-transparent!',
         visible ? 'opacity-100' : 'pointer-events-none! opacity-0',
-        // z-20 keeps the outer strip above the node toolbar's hover bridge.
-        hitArea === 'outer' && 'pointer-events-none! z-20',
         hostClassName
       )}
       style={{
@@ -632,9 +578,6 @@ const ButtonHandleBase = ({
         ...hostStyle,
       }}
     >
-      {hitArea === 'outer' && visible && (
-        <span className={cx('absolute pointer-events-auto', OUTER_HIT_AREA[position])} />
-      )}
       {notch}
       {actionOrLabel}
     </Handle>

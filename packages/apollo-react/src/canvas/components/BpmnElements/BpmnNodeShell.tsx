@@ -23,11 +23,9 @@ import { NodeToolbar } from '../Toolbar/NodeToolbar';
 import type { ToolbarAction } from '../Toolbar/shared/toolbar.types';
 import {
   type BpmnNodeData,
-  handleId,
-  handleSide,
+  bpmnHandleId,
+  bpmnHandleSide,
   useBpmnActions,
-  useBpmnButtonReveal,
-  useBpmnButtonShape,
   useBpmnControls,
   useBpmnOverlay,
   useBpmnStrings,
@@ -49,7 +47,9 @@ const selectNoZoom = () => 1;
 // The side of this node a dragged connection would end on, if it can.
 const selectTargetSide = (nodeId: string) => (state: ReactFlowState) => {
   const { inProgress, toHandle, isValid } = state.connection;
-  return inProgress && isValid && toHandle?.nodeId === nodeId ? handleSide(toHandle.id) : undefined;
+  return inProgress && isValid && toHandle?.nodeId === nodeId
+    ? bpmnHandleSide(toHandle.id)
+    : undefined;
 };
 // As BPMN fills elements today: the canvas background, a step darker than Flow's raised card in
 // dark themes, and slightly translucent so an overlapped element's outline still shows through.
@@ -245,16 +245,16 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
   const canEdit = useBaseCanvasModeOr('design') === 'design';
   const { addAfter, startConnection, resize } = useBpmnActions();
   const strings = useBpmnStrings();
-  const buttonReveal = useBpmnButtonReveal();
-  const buttonShape = useBpmnButtonShape();
-  const handleStyle = buttonReveal === 'always' ? 'always' : buttonShape;
   const lifted = useBpmnOverlay();
   const {
+    buttonReveal = 'expand-on-hover',
+    buttonShape = 'circle',
     maxZoomScale,
     selectedButtonOutline,
     buttonOutset = 0,
     resizeMinimums = DEFAULT_RESIZE_MINIMUMS,
   } = useBpmnControls();
+  const handleStyle = buttonReveal === 'always' ? 'always' : buttonShape;
   const resizeLimits = useMemo(
     () => ({
       left: resizeMinimums.width,
@@ -461,7 +461,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
           SIDES.map((side) => (
             <ButtonHandle
               key={`target-${side}`}
-              id={handleId(id, 'target', side)}
+              id={bpmnHandleId(id, 'target', side)}
               nodeId={id}
               type="target"
               position={side}
@@ -477,7 +477,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
           SIDES.map((side) => (
             <ButtonHandle
               key={`source-${side}`}
-              id={handleId(id, 'source', side)}
+              id={bpmnHandleId(id, 'source', side)}
               nodeId={id}
               type="source"
               position={side}

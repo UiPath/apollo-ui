@@ -761,7 +761,6 @@ function ExpandingNode({
           visible={active}
           showButton={active}
           selected={selected}
-          hitArea="outer"
           buttonReveal="expand-on-hover"
           buttonShape={data.buttonShape}
           onAction={handleAction}
@@ -794,7 +793,7 @@ function ExpandingButtonStory() {
     <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
       <StoryInfoPanel
         title="Expanding add button"
-        description='Opt-in: buttonReveal="expand-on-hover" with hitArea="outer". Hover a node for the small buttons, hover a handle to expand it, select the node to expand them all.'
+        description='Opt-in: buttonReveal="expand-on-hover". Hover a node for the small buttons, hover a handle to expand it, select the node to expand them all.'
       />
     </BaseCanvas>
   );

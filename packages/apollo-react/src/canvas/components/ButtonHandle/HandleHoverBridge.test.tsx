@@ -43,8 +43,7 @@ describe('HandleButton as the handle', () => {
     expect(stack(renderButton({ shape: 'circle' })).style.marginLeft).toBe('-20px');
   });
 
-  it('keeps the same spot when the parent ends at the node edge', () => {
-    expect(stack(renderButton({ shape: 'circle', edgeOffset: 0 })).style.marginLeft).toBe('-8px');
-    expect(stack(renderButton({ shape: 'rounded', edgeOffset: 0 })).style.marginLeft).toBe('2px');
+  it('pulls a small rounded button in by less than a circle', () => {
+    expect(stack(renderButton({ shape: 'rounded' })).style.marginLeft).toBe('-10px');
   });
 });

@@ -40,7 +40,7 @@ export const getStatusBorder = (
   }
 };
 
-interface BaseContainerProps {
+export interface BaseContainerProps {
   isSelected?: boolean;
   isHovered?: boolean;
   isStacked?: boolean;

@@ -25,9 +25,9 @@ import {
   BpmnSwimlaneNode,
   BpmnTextAnnotationNode,
   bpmnEdgeTypes,
+  bpmnHandleId,
+  bpmnHandleSide,
   bpmnNodeTypes,
-  handleId,
-  handleSide,
 } from '.';
 
 // The shared setup mocks XYFlow; these components are checked against the real one.
@@ -115,7 +115,7 @@ const toolbarButtons = () =>
     .filter((name) => name && name !== 'Add node');
 
 const handle = (kind: 'source' | 'target', side: Position) =>
-  document.querySelector(`[data-handleid="${handleId('task', kind, side)}"]`) as HTMLElement;
+  document.querySelector(`[data-handleid="${bpmnHandleId('task', kind, side)}"]`) as HTMLElement;
 
 describe('BPMN element family', () => {
   it('renders in a plain ReactFlow, with no canvas mode provider', () => {
@@ -129,9 +129,9 @@ describe('BPMN element family', () => {
         id: 'flow',
         type: 'bpmn:SequenceFlow',
         source: 'start',
-        sourceHandle: handleId('start', 'source', Position.Right),
+        sourceHandle: bpmnHandleId('start', 'source', Position.Right),
         target: 'task',
-        targetHandle: handleId('task', 'target', Position.Left),
+        targetHandle: bpmnHandleId('task', 'target', Position.Left),
       },
     ];
 
@@ -229,7 +229,7 @@ describe('BPMN element family', () => {
       renderActivity({});
 
       const visuals = document.querySelector(
-        `[data-handle-visuals="${handleId('task', 'target', Position.Left)}"]`
+        `[data-handle-visuals="${bpmnHandleId('task', 'target', Position.Left)}"]`
       );
       expect(visuals?.querySelector('.border-2')).toHaveClass('opacity-0');
       expect(visuals?.querySelector('[data-handle-grab-zone]')).toBeNull();
@@ -323,7 +323,7 @@ describe('BPMN element family', () => {
       // The left side has no "+", so it shows its notch once the node is hovered.
       await user.hover(screen.getByText('Review'));
       const notch = document.querySelector(
-        `[data-handle-grab-zone][data-handleid="${handleId('task', 'source', Position.Left)}"]`
+        `[data-handle-grab-zone][data-handleid="${bpmnHandleId('task', 'source', Position.Left)}"]`
       ) as HTMLElement;
       fireEvent.pointerDown(notch);
 
@@ -801,7 +801,7 @@ describe('BPMN element family', () => {
 
     const notchOn = (side: Position) =>
       document.querySelector(
-        `[data-handle-visuals="${handleId('task', 'source', side)}"] .border-2.opacity-100`
+        `[data-handle-visuals="${bpmnHandleId('task', 'source', side)}"] .border-2.opacity-100`
       );
 
     it("fills the notch on the side the host's own connection is over", () => {
@@ -844,7 +844,7 @@ describe('BPMN element family', () => {
               inProgress: true,
               isValid,
               toHandle: {
-                id: handleId('task', 'target', Position.Top),
+                id: bpmnHandleId('task', 'target', Position.Top),
                 nodeId: 'task',
                 type: 'target',
                 position: Position.Top,
@@ -896,7 +896,9 @@ describe('BPMN element family', () => {
 
   describe('review fixes', () => {
     it('reads the side of a handle whose node id contains the separator', () => {
-      expect(handleSide(handleId('Task____1', 'source', Position.Right))).toBe(Position.Right);
+      expect(bpmnHandleSide(bpmnHandleId('Task____1', 'source', Position.Right))).toBe(
+        Position.Right
+      );
     });
 
     it("leaves the host's startConnection alone outside design mode", () => {

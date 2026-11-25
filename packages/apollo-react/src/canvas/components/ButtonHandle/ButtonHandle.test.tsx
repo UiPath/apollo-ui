@@ -4,7 +4,8 @@ import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import type { ButtonHandleConfig, HandleMouseEvent } from './ButtonHandle';
-import { ButtonHandle, ButtonHandles, getHandleHitRegionClipPath } from './ButtonHandle';
+import { ButtonHandle, ButtonHandles } from './ButtonHandle';
+import { getHandleHitRegionClipPath } from './ButtonHandleLayoutUtils';
 
 // Mock @xyflow/react Handle component
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
@@ -689,20 +690,6 @@ describe('ButtonHandle opt-in interaction options', () => {
     expect(notch()).toHaveClass('opacity-100');
   });
 
-  it('limits the grab zone to the half outside the node for hitArea="outer"', () => {
-    renderHandle({ hitArea: 'outer' });
-
-    const handle = screen.getByTestId('handle');
-    expect(handle).toHaveClass('pointer-events-none!');
-    expect(handle.querySelector('span.pointer-events-auto')).toHaveClass('right-0', 'w-1/2');
-  });
-
-  it('drops the outer grab zone while the handle is hidden', () => {
-    renderHandle({ hitArea: 'outer', visible: false });
-
-    expect(screen.getByTestId('handle').querySelector('span.pointer-events-auto')).toBeNull();
-  });
-
   describe('buttonReveal="expand-on-hover"', () => {
     it('shows a small button in place of the notch until the handle is hovered', async () => {
       const user = userEvent.setup();
@@ -834,12 +821,6 @@ describe('ButtonHandle host options', () => {
       expect(getHandleHitRegionClipPath(position)).toBe(clipPath);
       renderHandle({ anchor: 'node', position });
       expect(handle().style.clipPath).toBe(clipPath);
-    });
-
-    it('sizes the strip from hitRegionDepth', () => {
-      renderHandle({ anchor: 'node', hitRegionDepth: 14 });
-
-      expect(handle().style.clipPath).toBe('inset(0 0 0 calc(100% - 14px))');
     });
 
     it.each([
@@ -1066,30 +1047,15 @@ describe('ButtonHandle host options', () => {
       expect(onMouseLeave).toHaveBeenCalledTimes(1);
       expect(screen.getByRole('button')).toHaveClass('h-4');
     });
-
-    it('hands the handle element to elementRef, as an object or a callback', () => {
-      const objectRef = { current: null as HTMLDivElement | null };
-      const { unmount } = renderHandle({ anchor, elementRef: objectRef });
-      expect(objectRef.current).toBe(handle());
-      unmount();
-      expect(objectRef.current).toBeNull();
-
-      const callbackRef = vi.fn();
-      renderHandle({ anchor, elementRef: callbackRef });
-      expect(callbackRef).toHaveBeenCalledWith(handle());
-    });
   });
 
-  it('forwards handleProps and elementRef to an inward handle as well', () => {
-    const elementRef = { current: null as HTMLDivElement | null };
+  it('forwards handleProps to an inward handle as well', () => {
     renderHandle({
       connectionPosition: Position.Left,
-      elementRef,
       handleProps: { className: 'host-class', 'data-role': 'loop' },
     });
 
     expect(handle()).toHaveClass('host-class');
     expect(handle()).toHaveAttribute('data-role', 'loop');
-    expect(elementRef.current).toBe(handle());
   });
 });

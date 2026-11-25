@@ -148,3 +148,32 @@ export function getInwardHandleLayout(
       };
   }
 }
+
+// Depth of a node-anchored handle's `strip` hit region.
+const HIT_REGION_DEPTH_PX = 8;
+
+const QUADRANT_CLIP_PATH: Record<Position, string> = {
+  [Position.Top]: 'polygon(50% 50%, 0% 0%, 100% 0%)',
+  [Position.Right]: 'polygon(50% 50%, 100% 0%, 100% 100%)',
+  [Position.Bottom]: 'polygon(50% 50%, 100% 100%, 0% 100%)',
+  [Position.Left]: 'polygon(50% 50%, 0% 100%, 0% 0%)',
+};
+
+/** `clip-path` limiting a node-filling handle to its `hitRegion`. */
+export const getHandleHitRegionClipPath = (
+  position: Position,
+  hitRegion: 'strip' | 'quadrant' = 'strip'
+): string => {
+  if (hitRegion === 'quadrant') return QUADRANT_CLIP_PATH[position];
+  const rest = `calc(100% - ${HIT_REGION_DEPTH_PX}px)`;
+  switch (position) {
+    case Position.Top:
+      return `inset(0 0 ${rest} 0)`;
+    case Position.Right:
+      return `inset(0 0 0 ${rest})`;
+    case Position.Bottom:
+      return `inset(${rest} 0 0 0)`;
+    default:
+      return `inset(0 ${rest} 0 0)`;
+  }
+};

@@ -36,13 +36,11 @@ export type {
 } from './bpmn.model';
 export {
   BpmnActionsProvider,
-  BpmnButtonRevealProvider,
-  BpmnButtonShapeProvider,
   BpmnControlsProvider,
   BpmnOverlayProvider,
   BpmnStringsProvider,
+  bpmnHandleId,
+  bpmnHandleSide,
   DEFAULT_BPMN_STRINGS,
-  handleId,
-  handleSide,
   useBpmnActions,
 } from './bpmn.model';

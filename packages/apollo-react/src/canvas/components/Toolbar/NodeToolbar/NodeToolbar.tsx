@@ -4,12 +4,8 @@ import { memo, useMemo } from 'react';
 import { CanvasIcon } from '../../../utils/icon-registry';
 import { CanvasTooltip } from '../../CanvasTooltip';
 import { NodeViewportOverlay } from '../../NodeViewportOverlay';
-import {
-  type ExtendedToolbarAction,
-  ToolbarButton,
-  ToolbarIconButton,
-  useActionHover,
-} from '../shared';
+import { type ExtendedToolbarAction, ToolbarButton, ToolbarIconButton } from '../shared';
+import { useActionHover } from '../shared/useActionHover';
 import type { NodeToolbarProps } from './NodeToolbar.types';
 import { isSeparator } from './NodeToolbar.utils';
 import { useToolbarState } from './useToolbarState';

@@ -19,7 +19,6 @@ const BUTTON_POSITION: Record<Position, string> = {
 // is centred on the node's edge when small, where the notch would be.
 const ANCHOR_INSET_PX = { rounded: 10, circle: 20 } as const;
 // Half of a `ButtonHandle`'s 24px cross-axis: how far its box reaches outside the node.
-const HANDLE_REACH_PX = 12;
 const ANCHOR_MARGIN: Record<Position, 'marginBottom' | 'marginTop' | 'marginRight' | 'marginLeft'> =
   {
     [Position.Top]: 'marginBottom',
@@ -77,7 +76,6 @@ export const HandleButton = memo(
     scale = 1,
     compact,
     shape = 'rounded',
-    edgeOffset = HANDLE_REACH_PX,
   }: {
     visible?: boolean;
     labelVisible?: boolean;
@@ -123,12 +121,6 @@ export const HandleButton = memo(
     compact?: boolean;
     /** Only applies when `compact` is set. */
     shape?: 'rounded' | 'circle';
-    /**
-     * With `compact` set: how far outside the node the positioned parent ends. Defaults to the
-     * 12px a `ButtonHandle` reaches; pass 0 when the parent ends at the node's edge, as a host's
-     * own handle may.
-     */
-    edgeOffset?: number;
   }) => {
     const accessibleName = ariaLabel ?? (label ? `Add node from ${label} handle` : 'Add node');
     const didDragRef = useRef(false);
@@ -265,8 +257,7 @@ export const HandleButton = memo(
         className={cx('absolute flex items-center pointer-events-none', BUTTON_POSITION[position])}
         style={{
           ...(compact !== undefined && {
-            [ANCHOR_MARGIN[position]]:
-              HANDLE_REACH_PX - edgeOffset - ANCHOR_INSET_PX[shape] + outset,
+            [ANCHOR_MARGIN[position]]: outset - ANCHOR_INSET_PX[shape],
           }),
           // A string, since React 18 appends `px` to a number here.
           ...(scale !== 1 && { scale: String(scale), transformOrigin: SCALE_ORIGIN[position] }),

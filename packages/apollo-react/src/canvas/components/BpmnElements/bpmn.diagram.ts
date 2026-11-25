@@ -9,7 +9,7 @@ import {
   type BpmnEventDefinition,
   type BpmnNode,
   type BpmnNodeData,
-  handleId,
+  bpmnHandleId,
 } from './bpmn.model';
 
 const { Left, Right, Top, Bottom } = Position;
@@ -50,8 +50,8 @@ function edge(
     type,
     source,
     target,
-    sourceHandle: handleId(source, 'source', sourceSide),
-    targetHandle: handleId(target, 'target', targetSide),
+    sourceHandle: bpmnHandleId(source, 'source', sourceSide),
+    targetHandle: bpmnHandleId(target, 'target', targetSide),
     data,
   };
 }

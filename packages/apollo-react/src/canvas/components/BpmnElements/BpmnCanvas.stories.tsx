@@ -34,9 +34,7 @@ import {
   type BpmnActions,
   BpmnActionsProvider,
   type BpmnButtonReveal,
-  BpmnButtonRevealProvider,
   type BpmnButtonShape,
-  BpmnButtonShapeProvider,
   type BpmnControls,
   BpmnControlsProvider,
   type BpmnEdge,
@@ -45,8 +43,8 @@ import {
   type BpmnNode,
   BpmnOverlayProvider,
   BpmnStringsProvider,
-  handleId,
-  handleSide,
+  bpmnHandleId,
+  bpmnHandleSide,
 } from './bpmn.model';
 
 const STORY_STRINGS = { edgeLabelPlaceholder: 'Double-click to add label' };
@@ -234,14 +232,14 @@ function BpmnCanvasStory({
   const onConnect = useCallback(
     ({ source, target, sourceHandle, targetHandle }: Connection) => {
       // Loose mode lets a drag end on a source handle; BPMN stores the target-side id.
-      const side = handleSide(targetHandle) ?? Position.Left;
+      const side = bpmnHandleSide(targetHandle) ?? Position.Left;
       const edge: BpmnEdge = {
         id: newId('Flow'),
         type: connectionType(nodes, source, target),
         source,
         target,
         sourceHandle,
-        targetHandle: handleId(target, 'target', side),
+        targetHandle: bpmnHandleId(target, 'target', side),
         data: {},
       };
       setEdges((current) => [...current, edge]);
@@ -298,8 +296,8 @@ function BpmnCanvasStory({
             type: 'bpmn:SequenceFlow',
             source: nodeId,
             target: id,
-            sourceHandle: handleId(nodeId, 'source', side),
-            targetHandle: handleId(id, 'target', OPPOSITE[side]),
+            sourceHandle: bpmnHandleId(nodeId, 'source', side),
+            targetHandle: bpmnHandleId(id, 'target', OPPOSITE[side]),
             data: {},
           },
         ]);
@@ -391,7 +389,7 @@ function BpmnCanvasStory({
         const parentId = containerOf(nodes, from);
         const container = originOf(nodes, parentId);
         const size = defaultSize('bpmn:Task');
-        const enters = OPPOSITE[handleSide(split.sourceHandle) ?? Position.Right];
+        const enters = OPPOSITE[bpmnHandleSide(split.sourceHandle) ?? Position.Right];
         setNodes((current) =>
           select(current, {
             id,
@@ -414,7 +412,7 @@ function BpmnCanvasStory({
                   {
                     ...edge,
                     target: id,
-                    targetHandle: handleId(id, 'target', enters),
+                    targetHandle: bpmnHandleId(id, 'target', enters),
                     data: { ...edge.data, waypoints: undefined },
                   },
                   {
@@ -422,7 +420,7 @@ function BpmnCanvasStory({
                     type: edge.type,
                     source: id,
                     target: edge.target,
-                    sourceHandle: handleId(id, 'source', OPPOSITE[enters]),
+                    sourceHandle: bpmnHandleId(id, 'source', OPPOSITE[enters]),
                     targetHandle: edge.targetHandle,
                     data: {},
                   },
@@ -461,11 +459,13 @@ function BpmnCanvasStory({
 
   const controls = useMemo<BpmnControls>(
     () => ({
+      buttonReveal,
+      buttonShape,
       maxZoomScale: zoomScale ? 2.5 : undefined,
       selectedButtonOutline,
       buttonOutset,
     }),
-    [zoomScale, selectedButtonOutline, buttonOutset]
+    [buttonReveal, buttonShape, zoomScale, selectedButtonOutline, buttonOutset]
   );
   const stackedEdges = useMemo(
     () => (overlay ? edges.map((edge) => ({ ...edge, zIndex: STACKED_EDGE_Z_INDEX })) : edges),
@@ -476,46 +476,40 @@ function BpmnCanvasStory({
     <BpmnStringsProvider strings={STORY_STRINGS}>
       <BpmnOverlayProvider value={overlay ? OVERLAY : null}>
         <BpmnActionsProvider value={actions}>
-          <BpmnButtonRevealProvider value={buttonReveal}>
-            <BpmnButtonShapeProvider value={buttonShape}>
-              <BpmnControlsProvider value={controls}>
-                <BaseCanvas
-                  nodes={nodes}
-                  edges={stackedEdges}
-                  nodeTypes={storyNodeTypes}
-                  edgeTypes={bpmnEdgeTypes}
-                  onNodesChange={onNodesChange}
-                  onEdgesChange={onEdgesChange}
-                  onConnect={onConnect}
-                  deleteKeyCode={DELETE_KEYS}
-                  mode="design"
-                  fitView
-                  fitViewOptions={FIT_VIEW}
-                >
-                  <StoryInfoPanel title={title} collapsible defaultCollapsed>
-                    <ul className="mt-2 max-w-80 list-disc space-y-1 pl-4 text-xs text-foreground-muted">
-                      <li>Cards, hover, selection and status: BaseContainer</li>
-                      <li>Diamond and data shapes: BaseNodeOutline with a host path</li>
-                      <li>Handles and "+": ButtonHandle, shown by resolveNodeHandleAffordances</li>
-                      <li>Actions: NodeToolbar and EdgeToolbar</li>
-                      <li>Corner badges: BaseBadgeSlot; label editing: useInlineLabelEditing</li>
-                      <li>
-                        Edges: EdgePath, EdgeArrow, EdgeLabel, the waypoint editor and line jumps
-                      </li>
-                      <li>Pools, lanes, groups and annotations: apollo tokens only</li>
-                    </ul>
-                  </StoryInfoPanel>
-                  {hoveredAction && (
-                    <Panel position="top-center">
-                      <div className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-foreground-muted">
-                        Hovering "{hoveredAction.action}" on {hoveredAction.nodeId}
-                      </div>
-                    </Panel>
-                  )}
-                </BaseCanvas>
-              </BpmnControlsProvider>
-            </BpmnButtonShapeProvider>
-          </BpmnButtonRevealProvider>
+          <BpmnControlsProvider value={controls}>
+            <BaseCanvas
+              nodes={nodes}
+              edges={stackedEdges}
+              nodeTypes={storyNodeTypes}
+              edgeTypes={bpmnEdgeTypes}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              deleteKeyCode={DELETE_KEYS}
+              mode="design"
+              fitView
+              fitViewOptions={FIT_VIEW}
+            >
+              <StoryInfoPanel title={title} collapsible defaultCollapsed>
+                <ul className="mt-2 max-w-80 list-disc space-y-1 pl-4 text-xs text-foreground-muted">
+                  <li>Cards, hover, selection and status: BaseContainer</li>
+                  <li>Diamond and data shapes: BaseNodeOutline with a host path</li>
+                  <li>Handles and "+": ButtonHandle, shown by resolveNodeHandleAffordances</li>
+                  <li>Actions: NodeToolbar and EdgeToolbar</li>
+                  <li>Corner badges: BaseBadgeSlot; label editing: useInlineLabelEditing</li>
+                  <li>Edges: EdgePath, EdgeArrow, EdgeLabel, the waypoint editor and line jumps</li>
+                  <li>Pools, lanes, groups and annotations: apollo tokens only</li>
+                </ul>
+              </StoryInfoPanel>
+              {hoveredAction && (
+                <Panel position="top-center">
+                  <div className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-foreground-muted">
+                    Hovering "{hoveredAction.action}" on {hoveredAction.nodeId}
+                  </div>
+                </Panel>
+              )}
+            </BaseCanvas>
+          </BpmnControlsProvider>
         </BpmnActionsProvider>
       </BpmnOverlayProvider>
     </BpmnStringsProvider>
