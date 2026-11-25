@@ -63,6 +63,8 @@ type ButtonHandleProps = {
   showButton?: boolean;
   isLocked?: boolean;
   selected?: boolean;
+  /** Fills the notch as hover does, for a handle a connection is about to end on. */
+  highlighted?: boolean;
   index?: number; // 0-based index of this handle on the edge
   total?: number; // Total number of handles on this edge
   onAction?: (event: HandleActionEvent) => void;
@@ -194,6 +196,7 @@ const ButtonHandleBase = ({
   showButton = true,
   isLocked = false,
   selected = false,
+  highlighted = false,
   index = 0,
   total = 1,
   onAction,
@@ -407,7 +410,7 @@ const ButtonHandleBase = ({
           handleType={handleType}
           isVertical={isVertical}
           selected={selected}
-          hovered={isHovered}
+          hovered={isHovered || highlighted}
           showNotch={showNotches}
           label={label}
           labelIcon={labelIcon}
@@ -477,7 +480,7 @@ const ButtonHandleBase = ({
       handleType={handleType}
       isVertical={isVertical}
       selected={selected}
-      hovered={isHovered}
+      hovered={isHovered || highlighted}
       showNotch={notchShown}
     />
   );

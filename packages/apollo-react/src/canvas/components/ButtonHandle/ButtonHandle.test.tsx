@@ -897,6 +897,15 @@ describe('ButtonHandle host options', () => {
         expect(notch()).not.toHaveClass('bg-brand');
       });
 
+      it('fills the notch while highlighted, as hover does', () => {
+        const { unmount } = renderHandle({ anchor: 'node' });
+        expect(grabZone().querySelector('.border-2')).not.toHaveClass('bg-brand');
+        unmount();
+
+        renderHandle({ anchor: 'node', highlighted: true });
+        expect(grabZone().querySelector('.border-2')).toHaveClass('bg-brand');
+      });
+
       it('is inert while the notch or the handle is hidden', () => {
         const { unmount } = renderHandle({ anchor: 'node', showNotches: false });
         expect(grabZone()).toBeNull();

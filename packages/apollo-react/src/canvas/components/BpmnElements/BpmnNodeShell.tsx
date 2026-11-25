@@ -24,6 +24,7 @@ import type { ToolbarAction } from '../Toolbar/shared/toolbar.types';
 import {
   type BpmnNodeData,
   handleId,
+  handleSide,
   useBpmnButtonReveal,
   useBpmnButtonShape,
   useBpmnControls,
@@ -45,6 +46,11 @@ const BRIDGE_EXTENT = { circle: 28, rounded: 38, always: undefined } as const;
 const BUTTON_SIZE = 28;
 const selectZoom = (state: ReactFlowState) => state.transform[2];
 const selectNoZoom = () => 1;
+// The side of this node a dragged connection would end on, if it can.
+const selectTargetSide = (nodeId: string) => (state: ReactFlowState) => {
+  const { inProgress, toHandle, isValid } = state.connection;
+  return inProgress && isValid && toHandle?.nodeId === nodeId ? handleSide(toHandle.id) : undefined;
+};
 // As BPMN fills elements today: the canvas background, a step darker than Flow's raised card in
 // dark themes, and slightly translucent so an overlapped element's outline still shows through.
 const ELEMENT_FILL = 'color-mix(in srgb, var(--canvas-background) 92%, transparent)';
@@ -249,6 +255,10 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
   const extraReach = handleStyle === 'always' ? 0 : buttonOutset + BUTTON_SIZE * (controlScale - 1);
   const [overlayElement, setOverlayElement] = useState<HTMLDivElement | null>(null);
   const state = resolveElementState(data);
+  const selectTarget = useMemo(() => selectTargetSide(id), [id]);
+  const draggedTo = useStore(selectTarget);
+  // The visible notch is the source handle's: the target handle that takes the drop has none.
+  const targetSide = draggedTo ?? data.connectionSide;
 
   const affordances = resolveNodeHandleAffordances({
     isConnecting,
@@ -258,7 +268,11 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
     canEdit,
     multipleNodesSelected,
   });
-  const { shouldShowHandles } = affordances;
+  // A connection the host runs is unknown to xyflow, so its targets show their notches here.
+  const shouldShowHandles =
+    affordances.shouldShowHandles ||
+    data.connectionState === 'target' ||
+    data.connectionState === 'target-picked';
   const isAddButtonVisible = affordances.isAddButtonVisible && !state.quiet;
 
   const onAdd = useCallback(
@@ -448,6 +462,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
               visible={shouldShowHandles}
               showButton={isAddButtonVisible && sidesWithAdd.includes(side)}
               selected={selected}
+              highlighted={side === targetSide}
               anchor="node"
               hitRegion="strip"
               handleProps={sourceHandleProps[side]}

@@ -64,6 +64,11 @@ export interface BpmnNodeData extends Record<string, unknown> {
   dropTarget?: boolean;
   /** The element's part in a connection the host has in progress. The host decides validity. */
   connectionState?: BpmnConnectionState;
+  /**
+   * The side a connection the host runs itself (click-to-connect) would end on, to fill that
+   * side's notch. A connection xyflow drags is picked up without it.
+   */
+  connectionSide?: Position;
   /** Whether the node being dragged over this element can be dropped on it. */
   dropState?: BpmnDropState;
   /** Side of an event, gateway or data node its label sits on. Defaults to `bottom`. */

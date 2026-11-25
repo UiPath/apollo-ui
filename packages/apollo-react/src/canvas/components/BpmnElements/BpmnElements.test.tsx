@@ -1,8 +1,13 @@
 import userEvent from '@testing-library/user-event';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Position, ReactFlow, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  Position,
+  ReactFlow,
+  ReactFlowProvider,
+  useStoreApi,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '../../utils/testing';
+import { act, fireEvent, render, screen } from '../../utils/testing';
 import { BaseCanvasModeProvider } from '../BaseCanvas';
 import {
   type BpmnActions,
@@ -790,6 +795,71 @@ describe('BPMN element family', () => {
         </ReactFlowProvider>
       );
       expect(document.querySelector('.bg-\\(--bpmn-element-fill\\)')).not.toBeNull();
+    });
+
+    const notchOn = (side: Position) =>
+      document.querySelector(
+        `[data-handle-visuals="${handleId('task', 'source', side)}"] .border-2.opacity-100`
+      );
+
+    it("fills the notch on the side the host's own connection is over", () => {
+      renderActivity({ connectionState: 'target-picked', connectionSide: Position.Right });
+
+      expect(notchOn(Position.Right)).toHaveClass('bg-brand');
+      expect(notchOn(Position.Left)).not.toHaveClass('bg-brand');
+    });
+
+    it('fills the notch on the side a dragged connection would end on', () => {
+      let store!: ReturnType<typeof useStoreApi>;
+      const Probe = () => {
+        store = useStoreApi();
+        return null;
+      };
+      render(
+        <ReactFlowProvider>
+          <Probe />
+          <BpmnActionsProvider value={actions}>
+            <BpmnActivityNode
+              {...({
+                id: 'task',
+                type: 'bpmn:UserTask',
+                data: {},
+                width: 100,
+                height: 80,
+              } as NodeProps<BpmnNode>)}
+            />
+          </BpmnActionsProvider>
+        </ReactFlowProvider>
+      );
+      // Not hovered or selected, so its notches only show once a connection starts.
+      expect(notchOn(Position.Top)).toBeNull();
+
+      const connect = (isValid: boolean) =>
+        act(() =>
+          store.setState({
+            connection: {
+              ...store.getState().connection,
+              inProgress: true,
+              isValid,
+              toHandle: {
+                id: handleId('task', 'target', Position.Top),
+                nodeId: 'task',
+                type: 'target',
+                position: Position.Top,
+                x: 0,
+                y: 0,
+                width: 100,
+                height: 80,
+              },
+            } as never,
+          })
+        );
+      connect(true);
+      expect(notchOn(Position.Top)).toHaveClass('bg-brand');
+      expect(notchOn(Position.Bottom)).not.toHaveClass('bg-brand');
+
+      connect(false);
+      expect(notchOn(Position.Top)).not.toHaveClass('bg-brand');
     });
 
     it('carries the state to the overlay box, where the outside label is drawn', () => {
