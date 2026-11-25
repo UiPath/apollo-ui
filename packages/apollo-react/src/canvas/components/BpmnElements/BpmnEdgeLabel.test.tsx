@@ -62,6 +62,29 @@ describe('BPMN edge label', () => {
       expect(onRename).toHaveBeenCalledWith('flow', 'Kept');
     });
 
+    it('keeps a context menu on the editor from reaching the flow', () => {
+      const onContextMenu = vi.fn();
+      render(
+        <div onContextMenu={onContextMenu}>
+          <ReactFlowProvider>
+            <BpmnEdgeLabel
+              edgeId="flow"
+              x={0}
+              y={0}
+              borderColor="red"
+              text="Yes"
+              onRename={vi.fn()}
+            />
+          </ReactFlowProvider>
+        </div>
+      );
+
+      fireEvent.doubleClick(screen.getByText('Yes'));
+      fireEvent.contextMenu(screen.getByLabelText('Edit label'));
+
+      expect(onContextMenu).not.toHaveBeenCalled();
+    });
+
     it('starts from a translatable placeholder when there is no label', () => {
       const onRename = vi.fn();
       renderLabel({ onRename }, { edgeLabelPlaceholder: 'Beschriftung' });

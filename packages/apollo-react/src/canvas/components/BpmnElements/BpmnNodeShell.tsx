@@ -429,14 +429,23 @@ export const BpmnLabel = memo(function BpmnLabel({
     onChange,
   });
 
-  const { handleKeyDown } = edit;
+  const { handleKeyDown, setLocalLabel } = edit;
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // Kept from the canvas, and left to the textarea to add the line.
-      if (multiline && event.key === 'Enter') event.stopPropagation();
-      else handleKeyDown(event);
+      // Plain Enter commits, as in a single-line label; Shift or Alt with it adds a line.
+      if (!multiline || event.key !== 'Enter' || !(event.shiftKey || event.altKey)) {
+        handleKeyDown(event);
+        return;
+      }
+      // Kept from the canvas. A textarea adds the line for Shift+Enter but not for Alt+Enter.
+      event.stopPropagation();
+      if (event.shiftKey) return;
+      event.preventDefault();
+      const textarea = event.currentTarget;
+      textarea.setRangeText('\n', textarea.selectionStart, textarea.selectionEnd, 'end');
+      setLocalLabel(textarea.value);
     },
-    [multiline, handleKeyDown]
+    [multiline, handleKeyDown, setLocalLabel]
   );
   // The hook skips the save when focus moves to its sub-label input, and with none mounted it
   // reads focus leaving for nowhere as that case. Name the document so the blur commits.
@@ -464,6 +473,8 @@ export const BpmnLabel = memo(function BpmnLabel({
       onChange={(event) => edit.setLocalLabel(event.target.value)}
       onKeyDown={onKeyDown}
       onBlur={onBlur}
+      // A host's node menu stays closed during an edit; the browser's own still opens.
+      onContextMenu={(event) => event.stopPropagation()}
       className="nodrag nopan nowheel pointer-events-auto field-sizing-content max-w-full resize-none rounded-sm border-none bg-transparent px-1 font-[inherit] text-xs leading-4 font-semibold text-foreground outline-1 outline-dashed outline-border-de-emp"
     />
   );

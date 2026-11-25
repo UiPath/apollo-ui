@@ -493,20 +493,77 @@ describe('BPMN element family', () => {
       expect(document.querySelector('.line-clamp-3')).toBeNull();
     });
 
-    it('keeps editing on Enter and stores every line on blur', () => {
+    const editAnnotation = (label?: string) => {
       rename.mockReset();
-      renderNode(BpmnTextAnnotationNode, minimalActions);
+      renderNode(BpmnTextAnnotationNode, minimalActions, { data: { label } });
+      fireEvent.doubleClick(screen.getByText(label ?? 'Add text'));
+      return screen.getByLabelText('Edit label') as HTMLTextAreaElement;
+    };
 
-      fireEvent.doubleClick(screen.getByText('Add text'));
-      const editor = screen.getByLabelText('Edit label');
-      expect(fireEvent.keyDown(editor, { key: 'Enter' })).toBe(true);
+    it('stores every line on plain Enter', () => {
+      const editor = editAnnotation();
+
+      fireEvent.change(editor, { target: { value: 'One\nTwo' } });
+      fireEvent.keyDown(screen.getByLabelText('Edit label'), { key: 'Enter' });
+
+      expect(rename).toHaveBeenCalledWith('node', 'One\nTwo');
+      expect(screen.queryByLabelText('Edit label')).not.toBeInTheDocument();
+    });
+
+    it('leaves Shift+Enter to the textarea, which adds the line', () => {
+      const editor = editAnnotation();
+
+      // Not cancelled, so the textarea handles the key itself.
+      expect(fireEvent.keyDown(editor, { key: 'Enter', shiftKey: true })).toBe(true);
+
       expect(rename).not.toHaveBeenCalled();
+      expect(screen.getByLabelText('Edit label')).toBeInTheDocument();
+    });
+
+    it('adds a line at the caret on Alt+Enter and keeps editing', () => {
+      const editor = editAnnotation('OneTwo');
+      editor.setSelectionRange(3, 3);
+
+      fireEvent.keyDown(editor, { key: 'Enter', altKey: true });
+
+      expect(screen.getByLabelText('Edit label')).toHaveValue('One\nTwo');
+      expect(rename).not.toHaveBeenCalled();
+    });
+
+    it('stores on blur', () => {
+      const editor = editAnnotation();
 
       fireEvent.change(editor, { target: { value: 'One\nTwo' } });
       fireEvent.blur(screen.getByLabelText('Edit label'));
 
       expect(rename).toHaveBeenCalledWith('node', 'One\nTwo');
-      expect(screen.queryByLabelText('Edit label')).not.toBeInTheDocument();
+    });
+
+    it('keeps a context menu on the editor from reaching the node', () => {
+      const onContextMenu = vi.fn();
+      rename.mockReset();
+      render(
+        <div onContextMenu={onContextMenu}>
+          <ReactFlowProvider>
+            <BpmnActionsProvider value={minimalActions}>
+              <BpmnTextAnnotationNode
+                {...({
+                  id: 'node',
+                  data: { label: 'Note' },
+                  selected: true,
+                } as NodeProps<BpmnNode>)}
+              />
+            </BpmnActionsProvider>
+          </ReactFlowProvider>
+        </div>
+      );
+
+      fireEvent.contextMenu(screen.getByText('Note'));
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+
+      fireEvent.doubleClick(screen.getByText('Note'));
+      fireEvent.contextMenu(screen.getByLabelText('Edit label'));
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
     });
 
     it('ends editing on Escape without storing', () => {

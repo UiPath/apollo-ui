@@ -139,6 +139,8 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
             onChange={(event) => edit.setLocalLabel(event.target.value)}
             onKeyDown={edit.handleKeyDown}
             onBlur={onBlur}
+            // A host's edge menu stays closed during an edit; the browser's own still opens.
+            onContextMenu={(event) => event.stopPropagation()}
             className="nowheel field-sizing-content block max-w-full min-w-8 resize-none border-none bg-transparent p-0 font-[inherit] text-inherit outline-none"
           />
         ) : (
