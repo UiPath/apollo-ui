@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.48.0...@uipath/apollo-react@7.49.0) (2026-11-25)
+
+### Features
+
+* **apollo-react:** let a node manifest choose its height [MST-18541] ([ebe6e64](https://github.com/UiPath/apollo-ui/commit/ebe6e644eea136086c779e7ce094327731664bbc))
+
 ## [@uipath/apollo-react-v7.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.47.0...@uipath/apollo-react@7.48.0) (2026-11-25)
 
 ### Features
