@@ -21,15 +21,7 @@ import {
 // The shared setup mocks XYFlow; the edge is checked against the real store.
 vi.unmock('@uipath/apollo-react/canvas/xyflow/react');
 
-// Both portal into containers that only a mounted ReactFlow provides.
-vi.mock('../Edges/shared/primitives', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../Edges/shared/primitives')>()),
-  EdgeLabel: ({ x, y, text }: { x: number; y: number; text: string }) => (
-    <text data-testid="edge-label" data-x={x} data-y={y}>
-      {text}
-    </text>
-  ),
-}));
+// The label portals into a container that only a mounted ReactFlow provides.
 vi.mock('./BpmnEdgeLabel', () => ({
   BpmnEdgeLabel: ({
     x,
@@ -101,9 +93,15 @@ function StoreProbe() {
 
 const tree = (
   props: EdgeProps<BpmnEdge>,
-  actions: BpmnActions = baseActions,
-  strings?: React.ComponentProps<typeof BpmnStringsProvider>['strings'],
-  Flow: typeof BpmnSequenceFlowEdge = BpmnSequenceFlowEdge
+  {
+    actions = baseActions,
+    strings,
+    Flow = BpmnSequenceFlowEdge,
+  }: {
+    actions?: BpmnActions;
+    strings?: React.ComponentProps<typeof BpmnStringsProvider>['strings'];
+    Flow?: typeof BpmnSequenceFlowEdge;
+  } = {}
 ) => (
   <ReactFlowProvider>
     <StoreProbe />
@@ -117,15 +115,30 @@ const tree = (
   </ReactFlowProvider>
 );
 
+/** Marks `node` as dragged or dropped, with `children` placed inside it. */
+const drag = (node: string, dragging: boolean, children: string[] = []) =>
+  act(() =>
+    store.setState({
+      nodeLookup: new Map<string, object>([
+        ...children.map((id) => [id, { parentId: node, dragging: false }] as const),
+        [node, { dragging }],
+      ]) as never,
+    })
+  );
+
+type Vertex = [number, number];
 const path = () => document.querySelector('.react-flow__edge-path') as SVGPathElement;
 const arrow = () => document.querySelector('[data-bpmn-arrow]') as SVGPathElement;
-/** The arrowhead's vertices: one wing, the tip, the other wing. */
-const arrowVertices = () =>
+/** An arrowhead's vertices: one wing, the tip, the other wing. */
+const vertices = (head: Element) =>
   [
-    ...arrow()
-      .getAttribute('d')!
-      .matchAll(/(-?[\d.]+),(-?[\d.]+)/g),
-  ].map((match) => [Number(match[1]), Number(match[2])] as [number, number]);
+    ...(head.getAttribute('d') ?? head.getAttribute('points')!).matchAll(/(-?[\d.]+),(-?[\d.]+)/g),
+  ].map((match) => [Number(match[1]), Number(match[2])] as Vertex);
+/** The direction from the tip back to the middle of the wings, i.e. back along the flow. */
+const backAngle = (head: Element) => {
+  const [wing, tip, other] = vertices(head) as [Vertex, Vertex, Vertex];
+  return Math.atan2((wing[1] + other[1]) / 2 - tip[1], (wing[0] + other[0]) / 2 - tip[0]);
+};
 const reconnect = (end: 'source' | 'target') =>
   document.querySelector(`[data-bpmn-reconnect="${end}"]`) as SVGCircleElement;
 
@@ -141,50 +154,52 @@ beforeEach(() => {
   setWaypoints.mockReset();
 });
 
-describe('BPMN sequence flow', () => {
-  describe('stroke width', () => {
-    it('is set inline so a host stylesheet rule on the path cannot thin it', () => {
-      const { rerender } = render(tree(edgeProps()));
-      expect(path().style.strokeWidth).toBe('2');
+it.each([
+  ['a sequence flow', BpmnSequenceFlowEdge, {}, '[data-bpmn-arrow="filled"]', true],
+  ['a message flow', BpmnMessageFlowEdge, {}, '[data-bpmn-arrow="hollow"]', false],
+  [
+    'an association',
+    BpmnAssociationEdge,
+    { associationDirection: 'one' },
+    '[data-bpmn-open-arrow]',
+    false,
+  ],
+] as const)('ends %s on an arrowhead 8 long and 12 wide, with round 2px corners', (_, Flow, data, selector, filled) => {
+  render(tree(edgeProps(data), { Flow }));
 
-      rerender(tree(edgeProps({}, { selected: true })));
-      expect(path().style.strokeWidth).toBe('4');
-    });
+  const head = document.querySelector(selector)!;
+  expect(vertices(head)).toEqual([
+    [212, 34],
+    [220, 40],
+    [212, 46],
+  ]);
+  expect(path().getAttribute('d')).toMatch(/220[ ,]40$/);
+  expect(head).toHaveAttribute('stroke-width', '2');
+  expect(head).toHaveAttribute('stroke-linejoin', 'round');
+  expect(head).toHaveAttribute('stroke-linecap', 'round');
+  expect(head.getAttribute('fill') === head.getAttribute('stroke')).toBe(filled);
+});
+
+describe('BPMN sequence flow', () => {
+  it('sets its stroke width inline, so a host stylesheet rule on the path cannot thin it', () => {
+    const { rerender } = render(tree(edgeProps()));
+    expect(path().style.strokeWidth).toBe('2');
+
+    rerender(tree(edgeProps({}, { selected: true })));
+    expect(path().style.strokeWidth).toBe('4');
   });
 
-  describe('arrowhead', () => {
-    it('is a triangle 8 long and 12 wide with its tip on the end of the path', () => {
-      render(tree(edgeProps()));
+  it('fades when dimmed, leaving the pointer and dropping its toolbar', () => {
+    const { rerender } = render(tree(edgeProps({}, { selected: true })));
+    expect(document.querySelector('[data-dimmed]')).toBeNull();
+    expect(screen.getByTestId('edge-toolbar')).toBeInTheDocument();
 
-      expect(arrowVertices()).toEqual([
-        [212, 34],
-        [220, 40],
-        [212, 46],
-      ]);
-      expect(path().getAttribute('d')).toMatch(/220[ ,]40$/);
-    });
-
-    it('rounds its corners with a 2px stroke in the flow colour', () => {
-      render(tree(edgeProps()));
-
-      expect(arrow().dataset.bpmnArrow).toBe('filled');
-      expect(arrow().getAttribute('stroke-linejoin')).toBe('round');
-      expect(arrow().getAttribute('stroke-width')).toBe('2');
-      expect(arrow().getAttribute('fill')).toBe(arrow().getAttribute('stroke'));
-    });
-
-    it('keeps the size and the round joins on a message flow, unfilled', () => {
-      render(tree(edgeProps(), baseActions, undefined, BpmnMessageFlowEdge));
-
-      expect(arrow().dataset.bpmnArrow).toBe('hollow');
-      expect(arrowVertices()).toEqual([
-        [212, 34],
-        [220, 40],
-        [212, 46],
-      ]);
-      expect(arrow().getAttribute('stroke-linejoin')).toBe('round');
-      expect(arrow().getAttribute('fill')).not.toBe(arrow().getAttribute('stroke'));
-    });
+    rerender(tree(edgeProps({ dimmed: true, label: 'Yes' }, { selected: true })));
+    const group = document.querySelector('g[data-dimmed]')!;
+    expect(group.getAttribute('class')).toContain('opacity-30');
+    expect(group.getAttribute('class')).toContain('pointer-events-none');
+    expect(screen.queryByTestId('edge-toolbar')).toBeNull();
+    expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-dimmed', 'true');
   });
 
   describe('label', () => {
@@ -216,8 +231,7 @@ describe('BPMN sequence flow', () => {
     ] as const)('makes the label editable with %s', (name) => {
       render(
         tree(edgeProps({ label: 'Yes', labelPosition: { x: 130, y: 12 } }), {
-          ...baseActions,
-          [name]: vi.fn(),
+          actions: { ...baseActions, [name]: vi.fn() },
         })
       );
 
@@ -225,14 +239,18 @@ describe('BPMN sequence flow', () => {
     });
 
     it('offers a placeholder on a selected flow with no label only when the host renames', () => {
-      const renaming = { ...baseActions, renameEdge: vi.fn() };
+      const renaming = { actions: { ...baseActions, renameEdge: vi.fn() } };
       const { rerender } = render(tree(edgeProps(), renaming));
       expect(screen.queryByTestId('bpmn-edge-label')).not.toBeInTheDocument();
 
       rerender(tree(edgeProps({}, { selected: true }), renaming));
       expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-x', '160');
 
-      rerender(tree(edgeProps({}, { selected: true }), { ...baseActions, moveEdgeLabel: vi.fn() }));
+      rerender(
+        tree(edgeProps({}, { selected: true }), {
+          actions: { ...baseActions, moveEdgeLabel: vi.fn() },
+        })
+      );
       expect(screen.queryByTestId('bpmn-edge-label')).not.toBeInTheDocument();
     });
   });
@@ -242,7 +260,7 @@ describe('BPMN sequence flow', () => {
       render(tree(edgeProps()));
 
       expect(path().getAttribute('d')).toBe('M 100 40 L 220 40');
-      expect(arrowVertices()[1]).toEqual([220, 40]);
+      expect(vertices(arrow())[1]).toEqual([220, 40]);
     });
 
     it('passes through the stored vertices in order, off-centre docks included', () => {
@@ -255,7 +273,7 @@ describe('BPMN sequence flow', () => {
       expect(d).toContain('Q 160 20 ');
       expect(d).toContain('Q 160 60 ');
       expect(d.match(/Q /g)).toHaveLength(2);
-      expect(arrowVertices()[1]).toEqual([220, 60]);
+      expect(vertices(arrow())[1]).toEqual([220, 60]);
     });
 
     it('keeps a stored route that is not orthogonal, and points the arrow along it', () => {
@@ -266,11 +284,8 @@ describe('BPMN sequence flow', () => {
       render(tree(edgeProps({ waypoints })));
 
       expect(path().getAttribute('d')).toBe('M 100 20 L 220 60');
-      const [left, tip, right] = arrowVertices();
-      expect(tip).toEqual([220, 60]);
-      // The arrow's axis runs back along the last segment.
-      const back = Math.atan2((left![1] + right![1]) / 2 - 60, (left![0] + right![0]) / 2 - 220);
-      expect(back).toBeCloseTo(Math.atan2(20 - 60, 100 - 220));
+      expect(vertices(arrow())[1]).toEqual([220, 60]);
+      expect(backAngle(arrow())).toBeCloseTo(Math.atan2(20 - 60, 100 - 220));
     });
 
     it('starts the source marker along the first stored segment', () => {
@@ -311,18 +326,12 @@ describe('BPMN sequence flow', () => {
 
     it('stores the route again once a connected node stops being dragged', () => {
       const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
-      const drag = (dragging: boolean) =>
-        act(() =>
-          store.setState({
-            nodeLookup: new Map([['a', { dragging }]]) as never,
-          })
-        );
 
-      drag(true);
+      drag('a', true);
       rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, { sourceX: 100, sourceY: 70 })));
       expect(setWaypoints).not.toHaveBeenCalled();
 
-      drag(false);
+      drag('a', false);
       expect(setWaypoints).toHaveBeenCalledTimes(1);
       const stored = setWaypoints.mock.calls[0]![1];
       expect(stored[0]).toEqual({ x: 100, y: 50 });
@@ -331,41 +340,22 @@ describe('BPMN sequence flow', () => {
 
     it('stores the route once a parent of an end stops being dragged', () => {
       const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
-      const dragPool = (dragging: boolean) =>
-        act(() =>
-          store.setState({
-            nodeLookup: new Map([
-              ['a', { parentId: 'pool', dragging: false }],
-              ['pool', { dragging }],
-            ]) as never,
-          })
-        );
 
-      dragPool(true);
+      drag('pool', true, ['a']);
       rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, { sourceX: 100, sourceY: 70 })));
       expect(setWaypoints).not.toHaveBeenCalled();
 
-      dragPool(false);
+      drag('pool', false, ['a']);
       expect(setWaypoints).toHaveBeenCalledTimes(1);
       expect(setWaypoints.mock.calls[0]![1][0]).toEqual({ x: 100, y: 50 });
     });
 
     it('moves the whole route with a pool that holds both ends', () => {
       const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
-      const dragPool = (dragging: boolean) =>
-        act(() =>
-          store.setState({
-            nodeLookup: new Map([
-              ['a', { parentId: 'pool', dragging: false }],
-              ['b', { parentId: 'pool', dragging: false }],
-              ['pool', { dragging }],
-            ]) as never,
-          })
-        );
 
-      dragPool(true);
+      drag('pool', true, ['a', 'b']);
       rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, { sourceY: 70, targetY: 70 })));
-      dragPool(false);
+      drag('pool', false, ['a', 'b']);
 
       expect(setWaypoints).toHaveBeenCalledTimes(1);
       expect(setWaypoints.mock.calls[0]![1]).toEqual(
@@ -403,13 +393,11 @@ describe('BPMN sequence flow', () => {
 
     describe('for a selected flow with bends', () => {
       const dragSource = (to: { sourceX: number; sourceY: number }) => {
-        const selected = { waypoints: OFF_CENTRE };
-        const { rerender } = render(tree(edgeProps(selected, { selected: true })));
-        const drag = (dragging: boolean) =>
-          act(() => store.setState({ nodeLookup: new Map([['a', { dragging }]]) as never }));
-        drag(true);
-        rerender(tree(edgeProps(selected, { selected: true, ...to })));
-        drag(false);
+        const route = { waypoints: OFF_CENTRE };
+        const { rerender } = render(tree(edgeProps(route, { selected: true })));
+        drag('a', true);
+        rerender(tree(edgeProps(route, { selected: true, ...to })));
+        drag('a', false);
       };
 
       it('stores the moved dock when the drag leaves the bends where they are', () => {
@@ -435,31 +423,12 @@ describe('BPMN sequence flow', () => {
     });
   });
 
-  describe('dimmed', () => {
-    it('is off by default', () => {
-      render(tree(edgeProps({}, { selected: true })));
-
-      expect(document.querySelector('[data-dimmed]')).toBeNull();
-      expect(screen.getByTestId('edge-toolbar')).toBeInTheDocument();
-    });
-
-    it('fades the flow, takes it off the pointer and drops its toolbar', () => {
-      render(tree(edgeProps({ dimmed: true, label: 'Yes' }, { selected: true })));
-
-      const group = document.querySelector('g[data-dimmed]')!;
-      expect(group.getAttribute('class')).toContain('opacity-30');
-      expect(group.getAttribute('class')).toContain('pointer-events-none');
-      expect(screen.queryByTestId('edge-toolbar')).toBeNull();
-      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-dimmed', 'true');
-    });
-  });
-
   describe('reconnect handles', () => {
     it('are left out unless the host can reconnect and the flow is selected', () => {
       const { rerender } = render(tree(edgeProps({}, { selected: true })));
       expect(reconnect('source')).toBeNull();
 
-      rerender(tree(edgeProps(), { ...baseActions, startReconnect: vi.fn() }));
+      rerender(tree(edgeProps(), { actions: { ...baseActions, startReconnect: vi.fn() } }));
       expect(reconnect('source')).toBeNull();
     });
 
@@ -469,8 +438,7 @@ describe('BPMN sequence flow', () => {
       render(
         <div onMouseDown={onMouseDown}>
           {tree(edgeProps({ waypoints: OFF_CENTRE }, { selected: true }), {
-            ...baseActions,
-            startReconnect,
+            actions: { ...baseActions, startReconnect },
           })}
         </div>
       );
@@ -487,21 +455,22 @@ describe('BPMN sequence flow', () => {
   });
 
   describe('toolbar', () => {
+    const inserting = { ...baseActions, insertOnEdge: vi.fn() };
+
     it('offers to add an element only when the host can insert on a flow', () => {
       const { rerender } = render(tree(edgeProps({}, { selected: true })));
       expect(screen.getByTestId('edge-toolbar')).toHaveTextContent(/^Delete$/);
 
-      rerender(tree(edgeProps({}, { selected: true }), { ...baseActions, insertOnEdge: vi.fn() }));
+      rerender(tree(edgeProps({}, { selected: true }), { actions: inserting }));
       expect(screen.getByTestId('edge-toolbar')).toHaveTextContent('Add elementDelete');
     });
 
     it("uses the host's strings", () => {
       render(
-        tree(
-          edgeProps({}, { selected: true }),
-          { ...baseActions, insertOnEdge: vi.fn() },
-          { delete: 'Löschen' }
-        )
+        tree(edgeProps({}, { selected: true }), {
+          actions: inserting,
+          strings: { delete: 'Löschen' },
+        })
       );
 
       expect(screen.getByTestId('edge-toolbar')).toHaveTextContent('Add elementLöschen');
@@ -510,12 +479,10 @@ describe('BPMN sequence flow', () => {
 });
 
 describe('BPMN association', () => {
-  const chevrons = () =>
-    [...document.querySelectorAll('[data-bpmn-open-arrow]')].map(
-      (chevron) => chevron.getAttribute('points')?.split(' ')[1]
-    );
+  const chevrons = () => [...document.querySelectorAll('[data-bpmn-open-arrow]')];
+  const tips = () => chevrons().map((chevron) => vertices(chevron)[1]);
   const association = (data: BpmnEdgeData) =>
-    render(tree(edgeProps(data), baseActions, undefined, BpmnAssociationEdge));
+    render(tree(edgeProps(data), { Flow: BpmnAssociationEdge }));
 
   it('has no arrowhead by default', () => {
     association({});
@@ -524,20 +491,15 @@ describe('BPMN association', () => {
 
   it('points an open chevron at the target for one direction', () => {
     association({ associationDirection: 'one' });
-    expect(chevrons()).toEqual(['220,40']);
-  });
-
-  it('draws the chevron at the arrowhead size with round caps and joins', () => {
-    association({ associationDirection: 'one' });
-    const chevron = document.querySelector('[data-bpmn-open-arrow]')!;
-    expect(chevron.getAttribute('points')).toBe('212,34 220,40 212,46');
-    expect(chevron.getAttribute('stroke-linecap')).toBe('round');
-    expect(chevron.getAttribute('stroke-linejoin')).toBe('round');
+    expect(tips()).toEqual([[220, 40]]);
   });
 
   it('points one at each end for both directions', () => {
     association({ associationDirection: 'both' });
-    expect(chevrons()).toEqual(['220,40', '100,40']);
+    expect(tips()).toEqual([
+      [220, 40],
+      [100, 40],
+    ]);
   });
 
   it('aims each end of a bent association along the segment that meets it', () => {
@@ -550,37 +512,20 @@ describe('BPMN association', () => {
       ],
     });
 
-    // The wings sit back along the segment from the tip, so their midpoint lies on it.
-    const backAlong = [...document.querySelectorAll('[data-bpmn-open-arrow]')].map((chevron) => {
-      const [wing, tip, other] = chevron
-        .getAttribute('points')!
-        .split(' ')
-        .map((point) => point.split(',').map(Number) as [number, number]);
-      const dx = (wing![0] + other![0]) / 2 - tip![0];
-      const dy = (wing![1] + other![1]) / 2 - tip![1];
-      return Math.atan2(dy, dx);
-    });
-
     // Target end: back towards the bend, up and left. Source end: towards the bend, up and right.
-    expect(backAlong[0]).toBeCloseTo(Math.atan2(-40, -60));
-    expect(backAlong[1]).toBeCloseTo(Math.atan2(-40, 60));
+    const [target, source] = chevrons().map(backAngle);
+    expect(target).toBeCloseTo(Math.atan2(-40, -60));
+    expect(source).toBeCloseTo(Math.atan2(-40, 60));
   });
 
   it('draws an association through its stored docks and bends', () => {
-    render(
-      tree(
-        edgeProps({
-          waypoints: [
-            { x: 100, y: 30 },
-            { x: 160, y: 10 },
-            { x: 220, y: 50 },
-          ],
-        }),
-        baseActions,
-        undefined,
-        BpmnAssociationEdge
-      )
-    );
+    association({
+      waypoints: [
+        { x: 100, y: 30 },
+        { x: 160, y: 10 },
+        { x: 220, y: 50 },
+      ],
+    });
 
     expect(path().getAttribute('d')).toBe('M100,30 L160,10 L220,50');
   });

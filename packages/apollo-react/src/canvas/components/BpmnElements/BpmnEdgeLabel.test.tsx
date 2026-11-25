@@ -16,26 +16,43 @@ function StoreProbe() {
   return null;
 }
 
-const renderLabel = (
-  props: Partial<React.ComponentProps<typeof BpmnEdgeLabel>> = {},
+type LabelProps = Partial<React.ComponentProps<typeof BpmnEdgeLabel>>;
+
+/** Renders a selected label; `rerender` merges new props over the first ones. */
+const show = (
+  props: LabelProps = {},
   strings?: React.ComponentProps<typeof BpmnStringsProvider>['strings']
-) =>
-  render(
+) => {
+  const ui = (next: LabelProps) => (
     <ReactFlowProvider>
       <StoreProbe />
       <BpmnStringsProvider strings={strings}>
-        <BpmnEdgeLabel edgeId="flow" x={160} y={40} borderColor="red" selected {...props} />
+        <BpmnEdgeLabel edgeId="flow" x={160} y={40} borderColor="red" selected {...next} />
       </BpmnStringsProvider>
     </ReactFlowProvider>
   );
+  const result = render(ui(props));
+  return { ...result, rerender: (next: LabelProps) => result.rerender(ui({ ...props, ...next })) };
+};
 
 const label = () => document.querySelector('[data-bpmn-edge-label="flow"]') as HTMLElement;
 
 describe('BPMN edge label', () => {
+  it('fades and ignores the pointer only when dimmed', () => {
+    const { rerender } = show({ text: 'Yes' });
+    expect(label()).not.toHaveAttribute('data-dimmed');
+    expect(label().className).toContain('pointer-events-auto');
+
+    rerender({ dimmed: true });
+    expect(label()).toHaveAttribute('data-dimmed', 'true');
+    expect(label().className).toContain('pointer-events-none');
+    expect(label().className).not.toContain('pointer-events-auto');
+  });
+
   describe('renaming', () => {
     it('edits inline on double-click and stores the new label on Enter', () => {
       const onRename = vi.fn();
-      renderLabel({ text: 'Yes', onRename });
+      show({ text: 'Yes', onRename });
 
       fireEvent.doubleClick(screen.getByText('Yes'));
       const editor = screen.getByLabelText('Edit label');
@@ -49,7 +66,7 @@ describe('BPMN edge label', () => {
 
     it('keeps editing on a click or double-click inside the editor', () => {
       const onRename = vi.fn();
-      renderLabel({ text: 'Yes', onRename });
+      show({ text: 'Yes', onRename });
 
       fireEvent.doubleClick(screen.getByText('Yes'));
       const editor = screen.getByLabelText('Edit label');
@@ -63,7 +80,7 @@ describe('BPMN edge label', () => {
 
     it('stores on blur and discards on Escape', () => {
       const onRename = vi.fn();
-      renderLabel({ text: 'Yes', onRename });
+      show({ text: 'Yes', onRename });
 
       fireEvent.doubleClick(screen.getByText('Yes'));
       fireEvent.change(screen.getByLabelText('Edit label'), { target: { value: 'Dropped' } });
@@ -77,31 +94,23 @@ describe('BPMN edge label', () => {
     });
 
     it('keeps a context menu on the editor from reaching the flow', () => {
+      const { container } = show({ text: 'Yes', onRename: vi.fn() });
+      // React handles events at its root, so a listener above it sees what propagates past.
       const onContextMenu = vi.fn();
-      render(
-        <div onContextMenu={onContextMenu}>
-          <ReactFlowProvider>
-            <BpmnEdgeLabel
-              edgeId="flow"
-              x={0}
-              y={0}
-              borderColor="red"
-              text="Yes"
-              onRename={vi.fn()}
-            />
-          </ReactFlowProvider>
-        </div>
-      );
+      container.parentElement!.addEventListener('contextmenu', onContextMenu);
+
+      fireEvent.contextMenu(screen.getByText('Yes'));
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
 
       fireEvent.doubleClick(screen.getByText('Yes'));
       fireEvent.contextMenu(screen.getByLabelText('Edit label'));
-
-      expect(onContextMenu).not.toHaveBeenCalled();
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+      container.parentElement!.removeEventListener('contextmenu', onContextMenu);
     });
 
     it('starts from a translatable placeholder when there is no label', () => {
       const onRename = vi.fn();
-      renderLabel({ onRename }, { edgeLabelPlaceholder: 'Beschriftung' });
+      show({ onRename }, { edgeLabelPlaceholder: 'Beschriftung' });
 
       fireEvent.doubleClick(screen.getByText('Beschriftung'));
       fireEvent.change(screen.getByLabelText('Edit label'), { target: { value: 'New' } });
@@ -111,7 +120,7 @@ describe('BPMN edge label', () => {
     });
 
     it('does not edit when the host cannot rename', () => {
-      renderLabel({ text: 'Yes', onMove: vi.fn() });
+      show({ text: 'Yes', onMove: vi.fn() });
 
       fireEvent.doubleClick(screen.getByText('Yes'));
 
@@ -126,38 +135,18 @@ describe('BPMN edge label', () => {
       return addSelectedEdges;
     };
 
-    it('fades and ignores the pointer only when dimmed', () => {
-      const { rerender } = renderLabel({ text: 'Yes' });
-      expect(label()).not.toHaveAttribute('data-dimmed');
-      expect(label().className).toContain('pointer-events-auto');
-
-      rerender(
-        <ReactFlowProvider>
-          <BpmnEdgeLabel edgeId="flow" x={160} y={40} text="Yes" dimmed />
-        </ReactFlowProvider>
-      );
-      expect(label()).toHaveAttribute('data-dimmed', 'true');
-      expect(label().className).toContain('pointer-events-none');
-      expect(label().className).not.toContain('pointer-events-auto');
-    });
-
-    it('carries the flow id, as an edge element does', () => {
-      renderLabel({ text: 'Yes' });
-
-      expect(label()).toHaveAttribute('data-id', 'flow');
-    });
-
-    it('selects its flow on click', () => {
-      renderLabel({ text: 'Yes', selected: false });
+    it('selects its flow on click, carrying its id as an edge element does', () => {
+      show({ text: 'Yes', selected: false });
       const addSelectedEdges = selectEdges();
 
+      expect(label()).toHaveAttribute('data-id', 'flow');
       fireEvent.click(label());
 
       expect(addSelectedEdges).toHaveBeenCalledWith(['flow']);
     });
 
     it('leaves the selection alone when elements are not selectable', () => {
-      renderLabel({ text: 'Yes', selected: false });
+      show({ text: 'Yes', selected: false });
       const addSelectedEdges = selectEdges();
       store.setState({ elementsSelectable: false });
 
@@ -176,7 +165,7 @@ describe('BPMN edge label', () => {
 
     it('treats a press that barely moves as a click, not a drag', () => {
       const onMove = vi.fn();
-      renderLabel({ text: 'Yes', onMove });
+      show({ text: 'Yes', onMove });
 
       dragBy(1, 1);
 
@@ -185,7 +174,7 @@ describe('BPMN edge label', () => {
 
     it('reports the label centre in flow coordinates when the drag ends', () => {
       const onMove = vi.fn();
-      renderLabel({ text: 'Yes', onMove });
+      show({ text: 'Yes', onMove });
 
       dragBy(25, -30);
 
@@ -196,7 +185,7 @@ describe('BPMN edge label', () => {
 
     it('starts a second drag from where the label is shown, before the host stores the first', () => {
       const onMove = vi.fn();
-      renderLabel({ text: 'Yes', onMove });
+      show({ text: 'Yes', onMove });
 
       dragBy(25, -30);
       dragBy(10, 10);
@@ -206,29 +195,18 @@ describe('BPMN edge label', () => {
     });
 
     it('follows the host back to the point a drag started from', () => {
-      const props = { edgeId: 'flow', borderColor: 'red', selected: true, text: 'Yes' };
-      const { rerender } = render(
-        <ReactFlowProvider>
-          <BpmnEdgeLabel {...props} x={160} y={40} onMove={vi.fn()} />
-        </ReactFlowProvider>
-      );
-      const show = (x: number, y: number) =>
-        rerender(
-          <ReactFlowProvider>
-            <BpmnEdgeLabel {...props} x={x} y={y} onMove={vi.fn()} />
-          </ReactFlowProvider>
-        );
+      const { rerender } = show({ text: 'Yes', onMove: vi.fn() });
 
       dragBy(25, -30);
-      show(185, 10);
-      show(160, 40);
+      rerender({ x: 185, y: 10 });
+      rerender({ x: 160, y: 40 });
 
       expect(label().style.transform).toContain('translate(160px, 40px)');
     });
 
     it('ignores a press that never moves', () => {
       const onMove = vi.fn();
-      renderLabel({ text: 'Yes', onMove });
+      show({ text: 'Yes', onMove });
 
       fireEvent.pointerDown(label(), { button: 0, clientX: 300, clientY: 200 });
       fireEvent.pointerUp(label(), { clientX: 300, clientY: 200 });
@@ -238,7 +216,7 @@ describe('BPMN edge label', () => {
 
     it('only moves the label of a selected flow', () => {
       const onMove = vi.fn();
-      renderLabel({ text: 'Yes', onMove, selected: false });
+      show({ text: 'Yes', onMove, selected: false });
 
       dragBy(25, -30);
 

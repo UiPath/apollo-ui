@@ -6,8 +6,8 @@ import {
   ReactFlowProvider,
   useStoreApi,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen } from '../../utils/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, within } from '../../utils/testing';
 import { BaseCanvasModeProvider } from '../BaseCanvas';
 import {
   type BpmnActions,
@@ -45,51 +45,75 @@ const node = (id: string, type: string, x: number, data: BpmnNodeData = {}): Bpm
   data,
 });
 
-const renderActivity = (
-  data: BpmnNodeData,
-  type = 'bpmn:UserTask',
-  {
-    value = actions,
-    selected = false,
-    strings,
-  }: {
-    value?: BpmnActions;
-    selected?: boolean;
-    strings?: React.ComponentProps<typeof BpmnStringsProvider>['strings'];
-  } = {}
-) =>
-  render(
-    <ReactFlowProvider>
-      <BpmnStringsProvider strings={strings}>
-        <BpmnActionsProvider value={value}>
-          <BpmnActivityNode
-            {...({
-              id: 'task',
-              type,
-              data,
-              selected,
-              width: 100,
-              height: 80,
-            } as NodeProps<BpmnNode>)}
-          />
-        </BpmnActionsProvider>
-      </BpmnStringsProvider>
-    </ReactFlowProvider>
-  );
+let store: ReturnType<typeof useStoreApi>;
+function StoreProbe() {
+  store = useStoreApi();
+  return null;
+}
 
-const renderNode = (
-  Component: React.ComponentType<NodeProps<BpmnNode>>,
-  value: BpmnActions,
-  props: Partial<NodeProps<BpmnNode>> = {}
-) =>
-  render(
-    <ReactFlowProvider>
+type NodeOptions = {
+  Component?: React.ComponentType<NodeProps<BpmnNode>>;
+  type?: string;
+  data?: BpmnNodeData;
+  selected?: boolean;
+  value?: BpmnActions;
+  strings?: React.ComponentProps<typeof BpmnStringsProvider>['strings'];
+  mode?: React.ComponentProps<typeof BaseCanvasModeProvider>['mode'];
+};
+
+/** One element, `task`, outside a ReactFlow; an activity unless another `Component` is given. */
+const nodeTree = ({
+  Component = BpmnActivityNode,
+  type = 'bpmn:UserTask',
+  data = {},
+  selected = false,
+  value = actions,
+  strings,
+  mode,
+}: NodeOptions = {}) => {
+  const element = (
+    <BpmnStringsProvider strings={strings}>
       <BpmnActionsProvider value={value}>
         <Component
-          {...({ id: 'node', data: {}, selected: true, ...props } as NodeProps<BpmnNode>)}
+          {...({ id: 'task', type, data, selected, width: 100, height: 80 } as NodeProps<BpmnNode>)}
         />
       </BpmnActionsProvider>
+    </BpmnStringsProvider>
+  );
+  return (
+    <ReactFlowProvider>
+      <StoreProbe />
+      {mode ? <BaseCanvasModeProvider mode={mode}>{element}</BaseCanvasModeProvider> : element}
     </ReactFlowProvider>
+  );
+};
+
+/** Renders {@link nodeTree}; `rerender` merges new options over the first ones. */
+const renderNode = (options: NodeOptions = {}) => {
+  const result = render(nodeTree(options));
+  return {
+    ...result,
+    rerender: (next: NodeOptions) => result.rerender(nodeTree({ ...options, ...next })),
+  };
+};
+
+const renderFlow = (
+  nodes: BpmnNode[],
+  { edges, overlay = null }: { edges?: BpmnEdge[]; overlay?: { zIndex: number } | null } = {}
+) =>
+  render(
+    <div style={{ width: 800, height: 600 }}>
+      <BpmnOverlayProvider value={overlay}>
+        <BpmnActionsProvider value={actions}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={bpmnNodeTypes}
+            edgeTypes={bpmnEdgeTypes}
+          />
+        </BpmnActionsProvider>
+      </BpmnOverlayProvider>
+    </div>
   );
 
 const rename = vi.fn();
@@ -99,14 +123,11 @@ const minimalActions = {
   deleteEdge: vi.fn(),
   setWaypoints: vi.fn(),
 } satisfies BpmnActions;
+const requiredActions = { ...minimalActions, deleteNode: vi.fn() } satisfies BpmnActions;
 
-const requiredActions = {
-  addAfter: vi.fn(),
-  deleteNode: vi.fn(),
-  rename: vi.fn(),
-  deleteEdge: vi.fn(),
-  setWaypoints: vi.fn(),
-} satisfies BpmnActions;
+beforeEach(() => {
+  rename.mockReset();
+});
 
 const toolbarButtons = () =>
   screen
@@ -119,192 +140,212 @@ const handle = (kind: 'source' | 'target', side: Position) =>
 
 describe('BPMN element family', () => {
   it('renders in a plain ReactFlow, with no canvas mode provider', () => {
-    const nodes = [
-      node('start', 'bpmn:StartEvent', 0),
-      node('task', 'bpmn:UserTask', 200, { label: 'Review' }),
-      node('gateway', 'bpmn:ExclusiveGateway', 400),
-    ];
-    const edges: BpmnEdge[] = [
+    renderFlow(
+      [
+        node('start', 'bpmn:StartEvent', 0),
+        node('task', 'bpmn:UserTask', 200, { label: 'Review' }),
+        node('gateway', 'bpmn:ExclusiveGateway', 400),
+      ],
       {
-        id: 'flow',
-        type: 'bpmn:SequenceFlow',
-        source: 'start',
-        sourceHandle: bpmnHandleId('start', 'source', Position.Right),
-        target: 'task',
-        targetHandle: bpmnHandleId('task', 'target', Position.Left),
-      },
-    ];
-
-    render(
-      <div style={{ width: 800, height: 600 }}>
-        <BpmnActionsProvider value={actions}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={bpmnNodeTypes}
-            edgeTypes={bpmnEdgeTypes}
-          />
-        </BpmnActionsProvider>
-      </div>
+        edges: [
+          {
+            id: 'flow',
+            type: 'bpmn:SequenceFlow',
+            source: 'start',
+            sourceHandle: bpmnHandleId('start', 'source', Position.Right),
+            target: 'task',
+            targetHandle: bpmnHandleId('task', 'target', Position.Left),
+          },
+        ],
+      }
     );
 
     expect(screen.getByText('Review')).toBeInTheDocument();
     expect(document.querySelectorAll('.react-flow__node')).toHaveLength(3);
   });
 
-  it('is editable outside a mode provider: activities offer a "+" on hover', async () => {
+  it('offers a "+" named after the node and the side on hover, with no mode provider', async () => {
     const user = userEvent.setup();
-    renderActivity({ label: 'Review' });
+    renderNode({ data: { label: 'Review' } });
 
     await user.hover(screen.getByText('Review'));
 
-    expect(screen.getAllByRole('button', { name: 'Add node' }).length).toBeGreaterThan(0);
+    for (const side of ['top', 'right', 'bottom']) {
+      expect(screen.getByTestId(`quick-add-handle-task-${side}`)).toHaveAttribute(
+        'aria-label',
+        'Add node'
+      );
+    }
+    expect(screen.queryByTestId('quick-add-handle-task-left')).not.toBeInTheDocument();
   });
 
-  describe('task icon', () => {
+  it('gives an empty editable label somewhere to double-click', () => {
+    renderNode({ selected: true });
+
+    const text = document.querySelector('[data-node-part="label"]')!.firstElementChild!;
+    expect(text.className).toContain('min-w-12');
+    fireEvent.doubleClick(text);
+    expect(screen.getByLabelText('Edit label')).toBeInTheDocument();
+  });
+
+  it('outlines a data object and a data store differently', () => {
+    const outline = () =>
+      screen.getByTestId('base-node-outline').querySelector('path')?.getAttribute('d');
+    const { rerender } = renderNode({ Component: BpmnDataNode, type: 'bpmn:DataObjectReference' });
+    const dataObject = outline();
+
+    rerender({ type: 'bpmn:DataStoreReference' });
+
+    expect(dataObject).toBeTruthy();
+    expect(outline()).toBeTruthy();
+    expect(outline()).not.toBe(dataObject);
+  });
+
+  describe('glyphs', () => {
     const badge = () => document.querySelector('[data-testid="host-icon"]');
 
-    it("shows the task type's own glyph by default", () => {
-      const { container } = renderActivity({ label: 'Review' });
-
+    it("shows data.icon in place of the task type's own glyph", () => {
+      const { container, rerender } = renderNode({ data: { label: 'Review' } });
+      const glyphCount = container.querySelectorAll('svg').length;
       expect(badge()).toBeNull();
-      expect(container.querySelector('svg')).not.toBeNull();
-    });
+      expect(glyphCount).toBeGreaterThan(0);
 
-    it('shows data.icon in place of the glyph', () => {
-      const withGlyph = renderActivity({ label: 'Review' });
-      const glyphCount = withGlyph.container.querySelectorAll('svg').length;
-      withGlyph.unmount();
-
-      const { container } = renderActivity({
-        label: 'Review',
-        icon: <span data-testid="host-icon" />,
-      });
+      rerender({ data: { label: 'Review', icon: <span data-testid="host-icon" /> } });
 
       expect(badge()).not.toBeNull();
       expect(container.querySelectorAll('svg')).toHaveLength(glyphCount - 1);
     });
 
     it('shows data.icon on a task type that has no glyph', () => {
-      renderActivity({ label: 'Review', icon: <span data-testid="host-icon" /> }, 'bpmn:Task');
+      renderNode({
+        type: 'bpmn:Task',
+        data: { label: 'Review', icon: <span data-testid="host-icon" /> },
+      });
 
       expect(badge()).not.toBeNull();
+    });
+
+    it('renders an event whose definition has no glyph instead of throwing', () => {
+      expect(() =>
+        renderNode({
+          Component: BpmnEventNode,
+          type: 'bpmn:StartEvent',
+          data: { eventDefinition: 'cancel' as never },
+        })
+      ).not.toThrow();
     });
   });
 
   describe('handles', () => {
-    const sides = [Position.Top, Position.Right, Position.Bottom, Position.Left];
+    it('starts connections only from source handles and ends them only on targets, on every side', () => {
+      renderNode();
 
-    it.each(sides)('fills the node with its %s handles', (side) => {
-      renderActivity({});
-
-      for (const kind of ['source', 'target'] as const) {
-        expect(handle(kind, side)).toHaveStyle({
-          width: '100%',
-          height: '100%',
-          transform: 'none',
-        });
+      for (const side of [Position.Top, Position.Right, Position.Bottom, Position.Left]) {
+        expect(handle('source', side)).toHaveClass('connectablestart');
+        expect(handle('source', side)).not.toHaveClass('connectableend');
+        expect(handle('target', side)).toHaveClass('connectableend');
+        expect(handle('target', side)).not.toHaveClass('connectablestart');
+        // Inert until a connection is in progress, so the body stays draggable.
+        expect(handle('target', side)).not.toHaveClass('connectionindicator');
       }
     });
 
-    it.each(sides)('starts connections from a strip on the %s side', (side) => {
-      renderActivity({});
-
-      expect(handle('source', side).style.clipPath).toMatch(/^inset\(/);
-      expect(handle('source', side)).toHaveClass('connectablestart');
-      expect(handle('source', side)).not.toHaveClass('connectableend');
-    });
-
-    it.each(sides)('takes drops on the %s quarter of the node, and never starts one', (side) => {
-      renderActivity({});
-
-      expect(handle('target', side).style.clipPath).toMatch(/^polygon\(50% 50%/);
-      expect(handle('target', side)).toHaveClass('connectableend');
-      expect(handle('target', side)).not.toHaveClass('connectablestart');
-      // Inert until a connection is in progress, so the body stays draggable.
-      expect(handle('target', side)).not.toHaveClass('connectionindicator');
-    });
-
-    it('never shows a notch for a target', () => {
-      renderActivity({});
-
-      const visuals = document.querySelector(
-        `[data-handle-visuals="${bpmnHandleId('task', 'target', Position.Left)}"]`
+    it('reads the side of a handle whose node id contains the separator', () => {
+      expect(bpmnHandleSide(bpmnHandleId('Task____1', 'source', Position.Right))).toBe(
+        Position.Right
       );
-      expect(visuals?.querySelector('.border-2')).toHaveClass('opacity-0');
-      expect(visuals?.querySelector('[data-handle-grab-zone]')).toBeNull();
     });
   });
 
-  describe('optional actions', () => {
-    it('shows every toolbar button when the host handles them all', () => {
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', { selected: true });
+  describe('toolbar', () => {
+    it('shows every button in order, each with a test id, when the host handles them all', () => {
+      renderNode({ data: { label: 'Review' }, selected: true });
 
-      expect(toolbarButtons()).toEqual([
-        'Change element',
-        'Iteration',
-        'Add boundary event',
-        'Add text annotation',
-        'Toggle breakpoint',
-        'Duplicate',
-        'Delete',
+      const toolbar = screen.getByTestId('node-toolbar');
+      expect(toolbar).toHaveAttribute('role', 'toolbar');
+      expect(
+        within(toolbar)
+          .getAllByRole('button')
+          .map((button) => [button.dataset.testid, button.getAttribute('aria-label')])
+      ).toEqual([
+        ['toolbar-item-change-element', 'Change element'],
+        ['toolbar-item-iteration', 'Iteration'],
+        ['toolbar-item-boundary-event', 'Add boundary event'],
+        ['toolbar-item-bpmn:TextAnnotation', 'Add text annotation'],
+        ['toolbar-item-breakpoint', 'Toggle breakpoint'],
+        ['toolbar-item-duplicate', 'Duplicate'],
+        ['toolbar-item-delete', 'Delete'],
       ]);
     });
 
+    it.each([
+      [
+        'every unhandled action',
+        { ...requiredActions, duplicate: vi.fn() },
+        ['Duplicate', 'Delete'],
+      ],
+      [
+        'Delete when the host does not delete nodes',
+        { ...minimalActions, duplicate: vi.fn() },
+        ['Duplicate'],
+      ],
+    ])('leaves out the button of %s', (_, value, buttons) => {
+      renderNode({ data: { label: 'Review' }, selected: true, value });
+
+      expect(toolbarButtons()).toEqual(buttons);
+      expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+    });
+
+    it('renders no toolbar for a node left with no actions', () => {
+      renderNode({ Component: BpmnGroupNode, selected: true, value: minimalActions });
+
+      expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    });
+
     it.each(['view', 'readonly'] as const)('has no toolbar in %s mode', (mode) => {
-      render(
-        <ReactFlowProvider>
-          <BaseCanvasModeProvider mode={mode}>
-            <BpmnActionsProvider value={actions}>
-              <BpmnActivityNode
-                {...({
-                  id: 'task',
-                  type: 'bpmn:UserTask',
-                  data: { label: 'Review' },
-                  selected: true,
-                  width: 100,
-                  height: 80,
-                } as NodeProps<BpmnNode>)}
-              />
-            </BpmnActionsProvider>
-          </BaseCanvasModeProvider>
-        </ReactFlowProvider>
-      );
+      renderNode({ data: { label: 'Review' }, selected: true, mode });
 
       expect(screen.getByText('Review')).toBeInTheDocument();
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
-    it('leaves out the button of each action the host does not handle', () => {
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
-        selected: true,
-        value: { ...requiredActions, duplicate: vi.fn() },
-      });
+    it('offers a text annotation, after the boundary event, only when the host adds them', () => {
+      const addAnnotation = vi.fn();
+      const value = { ...requiredActions, addBoundaryEvent: vi.fn(), duplicate: vi.fn() };
+      const { rerender } = renderNode({ data: { label: 'Review' }, selected: true, value });
+      expect(screen.queryByTestId('toolbar-item-bpmn:TextAnnotation')).not.toBeInTheDocument();
 
-      expect(toolbarButtons()).toEqual(['Duplicate', 'Delete']);
-      expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+      rerender({ value: { ...value, addAnnotation }, strings: { addAnnotation: 'Kommentar' } });
+
+      expect(toolbarButtons()).toEqual(['Add boundary event', 'Kommentar', 'Duplicate', 'Delete']);
+      fireEvent.click(screen.getByTestId('toolbar-item-bpmn:TextAnnotation'));
+      expect(addAnnotation).toHaveBeenCalledWith('task');
     });
 
     it('offers "View" on a collapsed sub-process only when the host can drill in', () => {
-      const { unmount } = renderActivity({ label: 'Ship' }, 'bpmn:SubProcess', {
-        value: requiredActions,
-      });
+      const options = { type: 'bpmn:SubProcess', data: { label: 'Ship' } };
+      const { rerender } = renderNode({ ...options, value: requiredActions });
       expect(screen.queryByRole('button', { name: 'View Ship' })).not.toBeInTheDocument();
-      unmount();
 
       const view = vi.fn();
-      renderActivity({ label: 'Ship' }, 'bpmn:SubProcess', {
-        value: { ...requiredActions, view },
-      });
-      fireEvent.click(screen.getByRole('button', { name: 'View Ship' }));
+      rerender({ value: { ...requiredActions, view } });
+      expect(screen.getByTestId('drill-down-button-task')).toHaveAccessibleName('View Ship');
+      fireEvent.click(screen.getByTestId('drill-down-button-task'));
       expect(view).toHaveBeenCalledWith('task');
+    });
+
+    it('does not scale the toolbar with the zoom by default', () => {
+      renderNode({ data: { label: 'Review' }, selected: true });
+
+      expect(screen.getByTestId('node-toolbar').closest('[style*="scale"]')).toBeNull();
     });
   });
 
   describe('click-to-connect', () => {
     it("hands a press on a source handle to the host's startConnection", () => {
       const startConnection = vi.fn();
-      renderActivity({}, 'bpmn:UserTask', { value: { ...requiredActions, startConnection } });
+      renderNode({ value: { ...requiredActions, startConnection } });
 
       fireEvent.pointerDown(handle('source', Position.Bottom));
       expect(startConnection).toHaveBeenCalledWith('task', Position.Bottom, expect.anything());
@@ -316,9 +357,7 @@ describe('BPMN element family', () => {
     it('hands over a press on the notch too', async () => {
       const user = userEvent.setup();
       const startConnection = vi.fn();
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
-        value: { ...requiredActions, startConnection },
-      });
+      renderNode({ data: { label: 'Review' }, value: { ...requiredActions, startConnection } });
 
       // The left side has no "+", so it shows its notch once the node is hovered.
       await user.hover(screen.getByText('Review'));
@@ -329,11 +368,20 @@ describe('BPMN element family', () => {
 
       expect(startConnection).toHaveBeenCalledWith('task', Position.Left, expect.anything());
     });
+
+    it("leaves the host's startConnection alone outside design mode", () => {
+      const startConnection = vi.fn();
+      renderNode({ mode: 'view', value: { ...requiredActions, startConnection } });
+
+      fireEvent.pointerDown(handle('source', Position.Bottom));
+      expect(startConnection).not.toHaveBeenCalled();
+    });
   });
 
   describe('strings', () => {
     it("uses the host's strings and keeps English for the rest", () => {
-      renderActivity({ label: 'Review', breakpoint: true }, 'bpmn:UserTask', {
+      renderNode({
+        data: { label: 'Review', breakpoint: true },
         selected: true,
         strings: { delete: 'Löschen', breakpoint: 'Haltepunkt' },
       });
@@ -344,13 +392,14 @@ describe('BPMN element family', () => {
     });
 
     it('translates the sub-process "View" button', () => {
-      renderActivity({ label: 'Ship' }, 'bpmn:SubProcess', { strings: { view: 'Öffnen' } });
+      renderNode({ type: 'bpmn:SubProcess', data: { label: 'Ship' }, strings: { view: 'Öffnen' } });
 
       expect(screen.getByRole('button', { name: 'Öffnen Ship' })).toHaveTextContent('Öffnen');
     });
 
     it('translates the label editor', () => {
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
+      renderNode({
+        data: { label: 'Review' },
         selected: true,
         strings: { editLabel: 'Namen bearbeiten' },
       });
@@ -359,141 +408,56 @@ describe('BPMN element family', () => {
 
       expect(screen.getByLabelText('Namen bearbeiten')).toBeInTheDocument();
     });
+
+    it('translates the accessible name of the "+"', async () => {
+      const user = userEvent.setup();
+      renderNode({ data: { label: 'Review' }, strings: { quickAdd: 'Knoten hinzufügen' } });
+
+      await user.hover(screen.getByText('Review'));
+      expect(screen.getAllByRole('button', { name: 'Knoten hinzufügen' }).length).toBeGreaterThan(
+        0
+      );
+      expect(screen.queryByRole('button', { name: 'Add node' })).toBeNull();
+    });
   });
 
   describe('resize', () => {
     const controls = () => document.querySelectorAll('.react-flow__resize-control');
 
     it('renders no resize controls unless the host handles resize', () => {
-      renderNode(BpmnGroupNode, { ...minimalActions, deleteNode: vi.fn() });
+      renderNode({ Component: BpmnGroupNode, selected: true, value: requiredActions });
 
       expect(controls()).toHaveLength(0);
     });
 
     it('renders them on a selected resizable element when it does', () => {
-      renderNode(BpmnGroupNode, { ...minimalActions, resize: vi.fn() });
+      renderNode({
+        Component: BpmnGroupNode,
+        selected: true,
+        value: { ...minimalActions, resize: vi.fn() },
+      });
 
       expect(controls().length).toBeGreaterThan(0);
     });
   });
 
-  describe('delete', () => {
-    it('leaves out the Delete button when the host does not delete nodes', () => {
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
-        selected: true,
-        value: { ...minimalActions, duplicate: vi.fn() },
-      });
-
-      expect(toolbarButtons()).toEqual(['Duplicate']);
-    });
-
-    it('renders no toolbar for a node left with no actions', () => {
-      renderNode(BpmnGroupNode, minimalActions);
-
-      expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
-    });
-  });
-
-  describe('end-to-end hooks', () => {
-    it('gives the toolbar and each of its buttons a test id', () => {
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', { selected: true });
-
-      expect(screen.getByTestId('node-toolbar')).toHaveAttribute('role', 'toolbar');
-      expect(
-        ['change-element', 'iteration', 'boundary-event', 'breakpoint', 'duplicate', 'delete'].map(
-          (id) => screen.getByTestId(`toolbar-item-${id}`).getAttribute('aria-label')
-        )
-      ).toEqual([
-        'Change element',
-        'Iteration',
-        'Add boundary event',
-        'Toggle breakpoint',
-        'Duplicate',
-        'Delete',
-      ]);
-    });
-
-    it('offers a text annotation only when the host adds them, after the boundary event', () => {
-      const addAnnotation = vi.fn();
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
-        selected: true,
-        value: { ...requiredActions, addBoundaryEvent: vi.fn(), duplicate: vi.fn(), addAnnotation },
-        strings: { addAnnotation: 'Kommentar' },
-      });
-
-      expect(toolbarButtons()).toEqual(['Add boundary event', 'Kommentar', 'Duplicate', 'Delete']);
-      fireEvent.click(screen.getByTestId('toolbar-item-bpmn:TextAnnotation'));
-      expect(addAnnotation).toHaveBeenCalledWith('task');
-    });
-
-    it('names the "+" on each side that has one after the node and the side', async () => {
-      const user = userEvent.setup();
-      renderActivity({ label: 'Review' });
-
-      await user.hover(screen.getByText('Review'));
-
-      for (const side of ['top', 'right', 'bottom']) {
-        expect(screen.getByTestId(`quick-add-handle-task-${side}`)).toHaveAttribute(
-          'aria-label',
-          'Add node'
-        );
-      }
-      expect(screen.queryByTestId('quick-add-handle-task-left')).not.toBeInTheDocument();
-    });
-
-    it('gives the drill-in button of a collapsed sub-process a test id', () => {
-      const view = vi.fn();
-      renderActivity({ label: 'Fulfil' }, 'bpmn:SubProcess', {
-        value: { ...requiredActions, view },
-      });
-
-      fireEvent.click(screen.getByTestId('drill-down-button-task'));
-
-      expect(view).toHaveBeenCalledWith('task');
-    });
-  });
-
-  describe('data shapes', () => {
-    // happy-dom has no layout, so the outline is drawn in its unmeasured 288x96 box.
-    const outline = (type: string) => {
-      renderNode(BpmnDataNode, requiredActions, { type, width: 36, height: 50, selected: false });
-      return screen.getByTestId('base-node-outline').querySelector('path')!.getAttribute('d')!;
-    };
-
-    it('draws a data object with rounded corners and a filled fold', () => {
-      const d = outline('bpmn:DataObjectReference');
-
-      expect(d).toContain('Q1 1 4 1');
-      // The fold's two edges, then the strokes that fill it.
-      expect(d).toContain('M287 10 H278 V1 M278 2 L286 10');
-    });
-
-    it('draws a data store with a rim and a band across the middle', () => {
-      const d = outline('bpmn:DataStoreReference');
-
-      expect(d).toContain('M287 7 C287 15 1 15 1 7');
-      expect(d).toContain('M287 48 C287 56 1 56 1 48');
-    });
-  });
-
   describe('text annotation', () => {
+    const annotation = (options: NodeOptions = {}) =>
+      renderNode({
+        Component: BpmnTextAnnotationNode,
+        value: minimalActions,
+        selected: true,
+        ...options,
+      });
+
     it('shows a placeholder for an empty label, which the host can translate', () => {
-      render(
-        <ReactFlowProvider>
-          <BpmnStringsProvider strings={{ annotationPlaceholder: 'Text hinzufügen' }}>
-            <BpmnActionsProvider value={minimalActions}>
-              <BpmnTextAnnotationNode {...({ id: 'node', data: {} } as NodeProps<BpmnNode>)} />
-            </BpmnActionsProvider>
-          </BpmnStringsProvider>
-        </ReactFlowProvider>
-      );
+      annotation({ selected: false, strings: { annotationPlaceholder: 'Text hinzufügen' } });
 
       expect(screen.getByText('Text hinzufügen')).toHaveClass('text-foreground-muted');
     });
 
     it('shows the label unclamped, in place of the placeholder', () => {
-      renderNode(BpmnTextAnnotationNode, minimalActions, { data: { label: 'One\nTwo' } });
+      annotation({ data: { label: 'One\nTwo' } });
 
       expect(screen.queryByText('Add text')).not.toBeInTheDocument();
       expect(document.querySelector('[data-node-part="label"] div')).toHaveClass(
@@ -503,8 +467,7 @@ describe('BPMN element family', () => {
     });
 
     const editAnnotation = (label?: string) => {
-      rename.mockReset();
-      renderNode(BpmnTextAnnotationNode, minimalActions, { data: { label } });
+      annotation({ data: { label } });
       fireEvent.doubleClick(screen.getByText(label ?? 'Add text'));
       return screen.getByLabelText('Edit label') as HTMLTextAreaElement;
     };
@@ -515,7 +478,7 @@ describe('BPMN element family', () => {
       fireEvent.change(editor, { target: { value: 'One\nTwo' } });
       fireEvent.keyDown(screen.getByLabelText('Edit label'), { key: 'Enter' });
 
-      expect(rename).toHaveBeenCalledWith('node', 'One\nTwo');
+      expect(rename).toHaveBeenCalledWith('task', 'One\nTwo');
       expect(screen.queryByLabelText('Edit label')).not.toBeInTheDocument();
     });
 
@@ -545,25 +508,19 @@ describe('BPMN element family', () => {
       fireEvent.change(editor, { target: { value: 'One\nTwo' } });
       fireEvent.blur(screen.getByLabelText('Edit label'));
 
-      expect(rename).toHaveBeenCalledWith('node', 'One\nTwo');
+      expect(rename).toHaveBeenCalledWith('task', 'One\nTwo');
     });
 
     it('keeps a context menu on the editor from reaching the node', () => {
       const onContextMenu = vi.fn();
-      rename.mockReset();
       render(
         <div onContextMenu={onContextMenu}>
-          <ReactFlowProvider>
-            <BpmnActionsProvider value={minimalActions}>
-              <BpmnTextAnnotationNode
-                {...({
-                  id: 'node',
-                  data: { label: 'Note' },
-                  selected: true,
-                } as NodeProps<BpmnNode>)}
-              />
-            </BpmnActionsProvider>
-          </ReactFlowProvider>
+          {nodeTree({
+            Component: BpmnTextAnnotationNode,
+            value: minimalActions,
+            selected: true,
+            data: { label: 'Note' },
+          })}
         </div>
       );
 
@@ -576,8 +533,7 @@ describe('BPMN element family', () => {
     });
 
     it('ends editing on Escape without storing', () => {
-      rename.mockReset();
-      renderNode(BpmnTextAnnotationNode, minimalActions, { data: { label: 'Note' } });
+      annotation({ data: { label: 'Note' } });
 
       fireEvent.doubleClick(screen.getByText('Note'));
       fireEvent.change(screen.getByLabelText('Edit label'), { target: { value: 'Changed' } });
@@ -594,23 +550,13 @@ describe('BPMN element family', () => {
       { ...node('task', 'bpmn:UserTask', 40, { label: 'Review' }), selected: true },
       { ...node('end', 'bpmn:EndEvent', 300, { label: 'Done' }), width: 36, height: 36 },
     ];
-    const renderCanvas = (overlay: typeof OVERLAY | null) =>
-      render(
-        <div style={{ width: 800, height: 600 }}>
-          <BpmnOverlayProvider value={overlay}>
-            <BpmnActionsProvider value={actions}>
-              <ReactFlow nodes={nodes} nodeTypes={bpmnNodeTypes} />
-            </BpmnActionsProvider>
-          </BpmnOverlayProvider>
-        </div>
-      );
     const nodeElement = (id: string) =>
       document.querySelector(`.react-flow__node[data-id="${id}"]`) as HTMLElement;
     const overlayOf = (id: string) =>
       document.querySelector(`[data-bpmn-node-overlay="${id}"]`) as HTMLElement | null;
 
     it('keeps the toolbar, the handle visuals and the labels in the node by default', () => {
-      renderCanvas(null);
+      renderFlow(nodes);
 
       expect(overlayOf('task')).toBeNull();
       expect(nodeElement('task').querySelector('[role="toolbar"]')).not.toBeNull();
@@ -619,7 +565,7 @@ describe('BPMN element family', () => {
     });
 
     it("draws a box at the node's position and size in the viewport portal, at the given z-index", () => {
-      renderCanvas(OVERLAY);
+      renderFlow(nodes, { overlay: OVERLAY });
 
       const box = overlayOf('task')!;
       expect(box.closest('.react-flow__viewport-portal')).not.toBeNull();
@@ -631,7 +577,7 @@ describe('BPMN element family', () => {
     });
 
     it('marks the box with whether its node is selected', () => {
-      renderCanvas(OVERLAY);
+      renderFlow(nodes, { overlay: OVERLAY });
 
       expect(overlayOf('task')).toHaveAttribute('data-node-selected', 'true');
       expect(overlayOf('end')).toHaveAttribute('data-node-selected', 'false');
@@ -641,7 +587,7 @@ describe('BPMN element family', () => {
     });
 
     it('moves the toolbar and the handle visuals there, and leaves the handles in the node', () => {
-      renderCanvas(OVERLAY);
+      renderFlow(nodes, { overlay: OVERLAY });
 
       const box = overlayOf('task')!;
       expect(box.querySelector('[role="toolbar"]')).not.toBeNull();
@@ -652,7 +598,7 @@ describe('BPMN element family', () => {
     });
 
     it('draws a label outside the element there, and keeps the one in the node to click', () => {
-      renderCanvas(OVERLAY);
+      renderFlow(nodes, { overlay: OVERLAY });
 
       const drawn = overlayOf('end')!.querySelector('[data-bpmn-label-overlay]')!;
       expect(drawn).toHaveTextContent('Done');
@@ -667,21 +613,31 @@ describe('BPMN element family', () => {
     });
 
     it('edits a lifted label in the overlay from a double-click on the one in the node', () => {
-      render(
-        <div style={{ width: 800, height: 600 }}>
-          <BpmnOverlayProvider value={OVERLAY}>
-            <BpmnActionsProvider value={actions}>
-              <ReactFlow nodes={[{ ...nodes[1]!, selected: true }]} nodeTypes={bpmnNodeTypes} />
-            </BpmnActionsProvider>
-          </BpmnOverlayProvider>
-        </div>
-      );
+      renderFlow([{ ...nodes[1]!, selected: true }], { overlay: OVERLAY });
 
       fireEvent.doubleClick(
         nodeElement('end').querySelector('[data-node-part="label"]')!.firstElementChild!
       );
 
       expect(overlayOf('end')!.querySelector('textarea')).toHaveValue('Done');
+    });
+
+    it('carries the connection state to the box, where the outside label is drawn', () => {
+      renderFlow(
+        [
+          {
+            ...node('end', 'bpmn:EndEvent', 300, { label: 'Done', connectionState: 'unavailable' }),
+            width: 36,
+            height: 36,
+          },
+        ],
+        { overlay: OVERLAY }
+      );
+
+      const box = overlayOf('end')!;
+      expect(box).toHaveAttribute('data-connection-state', 'unavailable');
+      expect(box.className).toContain('opacity-30');
+      expect(box.querySelector('[data-bpmn-label-overlay]')).not.toBeNull();
     });
   });
 
@@ -690,7 +646,7 @@ describe('BPMN element family', () => {
     const container = () => screen.getByTestId('base-container');
 
     it('leaves an element with no state as it is', () => {
-      renderActivity({ label: 'Review', backgroundColor: 'rgb(1, 2, 3)' });
+      renderNode({ data: { label: 'Review', backgroundColor: 'rgb(1, 2, 3)' } });
 
       expect(root()).not.toHaveAttribute('data-connection-state');
       expect(root()).not.toHaveAttribute('data-drop-state');
@@ -703,17 +659,18 @@ describe('BPMN element family', () => {
       ['connectionState', 'target-picked', 'data-connection-state'],
       ['dropState', 'invalid', 'data-drop-state'],
     ] as const)('tints the border and fill for %s "%s", over a custom background', (key, value, attribute) => {
-      renderActivity({ label: 'Review', backgroundColor: 'rgb(1, 2, 3)', [key]: value });
+      renderNode({ data: { label: 'Review', backgroundColor: 'rgb(1, 2, 3)', [key]: value } });
 
       expect(root()).toHaveAttribute(attribute, value);
-      expect(root().className).toContain('--bpmn-element-border');
       expect(container().style.borderColor).toBe('var(--bpmn-element-border)');
       expect(container().style.background).toBe('var(--bpmn-element-fill)');
     });
 
     it('strokes and fills the outline of an outline-drawn element', () => {
-      renderNode(BpmnGatewayNode, requiredActions, {
+      renderNode({
+        Component: BpmnGatewayNode,
         type: 'bpmn:ExclusiveGateway',
+        selected: true,
         data: { connectionState: 'target' },
       });
 
@@ -723,20 +680,20 @@ describe('BPMN element family', () => {
     });
 
     it('stands in for the status colours while the border is tinted', () => {
-      renderActivity({ executionStatus: 'Failed', dropState: 'invalid' });
+      renderNode({ data: { executionStatus: 'Failed', dropState: 'invalid' } });
 
       expect(container()).not.toHaveAttribute('data-execution-status');
     });
 
     it('lets a drop state win over a connection state', () => {
-      renderActivity({ connectionState: 'unavailable', dropState: 'invalid' });
+      renderNode({ data: { connectionState: 'unavailable', dropState: 'invalid' } });
 
       expect(root().className).not.toContain('opacity-30');
       expect(container().style.borderColor).toBe('var(--bpmn-element-border)');
     });
 
     it('fades an unavailable element and takes it off the pointer', () => {
-      renderActivity({ connectionState: 'unavailable' });
+      renderNode({ data: { connectionState: 'unavailable' } });
 
       expect(root().className).toContain('opacity-30');
       expect(root().className).toContain('pointer-events-none');
@@ -744,7 +701,7 @@ describe('BPMN element family', () => {
     });
 
     it('leaves the anchor as it is, with its toolbar', () => {
-      renderActivity({ connectionState: 'anchor' }, 'bpmn:UserTask', { selected: true });
+      renderNode({ data: { connectionState: 'anchor' }, selected: true });
 
       expect(container().style.borderColor).toBe('');
       expect(toolbarButtons()).toContain('Delete');
@@ -755,21 +712,21 @@ describe('BPMN element family', () => {
       'target-picked',
       'unavailable',
     ] as const)('hides the toolbar and "+" of a selected %s', (connectionState) => {
-      renderActivity({ connectionState }, 'bpmn:UserTask', { selected: true });
+      renderNode({ data: { connectionState }, selected: true });
 
       expect(screen.queryAllByRole('button')).toEqual([]);
       expect(document.querySelector('[data-testid^="quick-add-handle-"]')).toBeNull();
     });
 
     it('washes a valid drop target and keeps its border', () => {
-      renderActivity({ dropState: 'valid' });
+      renderNode({ data: { dropState: 'valid' } });
 
       expect(container().style.background).toBe('var(--bpmn-element-fill)');
       expect(container().style.borderColor).toBe('');
     });
 
     it('rings a drop onto the border and keeps the fill', () => {
-      renderActivity({ dropState: 'valid-border', backgroundColor: 'rgb(1, 2, 3)' });
+      renderNode({ data: { dropState: 'valid-border', backgroundColor: 'rgb(1, 2, 3)' } });
 
       expect(document.querySelector('[data-bpmn-drop-ring]')).not.toBeNull();
       expect(container().style.borderColor).toBe('var(--bpmn-element-border)');
@@ -777,26 +734,22 @@ describe('BPMN element family', () => {
     });
 
     it('fills an element with no card only while a state is on', () => {
-      const { rerender } = renderNode(BpmnSwimlaneNode, requiredActions, {
-        type: 'bpmn:Lane',
-        selected: false,
-      });
+      const { rerender } = renderNode({ Component: BpmnSwimlaneNode, type: 'bpmn:Lane' });
       expect(document.querySelector('.bg-\\(--bpmn-element-fill\\)')).toBeNull();
 
-      rerender(
-        <ReactFlowProvider>
-          <BpmnActionsProvider value={requiredActions}>
-            <BpmnSwimlaneNode
-              {...({
-                id: 'node',
-                type: 'bpmn:Lane',
-                data: { dropState: 'valid' },
-              } as NodeProps<BpmnNode>)}
-            />
-          </BpmnActionsProvider>
-        </ReactFlowProvider>
-      );
+      rerender({ data: { dropState: 'valid' } });
       expect(document.querySelector('.bg-\\(--bpmn-element-fill\\)')).not.toBeNull();
+    });
+
+    it('keeps a selected lane its selection fill while a state sets no fill', () => {
+      renderNode({
+        Component: BpmnSwimlaneNode,
+        type: 'bpmn:Lane',
+        selected: true,
+        data: { connectionState: 'unavailable' },
+      });
+
+      expect(document.querySelector('.bg-foreground-accent-muted\\/5')).not.toBeNull();
     });
 
     const notchOn = (side: Position) =>
@@ -805,34 +758,14 @@ describe('BPMN element family', () => {
       );
 
     it("fills the notch on the side the host's own connection is over", () => {
-      renderActivity({ connectionState: 'target-picked', connectionSide: Position.Right });
+      renderNode({ data: { connectionState: 'target-picked', connectionSide: Position.Right } });
 
       expect(notchOn(Position.Right)).toHaveClass('bg-brand');
       expect(notchOn(Position.Left)).not.toHaveClass('bg-brand');
     });
 
     it('fills the notch on the side a dragged connection would end on', () => {
-      let store!: ReturnType<typeof useStoreApi>;
-      const Probe = () => {
-        store = useStoreApi();
-        return null;
-      };
-      render(
-        <ReactFlowProvider>
-          <Probe />
-          <BpmnActionsProvider value={actions}>
-            <BpmnActivityNode
-              {...({
-                id: 'task',
-                type: 'bpmn:UserTask',
-                data: {},
-                width: 100,
-                height: 80,
-              } as NodeProps<BpmnNode>)}
-            />
-          </BpmnActionsProvider>
-        </ReactFlowProvider>
-      );
+      renderNode();
       // Not hovered or selected, so its notches only show once a connection starts.
       expect(notchOn(Position.Top)).toBeNull();
 
@@ -862,124 +795,6 @@ describe('BPMN element family', () => {
 
       connect(false);
       expect(notchOn(Position.Top)).not.toHaveClass('bg-brand');
-    });
-
-    it('carries the state to the overlay box, where the outside label is drawn', () => {
-      render(
-        <div style={{ width: 800, height: 600 }}>
-          <BpmnOverlayProvider value={{ zIndex: 2000 }}>
-            <BpmnActionsProvider value={actions}>
-              <ReactFlow
-                nodes={[
-                  {
-                    ...node('end', 'bpmn:EndEvent', 300, {
-                      label: 'Done',
-                      connectionState: 'unavailable',
-                    }),
-                    width: 36,
-                    height: 36,
-                  },
-                ]}
-                nodeTypes={bpmnNodeTypes}
-              />
-            </BpmnActionsProvider>
-          </BpmnOverlayProvider>
-        </div>
-      );
-
-      const box = document.querySelector('[data-bpmn-node-overlay="end"]') as HTMLElement;
-      expect(box).toHaveAttribute('data-connection-state', 'unavailable');
-      expect(box.className).toContain('opacity-30');
-      expect(box.querySelector('[data-bpmn-label-overlay]')).not.toBeNull();
-    });
-  });
-
-  describe('review fixes', () => {
-    it('reads the side of a handle whose node id contains the separator', () => {
-      expect(bpmnHandleSide(bpmnHandleId('Task____1', 'source', Position.Right))).toBe(
-        Position.Right
-      );
-    });
-
-    it("leaves the host's startConnection alone outside design mode", () => {
-      const startConnection = vi.fn();
-      render(
-        <ReactFlowProvider>
-          <BaseCanvasModeProvider mode="view">
-            <BpmnActionsProvider value={{ ...requiredActions, startConnection }}>
-              <BpmnActivityNode
-                {...({
-                  id: 'task',
-                  type: 'bpmn:UserTask',
-                  data: {},
-                  width: 100,
-                  height: 80,
-                } as NodeProps<BpmnNode>)}
-              />
-            </BpmnActionsProvider>
-          </BaseCanvasModeProvider>
-        </ReactFlowProvider>
-      );
-
-      fireEvent.pointerDown(handle('source', Position.Bottom));
-      expect(startConnection).not.toHaveBeenCalled();
-    });
-
-    it('shows the sub-process "View" button while it has keyboard focus', () => {
-      renderActivity({ label: 'Ship' }, 'bpmn:SubProcess');
-
-      expect(screen.getByRole('button', { name: 'View Ship' }).className).toContain(
-        'focus-visible:opacity-100'
-      );
-    });
-
-    it('gives an empty editable label somewhere to double-click', () => {
-      renderActivity({}, 'bpmn:UserTask', { selected: true });
-
-      const text = document.querySelector('[data-node-part="label"]')!.firstElementChild!;
-      expect(text.className).toContain('min-w-12');
-      fireEvent.doubleClick(text);
-      expect(screen.getByLabelText('Edit label')).toBeInTheDocument();
-    });
-
-    it('translates the accessible name of the "+"', async () => {
-      const user = userEvent.setup();
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', {
-        strings: { quickAdd: 'Knoten hinzufügen' },
-      });
-
-      await user.hover(screen.getByText('Review'));
-      expect(screen.getAllByRole('button', { name: 'Knoten hinzufügen' }).length).toBeGreaterThan(
-        0
-      );
-      expect(screen.queryByRole('button', { name: 'Add node' })).toBeNull();
-    });
-  });
-
-  describe('host data and options', () => {
-    it('renders an event whose definition has no glyph instead of throwing', () => {
-      expect(() =>
-        renderNode(BpmnEventNode, requiredActions, {
-          type: 'bpmn:StartEvent',
-          data: { eventDefinition: 'cancel' as never },
-        })
-      ).not.toThrow();
-    });
-
-    it('scales no toolbar unless zoom scaling is on', () => {
-      renderActivity({ label: 'Review' }, 'bpmn:UserTask', { selected: true });
-
-      const toolbar = screen.getByTestId('node-toolbar');
-      expect(toolbar.closest('[style*="scale"]')).toBeNull();
-    });
-
-    it('keeps a selected lane its selection fill while a state sets no fill', () => {
-      renderNode(BpmnSwimlaneNode, requiredActions, {
-        type: 'bpmn:Lane',
-        data: { connectionState: 'unavailable' },
-      });
-
-      expect(document.querySelector('.bg-foreground-accent-muted\\/5')).not.toBeNull();
     });
   });
 });

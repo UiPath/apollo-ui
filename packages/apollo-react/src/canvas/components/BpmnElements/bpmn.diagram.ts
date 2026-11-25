@@ -14,6 +14,8 @@ import {
 
 const { Left, Right, Top, Bottom } = Position;
 
+export type Diagram = { nodes: BpmnNode[]; edges: BpmnEdge[] };
+
 /** Default sizes, as a BPMN host's type registry declares them. */
 export function defaultSize(type: string) {
   if (type.endsWith('Event')) return { width: 36, height: 36 };
@@ -65,7 +67,7 @@ const SHIP = 'SubProcess_ship';
 const POOL_WIDTH = 1438;
 const LANE_WIDTH = POOL_WIDTH - 28;
 
-/** A small collaboration: three pools, two lanes, every edge kind, a boundary event, sub-processes. */
+/** A small collaboration: three pools, two lanes, a boundary event, sub-processes. */
 const processNodes: BpmnNode[] = [
   node(
     'Participant_customer',
@@ -291,22 +293,32 @@ const events = (
   definitions: (BpmnEventDefinition | undefined)[],
   data: BpmnNodeData = {}
 ): Item[] =>
-  definitions.map((eventDefinition) => [
-    type,
-    { ...data, eventDefinition, label: eventDefinition ?? 'none' },
-  ]);
+  definitions.map((eventDefinition) => {
+    const name = eventDefinition ?? 'none';
+    return [
+      type,
+      {
+        ...data,
+        eventDefinition,
+        label: data.nonInterrupting ? `${name}, non-interrupting` : name,
+      },
+    ];
+  });
 
-const TASK_NAMES = [
-  'Task',
-  'User',
-  'Service',
-  'Script',
-  'Send',
-  'Receive',
-  'Manual',
-  'Business rule',
-];
-const GATEWAY_NAMES = ['Exclusive', 'Parallel', 'Inclusive', 'Complex', 'Event-based'];
+/** Read off the type so labels cannot drift: `bpmn:BusinessRuleTask` reads "Business rule". */
+function shortName(type: string, suffix: string) {
+  const bare = type.replace(/^bpmn:/, '');
+  const words = (bare.endsWith(suffix) ? bare.slice(0, -suffix.length) : bare)
+    .replace(/\B([A-Z])/g, ' $1')
+    .toLowerCase();
+  // Plain `bpmn:Task` has nothing left after the suffix.
+  if (!words) return suffix;
+  // BPMN writes this one hyphenated.
+  const name = words === 'event based' ? 'event-based' : words;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+const BOUNDARY_HOST = 'Gallery_boundary_host';
 
 const galleryNodes: BpmnNode[] = [
   ...row(0, 'Start events', [
@@ -340,13 +352,13 @@ const galleryNodes: BpmnNode[] = [
   ...row(
     3,
     'Gateways',
-    BPMN_GATEWAY_TYPES.map((type, i): Item => [type, { label: GATEWAY_NAMES[i] }])
+    BPMN_GATEWAY_TYPES.map((type): Item => [type, { label: shortName(type, 'Gateway') }])
   ),
   ...row(
     4,
     'Tasks',
     [
-      ...BPMN_TASK_TYPES.map((type, i): Item => [type, { label: TASK_NAMES[i] }]),
+      ...BPMN_TASK_TYPES.map((type): Item => [type, { label: shortName(type, 'Task') }]),
       ['bpmn:CallActivity', { label: 'Call activity' }],
     ],
     40
@@ -360,7 +372,7 @@ const galleryNodes: BpmnNode[] = [
       ['bpmn:Task', { label: 'Sequential', loopCharacteristics: 'sequential' }],
       ['bpmn:SubProcess', { label: 'Collapsed' }],
       ['bpmn:SubProcess', { label: 'Collapsed loop', loopCharacteristics: 'loop' }],
-      ['bpmn:UserTask', { label: 'Boundary' }],
+      ['bpmn:UserTask', { label: 'Boundary events' }, { id: BOUNDARY_HOST }],
       [
         'bpmn:SubProcess',
         { label: 'Event sub-process', isExpanded: true, triggeredByEvent: true },
@@ -401,7 +413,7 @@ const galleryNodes: BpmnNode[] = [
   ),
 ];
 
-/** Two boundary events on the gallery's "Boundary events" task. */
+/** An interrupting timer and a non-interrupting message on the gallery's "Boundary events" task. */
 const galleryBoundaryEvents: BpmnNode[] = [
   node(
     'Gallery_boundary_timer',
@@ -409,17 +421,15 @@ const galleryBoundaryEvents: BpmnNode[] = [
     12,
     62,
     { eventDefinition: 'timer' },
-    { parentId: 'Gallery_5_5' }
+    { parentId: BOUNDARY_HOST }
   ),
   node(
-    'Gallery_boundary_error',
+    'Gallery_boundary_message',
     'bpmn:BoundaryEvent',
     56,
     62,
     { eventDefinition: 'message', nonInterrupting: true },
-    {
-      parentId: 'Gallery_5_5',
-    }
+    { parentId: BOUNDARY_HOST }
   ),
 ];
 
@@ -516,14 +526,18 @@ const otherFlows = flowRow(9, 'Messages and associations', [
   },
 ]);
 
-/** A worked collaboration, wired with every edge kind. */
-export const exampleDiagram: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
+/** A worked collaboration, wired with sequence, message, data output and association flows. */
+export const exampleDiagram: Diagram = {
   nodes: processNodes,
   edges: processEdges,
 };
 
-/** Every element, state and edge variant on its own, in labelled rows. */
-export const elementCatalog: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
+/**
+ * The element kinds, event definitions, markers, states and edge variants, one per item in
+ * labelled rows. Vertical and black-box pools, multiplicity, `labelPlacement` and
+ * `associationDirection` are not shown.
+ */
+export const elementCatalog: Diagram = {
   nodes: [...galleryNodes, ...galleryBoundaryEvents, ...sequenceFlows.nodes, ...otherFlows.nodes],
   edges: [...sequenceFlows.edges, ...otherFlows.edges],
 };
@@ -547,7 +561,7 @@ const CONNECTION_STATES: Record<string, BpmnConnectionState> = {
 };
 
 /** The example diagram while a connection is in progress: valid ends tinted, the rest faded. */
-export const connectionDiagram: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
+export const connectionDiagram: Diagram = {
   nodes: withData(({ id }) => ({ connectionState: CONNECTION_STATES[id] ?? 'unavailable' })),
   edges: processEdges.map((item) => ({ ...item, data: { ...item.data, dimmed: true } })),
 };
@@ -563,7 +577,7 @@ const DROP_STATES: Record<string, BpmnDropState> = {
 };
 
 /** The example diagram with each state a dragged node can put on what it is over. */
-export const dropDiagram: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
+export const dropDiagram: Diagram = {
   nodes: withData(({ id }) => ({ dropState: DROP_STATES[id] })),
   edges: processEdges,
 };

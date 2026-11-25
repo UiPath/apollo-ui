@@ -14,10 +14,17 @@ import {
   type NodeChange,
   type NodeProps,
   type NodeTypes,
-  Panel,
   Position,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import {
+  memo,
+  type ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { StoryInfoPanel, withCanvasProviders } from '../../storybook-utils';
 import { BaseCanvas } from '../BaseCanvas';
 import type { Point } from '../Edges/shared/types';
@@ -25,6 +32,7 @@ import { bpmnEdgeTypes } from './BpmnEdge';
 import { BPMN_GATEWAY_TYPES, BPMN_TASK_TYPES, bpmnNodeTypes } from './BpmnNodes';
 import {
   connectionDiagram,
+  type Diagram,
   defaultSize,
   dropDiagram,
   elementCatalog,
@@ -199,7 +207,8 @@ const FIT_VIEW = {
 
 interface BpmnCanvasStoryProps extends StoryArgs {
   title: string;
-  initial: { nodes: BpmnNode[]; edges: BpmnEdge[] };
+  description: ReactNode;
+  initial: Diagram;
 }
 
 function BpmnCanvasStory({
@@ -210,13 +219,17 @@ function BpmnCanvasStory({
   selectedButtonOutline,
   buttonOutset,
   title,
+  description,
   initial,
 }: BpmnCanvasStoryProps) {
   const [nodes, setNodes] = useState<BpmnNode[]>(initial.nodes);
   const [edges, setEdges] = useState<BpmnEdge[]>(initial.edges);
-  const [hoveredAction, setHoveredAction] = useState<{ nodeId: string; action: string } | null>(
-    null
-  );
+  // Actions read the latest diagram here rather than closing over state, so their identity, and
+  // every node's render, survives a drag tick.
+  const latest = useRef<Diagram>(initial);
+  useLayoutEffect(() => {
+    latest.current = { nodes, edges };
+  });
   const counter = useRef(0);
   const newId = useCallback((prefix: string) => `${prefix}_new_${++counter.current}`, []);
 
@@ -235,7 +248,7 @@ function BpmnCanvasStory({
       const side = bpmnHandleSide(targetHandle) ?? Position.Left;
       const edge: BpmnEdge = {
         id: newId('Flow'),
-        type: connectionType(nodes, source, target),
+        type: connectionType(latest.current.nodes, source, target),
         source,
         target,
         sourceHandle,
@@ -244,7 +257,7 @@ function BpmnCanvasStory({
       };
       setEdges((current) => [...current, edge]);
     },
-    [nodes, newId]
+    [newId]
   );
 
   const patch = useCallback(
@@ -362,26 +375,27 @@ function BpmnCanvasStory({
           });
         }),
 
-      hoverToolbarAction: (nodeId, action, hovered) =>
-        setHoveredAction(hovered ? { nodeId, action } : null),
+      hoverToolbarAction: (nodeId, action, hovered) => {
+        if (hovered) console.info('Hover toolbar action', action, nodeId);
+      },
 
-      deleteNode: (nodeId) =>
-        setNodes((current) => {
-          const removed = new Set([nodeId]);
-          // Parents precede children, so one pass collects every descendant.
-          for (const node of current)
-            if (node.parentId && removed.has(node.parentId)) removed.add(node.id);
-          setEdges((all) =>
-            all.filter((edge) => !removed.has(edge.source) && !removed.has(edge.target))
-          );
-          return current.filter((node) => !removed.has(node.id));
-        }),
+      deleteNode: (nodeId) => {
+        const removed = new Set([nodeId]);
+        // Parents precede children, so one pass collects every descendant.
+        for (const node of latest.current.nodes)
+          if (node.parentId && removed.has(node.parentId)) removed.add(node.id);
+        setNodes((current) => current.filter((node) => !removed.has(node.id)));
+        setEdges((current) =>
+          current.filter((edge) => !removed.has(edge.source) && !removed.has(edge.target))
+        );
+      },
 
       view: (nodeId) => console.info('View', nodeId),
       rename: (nodeId, label) =>
         patch(nodeId, (node) => ({ ...node, data: { ...node.data, label } })),
 
       insertOnEdge: (edgeId, position) => {
+        const { nodes, edges } = latest.current;
         const split = edges.find((edge) => edge.id === edgeId);
         const from = byId(nodes, split?.source);
         if (!split || !from) return;
@@ -455,7 +469,7 @@ function BpmnCanvasStory({
           )
         ),
     };
-  }, [edges, nodes, patch, newId]);
+  }, [patch, newId]);
 
   const controls = useMemo<BpmnControls>(
     () => ({
@@ -490,24 +504,12 @@ function BpmnCanvasStory({
               fitView
               fitViewOptions={FIT_VIEW}
             >
-              <StoryInfoPanel title={title} collapsible defaultCollapsed>
-                <ul className="mt-2 max-w-80 list-disc space-y-1 pl-4 text-xs text-foreground-muted">
-                  <li>Cards, hover, selection and status: BaseContainer</li>
-                  <li>Diamond and data shapes: BaseNodeOutline with a host path</li>
-                  <li>Handles and "+": ButtonHandle, shown by resolveNodeHandleAffordances</li>
-                  <li>Actions: NodeToolbar and EdgeToolbar</li>
-                  <li>Corner badges: BaseBadgeSlot; label editing: useInlineLabelEditing</li>
-                  <li>Edges: EdgePath, EdgeArrow, EdgeLabel, the waypoint editor and line jumps</li>
-                  <li>Pools, lanes, groups and annotations: apollo tokens only</li>
-                </ul>
-              </StoryInfoPanel>
-              {hoveredAction && (
-                <Panel position="top-center">
-                  <div className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-foreground-muted">
-                    Hovering "{hoveredAction.action}" on {hoveredAction.nodeId}
-                  </div>
-                </Panel>
-              )}
+              <StoryInfoPanel
+                title={title}
+                description={description}
+                collapsible
+                defaultCollapsed
+              />
             </BaseCanvas>
           </BpmnControlsProvider>
         </BpmnActionsProvider>
@@ -516,28 +518,83 @@ function BpmnCanvasStory({
   );
 }
 
+const Code = ({ children }: { children: string }) => (
+  <code className="font-mono text-foreground">{children}</code>
+);
+
+// Only the anchor node shows a toolbar or "+" while a connection runs, so these controls
+// would do next to nothing there.
+const NO_BUTTON_CONTROLS: Story['argTypes'] = {
+  buttonReveal: { table: { disable: true } },
+  buttonShape: { table: { disable: true } },
+  zoomScale: { table: { disable: true } },
+  selectedButtonOutline: { table: { disable: true } },
+  buttonOutset: { table: { disable: true } },
+};
+
 export const ExampleDiagram: Story = {
   name: 'Example diagram',
   render: (args) => (
-    <BpmnCanvasStory {...args} title="BPMN example diagram" initial={exampleDiagram} />
+    <BpmnCanvasStory
+      {...args}
+      title="BPMN example diagram"
+      description={
+        <>
+          An order process across three pools, with lanes, sub-processes, a boundary event and
+          sequence, message, data and association flows. The host keeps nodes and edges in its own
+          state and handles every edit through <Code>BpmnActionsProvider</Code>.
+        </>
+      }
+      initial={exampleDiagram}
+    />
   ),
 };
 
 export const ElementCatalog: Story = {
   name: 'Element catalog',
   render: (args) => (
-    <BpmnCanvasStory {...args} title="BPMN element catalog" initial={elementCatalog} />
+    <BpmnCanvasStory
+      {...args}
+      title="BPMN element catalog"
+      description="Element kinds, event definitions, markers, states and flow variants, one per item. Each is set through node or edge data."
+      initial={elementCatalog}
+    />
   ),
 };
 
 export const ConnectionInProgress: Story = {
   name: 'Connection in progress',
+  argTypes: NO_BUTTON_CONTROLS,
   render: (args) => (
-    <BpmnCanvasStory {...args} title="BPMN connection states" initial={connectionDiagram} />
+    <BpmnCanvasStory
+      {...args}
+      title="BPMN connection states"
+      description={
+        <>
+          A connection dragged out of "Review order" and held over "Approved?". The host sets{' '}
+          <Code>connectionState</Code> in each node's data and <Code>dimmed</Code> in each edge's
+          data. Nothing is computed by the family.
+        </>
+      }
+      initial={connectionDiagram}
+    />
   ),
 };
 
 export const DropTargets: Story = {
   name: 'Drop targets',
-  render: (args) => <BpmnCanvasStory {...args} title="BPMN drop states" initial={dropDiagram} />,
+  render: (args) => (
+    <BpmnCanvasStory
+      {...args}
+      title="BPMN drop states"
+      description={
+        <>
+          Each state a dragged node can put on what it is over: valid, valid on the border, and
+          invalid. The host sets <Code>dropState</Code> in node data. Nothing is computed by the
+          family.
+        </>
+      }
+      initial={dropDiagram}
+    />
+  ),
 };
