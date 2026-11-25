@@ -18,6 +18,9 @@ export const BASE_CANVAS_DEFAULTS = {
     padding: 0.1,
     duration: 300,
   },
+  zoomOptions: {
+    duration: 200,
+  },
   background: {
     gap: BASE_CANVAS_GRID_SPACING,
     size: 2,

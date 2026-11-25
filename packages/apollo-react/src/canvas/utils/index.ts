@@ -1,3 +1,4 @@
+export * from './animate-nodes';
 export * from './ArrayUtil';
 export * from './auto-layout';
 export * from './CanvasEventBus';
