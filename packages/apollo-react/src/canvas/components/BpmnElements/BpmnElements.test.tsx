@@ -564,6 +564,16 @@ describe('BPMN element family', () => {
       expect(box.style.height).toBe('80px');
     });
 
+    it('marks the box with whether its node is selected', () => {
+      renderCanvas(OVERLAY);
+
+      expect(overlayOf('task')).toHaveAttribute('data-node-selected', 'true');
+      expect(overlayOf('end')).toHaveAttribute('data-node-selected', 'false');
+      expect(
+        document.querySelector('[data-node-selected="true"] [data-testid="node-toolbar"]')
+      ).not.toBeNull();
+    });
+
     it('moves the toolbar and the handle visuals there, and leaves the handles in the node', () => {
       renderCanvas(OVERLAY);
 

@@ -63,6 +63,7 @@ const NodeOverlayContext = createContext<HTMLElement | null | undefined>(undefin
  */
 function NodeOverlay({
   nodeId,
+  selected,
   zIndex,
   width,
   height,
@@ -70,6 +71,7 @@ function NodeOverlay({
   children,
 }: {
   nodeId: string;
+  selected?: boolean;
   zIndex: number;
   width: number;
   height: number;
@@ -88,6 +90,8 @@ function NodeOverlay({
       <div
         ref={elementRef}
         data-bpmn-node-overlay={nodeId}
+        // The box is outside the node's element, so its `selected` class does not reach it.
+        data-node-selected={selected ? 'true' : 'false'}
         className="pointer-events-none absolute"
         style={{ left: x, top: y, width, height, zIndex }}
       >
@@ -293,6 +297,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
         {lifted ? (
           <NodeOverlay
             nodeId={id}
+            selected={selected}
             zIndex={lifted.zIndex}
             width={width}
             height={height}
