@@ -33,6 +33,7 @@ import {
   storyTableOf,
   storyTableProps,
 } from './__fixtures__/storyTableHost';
+import { STORY_THEMES, type StoryTheme, useStoryTheme } from './__fixtures__/storyThemes';
 import type { FixtureEdit, FixtureTextProps } from './__fixtures__/textMode';
 import { useStoryHistory } from './__fixtures__/useStoryHistory';
 import { DecisionText } from './DecisionText';
@@ -98,6 +99,7 @@ interface TableHostProps {
   headerMark?: FixtureTextProps['headerMark'];
   renderEditor?: FixtureEdit['renderEditor'];
   frameClassName?: string;
+  theme?: StoryTheme;
 }
 
 /** A host that owns the table and the selection, words the table back after every write, and refuses an empty condition. */
@@ -110,7 +112,9 @@ const TableHost = ({
   headerMark,
   renderEditor,
   frameClassName = 'h-[600px]',
+  theme = 'host',
 }: TableHostProps) => {
+  const surfaceTheme = useStoryTheme(theme);
   const {
     state: host,
     set: setHost,
@@ -147,6 +151,7 @@ const TableHost = ({
     <div className={`flex flex-col gap-2 ${frameClassName}`}>
       <DecisionText
         name="Discount"
+        theme={surfaceTheme}
         table={{ rules, ...columns, hitPolicy }}
         hitPolicies={HIT_POLICIES}
         columnTypes={COLUMN_TYPES}
@@ -342,10 +347,11 @@ interface RulesArgs {
   table: keyof typeof TABLES;
   validate: boolean;
   editor: 'popover' | 'host';
+  theme: StoryTheme;
 }
 
 export const Default: StoryObj<RulesArgs> = {
-  args: { mode: 'edit', table: 'rules', validate: false, editor: 'popover' },
+  args: { mode: 'edit', table: 'rules', validate: false, editor: 'popover', theme: 'host' },
   argTypes: {
     mode: {
       control: 'inline-radio',
@@ -360,8 +366,13 @@ export const Default: StoryObj<RulesArgs> = {
       description:
         "Under Edit expression: the popover's text field, or the host's editor in a shadow root.",
     },
+    theme: {
+      control: 'select',
+      options: STORY_THEMES,
+      description: "The surface's theme, or the host's body theme.",
+    },
   },
-  render: ({ mode, table, validate, editor }) => (
+  render: ({ mode, table, validate, editor, theme }) => (
     <TableHost
       key={table}
       initialTable={TABLES[table]}
@@ -369,6 +380,7 @@ export const Default: StoryObj<RulesArgs> = {
       validate={validate}
       renderEditor={editor === 'host' ? renderExpressionEditor : undefined}
       caption={MODE_CAPTIONS[mode]}
+      theme={theme}
     />
   ),
 };

@@ -26,6 +26,9 @@
  * - `'wireframe'`    — Demo: low-fidelity wireframe theme
  * - `'vertex'`       — Demo: Apollo Vertex dark palette
  * - `'canvas'`       — Demo: Apollo React / MUI dark palette
+ *
+ * Host aliases (applied as CSS class):
+ * - `'cartographer'` — Autopilot Cartographer's own tokens, following its light/dark and accent
  */
 export type Theme =
   | 'dark'
@@ -36,4 +39,5 @@ export type Theme =
   | 'future-light'
   | 'wireframe'
   | 'vertex'
-  | 'canvas';
+  | 'canvas'
+  | 'cartographer';

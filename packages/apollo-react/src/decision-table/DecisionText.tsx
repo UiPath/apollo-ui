@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, type Theme } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { AddRuleFooter } from './AddRuleFooter';
@@ -8,6 +8,7 @@ import { type ColumnTypeOption, glyphOf } from './columnTypes';
 import { DecisionTextHeader, type DecisionTextHeaderProps } from './DecisionTextHeader';
 import { type DecisionTextDiff, diffColumnsOf, diffRowsOf } from './decisionTextDiff';
 import type { DecisionTextEdit } from './decisionTextTypes';
+import { DecisionTheme } from './DecisionTheme';
 import { EmptyRules } from './EmptyRules';
 import { GridContextMenu } from './GridMenu';
 import {
@@ -156,6 +157,8 @@ export interface DecisionTextProps<Op, Policy, Total, Type, Refusal> {
   dataTestId: string;
   /** Overlays rendered inside the scroll container (menus, notes, dialogs). */
   children?: React.ReactNode;
+  /** The apollo-wind theme the view and its overlays paint in, whatever the host's body class; the host's theme when omitted. */
+  theme?: Theme;
 }
 
 const NO_FOLDS: ReadonlySet<string> = new Set();
@@ -192,6 +195,7 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
   containerProps,
   dataTestId,
   children,
+  theme,
 }: Omit<DecisionTextProps<Op, Policy, Total, Type, Refusal>, 'name'> & {
   header: { kind: 'own'; name: string } | { kind: 'card' };
 }): React.JSX.Element => {
@@ -360,143 +364,146 @@ export const DecisionTextView = <Op, Policy, Total, Type, Refusal>({
       className={cn(
         scroll === 'self' ? DECISION_TEXT_FRAME_CLASS : DECISION_TEXT_INLINE_FRAME_CLASS,
         header.kind === 'own' && NUMBER_MARGIN_CLASS,
+        theme,
         sectionProps.className
       )}
     >
-      <div
-        className={cn(
-          TEXT_COLUMN_CLASS,
-          header.kind === 'own'
-            ? 'my-4 rounded-[10px] border border-border-de-emp bg-background'
-            : '[--sentence-gutter:0px]',
-          header.kind === 'own' && headerMark?.tone === 'error' && 'border-error-icon'
-        )}
-        data-testid={`${dataTestId}-column`}
-      >
-        {header.kind === 'own' && (
-          <DecisionTextHeader
-            ref={ruleWindow.headerRef}
-            name={header.name}
-            fold={{ open, bodyId, onToggle: () => setOpen((was) => !was) }}
-            title={title}
-            hint={policyHeader.hint}
-            mark={headerMark}
-            citations={
-              citations.kind === 'cited' && citations.decision.length > 0
-                ? { citations: citations.decision, onOpen: citations.onOpenCitation }
-                : null
-            }
-            ruleCount={graphLabels.ruleCount(rules.length)}
-            actions={headerActions.actions}
-            labels={labels}
-            sticky={scroll === 'self'}
+      <DecisionTheme theme={theme}>
+        <div
+          className={cn(
+            TEXT_COLUMN_CLASS,
+            header.kind === 'own'
+              ? 'my-4 rounded-[10px] border border-border-de-emp bg-background'
+              : '[--sentence-gutter:0px]',
+            header.kind === 'own' && headerMark?.tone === 'error' && 'border-error-icon'
+          )}
+          data-testid={`${dataTestId}-column`}
+        >
+          {header.kind === 'own' && (
+            <DecisionTextHeader
+              ref={ruleWindow.headerRef}
+              name={header.name}
+              fold={{ open, bodyId, onToggle: () => setOpen((was) => !was) }}
+              title={title}
+              hint={policyHeader.hint}
+              mark={headerMark}
+              citations={
+                citations.kind === 'cited' && citations.decision.length > 0
+                  ? { citations: citations.decision, onOpen: citations.onOpenCitation }
+                  : null
+              }
+              ruleCount={graphLabels.ruleCount(rules.length)}
+              actions={headerActions.actions}
+              labels={labels}
+              sticky={scroll === 'self'}
+              dataTestId={dataTestId}
+            />
+          )}
+          {open && (
+            <div id={bodyId} className="contents">
+              {bands.length > 0 && (
+                <SentenceBands
+                  bands={bands}
+                  marks={bandMarks}
+                  style={SENTENCE_LIST_STYLE}
+                  idPrefix={idPrefix}
+                  dataTestId={dataTestId}
+                  labels={labels}
+                  onAddColumn={mode.kind === 'edit' ? (mode.onAddColumn ?? null) : null}
+                  mode={
+                    columns
+                      ? { kind: 'diff', changes: columns.changes }
+                      : columnEditing.kind === 'edit'
+                        ? { kind: 'edit', ...columnEditing.pills, editorId: columnEditorId }
+                        : { kind: 'read' }
+                  }
+                />
+              )}
+              {listed.length === 0 ? (
+                <EmptyRules
+                  title={labels.emptyRules}
+                  addRule={addRuleAction}
+                  dataTestId={dataTestId}
+                />
+              ) : (
+                <RuleList
+                  ref={ruleWindow.attachList}
+                  rules={listed}
+                  mode={
+                    diffRows
+                      ? { kind: 'diff', diffRows: diffRows.rows, onExpandFold }
+                      : edit
+                        ? {
+                            kind: 'edit',
+                            editLabels: edit.labels,
+                            onRenameRule: edit.onRenameRule,
+                            reorder: edit.onMoveRule ? { drag: ruleDrag.drag } : null,
+                            openMenu: ruleMenus.state,
+                            pending: shown.pending,
+                          }
+                        : { kind: 'read' }
+                  }
+                  segments={ruleWindow.segments}
+                  numbered={numbered}
+                  marks={rowMarks}
+                  selectedRow={ruleWindow.selectedRow}
+                  selectedColumnId={navigation.selectedColumnId}
+                  selectable={selectable}
+                  decisionLinks={onOpenDecision !== undefined}
+                  citations={citations}
+                  style={SENTENCE_LIST_STYLE}
+                  idPrefix={idPrefix}
+                  dataTestId={dataTestId}
+                  labels={labels}
+                />
+              )}
+              {addRuleAction && rules.length > 0 && (
+                <AddRuleFooter addRule={addRuleAction} style={SENTENCE_LIST_STYLE} />
+              )}
+            </div>
+          )}
+        </div>
+        {valueEditing.editor && edit && (
+          <ValueEditorOverlay
+            key={valueEditing.editorKey}
+            editor={valueEditing.editor}
+            renderEditor={edit.renderEditor}
+            labels={edit.labels}
+            refusal={refusal}
+            onOperatorChange={shown.onOperatorChange}
+            container={ruleWindow.container}
             dataTestId={dataTestId}
           />
         )}
-        {open && (
-          <div id={bodyId} className="contents">
-            {bands.length > 0 && (
-              <SentenceBands
-                bands={bands}
-                marks={bandMarks}
-                style={SENTENCE_LIST_STYLE}
-                idPrefix={idPrefix}
-                dataTestId={dataTestId}
-                labels={labels}
-                onAddColumn={mode.kind === 'edit' ? (mode.onAddColumn ?? null) : null}
-                mode={
-                  columns
-                    ? { kind: 'diff', changes: columns.changes }
-                    : columnEditing.kind === 'edit'
-                      ? { kind: 'edit', ...columnEditing.pills, editorId: columnEditorId }
-                      : { kind: 'read' }
-                }
-              />
-            )}
-            {listed.length === 0 ? (
-              <EmptyRules
-                title={labels.emptyRules}
-                addRule={addRuleAction}
-                dataTestId={dataTestId}
-              />
-            ) : (
-              <RuleList
-                ref={ruleWindow.attachList}
-                rules={listed}
-                mode={
-                  diffRows
-                    ? { kind: 'diff', diffRows: diffRows.rows, onExpandFold }
-                    : edit
-                      ? {
-                          kind: 'edit',
-                          editLabels: edit.labels,
-                          onRenameRule: edit.onRenameRule,
-                          reorder: edit.onMoveRule ? { drag: ruleDrag.drag } : null,
-                          openMenu: ruleMenus.state,
-                          pending: shown.pending,
-                        }
-                      : { kind: 'read' }
-                }
-                segments={ruleWindow.segments}
-                numbered={numbered}
-                marks={rowMarks}
-                selectedRow={ruleWindow.selectedRow}
-                selectedColumnId={navigation.selectedColumnId}
-                selectable={selectable}
-                decisionLinks={onOpenDecision !== undefined}
-                citations={citations}
-                style={SENTENCE_LIST_STYLE}
-                idPrefix={idPrefix}
-                dataTestId={dataTestId}
-                labels={labels}
-              />
-            )}
-            {addRuleAction && rules.length > 0 && (
-              <AddRuleFooter addRule={addRuleAction} style={SENTENCE_LIST_STYLE} />
-            )}
-          </div>
+        {columnEditing.kind === 'edit' && columnEditing.editor && edit && (
+          <ColumnEditorOverlay
+            key={columnEditing.editor.column.id}
+            editor={columnEditing.editor}
+            types={columnTypes}
+            labels={edit.labels}
+            container={ruleWindow.container}
+            id={columnEditorId}
+            dataTestId={dataTestId}
+          />
         )}
-      </div>
-      {valueEditing.editor && edit && (
-        <ValueEditorOverlay
-          key={valueEditing.editorKey}
-          editor={valueEditing.editor}
-          renderEditor={edit.renderEditor}
-          labels={edit.labels}
-          refusal={refusal}
-          onOperatorChange={shown.onOperatorChange}
-          container={ruleWindow.container}
-          dataTestId={dataTestId}
+        <div
+          ref={attachDragPreview}
+          aria-hidden
+          className={RULE_DRAG_PREVIEW_CLASS}
+          style={SENTENCE_LIST_STYLE}
         />
-      )}
-      {columnEditing.kind === 'edit' && columnEditing.editor && edit && (
-        <ColumnEditorOverlay
-          key={columnEditing.editor.column.id}
-          editor={columnEditing.editor}
-          types={columnTypes}
-          labels={edit.labels}
-          container={ruleWindow.container}
-          id={columnEditorId}
+        <MarkTooltip container={ruleWindow.container} dataTestId={dataTestId} />
+        <GridContextMenu
+          label={ruleMenus.label}
           dataTestId={dataTestId}
+          state={ruleMenus.state}
+          entries={ruleMenus.entries}
+          onClose={ruleMenus.onClose}
         />
-      )}
-      <div
-        ref={attachDragPreview}
-        aria-hidden
-        className={RULE_DRAG_PREVIEW_CLASS}
-        style={SENTENCE_LIST_STYLE}
-      />
-      <MarkTooltip container={ruleWindow.container} dataTestId={dataTestId} />
-      <GridContextMenu
-        label={ruleMenus.label}
-        dataTestId={dataTestId}
-        state={ruleMenus.state}
-        entries={ruleMenus.entries}
-        onClose={ruleMenus.onClose}
-      />
-      {headerActions.dialog}
-      {announcements.region}
-      {children}
+        {headerActions.dialog}
+        {announcements.region}
+        {children}
+      </DecisionTheme>
     </section>
   );
 };

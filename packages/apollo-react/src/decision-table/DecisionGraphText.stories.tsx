@@ -23,6 +23,7 @@ import {
   wordFixtureRefusal,
 } from './__fixtures__/graphActionsHost';
 import { COLUMN_TYPES, HIT_POLICIES } from './__fixtures__/sentences.fixtures';
+import { STORY_THEMES, type StoryTheme, useStoryTheme } from './__fixtures__/storyThemes';
 import {
   type HostMode,
   type StoryGraphBody,
@@ -51,6 +52,7 @@ interface GraphHostProps {
   mode?: HostMode;
   caption: string;
   cited: boolean;
+  theme?: StoryTheme;
 }
 
 const isTable = (body: GraphBody | undefined): body is EditableTable => typeof body === 'object';
@@ -96,7 +98,8 @@ const headedNodes = (
     };
   });
 
-const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => {
+const GraphHost = ({ graph, mode = 'edit', caption, cited, theme = 'host' }: GraphHostProps) => {
+  const surfaceTheme = useStoryTheme(theme);
   const { state: tables, set: setTables, onUndo, onRedo } = useStoryHistory(() => tablesOf(graph));
   const [selected, setSelected] = useState<GraphSelection | null>(null);
   const [editing, setEditing] = useState<{ decisionId: string; value: SentenceValueId } | null>(
@@ -222,6 +225,7 @@ const GraphHost = ({ graph, mode = 'edit', caption, cited }: GraphHostProps) => 
     <div className="flex flex-col gap-2">
       <div className="flex h-[640px] flex-col border border-border-de-emp">
         <DecisionGraphText
+          theme={surfaceTheme}
           citations={citations}
           nodes={nodes}
           renderBody={renderBody}
@@ -310,21 +314,28 @@ interface GraphArgs {
 
 interface DefaultArgs extends GraphArgs {
   graph: keyof typeof GRAPHS;
+  theme: StoryTheme;
 }
 
 export const Default: StoryObj<DefaultArgs> = {
-  args: { graph: 'shared dependency', mode: 'edit' },
+  args: { graph: 'shared dependency', mode: 'edit', theme: 'host' },
   argTypes: {
     graph: { control: 'select', options: Object.keys(GRAPHS) },
     mode: MODE_ARG,
+    theme: {
+      control: 'select',
+      options: STORY_THEMES,
+      description: "The surface's theme, or the host's body theme.",
+    },
   },
-  render: ({ graph, mode }) => (
+  render: ({ graph, mode, theme }) => (
     <GraphHost
       cited={false}
       key={`${graph}-${mode}`}
       graph={GRAPHS[graph].graph}
       mode={mode}
       caption={GRAPHS[graph].caption}
+      theme={theme}
     />
   ),
 };

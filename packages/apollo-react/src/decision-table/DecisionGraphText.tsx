@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, type Theme } from '@uipath/apollo-wind';
 import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -12,6 +12,7 @@ import {
   type DecisionGraphMinimapSlotProps,
 } from './DecisionGraphMinimapSlot';
 import { type DecisionTextProps, DecisionTextView, policyTitleOf } from './DecisionText';
+import { DecisionTheme } from './DecisionTheme';
 import { HitPolicyChip } from './DecisionTextHeader';
 import type { DecisionGraphMode } from './decisionGraphActionTypes';
 import {
@@ -59,7 +60,7 @@ export type DecisionGraphBody<Op, Policy, Total, Type, TextRefusal> =
       kind: 'table';
       text: Omit<
         DecisionTextProps<Op, Policy, Total, Type, TextRefusal>,
-        'scroll' | 'onOpenDecision' | 'name'
+        'scroll' | 'onOpenDecision' | 'name' | 'theme'
       >;
     }
   | { kind: 'other'; content: React.ReactNode };
@@ -84,6 +85,8 @@ export interface DecisionGraphTextProps<Refusal, Logic, Op, Policy, Total, Type,
   onOpenDecision?: (decisionId: string) => void;
   /** A table's rules as its body words them, which the minimap lists and searches by outputs and conditions; read only while it is open, and without it the minimap lists decisions alone. */
   rules?: DecisionGraphMinimapSlotProps['rules'];
+  /** The apollo-wind theme the graph, its tables and their overlays paint in, whatever the host's body class; the host's theme when omitted. */
+  theme?: Theme;
   /** Container testid; derived ids: `-scroller`, `-empty`, `-decision-{id}`, `-toggle-{id}`, `-hit-policy-{id}`, `-rule-count-{id}`, `-mark-{id}`, `-body-{id}`, `-reference-{id}`, `-reference-link-{id}`, `-menu-{id}`, `-reference-menu-{id}`, `-name-{id}-input`, `-add-decision`, `-delete-dialog`, `-links-dialog`, `-note-dialog`, `-live`, `-minimap` (and its `-trigger`, `-content`, `-search`, `-list`, `-row-decision-{id}`, `-row-rule-{id}-{rowId}`, `-row-reference-{id}`, `-no-match`). */
   dataTestId: string;
 }
@@ -192,6 +195,7 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
   onOpenDecision,
   rules,
   dataTestId,
+  theme,
 }: DecisionGraphTextProps<
   Refusal,
   Logic,
@@ -536,62 +540,64 @@ export const DecisionGraphText = <Refusal, Logic, Op, Policy, Total, Type, TextR
 
   return (
     <div
-      className={cn(GRAPH_FRAME_CLASS, GRAPH_OUTPUT_HUE_CLASS)}
+      className={cn(GRAPH_FRAME_CLASS, GRAPH_OUTPUT_HUE_CLASS, theme)}
       data-testid={dataTestId}
       {...actions.focusWithin}
     >
-      {nodes.length > 0 && (
-        <DecisionGraphMinimapSlot
-          nodes={nodes}
-          rules={rules}
-          selected={selected}
-          onPick={(target) =>
-            reveal({ ...target, mode: { kind: 'navigate', focus: true, flash: true } })
-          }
-          onLauncherEnd={setLauncherEnd}
-          labels={labels}
-          dataTestId={`${dataTestId}-minimap`}
-        />
-      )}
-      <section
-        ref={setScroller}
-        aria-label={labels.graph}
-        className={GRAPH_SCROLLER_CLASS}
-        style={{ scrollPaddingInlineStart: launcherEnd + GRAPH_MINIMAP_GAP_PX }}
-        data-testid={`${dataTestId}-scroller`}
-      >
-        {nodes.length === 0 && (
-          <p className={GRAPH_EMPTY_CLASS} data-testid={`${dataTestId}-empty`}>
-            {labels.empty}
-          </p>
+      <DecisionTheme theme={theme}>
+        {nodes.length > 0 && (
+          <DecisionGraphMinimapSlot
+            nodes={nodes}
+            rules={rules}
+            selected={selected}
+            onPick={(target) =>
+              reveal({ ...target, mode: { kind: 'navigate', focus: true, flash: true } })
+            }
+            onLauncherEnd={setLauncherEnd}
+            labels={labels}
+            dataTestId={`${dataTestId}-minimap`}
+          />
         )}
-        {(nodes.length > 0 || actions.addTop) && (
-          <div
-            className={GRAPH_COLUMN_CLASS}
-            style={{ paddingLeft: graphColumnInsetOf(launcherEnd) }}
-            onFocus={onFocus}
-          >
-            {topPositionsOf(nodes).map((position) => {
-              const node = nodes[position.index];
-              return node && <div key={node.id}>{branch(node, 0, position)}</div>;
-            })}
-            {actions.addTop && (
-              <button
-                type="button"
-                className={GRAPH_ADD_DECISION_CLASS}
-                onClick={actions.addTop}
-                data-graph-add
-                data-testid={`${dataTestId}-add-decision`}
-              >
-                <Plus aria-hidden />
-                {labels.addDecision}
-              </button>
-            )}
-          </div>
-        )}
-      </section>
-      {actions.dialogs}
-      {region}
+        <section
+          ref={setScroller}
+          aria-label={labels.graph}
+          className={GRAPH_SCROLLER_CLASS}
+          style={{ scrollPaddingInlineStart: launcherEnd + GRAPH_MINIMAP_GAP_PX }}
+          data-testid={`${dataTestId}-scroller`}
+        >
+          {nodes.length === 0 && (
+            <p className={GRAPH_EMPTY_CLASS} data-testid={`${dataTestId}-empty`}>
+              {labels.empty}
+            </p>
+          )}
+          {(nodes.length > 0 || actions.addTop) && (
+            <div
+              className={GRAPH_COLUMN_CLASS}
+              style={{ paddingLeft: graphColumnInsetOf(launcherEnd) }}
+              onFocus={onFocus}
+            >
+              {topPositionsOf(nodes).map((position) => {
+                const node = nodes[position.index];
+                return node && <div key={node.id}>{branch(node, 0, position)}</div>;
+              })}
+              {actions.addTop && (
+                <button
+                  type="button"
+                  className={GRAPH_ADD_DECISION_CLASS}
+                  onClick={actions.addTop}
+                  data-graph-add
+                  data-testid={`${dataTestId}-add-decision`}
+                >
+                  <Plus aria-hidden />
+                  {labels.addDecision}
+                </button>
+              )}
+            </div>
+          )}
+        </section>
+        {actions.dialogs}
+        {region}
+      </DecisionTheme>
     </div>
   );
 };
