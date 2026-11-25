@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.46.1...@uipath/apollo-react@7.47.0) (2026-11-25)
+
+### Features
+
+* **apollo-react:** let the host name the rule name field, show graph mark tooltips [ECS-2139] ([4a91c4b](https://github.com/UiPath/apollo-ui/commit/4a91c4bff6f9d24d030bb16c5df4b3cf77a36937))
+
 ## [@uipath/apollo-react-v7.46.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.46.0...@uipath/apollo-react@7.46.1) (2026-11-24)
 
 ### Bug Fixes
