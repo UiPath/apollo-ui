@@ -60,7 +60,7 @@ import {
 
 const EMPTY_PARAM_IDS: ReadonlySet<string> = new Set();
 
-// The AI Trust Layer policy already masks LLM calls, so a mask action never targets them.
+// LLM calls are masked through the AI Trust Layer policy, so a mask action never targets them.
 const MASK_DISABLED_SCOPES: readonly GuardrailScope[] = ['Llm'];
 
 function withoutMaskedScopes(selector: GuardrailSelector): GuardrailSelector {
@@ -156,7 +156,8 @@ export interface GuardrailBuilderProps {
   /**
    * Offer the mask action (PII masking), for a host whose backend supports it. Never offered
    * when opened from an LLM call (`scope="Llm"`). While mask is selected the LLM calls scope is
-   * dropped from the value and its chip disabled, since the AI Trust Layer policy masks those.
+   * dropped from the value and its chip disabled: LLM calls are masked through the AI Trust Layer
+   * policy instead. While mask is selected a detection scope other than Text blocks Save.
    */
   showMask?: boolean;
   /**
@@ -399,6 +400,14 @@ export function GuardrailBuilder({
     for (const id of getOutOfRangeParameterIds(definition.parameters, reconciledParameters)) {
       // Required wins: an empty field is the more actionable message of the two.
       parameterErrors[id] ??= labels.parameterOutOfRangeError;
+    }
+    // Masking reads text only; the backend rejects a mask guardrail that also reads files.
+    if (
+      formData.action.$actionType === 'mask' &&
+      (getGuardrailDetectionScope(definition.parameters, reconciledParameters) ?? 'Text') !== 'Text'
+    ) {
+      parameterErrors[GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID] ??=
+        labels.maskDetectionScopeTextOnlyError;
     }
     if (Object.keys(parameterErrors).length > 0) {
       e.parameters = parameterErrors;

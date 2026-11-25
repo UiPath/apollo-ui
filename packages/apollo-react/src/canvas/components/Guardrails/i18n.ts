@@ -154,6 +154,11 @@ export interface GuardrailBuilderLabels {
   parameterOutOfRangeError: string;
   scopesRequiredError: string;
   toolsRequiredError: string;
+  /**
+   * Shown on the detection scope while a mask action has it reading files. Optional like
+   * `scopeLlmMaskDisabledHint`.
+   */
+  maskDetectionScopeTextOnlyError?: string;
   blockReasonRequiredError: string;
   filterFieldsRequiredError: string;
   recipientRequiredError: string;
@@ -189,7 +194,8 @@ export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
   scopeAgentLabel: 'Agent',
   scopeLlmLabel: 'LLM calls',
   scopeToolLabel: 'Tools',
-  scopeLlmMaskDisabledHint: 'LLM calls are masked by the AI Trust Layer policy.',
+  scopeLlmMaskDisabledHint:
+    'LLM calls can be masked through the AI Trust Layer policy, not agent-level guardrails.',
   actionTypeLabel: 'Action type',
   actionLogLabel: 'Log',
   actionBlockLabel: 'Block',
@@ -223,6 +229,7 @@ export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
   parameterOutOfRangeError: 'Value is out of range',
   scopesRequiredError: 'At least one scope is required',
   toolsRequiredError: 'At least one tool is required',
+  maskDetectionScopeTextOnlyError: 'Masking checks text only. Set the detection scope to Text.',
   blockReasonRequiredError: 'Block reason is required',
   filterFieldsRequiredError: 'Fields selection is required',
   recipientRequiredError: 'Recipient is required',
@@ -654,7 +661,8 @@ export function useGuardrailBuilderLabels(
           scopeToolLabel: _({ id: 'guardrails.builder.scope-tool-label', message: 'Tools' }),
           scopeLlmMaskDisabledHint: _({
             id: 'guardrails.builder.scope-llm-mask-disabled-hint',
-            message: 'LLM calls are masked by the AI Trust Layer policy.',
+            message:
+              'LLM calls can be masked through the AI Trust Layer policy, not agent-level guardrails.',
           }),
           actionTypeLabel: _({
             id: 'guardrails.builder.action-type-label',
@@ -757,6 +765,10 @@ export function useGuardrailBuilderLabels(
           toolsRequiredError: _({
             id: 'guardrails.builder.tools-required-error',
             message: 'At least one tool is required',
+          }),
+          maskDetectionScopeTextOnlyError: _({
+            id: 'guardrails.builder.mask-detection-scope-text-only-error',
+            message: 'Masking checks text only. Set the detection scope to Text.',
           }),
           blockReasonRequiredError: _({
             id: 'guardrails.builder.block-reason-required-error',

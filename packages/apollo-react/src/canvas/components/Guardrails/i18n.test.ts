@@ -438,13 +438,19 @@ describe('the other label sets still layer the same way', () => {
     const {
       actionMaskLabel: _mask,
       scopeLlmMaskDisabledHint: _hint,
+      maskDetectionScopeTextOnlyError: _textOnly,
       ...builderBefore
     } = GUARDRAIL_BUILDER_EN_LABELS;
     const builderLabels: GuardrailBuilderLabels = builderBefore;
     const resolved = resolveGuardrailBuilderLabels(undefined, builderLabels);
-    expect([resolved.actionMaskLabel, resolved.scopeLlmMaskDisabledHint]).toEqual([
+    expect([
+      resolved.actionMaskLabel,
+      resolved.scopeLlmMaskDisabledHint,
+      resolved.maskDetectionScopeTextOnlyError,
+    ]).toEqual([
       'Mask',
-      'LLM calls are masked by the AI Trust Layer policy.',
+      'LLM calls can be masked through the AI Trust Layer policy, not agent-level guardrails.',
+      'Masking checks text only. Set the detection scope to Text.',
     ]);
     expect(resolveGuardrailActionLabels(undefined, builderLabels).actionMaskLabel).toBe('Mask');
   });

@@ -687,7 +687,8 @@ describe('GuardrailBuilder', () => {
   });
 
   describe('mask action', () => {
-    const HINT = 'LLM calls are masked by the AI Trust Layer policy.';
+    const HINT =
+      'LLM calls can be masked through the AI Trust Layer policy, not agent-level guardrails.';
     const llmChip = () => screen.getByRole('button', { name: 'LLM calls' });
     const actionType = () => screen.getByRole('combobox', { name: /action type/i });
 
@@ -823,6 +824,124 @@ describe('GuardrailBuilder', () => {
 
       expect(onSave).not.toHaveBeenCalled();
       expect(screen.getByText('At least one scope is required')).toBeInTheDocument();
+    });
+
+    describe('detection scope', () => {
+      const ERROR = 'Masking checks text only. Set the detection scope to Text.';
+      const definition = makeDef({
+        parameters: [
+          {
+            id: 'detectionScope',
+            type: 'enum',
+            label: 'Detection scope',
+            required: false,
+            defaultValue: 'Text',
+            options: ['Text', 'Files', 'Both'],
+            optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
+          },
+        ],
+      });
+      const storedScope = (value: string, action: GuardrailBuilderValue['action']) =>
+        makeGuardrail({
+          action,
+          validatorParameters: [{ $parameterType: 'enum', id: 'detectionScope', value }],
+        });
+      const clickSave = () => fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+      it.each([
+        'Files',
+        'Both',
+      ])('blocks Save while mask reads %s, with the error under the detection scope', async (value) => {
+        const onSave = vi.fn();
+        renderBuilder({
+          showMask: true,
+          definition,
+          guardrail: storedScope(value, { $actionType: 'mask' }),
+          onSave,
+        });
+
+        clickSave();
+
+        expect(onSave).not.toHaveBeenCalled();
+        await screen.findByText(ERROR);
+        // Outlasts the form's own revalidation, which the failed Save also starts.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(screen.getByText(ERROR).closest('[data-field-name]')).toHaveAttribute(
+          'data-field-name',
+          'detectionScope'
+        );
+      });
+
+      it('clears once the detection scope is Text, and Save goes through', async () => {
+        const onSave = vi.fn();
+        renderBuilder({
+          showMask: true,
+          definition,
+          guardrail: storedScope('Files', { $actionType: 'mask' }),
+          onSave,
+        });
+        clickSave();
+        await screen.findByText(ERROR);
+
+        fireEvent.click(screen.getByRole('combobox', { name: /Detection scope/ }));
+        fireEvent.click(await screen.findByRole('option', { name: 'Text only' }));
+
+        await waitFor(() => expect(screen.queryByText(ERROR)).not.toBeInTheDocument());
+        expect(save(onSave).validatorParameters).toContainEqual({
+          $parameterType: 'enum',
+          id: 'detectionScope',
+          value: 'Text',
+        });
+      });
+
+      it('lets mask save with Text, or with no detection scope at all', () => {
+        const onSave = vi.fn();
+        const { unmount } = renderBuilder({
+          showMask: true,
+          definition,
+          guardrail: storedScope('Text', { $actionType: 'mask' }),
+          onSave,
+        });
+        expect(save(onSave).action).toEqual({ $actionType: 'mask' });
+        unmount();
+
+        const onSaveWithout = vi.fn();
+        renderBuilder({
+          showMask: true,
+          guardrail: makeGuardrail({ action: { $actionType: 'mask' } }),
+          onSave: onSaveWithout,
+        });
+        expect(save(onSaveWithout).action).toEqual({ $actionType: 'mask' });
+      });
+
+      it('leaves other actions free to read files', () => {
+        const onSave = vi.fn();
+        renderBuilder({
+          showMask: true,
+          definition,
+          guardrail: storedScope('Both', { $actionType: 'log', severityLevel: 'Info' }),
+          onSave,
+        });
+
+        expect(save(onSave).action.$actionType).toBe('log');
+      });
+
+      it('appears after switching to mask while files are read, and takes its copy from labels', async () => {
+        const onSave = vi.fn();
+        renderBuilder({
+          showMask: true,
+          definition,
+          guardrail: storedScope('Files', { $actionType: 'log', severityLevel: 'Info' }),
+          labels: { maskDetectionScopeTextOnlyError: 'Text only for masking.' },
+          onSave,
+        });
+
+        await pickAction('Mask');
+        clickSave();
+
+        expect(onSave).not.toHaveBeenCalled();
+        expect(await screen.findByText('Text only for masking.')).toBeInTheDocument();
+      });
     });
 
     it('takes the hint from labels', () => {

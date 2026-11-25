@@ -204,7 +204,8 @@ describe('GuardrailScopeSelector', () => {
   });
 
   describe('disabledScopes', () => {
-    const HINT = 'LLM calls are masked by the AI Trust Layer policy.';
+    const HINT =
+      'LLM calls can be masked through the AI Trust Layer policy, not agent-level guardrails.';
 
     it('disables only the listed chips', () => {
       render(
