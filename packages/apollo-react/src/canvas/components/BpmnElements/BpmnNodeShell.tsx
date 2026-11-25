@@ -26,6 +26,7 @@ import {
   handleId,
   useBpmnButtonReveal,
   useBpmnButtonShape,
+  useBpmnControls,
   useBpmnActions,
   useBpmnOverlay,
   useBpmnStrings,
@@ -40,10 +41,16 @@ const NO_SIDES: Position[] = [];
 const TOOLBAR_OFFSET = { circle: 12, rounded: 26, always: 'button-only' } as const;
 // Hover bridge reach: just past the expanded "+", instead of the 60px a labelled Flow handle needs.
 const BRIDGE_EXTENT = { circle: 28, rounded: 38, always: undefined } as const;
+// The expanded "+" is 28px across, so each unit of scale pushes its far edge that much further.
+const BUTTON_SIZE = 28;
+const selectZoom = (state: ReactFlowState) => state.transform[2];
+const selectNoZoom = () => 1;
 // As BPMN fills elements today: the canvas background, a step darker than Flow's raised card in
 // dark themes, and slightly translucent so an overlapped element's outline still shows through.
 const ELEMENT_FILL = 'color-mix(in srgb, var(--canvas-background) 92%, transparent)';
 const noop = () => {};
+// Important, since the button's own rest and hover border colours are equally specific.
+const SELECTED_BUTTON_OUTLINE = 'border-(color:--canvas-primary)!';
 // A target takes a drop anywhere on its quarter of the node, but never starts a connection, so
 // xyflow leaves it inert and the body draggable until one is in progress.
 const TARGET_HANDLE_PROPS = { isConnectableStart: false } as const;
@@ -171,6 +178,12 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
   const buttonShape = useBpmnButtonShape();
   const handleStyle = buttonReveal === 'always' ? 'always' : buttonShape;
   const lifted = useBpmnOverlay();
+  const { maxZoomScale, selectedButtonOutline, buttonOutset = 0 } = useBpmnControls();
+  // Only a selected node follows the zoom, so zooming re-renders that node alone.
+  const zoom = useStore(selected && maxZoomScale ? selectZoom : selectNoZoom);
+  const controlScale = Math.min(Math.max(1 / zoom, 1), maxZoomScale ?? 1);
+  // How much further the expanded "+" reaches than the constants above assume.
+  const extraReach = handleStyle === 'always' ? 0 : buttonOutset + BUTTON_SIZE * (controlScale - 1);
   const [overlayElement, setOverlayElement] = useState<HTMLDivElement | null>(null);
 
   const { shouldShowHandles, isAddButtonVisible } = resolveNodeHandleAffordances({
@@ -246,9 +259,12 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
       // Sits 8px above the expanded "+" on the top handle.
       offsetToolbar={
         isAddButtonVisible && sidesWithAdd.includes(Position.Top)
-          ? TOOLBAR_OFFSET[handleStyle]
+          ? handleStyle === 'always'
+            ? TOOLBAR_OFFSET.always
+            : TOOLBAR_OFFSET[handleStyle] + extraReach
           : false
       }
+      scale={controlScale}
     />
   );
   // `undefined` leaves each part where it renders by default.
@@ -319,7 +335,9 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
               key={`bridge-${side}`}
               position={side}
               visible={isAddButtonVisible}
-              extent={BRIDGE_EXTENT[handleStyle]}
+              extent={
+                handleStyle === 'always' ? undefined : BRIDGE_EXTENT[handleStyle] + extraReach
+              }
             />
           ))}
         {connectable &&
@@ -357,6 +375,11 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
               buttonShape={buttonShape}
               onAction={sidesWithAdd.includes(side) ? onAdd : undefined}
               addButtonTestId={`quick-add-handle-${id}-${side}`}
+              addButtonClassName={
+                selectedButtonOutline && selected ? SELECTED_BUTTON_OUTLINE : undefined
+              }
+              buttonOutset={buttonOutset}
+              buttonScale={controlScale}
               visualsContainer={overlayContainer}
             />
           ))}

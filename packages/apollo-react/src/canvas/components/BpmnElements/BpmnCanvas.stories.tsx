@@ -14,6 +14,7 @@ import {
   type NodeChange,
   type NodeProps,
   type NodeTypes,
+  Panel,
   Position,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
@@ -28,7 +29,10 @@ import {
   BpmnButtonRevealProvider,
   type BpmnButtonShape,
   BpmnButtonShapeProvider,
+  type BpmnControls,
+  BpmnControlsProvider,
   BpmnOverlayProvider,
+  BpmnStringsProvider,
   type BpmnEdge,
   type BpmnEventDefinition,
   type BpmnLoop,
@@ -39,17 +43,29 @@ import {
   handleSide,
 } from './bpmn.model';
 
+const STORY_STRINGS = { edgeLabelPlaceholder: 'Double-click to add label' };
+
 interface StoryArgs {
   buttonReveal: BpmnButtonReveal;
   buttonShape: BpmnButtonShape;
   overlay: boolean;
+  zoomScale: boolean;
+  selectedButtonOutline: boolean;
+  buttonOutset: number;
 }
 
 const meta: Meta<StoryArgs> = {
   title: 'Templates/BPMN Elements',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
-  args: { buttonReveal: 'expand-on-hover', buttonShape: 'circle', overlay: false },
+  args: {
+    buttonReveal: 'expand-on-hover',
+    buttonShape: 'circle',
+    overlay: false,
+    zoomScale: true,
+    selectedButtonOutline: true,
+    buttonOutset: 2,
+  },
   argTypes: {
     buttonReveal: {
       name: 'Handle "+" button',
@@ -67,6 +83,21 @@ const meta: Meta<StoryArgs> = {
       description:
         'Stacks every flow above the nodes, as a host with one paint order does, and draws the toolbar, the "+" and outside labels in an overlay above both.',
       control: 'boolean',
+    },
+    zoomScale: {
+      name: 'Scale selected controls with zoom',
+      description:
+        'Keeps the toolbar and "+" buttons of a selected node the same size on screen as the canvas zooms out, up to 2.5x.',
+      control: 'boolean',
+    },
+    selectedButtonOutline: {
+      name: 'Primary outline on selected "+"',
+      control: 'boolean',
+    },
+    buttonOutset: {
+      name: 'Expanding "+" outset (px)',
+      control: { type: 'range', min: 0, max: 8, step: 1 },
+      if: { arg: 'buttonReveal', eq: 'expand-on-hover' },
     },
   },
 };
@@ -114,7 +145,8 @@ const EVENT_CYCLE: (BpmnEventDefinition | undefined)[] = [
 const LOOP_CYCLE: (BpmnLoop | undefined)[] = [undefined, 'loop', 'parallel', 'sequential'];
 const DELETE_KEYS = ['Backspace', 'Delete'];
 const STACKED_EDGE_Z_INDEX = 100;
-const OVERLAY = { zIndex: 1002 };
+// Above a selected flow, which xyflow lifts by 1000.
+const OVERLAY = { zIndex: STACKED_EDGE_Z_INDEX + 1002 };
 
 const next = <T,>(cycle: T[], current: T) =>
   cycle[(cycle.indexOf(current) + 1) % cycle.length] as T;
@@ -170,11 +202,17 @@ function BpmnCanvasStory({
   buttonReveal,
   buttonShape,
   overlay,
+  zoomScale,
+  selectedButtonOutline,
+  buttonOutset,
   title,
   initial,
 }: BpmnCanvasStoryProps) {
   const [nodes, setNodes] = useState<BpmnNode[]>(initial.nodes);
   const [edges, setEdges] = useState<BpmnEdge[]>(initial.edges);
+  const [hoveredAction, setHoveredAction] = useState<{ nodeId: string; action: string } | null>(
+    null
+  );
   const counter = useRef(0);
   const newId = useCallback((prefix: string) => `${prefix}_new_${++counter.current}`, []);
 
@@ -320,6 +358,9 @@ function BpmnCanvasStory({
           });
         }),
 
+      hoverToolbarAction: (nodeId, action, hovered) =>
+        setHoveredAction(hovered ? { nodeId, action } : null),
+
       deleteNode: (nodeId) =>
         setNodes((current) => {
           const removed = new Set([nodeId]);
@@ -412,45 +453,66 @@ function BpmnCanvasStory({
     };
   }, [edges, nodes, patch, newId]);
 
+  const controls = useMemo<BpmnControls>(
+    () => ({
+      maxZoomScale: zoomScale ? 2.5 : undefined,
+      selectedButtonOutline,
+      buttonOutset,
+    }),
+    [zoomScale, selectedButtonOutline, buttonOutset]
+  );
   const stackedEdges = useMemo(
     () => (overlay ? edges.map((edge) => ({ ...edge, zIndex: STACKED_EDGE_Z_INDEX })) : edges),
     [edges, overlay]
   );
 
   return (
-    <BpmnOverlayProvider value={overlay ? OVERLAY : null}>
-      <BpmnActionsProvider value={actions}>
-        <BpmnButtonRevealProvider value={buttonReveal}>
-          <BpmnButtonShapeProvider value={buttonShape}>
-            <BaseCanvas
-              nodes={nodes}
-              edges={stackedEdges}
-              nodeTypes={storyNodeTypes}
-              edgeTypes={bpmnEdgeTypes}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              deleteKeyCode={DELETE_KEYS}
-              mode="design"
-              fitView
-              fitViewOptions={FIT_VIEW}
-            >
-              <StoryInfoPanel title={title} collapsible defaultCollapsed>
-                <ul className="mt-2 max-w-80 list-disc space-y-1 pl-4 text-xs text-foreground-muted">
-                  <li>Cards, hover, selection and status: BaseContainer</li>
-                  <li>Diamond and data shapes: BaseNodeOutline with a host path</li>
-                  <li>Handles and "+": ButtonHandle, shown by resolveNodeHandleAffordances</li>
-                  <li>Actions: NodeToolbar and EdgeToolbar</li>
-                  <li>Corner badges: BaseBadgeSlot; label editing: useInlineLabelEditing</li>
-                  <li>Edges: EdgePath, EdgeArrow, EdgeLabel, the waypoint editor and line jumps</li>
-                  <li>Pools, lanes, groups and annotations: apollo tokens only</li>
-                </ul>
-              </StoryInfoPanel>
-            </BaseCanvas>
-          </BpmnButtonShapeProvider>
-        </BpmnButtonRevealProvider>
-      </BpmnActionsProvider>
-    </BpmnOverlayProvider>
+    <BpmnStringsProvider strings={STORY_STRINGS}>
+      <BpmnOverlayProvider value={overlay ? OVERLAY : null}>
+        <BpmnActionsProvider value={actions}>
+          <BpmnButtonRevealProvider value={buttonReveal}>
+            <BpmnButtonShapeProvider value={buttonShape}>
+              <BpmnControlsProvider value={controls}>
+                <BaseCanvas
+                  nodes={nodes}
+                  edges={stackedEdges}
+                  nodeTypes={storyNodeTypes}
+                  edgeTypes={bpmnEdgeTypes}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  deleteKeyCode={DELETE_KEYS}
+                  mode="design"
+                  fitView
+                  fitViewOptions={FIT_VIEW}
+                >
+                  <StoryInfoPanel title={title} collapsible defaultCollapsed>
+                    <ul className="mt-2 max-w-80 list-disc space-y-1 pl-4 text-xs text-foreground-muted">
+                      <li>Cards, hover, selection and status: BaseContainer</li>
+                      <li>Diamond and data shapes: BaseNodeOutline with a host path</li>
+                      <li>Handles and "+": ButtonHandle, shown by resolveNodeHandleAffordances</li>
+                      <li>Actions: NodeToolbar and EdgeToolbar</li>
+                      <li>Corner badges: BaseBadgeSlot; label editing: useInlineLabelEditing</li>
+                      <li>
+                        Edges: EdgePath, EdgeArrow, EdgeLabel, the waypoint editor and line jumps
+                      </li>
+                      <li>Pools, lanes, groups and annotations: apollo tokens only</li>
+                    </ul>
+                  </StoryInfoPanel>
+                  {hoveredAction && (
+                    <Panel position="top-center">
+                      <div className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-foreground-muted">
+                        Hovering "{hoveredAction.action}" on {hoveredAction.nodeId}
+                      </div>
+                    </Panel>
+                  )}
+                </BaseCanvas>
+              </BpmnControlsProvider>
+            </BpmnButtonShapeProvider>
+          </BpmnButtonRevealProvider>
+        </BpmnActionsProvider>
+      </BpmnOverlayProvider>
+    </BpmnStringsProvider>
   );
 }
 

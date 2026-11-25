@@ -76,6 +76,12 @@ type ButtonHandleProps = {
   addButtonTitle?: string;
   /** `data-testid` for the add button. */
   addButtonTestId?: string;
+  /** Appended to the add button's own classes. */
+  addButtonClassName?: string;
+  /** With `expand-on-hover`: moves the "+" this many px further out from the node. */
+  buttonOutset?: number;
+  /** Scales the "+" and its label, growing away from the node. Defaults to 1. */
+  buttonScale?: number;
   /**
    * `outer` starts a connection only from the half of the handle outside the node, so small
    * nodes stay draggable by their body. Defaults to `full`.
@@ -200,6 +206,9 @@ const ButtonHandleBase = ({
   portalAction = false,
   addButtonTitle,
   addButtonTestId,
+  addButtonClassName,
+  buttonOutset,
+  buttonScale,
   hitArea = 'full',
   buttonReveal = 'always',
   buttonShape = 'rounded',
@@ -436,6 +445,9 @@ const ButtonHandleBase = ({
             handleRef={handleRef}
             title={addButtonTitle}
             testId={addButtonTestId}
+            buttonClassName={addButtonClassName}
+            outset={buttonOutset}
+            scale={buttonScale}
             label={label}
             renderLabel={false}
           />
@@ -483,6 +495,9 @@ const ButtonHandleBase = ({
           handleRef={handleRef}
           title={addButtonTitle}
           testId={addButtonTestId}
+          buttonClassName={addButtonClassName}
+          outset={buttonOutset}
+          scale={buttonScale}
           label={label}
           labelIcon={labelIcon}
           labelBackgroundColor={labelBackgroundColor}

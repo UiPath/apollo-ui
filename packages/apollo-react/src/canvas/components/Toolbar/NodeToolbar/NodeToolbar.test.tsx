@@ -545,4 +545,35 @@ describe('NodeToolbar', () => {
       expect(bridge()).not.toBeInTheDocument();
     });
   });
+
+  describe('Action hover', () => {
+    const hoverConfig = (onHoverChange: ToolbarActionItem['onHoverChange']): NodeToolbarConfig => ({
+      actions: [{ ...mockAction1, onHoverChange }],
+    });
+
+    it('reports the pointer entering and leaving an action', async () => {
+      const onHoverChange = vi.fn();
+      const user = userEvent.setup();
+      render(<NodeToolbar {...defaultProps} config={hoverConfig(onHoverChange)} />);
+
+      await user.hover(screen.getByRole('button', { name: 'Edit' }));
+      expect(onHoverChange).toHaveBeenLastCalledWith('test-node', true);
+
+      await user.unhover(screen.getByRole('button', { name: 'Edit' }));
+      expect(onHoverChange).toHaveBeenLastCalledWith('test-node', false);
+      expect(onHoverChange).toHaveBeenCalledTimes(2);
+    });
+
+    it('reports the leave when the toolbar closes under the pointer', async () => {
+      const onHoverChange = vi.fn();
+      const user = userEvent.setup();
+      const config = hoverConfig(onHoverChange);
+      const { rerender } = render(<NodeToolbar {...defaultProps} config={config} />);
+
+      await user.hover(screen.getByRole('button', { name: 'Edit' }));
+      rerender(<NodeToolbar {...defaultProps} config={config} hidden />);
+
+      await waitFor(() => expect(onHoverChange).toHaveBeenLastCalledWith('test-node', false));
+    });
+  });
 });

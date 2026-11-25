@@ -86,6 +86,16 @@ export const handleSide = (id?: string | null) =>
  * What the host (Redux thunks in PO.Frontend, story state here) does when a primitive fires.
  * Leaving out an optional action leaves out its control.
  */
+/** The node toolbar's buttons, as named in `hoverToolbarAction` and their `toolbar-item-` test ids. */
+export type BpmnToolbarActionId =
+  | 'delete'
+  | 'change-element'
+  | 'iteration'
+  | 'boundary-event'
+  | 'bpmn:TextAnnotation'
+  | 'breakpoint'
+  | 'duplicate';
+
 export interface BpmnActions {
   addAfter: (nodeId: string, side: Position) => void;
   addBoundaryEvent?: (nodeId: string) => void;
@@ -96,6 +106,11 @@ export interface BpmnActions {
   toggleBreakpoint?: (nodeId: string) => void;
   duplicate?: (nodeId: string) => void;
   deleteNode?: (nodeId: string) => void;
+  /**
+   * The pointer or keyboard focus entered or left a toolbar button, for a host that previews
+   * the action (say, outlining what Delete would remove). Always ends on `false`.
+   */
+  hoverToolbarAction?: (nodeId: string, action: BpmnToolbarActionId, hovered: boolean) => void;
   /**
    * A resize control was dragged. The controls only render when this is given; xyflow reports
    * the new position and size through `onNodesChange` as well.
@@ -190,10 +205,28 @@ const BpmnButtonShapeContext = createContext<BpmnButtonShape>('circle');
 export const BpmnButtonShapeProvider = BpmnButtonShapeContext.Provider;
 export const useBpmnButtonShape = () => useContext(BpmnButtonShapeContext);
 
+/** How a node's toolbar and "+" buttons look and sit. Every field is off unless given. */
+export interface BpmnControls {
+  /**
+   * Keeps a selected node's toolbar and "+" buttons from shrinking as the canvas zooms out:
+   * they scale by the inverse of the zoom, up to this factor.
+   */
+  maxZoomScale?: number;
+  /** Outlines the "+" buttons of a selected node in the primary colour. */
+  selectedButtonOutline?: boolean;
+  /** Moves the expanding "+" this many px further out from the node. */
+  buttonOutset?: number;
+}
+const NO_CONTROLS: BpmnControls = {};
+const BpmnControlsContext = createContext<BpmnControls>(NO_CONTROLS);
+export const BpmnControlsProvider = BpmnControlsContext.Provider;
+export const useBpmnControls = () => useContext(BpmnControlsContext);
+
 /**
  * For a host that gives every node and edge its own z-index, so a flow or a neighbour can paint
  * over a node's own parts. With it the toolbar, the "+" and notches, and labels outside the
  * element are drawn in xyflow's viewport portal at this z-index, and flow labels take it too.
+ * Pick one above the host's selected flows: xyflow lifts a selected edge by 1000.
  */
 export interface BpmnOverlay {
   zIndex: number;

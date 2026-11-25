@@ -25,6 +25,8 @@ export interface NodeToolbarProps {
    * `true` is accepted as a back-compat alias for `'button'`.
    */
   offsetToolbar?: boolean | 'button' | 'button-only' | 'label' | number;
+  /** Scales the toolbar about the middle of its node-facing edge, so it grows away from the node. */
+  scale?: number;
   /** Render the toolbar in the node overlay layer instead of inside the node wrapper. */
   portalToNodeOverlay?: boolean;
 }

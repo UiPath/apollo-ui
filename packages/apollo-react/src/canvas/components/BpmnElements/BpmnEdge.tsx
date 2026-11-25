@@ -14,7 +14,7 @@ import {
   isSegmentPerpendicular,
 } from '../Edges/shared/geometry';
 import { useEdgeGeometry, useNodeDragRebalance, useWaypointEditor } from '../Edges/shared/hooks';
-import { EdgeLabel, EdgePath, SegmentDragHandle, WaypointHandle } from '../Edges/shared/primitives';
+import { EdgePath, SegmentDragHandle, WaypointHandle } from '../Edges/shared/primitives';
 import { resolveEdgeColor } from '../Edges/shared/resolveEdgeColor';
 import type { Point, Waypoint } from '../Edges/shared/types';
 import { generateWaypointId } from '../Edges/shared/waypoints';
@@ -524,34 +524,22 @@ function BpmnEdgeBase({
             );
           })}
 
-        {/* apollo's own label unless the host opted into renaming or moving it. */}
-        {canEdit && (renameEdge || moveEdgeLabel)
-          ? hasLabel && (
-              <BpmnEdgeLabel
-                edgeId={id}
-                x={labelPoint.x}
-                y={labelPoint.y}
-                text={data?.label}
-                borderColor={color}
-                selected={selected}
-                zIndex={overlay?.zIndex}
-                onRename={renameEdge}
-                onMove={moveEdgeLabel}
-                onMouseEnter={onMouseEnter}
-                onMouseLeave={onMouseLeave}
-              />
-            )
-          : data?.label && (
-              <EdgeLabel
-                x={labelPoint.x}
-                y={labelPoint.y}
-                text={data.label}
-                borderColor={color}
-                zIndex={overlay?.zIndex}
-                onMouseEnter={onMouseEnter}
-                onMouseLeave={onMouseLeave}
-              />
-            )}
+        {hasLabel && (
+          <BpmnEdgeLabel
+            edgeId={id}
+            x={labelPoint.x}
+            y={labelPoint.y}
+            text={data?.label}
+            // The pill keeps its own muted and selected borders unless a suggestion colours it.
+            borderColor={data?.modification ? color : undefined}
+            selected={selected}
+            zIndex={overlay?.zIndex}
+            onRename={canEdit ? renameEdge : undefined}
+            onMove={canEdit ? moveEdgeLabel : undefined}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          />
+        )}
       </g>
 
       {toolbarEnabled && (

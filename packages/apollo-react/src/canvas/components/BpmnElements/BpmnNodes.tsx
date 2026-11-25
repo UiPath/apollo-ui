@@ -44,6 +44,7 @@ import {
   type BpmnEventDefinition,
   type BpmnNode,
   type BpmnNodeData,
+  type BpmnToolbarActionId,
   useBpmnActions,
   useBpmnStrings,
 } from './bpmn.model';
@@ -100,16 +101,22 @@ const NO_ADD: Position[] = [];
 const EXTERNAL_LABEL = { bottom: 'below', top: 'above', left: 'left', right: 'right' } as const;
 const DROP_TARGET = 'outline outline-2 outline-brand';
 
-/** The ids PO.Frontend's toolbar gives its buttons, so one end-to-end suite drives both. */
-const tested = (action: Omit<ToolbarActionItem, 'testId'>): ToolbarActionItem => ({
-  ...action,
-  testId: `toolbar-item-${action.id}`,
-});
+type ToolbarItem = Omit<ToolbarActionItem, 'testId' | 'id' | 'onHoverChange'> & {
+  id: BpmnToolbarActionId;
+};
 
 function useToolbar(kind: 'activity' | 'element' | 'container', data: BpmnNodeData) {
   const actions = useBpmnActions();
   const strings = useBpmnStrings();
   return useMemo<ToolbarAction[]>(() => {
+    const hover = actions.hoverToolbarAction;
+    // Test ids are the ones PO.Frontend's toolbar gives its buttons, so one end-to-end suite
+    // drives both.
+    const tested = (action: ToolbarItem): ToolbarActionItem => ({
+      ...action,
+      testId: `toolbar-item-${action.id}`,
+      onHoverChange: hover && ((nodeId, hovered) => hover(nodeId, action.id, hovered)),
+    });
     const remove: ToolbarAction[] = actions.deleteNode
       ? [
           tested({

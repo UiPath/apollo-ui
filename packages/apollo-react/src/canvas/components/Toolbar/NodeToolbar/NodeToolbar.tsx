@@ -4,7 +4,12 @@ import { memo, useMemo } from 'react';
 import { CanvasIcon } from '../../../utils/icon-registry';
 import { CanvasTooltip } from '../../CanvasTooltip';
 import { NodeViewportOverlay } from '../../NodeViewportOverlay';
-import { ToolbarButton, ToolbarIconButton } from '../shared';
+import {
+  type ExtendedToolbarAction,
+  ToolbarButton,
+  ToolbarIconButton,
+  useActionHover,
+} from '../shared';
 import type { NodeToolbarProps } from './NodeToolbar.types';
 import { isSeparator } from './NodeToolbar.utils';
 import { useToolbarState } from './useToolbarState';
@@ -79,12 +84,64 @@ const DROPDOWN_ITEM_BASE_CLASS =
 const DROPDOWN_ITEM_DISABLED_CLASS = 'cursor-not-allowed opacity-40 pointer-events-none';
 const DROPDOWN_ITEM_ENABLED_CLASS = 'cursor-pointer opacity-100';
 
+// The middle of the toolbar's node-facing edge, so a scaled toolbar only grows away from the node.
+const SCALE_ORIGIN = {
+  top: 'center bottom',
+  bottom: 'center top',
+  left: 'right center',
+  right: 'left center',
+} as const;
+
+/** Its own component so each item can report hover, including when the menu closes on it. */
+const OverflowMenuItem = ({
+  item,
+  onDone,
+}: {
+  item: ExtendedToolbarAction;
+  onDone: () => void;
+}) => {
+  const hoverProps = useActionHover(item.onHover);
+  return (
+    <button
+      type="button"
+      className={cn(
+        DROPDOWN_ITEM_BASE_CLASS,
+        item.disabled ? DROPDOWN_ITEM_DISABLED_CLASS : DROPDOWN_ITEM_ENABLED_CLASS,
+        'nodrag nopan'
+      )}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!item.disabled) {
+          item.onClick();
+          onDone();
+        }
+      }}
+      aria-label={item.label}
+      data-testid={item.testId}
+      aria-disabled={item.disabled}
+      disabled={item.disabled}
+      role="menuitem"
+      {...hoverProps}
+    >
+      {item.icon && typeof item.icon === 'string' && (
+        <span style={{ flex: 'unset', display: 'inline-flex' }}>
+          <CanvasIcon icon={item.icon} size={16} />
+        </span>
+      )}
+      {item.icon && typeof item.icon !== 'string' && item.icon}
+      <span className="flex-1 text-(--canvas-foreground)">{item.label}</span>
+    </button>
+  );
+};
+
 const NodeToolbarComponent = ({
   nodeId,
   config,
   expanded,
   hidden,
   offsetToolbar,
+  scale,
   portalToNodeOverlay,
 }: NodeToolbarProps) => {
   const {
@@ -130,10 +187,21 @@ const NodeToolbarComponent = ({
   );
 
   const offsetStyle = useMemo(() => {
-    if (!offsetMode) return undefined;
-    const offset = typeof offsetMode === 'number' ? offsetMode : TOOLBAR_OFFSET[offsetMode];
-    return { '--toolbar-offset': `${offset}px` } as React.CSSProperties;
+    const style: React.CSSProperties = {};
+    if (offsetMode) {
+      const offset = typeof offsetMode === 'number' ? offsetMode : TOOLBAR_OFFSET[offsetMode];
+      (style as Record<string, string>)['--toolbar-offset'] = `${offset}px`;
+    }
+    return style;
   }, [offsetMode]);
+
+  // On a wrapper of the toolbar alone: the positioner spans the node, so scaling it would
+  // slide an end-aligned toolbar sideways. The wrapper is there whenever `scale` is given, so
+  // crossing 1 does not remount the toolbar.
+  const scaleStyle = useMemo<React.CSSProperties | undefined>(
+    () => (scale === undefined ? undefined : { scale, transformOrigin: SCALE_ORIGIN[position] }),
+    [scale, position]
+  );
 
   const toolbarAnimationVariants = useMemo(() => {
     const offsetAxis = position === 'top' || position === 'bottom' ? 'y' : 'x';
@@ -160,6 +228,85 @@ const NodeToolbarComponent = ({
     return null;
   }
 
+  const toolbar = (
+    <motion.div
+      // A layout animation would read each zoom step's rescale as a move and ease it in,
+      // which shows as the toolbar drifting.
+      layout={scale === undefined ? 'position' : false}
+      className={containerClassName}
+      initial={toolbarAnimationVariants.initial}
+      animate={toolbarAnimationVariants.animate}
+      exit={toolbarAnimationVariants.exit}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
+      role="toolbar"
+      data-testid={config.testId}
+    >
+      {actionsToDisplay.map((item, i) =>
+        isSeparator(item) ? (
+          <div key={`separator-${i}`} className={separatorClassName} />
+        ) : (
+          <ToolbarButton
+            key={item.id}
+            action={item}
+            layoutId={item.isPinned ? `toolbar-btn-${nodeId}-${item.id}` : undefined}
+          />
+        )
+      )}
+      {shouldShowOverflow && (
+        <>
+          {actionsToDisplay.length > 0 && <div className={separatorClassName} />}
+          <div className="relative">
+            <CanvasTooltip content={config.overflowLabel ?? 'More options'} placement="top">
+              <ToolbarIconButton
+                ref={buttonRef}
+                type="button"
+                className="nodrag nopan"
+                onClick={toggleDropdown}
+                aria-label={config.overflowLabel ?? 'More options'}
+                aria-expanded={isDropdownOpen}
+                aria-haspopup="menu"
+              >
+                <CanvasIcon icon="ellipsis-vertical" size={16} />
+              </ToolbarIconButton>
+            </CanvasTooltip>
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  ref={dropdownRef}
+                  className={DROPDOWN_MENU_CLASS}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.15 }}
+                  role="menu"
+                  aria-label={config.overflowLabel ?? 'More options'}
+                >
+                  {overflowActionsToDisplay.map((item, i) => {
+                    if (isSeparator(item)) {
+                      return (
+                        <div
+                          key={`separator-${i}`}
+                          className={cn(SEPARATOR_BASE_CLASS, SEPARATOR_HORIZONTAL_CLASS)}
+                        />
+                      );
+                    }
+                    return (
+                      <OverflowMenuItem
+                        key={item.id}
+                        item={item}
+                        onDone={() => setIsDropdownOpen(false)}
+                      />
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </>
+      )}
+    </motion.div>
+  );
+
   const toolbarContent = (
     <AnimatePresence>
       {displayState !== 'hidden' && (
@@ -174,109 +321,13 @@ const NodeToolbarComponent = ({
               )}
             />
           )}
-          <motion.div
-            layout="position"
-            className={containerClassName}
-            initial={toolbarAnimationVariants.initial}
-            animate={toolbarAnimationVariants.animate}
-            exit={toolbarAnimationVariants.exit}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            role="toolbar"
-            data-testid={config.testId}
-          >
-            {actionsToDisplay.map((item, i) =>
-              isSeparator(item) ? (
-                <div key={`separator-${i}`} className={separatorClassName} />
-              ) : (
-                <ToolbarButton
-                  key={item.id}
-                  action={item}
-                  layoutId={item.isPinned ? `toolbar-btn-${nodeId}-${item.id}` : undefined}
-                />
-              )
-            )}
-            {shouldShowOverflow && (
-              <>
-                {actionsToDisplay.length > 0 && <div className={separatorClassName} />}
-                <div className="relative">
-                  <CanvasTooltip content={config.overflowLabel ?? 'More options'} placement="top">
-                    <ToolbarIconButton
-                      ref={buttonRef}
-                      type="button"
-                      className="nodrag nopan"
-                      onClick={toggleDropdown}
-                      aria-label={config.overflowLabel ?? 'More options'}
-                      aria-expanded={isDropdownOpen}
-                      aria-haspopup="menu"
-                    >
-                      <CanvasIcon icon="ellipsis-vertical" size={16} />
-                    </ToolbarIconButton>
-                  </CanvasTooltip>
-                  <AnimatePresence>
-                    {isDropdownOpen && (
-                      <motion.div
-                        ref={dropdownRef}
-                        className={DROPDOWN_MENU_CLASS}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -8 }}
-                        transition={{ duration: 0.15 }}
-                        role="menu"
-                        aria-label={config.overflowLabel ?? 'More options'}
-                      >
-                        {overflowActionsToDisplay.map((item, i) => {
-                          if (isSeparator(item)) {
-                            return (
-                              <div
-                                key={`separator-${i}`}
-                                className={cn(SEPARATOR_BASE_CLASS, SEPARATOR_HORIZONTAL_CLASS)}
-                              />
-                            );
-                          }
-                          return (
-                            <button
-                              key={item.id}
-                              type="button"
-                              className={cn(
-                                DROPDOWN_ITEM_BASE_CLASS,
-                                item.disabled
-                                  ? DROPDOWN_ITEM_DISABLED_CLASS
-                                  : DROPDOWN_ITEM_ENABLED_CLASS,
-                                'nodrag nopan'
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                if (!item.disabled) {
-                                  item.onClick();
-                                  setIsDropdownOpen(false);
-                                }
-                              }}
-                              aria-label={item.label}
-                              data-testid={item.testId}
-                              aria-disabled={item.disabled}
-                              disabled={item.disabled}
-                              role="menuitem"
-                            >
-                              {item.icon && typeof item.icon === 'string' && (
-                                <span style={{ flex: 'unset', display: 'inline-flex' }}>
-                                  <CanvasIcon icon={item.icon} size={16} />
-                                </span>
-                              )}
-                              {item.icon && typeof item.icon !== 'string' && item.icon}
-                              <span className="flex-1 text-(--canvas-foreground)">
-                                {item.label}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </>
-            )}
-          </motion.div>
+          {scale === undefined ? (
+            toolbar
+          ) : (
+            <div className="flex shrink-0" style={scaleStyle}>
+              {toolbar}
+            </div>
+          )}
         </div>
       )}
     </AnimatePresence>

@@ -31,8 +31,25 @@ vi.mock('../Edges/shared/primitives', async (importOriginal) => ({
   ),
 }));
 vi.mock('./BpmnEdgeLabel', () => ({
-  BpmnEdgeLabel: ({ x, y, text }: { x: number; y: number; text?: string }) => (
-    <text data-testid="bpmn-edge-label" data-x={x} data-y={y}>
+  BpmnEdgeLabel: ({
+    x,
+    y,
+    text,
+    onRename,
+    onMove,
+  }: {
+    x: number;
+    y: number;
+    text?: string;
+    onRename?: unknown;
+    onMove?: unknown;
+  }) => (
+    <text
+      data-testid="bpmn-edge-label"
+      data-x={x}
+      data-y={y}
+      data-editable={!!onRename || !!onMove}
+    >
       {text}
     </text>
   ),
@@ -171,27 +188,29 @@ describe('BPMN sequence flow', () => {
     it('sits at the middle of the path by default', () => {
       render(tree(edgeProps({ label: 'Yes' })));
 
-      expect(screen.getByTestId('edge-label')).toHaveAttribute('data-x', '160');
-      expect(screen.getByTestId('edge-label')).toHaveAttribute('data-y', '40');
+      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-x', '160');
+      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-y', '40');
     });
 
     it('sits at data.labelPosition when given', () => {
       render(tree(edgeProps({ label: 'Yes', labelPosition: { x: 130, y: 12 } })));
 
-      expect(screen.getByTestId('edge-label')).toHaveAttribute('data-x', '130');
-      expect(screen.getByTestId('edge-label')).toHaveAttribute('data-y', '12');
+      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-x', '130');
+      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-y', '12');
     });
   });
 
   describe('host-edited label', () => {
-    it('keeps the plain label unless the host renames or moves labels', () => {
+    it('leaves the label read-only unless the host renames or moves labels', () => {
       render(tree(edgeProps({ label: 'Yes' }, { selected: true })));
 
-      expect(screen.getByTestId('edge-label')).toBeInTheDocument();
-      expect(screen.queryByTestId('bpmn-edge-label')).not.toBeInTheDocument();
+      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-editable', 'false');
     });
 
-    it.each(['renameEdge', 'moveEdgeLabel'] as const)('uses the editable label with %s', (name) => {
+    it.each([
+      'renameEdge',
+      'moveEdgeLabel',
+    ] as const)('makes the label editable with %s', (name) => {
       render(
         tree(edgeProps({ label: 'Yes', labelPosition: { x: 130, y: 12 } }), {
           ...baseActions,
@@ -199,8 +218,7 @@ describe('BPMN sequence flow', () => {
         })
       );
 
-      expect(screen.queryByTestId('edge-label')).not.toBeInTheDocument();
-      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-x', '130');
+      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-editable', 'true');
     });
 
     it('offers a placeholder on a selected flow with no label only when the host renames', () => {

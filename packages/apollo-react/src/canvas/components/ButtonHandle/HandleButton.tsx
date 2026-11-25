@@ -27,6 +27,13 @@ const ANCHOR_MARGIN: Record<Position, 'marginBottom' | 'marginTop' | 'marginRigh
     [Position.Left]: 'marginRight',
     [Position.Right]: 'marginLeft',
   };
+// The side facing the node, so a scaled button grows away from it.
+const SCALE_ORIGIN: Record<Position, string> = {
+  [Position.Top]: 'center bottom',
+  [Position.Bottom]: 'center top',
+  [Position.Left]: 'right center',
+  [Position.Right]: 'left center',
+};
 const SIZE_TRANSITION =
   '[transition:width_120ms_ease,height_120ms_ease,border-radius_120ms_ease,opacity_120ms_ease,color_120ms_ease,background-color_120ms_ease,border-color_120ms_ease]';
 
@@ -64,6 +71,9 @@ export const HandleButton = memo(
     portal,
     title,
     testId,
+    buttonClassName,
+    outset = 0,
+    scale = 1,
     compact,
     shape = 'rounded',
     edgeOffset = HANDLE_REACH_PX,
@@ -97,6 +107,12 @@ export const HandleButton = memo(
     title?: string;
     /** `data-testid` for the add button. */
     testId?: string;
+    /** Appended to the add button's own classes. */
+    buttonClassName?: string;
+    /** With `compact` set: moves the button this many px further out from the node. */
+    outset?: number;
+    /** Scales the button and its label, growing away from the node. Defaults to 1. */
+    scale?: number;
     /**
      * Set to make the button stand in for the handle, anchored against the node: `true` small,
      * `false` full size. Leave undefined for the default button beyond the handle.
@@ -204,7 +220,8 @@ export const HandleButton = memo(
           'nodrag nopan transition-opacity duration-250',
           visible
             ? 'pointer-events-auto opacity-100'
-            : 'pointer-events-none opacity-0 disabled:opacity-0'
+            : 'pointer-events-none opacity-0 disabled:opacity-0',
+          buttonClassName
         )}
       />
     ) : (
@@ -223,7 +240,8 @@ export const HandleButton = memo(
             compact !== undefined && SIZE_TRANSITION,
             // Button sizes its svg to 16px, which overflows this box and lands off-centre.
             compact && 'h-4 w-4 [&_svg]:size-2.5',
-            compact !== undefined && shape === 'circle' ? 'rounded-full' : compact && 'rounded-md'
+            compact !== undefined && shape === 'circle' ? 'rounded-full' : compact && 'rounded-md',
+            buttonClassName
           )}
         />
       )
@@ -232,11 +250,13 @@ export const HandleButton = memo(
     const content = (
       <div
         className={cx('absolute flex items-center pointer-events-none', BUTTON_POSITION[position])}
-        style={
-          compact !== undefined
-            ? { [ANCHOR_MARGIN[position]]: HANDLE_REACH_PX - edgeOffset - ANCHOR_INSET_PX[shape] }
-            : undefined
-        }
+        style={{
+          ...(compact !== undefined && {
+            [ANCHOR_MARGIN[position]]:
+              HANDLE_REACH_PX - edgeOffset - ANCHOR_INSET_PX[shape] + outset,
+          }),
+          ...(scale !== 1 && { scale, transformOrigin: SCALE_ORIGIN[position] }),
+        }}
       >
         {addButton}
         {label && renderLabel && (
