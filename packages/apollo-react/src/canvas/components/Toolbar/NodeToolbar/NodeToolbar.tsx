@@ -197,9 +197,12 @@ const NodeToolbarComponent = ({
 
   // On a wrapper of the toolbar alone: the positioner spans the node, so scaling it would
   // slide an end-aligned toolbar sideways. The wrapper is there whenever `scale` is given, so
-  // crossing 1 does not remount the toolbar.
+  // crossing 1 does not remount the toolbar. A string, since React 18 appends `px` to a number.
   const scaleStyle = useMemo<React.CSSProperties | undefined>(
-    () => (scale === undefined ? undefined : { scale, transformOrigin: SCALE_ORIGIN[position] }),
+    () =>
+      scale === undefined
+        ? undefined
+        : { scale: String(scale), transformOrigin: SCALE_ORIGIN[position] },
     [scale, position]
   );
 

@@ -255,7 +255,8 @@ export const HandleButton = memo(
             [ANCHOR_MARGIN[position]]:
               HANDLE_REACH_PX - edgeOffset - ANCHOR_INSET_PX[shape] + outset,
           }),
-          ...(scale !== 1 && { scale, transformOrigin: SCALE_ORIGIN[position] }),
+          // A string, since React 18 appends `px` to a number here.
+          ...(scale !== 1 && { scale: String(scale), transformOrigin: SCALE_ORIGIN[position] }),
         }}
       >
         {addButton}
