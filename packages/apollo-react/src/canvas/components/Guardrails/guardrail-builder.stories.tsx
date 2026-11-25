@@ -397,7 +397,7 @@ export const LogWithoutSeverity: Story = {
 
 /**
  * showMask offers the mask action. Picking it unticks LLM calls and disables that chip, since LLM
- * calls are masked through the AI Trust Layer policy; another action re-enables it, unticked.
+ * calls can be masked through the AI Trust Layer policy; another action re-enables it, unticked.
  */
 export const MaskAction: Story = {
   args: {

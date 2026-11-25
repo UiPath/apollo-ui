@@ -64,7 +64,7 @@ export type GuardrailAction =
   | { $actionType: 'filter'; fields: unknown[] }
   | { $actionType: 'escalate'; app: GuardrailEscalateApp; recipient: GuardrailEscalateRecipient }
   // Replaces the detected values with placeholders before the call and restores them in the
-  // output. Agent and Tool scopes only: LLM calls are masked through the AI Trust Layer policy.
+  // output. Agent and Tool scopes only: LLM calls can be masked through the AI Trust Layer policy.
   | { $actionType: 'mask' };
 
 /** The escalate arm of `GuardrailAction`, for hosts holding one in their own state. */

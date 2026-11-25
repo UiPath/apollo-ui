@@ -60,7 +60,7 @@ import {
 
 const EMPTY_PARAM_IDS: ReadonlySet<string> = new Set();
 
-// LLM calls are masked through the AI Trust Layer policy, so a mask action never targets them.
+// LLM calls can be masked through the AI Trust Layer policy, so a mask action never targets them.
 const MASK_DISABLED_SCOPES: readonly GuardrailScope[] = ['Llm'];
 
 function withoutMaskedScopes(selector: GuardrailSelector): GuardrailSelector {
@@ -156,7 +156,7 @@ export interface GuardrailBuilderProps {
   /**
    * Offer the mask action (PII masking), for a host whose backend supports it. Never offered
    * when opened from an LLM call (`scope="Llm"`). While mask is selected the LLM calls scope is
-   * dropped from the value and its chip disabled: LLM calls are masked through the AI Trust Layer
+   * dropped from the value and its chip disabled: LLM calls can be masked through the AI Trust Layer
    * policy instead. While mask is selected a detection scope other than Text blocks Save.
    */
   showMask?: boolean;
