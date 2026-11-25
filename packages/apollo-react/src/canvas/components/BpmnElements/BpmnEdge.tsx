@@ -505,7 +505,13 @@ function BpmnEdgeBase({
           <Arrowhead variant="open" tip={tip} angle={endAngle} color={color} />
         )}
         {kind === 'association' && associationDirection === 'both' && (
-          <Arrowhead variant="open" tip={origin} angle={endAngle + Math.PI} color={color} />
+          <Arrowhead
+            variant="open"
+            tip={origin}
+            // Against the first segment, which a bent association need not run parallel to the last.
+            angle={Math.atan2(-startDirection.y, -startDirection.x)}
+            color={color}
+          />
         )}
         {sourceMarker && (
           <SourceMarker

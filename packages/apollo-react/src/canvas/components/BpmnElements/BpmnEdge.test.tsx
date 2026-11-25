@@ -435,6 +435,32 @@ describe('BPMN association', () => {
     expect(chevrons()).toEqual(['220,40', '100,40']);
   });
 
+  it('aims each end of a bent association along the segment that meets it', () => {
+    association({
+      associationDirection: 'both',
+      waypoints: [
+        { x: 100, y: 40 },
+        { x: 160, y: 0 },
+        { x: 220, y: 40 },
+      ],
+    });
+
+    // The wings sit back along the segment from the tip, so their midpoint lies on it.
+    const backAlong = [...document.querySelectorAll('[data-bpmn-open-arrow]')].map((chevron) => {
+      const [wing, tip, other] = chevron
+        .getAttribute('points')!
+        .split(' ')
+        .map((point) => point.split(',').map(Number) as [number, number]);
+      const dx = (wing![0] + other![0]) / 2 - tip![0];
+      const dy = (wing![1] + other![1]) / 2 - tip![1];
+      return Math.atan2(dy, dx);
+    });
+
+    // Target end: back towards the bend, up and left. Source end: towards the bend, up and right.
+    expect(backAlong[0]).toBeCloseTo(Math.atan2(-40, -60));
+    expect(backAlong[1]).toBeCloseTo(Math.atan2(-40, 60));
+  });
+
   it('draws an association through its stored docks and bends', () => {
     render(
       tree(
