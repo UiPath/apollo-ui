@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.50.0...@uipath/apollo-react@7.51.0) (2026-11-25)
+
+### Features
+
+* **apollo-react:** let a wide node's name take more than one line ([95ffd99](https://github.com/UiPath/apollo-ui/commit/95ffd99f7242859c3d5a6bb2cbbca99c79df9765))
+
 ## [@uipath/apollo-react-v7.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.49.0...@uipath/apollo-react@7.50.0) (2026-11-25)
 
 ### Features
