@@ -101,6 +101,18 @@ function toolbarPositionAt(
   };
 }
 
+/** Unit direction of travel along the first or last segment that has any length. */
+function segmentDirection(points: readonly Point[], end: 'first' | 'last'): Point | undefined {
+  const last = points.length - 1;
+  for (let i = 0; i < last; i++) {
+    const from = end === 'first' ? points[i]! : points[last - i - 1]!;
+    const to = end === 'first' ? points[i + 1]! : points[last - i]!;
+    const length = Math.hypot(to.x - from.x, to.y - from.y);
+    if (length > 0) return { x: (to.x - from.x) / length, y: (to.y - from.y) / length };
+  }
+  return undefined;
+}
+
 // Within half a pixel, so a dock rebuilt from its anchor and offset still counts as unmoved.
 const near = (point: Point, x: number, y: number) =>
   Math.abs(point.x - x) < 0.5 && Math.abs(point.y - y) < 0.5;
@@ -231,8 +243,6 @@ function BpmnEdgeBase({
   targetX: targetAnchorX,
   targetY: targetAnchorY,
   targetPosition = Position.Left,
-  sourceHandleId,
-  targetHandleId,
   data,
 }: EdgeProps<BpmnEdgeModel> & { kind: EdgeKind }) {
   const canEdit = useBaseCanvasModeOr('design') === 'design';
@@ -394,8 +404,6 @@ function BpmnEdgeBase({
     edgeId: id,
     sourceNodeId: source,
     targetNodeId: target,
-    sourceHandleId,
-    targetHandleId,
     sourceX,
     sourceY,
     sourcePosition,
@@ -403,12 +411,9 @@ function BpmnEdgeBase({
     targetY,
     targetPosition,
     waypoints,
-    autoRouted: waypoints.length === 0,
     enableSegments: editingEnabled,
-    hideArrowHead: !filledArrow,
     enableLineJumps: orthogonal,
-    // While an end node is dragged the stored bends no longer line up with the docks, so the
-    // route is derived until the drag ends and the result is stored.
+    // Once a dock has moved the stored bends no longer meet it, so the route is derived.
     verbatimWaypoints: !!stored && !drifted,
   });
 
@@ -448,37 +453,19 @@ function BpmnEdgeBase({
     [deleteEdge, insertOnEdge, kind, strings.addElement, strings.delete]
   );
 
-  // Straight kinds run between the handle anchors; the others between the ends of the drawn path.
   const pathPoints = geometry.pathPoints;
-  const pathStart = orthogonal ? pathPoints[0] : undefined;
-  const pathEnd = orthogonal ? pathPoints[pathPoints.length - 1] : undefined;
-  // Without a stored route these are the anchors; with one, its docks.
-  const originX = pathStart?.x ?? startX;
-  const originY = pathStart?.y ?? startY;
-  const tipX = pathEnd?.x ?? endX;
-  const tipY = pathEnd?.y ?? endY;
-  const origin = useMemo(() => ({ x: originX, y: originY }), [originX, originY]);
-  const tip = useMemo(() => ({ x: tipX, y: tipY }), [tipX, tipY]);
+  // Without a stored route the ends are the anchors; with one, its docks.
+  const origin = useMemo(() => ({ x: startX, y: startY }), [startX, startY]);
+  const tip = useMemo(() => ({ x: endX, y: endY }), [endX, endY]);
   // A straight kind is drawn through its stored bends as given.
-  const line = useMemo(() => [origin, ...bends, tip], [origin, bends, tip]);
+  const line = useMemo(() => [origin, ...waypoints, tip], [origin, waypoints, tip]);
   const straight = `M${line.map((point) => `${point.x},${point.y}`).join(' L')}`;
 
   // Markers follow the first and last segments, which a stored route may run at any angle.
-  const afterStart = (orthogonal ? pathPoints[1] : line[1]) || tip;
-  const beforeEnd =
-    (orthogonal ? pathPoints[pathPoints.length - 2] : line[line.length - 2]) || origin;
-  const startLength = Math.hypot(afterStart.x - origin.x, afterStart.y - origin.y);
-  const startDirection = useMemo(
-    () =>
-      startLength > 0
-        ? { x: (afterStart.x - origin.x) / startLength, y: (afterStart.y - origin.y) / startLength }
-        : DIRECTION[sourcePosition],
-    [afterStart.x, afterStart.y, origin, startLength, sourcePosition]
-  );
-  const endAngle =
-    beforeEnd.x === tip.x && beforeEnd.y === tip.y
-      ? geometry.arrow.angle
-      : Math.atan2(tip.y - beforeEnd.y, tip.x - beforeEnd.x);
+  const drawn = orthogonal ? pathPoints : line;
+  const startDirection = segmentDirection(drawn, 'first') ?? DIRECTION[sourcePosition];
+  const endDirection = segmentDirection(drawn, 'last');
+  const endAngle = endDirection ? Math.atan2(endDirection.y, endDirection.x) : geometry.arrow.angle;
 
   const midPoint = useMemo(
     () => (orthogonal ? geometry.labelPoint : getPathArcMidpoint(line)),

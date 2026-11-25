@@ -36,10 +36,10 @@ const SIDES = [Position.Left, Position.Right, Position.Top, Position.Bottom];
 const DEFAULT_ADD_SIDES = [Position.Top, Position.Right, Position.Bottom];
 const NO_SIDES: Position[] = [];
 // The toolbar rests 12px off the node; the expanded top "+" reaches 20px (circle) or 30px
-// (rounded) out, and the always-on button needs apollo's own unlabeled-button offset.
-const TOOLBAR_OFFSET = { circle: 12, rounded: 26, always: 'button-only' } as const;
+// (rounded) out. The always-on button takes apollo's own unlabeled-button offset instead.
+const TOOLBAR_OFFSET = { circle: 12, rounded: 26 } as const;
 // Hover bridge reach: just past the expanded "+", instead of the 60px a labelled Flow handle needs.
-const BRIDGE_EXTENT = { circle: 28, rounded: 38, always: undefined } as const;
+const BRIDGE_EXTENT = { circle: 28, rounded: 38 } as const;
 // The expanded "+" is 28px across, so each unit of scale pushes its far edge that much further.
 const BUTTON_SIZE = 28;
 const selectZoom = (state: ReactFlowState) => state.transform[2];
@@ -68,17 +68,34 @@ const SOURCE_HANDLE_PROPS = { isConnectableEnd: false } as const;
 // A host-driven state only sets these variables, which the border, fill, label and glyphs read:
 // one rule colours every part, in the node and in its overlay, and a host stylesheet can
 // override it.
-const TINT = {
-  primary:
-    '[--bpmn-element-border:var(--canvas-primary)] [--bpmn-element-foreground:var(--canvas-primary)] [--bpmn-element-icon:var(--canvas-primary)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-primary)_5%,var(--canvas-background,var(--color-background)))]',
-  success:
-    '[--bpmn-element-border:var(--canvas-success-icon)] [--bpmn-element-foreground:var(--canvas-success-icon)] [--bpmn-element-icon:var(--canvas-success-icon)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-success-icon)_5%,var(--canvas-background,var(--color-background)))]',
-  error:
-    '[--bpmn-element-border:var(--canvas-error-text)] [--bpmn-element-foreground:var(--canvas-error-text)] [--bpmn-element-icon:var(--canvas-error-text)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-error-text)_10%,var(--canvas-background,var(--color-background)))]',
-  wash: '[--bpmn-element-fill:color-mix(in_srgb,var(--canvas-primary)_10%,transparent)]',
-  ring: '[--bpmn-element-border:var(--canvas-primary)]',
-} as const;
 const GLYPH_TINT = 'text-(color:--bpmn-element-icon)';
+// What each state sets, and so which of the element's own colours it replaces. Written out in
+// full, since Tailwind only generates the classes it finds in the source.
+const TINT = {
+  primary: {
+    className: `[--bpmn-element-border:var(--canvas-primary)] [--bpmn-element-foreground:var(--canvas-primary)] [--bpmn-element-icon:var(--canvas-primary)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-primary)_5%,var(--canvas-background,var(--color-background)))] ${GLYPH_TINT}`,
+    border: true,
+    fill: true,
+  },
+  success: {
+    className: `[--bpmn-element-border:var(--canvas-success-icon)] [--bpmn-element-foreground:var(--canvas-success-icon)] [--bpmn-element-icon:var(--canvas-success-icon)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-success-icon)_5%,var(--canvas-background,var(--color-background)))] ${GLYPH_TINT}`,
+    border: true,
+    fill: true,
+  },
+  error: {
+    className: `[--bpmn-element-border:var(--canvas-error-text)] [--bpmn-element-foreground:var(--canvas-error-text)] [--bpmn-element-icon:var(--canvas-error-text)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-error-text)_10%,var(--canvas-background,var(--color-background)))] ${GLYPH_TINT}`,
+    border: true,
+    fill: true,
+  },
+  wash: {
+    className: '[--bpmn-element-fill:color-mix(in_srgb,var(--canvas-primary)_10%,transparent)]',
+    border: false,
+    fill: true,
+  },
+  ring: { className: '[--bpmn-element-border:var(--canvas-primary)]', border: true, fill: false },
+} as const;
+const DROP_TINT = { invalid: 'error', valid: 'wash', 'valid-border': 'ring' } as const;
+const CONNECTION_TINT = { target: 'primary', 'target-picked': 'success' } as const;
 // Important, since handles set their own pointer events.
 const UNAVAILABLE = 'opacity-30 delay-100 pointer-events-none [&_*]:pointer-events-none!';
 /** What an element's parts read, each falling back to its own colour with no state on. */
@@ -92,30 +109,19 @@ export const ELEMENT_STATE_FILL = 'bg-(--bpmn-element-fill)';
 
 /** How the host's connection and drop states show on an element. A drop state wins. */
 export function resolveElementState({ connectionState, dropState }: BpmnNodeData) {
-  const tint =
-    dropState === 'invalid'
-      ? 'error'
-      : dropState === 'valid'
-        ? 'wash'
-        : dropState === 'valid-border'
-          ? 'ring'
-          : connectionState === 'target'
-            ? 'primary'
-            : connectionState === 'target-picked'
-              ? 'success'
-              : undefined;
-  const unavailable = !dropState && connectionState === 'unavailable';
+  const key = dropState
+    ? DROP_TINT[dropState]
+    : connectionState === 'target' || connectionState === 'target-picked'
+      ? CONNECTION_TINT[connectionState]
+      : undefined;
+  const tint = key && TINT[key];
   return {
-    tintsBorder: !!tint && tint !== 'wash',
-    tintsFill: !!tint && tint !== 'ring',
-    ring: tint === 'ring',
+    tintsBorder: !!tint?.border,
+    tintsFill: !!tint?.fill,
+    ring: key === 'ring',
     // No toolbar or "+" on an element the connection can end on, or cannot use.
     quiet: !!connectionState && connectionState !== 'anchor',
-    className: cx(
-      tint && TINT[tint],
-      tint && tint !== 'wash' && tint !== 'ring' && GLYPH_TINT,
-      unavailable && UNAVAILABLE
-    ),
+    className: cx(tint?.className, !dropState && connectionState === 'unavailable' && UNAVAILABLE),
   };
 }
 
@@ -216,7 +222,8 @@ export interface BpmnNodeShellProps {
  *
  * Nothing here reads a manifest or writes the xyflow store.
  */
-export const BpmnNodeShell = memo(function BpmnNodeShell({
+// Not memoised: every caller passes fresh children, so a memo would never skip a render.
+export function BpmnNodeShell({
   id,
   data,
   selected = false,
@@ -296,17 +303,13 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
     [addAfter]
   );
 
-  const style = useMemo(
-    () =>
-      ({
-        width,
-        height,
-        '--node-w': `${width}px`,
-        '--node-h': `${height}px`,
-        '--node-radius': radius,
-      }) as React.CSSProperties,
-    [width, height, radius]
-  );
+  const style = {
+    width,
+    height,
+    '--node-w': `${width}px`,
+    '--node-h': `${height}px`,
+    '--node-radius': radius,
+  } as React.CSSProperties;
 
   const onResize = useCallback(
     (_event: unknown, size: { width: number; height: number }) =>
@@ -357,7 +360,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
       offsetToolbar={
         isAddButtonVisible && sidesWithAdd.includes(Position.Top)
           ? handleStyle === 'always'
-            ? TOOLBAR_OFFSET.always
+            ? 'button-only'
             : TOOLBAR_OFFSET[handleStyle] + extraReach
           : false
       }
@@ -505,7 +508,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
       </div>
     </NodeOverlayContext.Provider>
   );
-});
+}
 
 const LABEL_PLACEMENT = {
   // 4px each side, as BPMN's own task label, so a short name stays on one line.

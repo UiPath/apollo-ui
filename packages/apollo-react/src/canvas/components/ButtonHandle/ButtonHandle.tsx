@@ -307,13 +307,6 @@ const ButtonHandleBase = ({
     },
     [clearHoverOnMouseDown, hostMouseDown]
   );
-  const onInwardHandleMouseDown = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      unmarkAsHovered();
-      hostMouseDown?.(event);
-    },
-    [unmarkAsHovered, hostMouseDown]
-  );
   const buttonIsHandle = buttonReveal === 'expand-on-hover';
   const compactButton = buttonIsHandle ? !(isPointerOver || selected) : undefined;
   const showActionButton = !!onAction && type === 'source';
@@ -379,7 +372,7 @@ const ButtonHandleBase = ({
           id={id}
           onMouseEnter={onHandleMouseEnter}
           onMouseLeave={onHandleMouseLeave}
-          onMouseDown={onInwardHandleMouseDown}
+          onMouseDown={onHandleMouseDown}
           className={cx(
             'absolute! z-20 flex! items-center! justify-center! overflow-visible! border-0! rounded-none! bg-transparent!',
             visible
