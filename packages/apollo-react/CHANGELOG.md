@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.49.0...@uipath/apollo-react@7.50.0) (2026-11-25)
+
+### Features
+
+* **apollo-react:** let a node manifest choose a compact icon ([2d1c4fd](https://github.com/UiPath/apollo-ui/commit/2d1c4fd50b0ca88660130e8e34cfb4620beed1a2))
+
 ## [@uipath/apollo-react-v7.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.48.0...@uipath/apollo-react@7.49.0) (2026-11-25)
 
 ### Features
