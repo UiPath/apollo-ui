@@ -95,3 +95,18 @@ describe('display.shadowType', () => {
     expect(() => displayConfigSchema.parse({ shadowType })).toThrow();
   });
 });
+
+describe('display.singleLineSubLabel', () => {
+  it('is checked by the manifest and the instance schemas', () => {
+    const manifest = {
+      nodeType: 'uipath.test.node',
+      version: '1.0.0',
+      display: { label: 'Test Node', singleLineSubLabel: 'true' },
+      tags: [],
+      sortOrder: 0,
+      handleConfiguration: [],
+    };
+    expect(() => nodeManifestSchema.parse(manifest)).toThrow();
+    expect(() => displayConfigSchema.parse({ singleLineSubLabel: 'true' })).toThrow();
+  });
+});

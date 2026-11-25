@@ -597,6 +597,17 @@ describe('BaseNode', () => {
     });
   });
 
+  describe('display.singleLineSubLabel', () => {
+    it('passes the display singleLineSubLabel to the label', () => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        display: { ...DEFAULT_MANIFEST.display, shape: 'rectangle', singleLineSubLabel: true },
+      };
+      render(<BaseNode {...defaultProps} />);
+      expect(mockNodeLabel.mock.calls.at(-1)?.[0]?.singleLineSubLabel).toBe(true);
+    });
+  });
+
   describe('Action needed badge', () => {
     it('renders as an accessible clickable control and invokes onActionNeeded', () => {
       const onActionNeeded = vi.fn();

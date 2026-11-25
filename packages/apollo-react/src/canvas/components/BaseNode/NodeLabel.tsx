@@ -114,7 +114,10 @@ Header.displayName = 'Header';
 
 interface SubHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   shape?: NodeShape;
-  /** Lines a wide node's description may take: 2, or 1 when the name takes more than one. */
+  /**
+   * Lines a wide node's description may take: 2, or 1 when the name takes more than one or
+   * `singleLineSubLabel` is set.
+   */
   lines?: 1 | 2;
   onDoubleClick?: (e: React.MouseEvent) => void;
   'data-testid'?: string;
@@ -242,6 +245,11 @@ export interface NodeLabelProps {
    * instead of two. Other shapes always wrap their name below the node.
    */
   labelLines?: NodeLabelLines;
+  /**
+   * Keeps a wide node's description to one line before it's cut off with "…" (default false).
+   * Otherwise it takes two lines, or one when the name takes two or more.
+   */
+  singleLineSubLabel?: boolean;
   hasBottomHandles?: boolean;
   selected?: boolean;
   dragging?: boolean;
@@ -261,6 +269,7 @@ const NodeLabelInternal = ({
   labelBackgroundColor,
   shape,
   labelLines = 1,
+  singleLineSubLabel = false,
   hasBottomHandles,
   selected,
   dragging,
@@ -302,8 +311,9 @@ const NodeLabelInternal = ({
     );
   }
 
-  // A wide node's name and description share about three lines at the smallest height.
-  const subLabelLines = labelLines > 1 ? 1 : 2;
+  // A wide node's description takes two lines, or one when the name takes more than one or
+  // `singleLineSubLabel` is set.
+  const subLabelLines = singleLineSubLabel || labelLines > 1 ? 1 : 2;
 
   const headerTooltipContent = labelTooltip ?? label;
   const subHeaderTooltipContent = labelTooltip ?? subLabel;

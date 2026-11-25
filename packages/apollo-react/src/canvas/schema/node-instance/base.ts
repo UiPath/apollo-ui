@@ -64,6 +64,8 @@ export const displayConfigSchema = z
     iconSize: nodeIconSizeSchema.optional(),
     /** Per-node override of the manifest's `display.labelLines`. */
     labelLines: nodeLabelLinesSchema.optional(),
+    /** Per-node override of the manifest's `display.singleLineSubLabel`. */
+    singleLineSubLabel: z.boolean().optional(),
   })
   .catchall(z.unknown()); // Allow additional properties
 

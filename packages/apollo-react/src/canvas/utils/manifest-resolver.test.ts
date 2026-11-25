@@ -111,6 +111,16 @@ describe('resolveDisplay', () => {
     );
   });
 
+  it('lets an instance display.singleLineSubLabel override the manifest, and keeps it when undefined', () => {
+    const manifest = { label: 'Node', icon: 'box', singleLineSubLabel: true };
+    expect(
+      resolveDisplay(manifest, { display: { singleLineSubLabel: false } }).singleLineSubLabel
+    ).toBe(false);
+    expect(
+      resolveDisplay(manifest, { display: { singleLineSubLabel: undefined } }).singleLineSubLabel
+    ).toBe(true);
+  });
+
   it('uses manifest canvasLabel for canvas label when no instance override', () => {
     const result = resolveDisplay({
       label: 'Send Outlook Email',

@@ -1159,22 +1159,33 @@ function LabelTooltipsStory() {
         width: 184,
         height: 64,
       },
-      // A long name on a 64px wide node: one line (the default), two (`display.labelLines`), and
-      // two with a description, which then takes one line.
+      // A long name on a 64px wide node: one line (the default), two (`display.labelLines`),
+      // and two with a description, which then takes one line. Below the first, one line each for
+      // the name and the description (`display.singleLineSubLabel`).
       ...(
         [
-          { labelLines: 1, subLabel: undefined },
-          { labelLines: 2, subLabel: undefined },
+          { labelLines: 1, subLabel: undefined, singleLineSubLabel: undefined },
+          { labelLines: 2, subLabel: undefined, singleLineSubLabel: undefined },
           {
             labelLines: 2,
             subLabel: 'Decides whether the claimant needs an assessment before payout',
+            singleLineSubLabel: undefined,
+          },
+          {
+            labelLines: 1,
+            subLabel: 'Decides whether the claimant needs an assessment before payout',
+            singleLineSubLabel: true,
           },
         ] as const
-      ).map(({ labelLines, subLabel }, index) => ({
+      ).map(({ labelLines, subLabel, singleLineSubLabel }, index) => ({
         ...createNode({
           id: `label-tooltip-lines-${index}`,
           type: 'uipath.blank-node',
-          position: { x: 160 + index * (DEFAULT_RECTANGLE_NODE_WIDTH + 64), y: 520 },
+          // The last one starts a second row, far enough down that its toolbar clears the first.
+          position: {
+            x: 160 + (index % 3) * (DEFAULT_RECTANGLE_NODE_WIDTH + 64),
+            y: index < 3 ? 520 : 648,
+          },
           data: {
             nodeType: 'uipath.blank-node',
             version: '1.0.0',
@@ -1184,6 +1195,7 @@ function LabelTooltipsStory() {
               shape: 'rectangle' as const,
               height: 64,
               labelLines,
+              singleLineSubLabel,
             },
           },
         }),
@@ -1201,7 +1213,7 @@ function LabelTooltipsStory() {
       </Panel>
       <StoryInfoPanel
         title="Label Tooltips"
-        description="Hover the truncated node labels and sublabels. No labelTooltip override is provided, so each tooltip should use the corresponding label or sublabel text. The bottom row shows a wide node's long name on one line (the default) and on two (display.labelLines: 2), the last with a description, which then takes one line."
+        description="Hover the truncated node labels and sublabels. No labelTooltip override is provided, so each tooltip should use the corresponding label or sublabel text. The row of 64px nodes shows a wide node's long name on one line (the default) and on two (display.labelLines: 2), the third with a description, which then takes one line. The node below the row keeps both the name and the description to one line (display.singleLineSubLabel: true)."
       />
     </BaseCanvas>
   );
