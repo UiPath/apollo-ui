@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.47.0...@uipath/apollo-react@7.48.0) (2026-11-25)
+
+### Features
+
+* **apollo-react:** mark the Preview options of a guardrail enum [AL-738] ([4c2dbad](https://github.com/UiPath/apollo-ui/commit/4c2dbad8b19de5b457fba130b5540b1aa323675f))
+
 ## [@uipath/apollo-react-v7.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.46.1...@uipath/apollo-react@7.47.0) (2026-11-25)
 
 ### Features
