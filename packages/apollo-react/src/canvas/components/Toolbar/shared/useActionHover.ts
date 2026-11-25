@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 
 // Not in the toolbar barrel: an internal helper shared by the toolbar's buttons and menu items.
 /**
@@ -7,8 +7,11 @@ import { useEffect, useMemo, useRef } from 'react';
  * pointer fires no event for it.
  */
 export function useActionHover(onHover: ((hovered: boolean) => void) | undefined) {
+  // The latest callback, kept out of render so a render React throws away cannot leave it set.
   const latest = useRef(onHover);
-  latest.current = onHover;
+  useLayoutEffect(() => {
+    latest.current = onHover;
+  });
   const state = useRef({ pointer: false, focus: false, reported: false });
 
   useEffect(

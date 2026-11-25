@@ -254,6 +254,7 @@ export interface BpmnControls {
 }
 const NO_CONTROLS: BpmnControls = {};
 const BpmnControlsContext = createContext<BpmnControls>(NO_CONTROLS);
+/** Memoise the value: every node reads it, so a new object each render re-renders them all. */
 export const BpmnControlsProvider = BpmnControlsContext.Provider;
 export const useBpmnControls = () => useContext(BpmnControlsContext);
 
@@ -272,6 +273,10 @@ export const useBpmnOverlay = () => useContext(BpmnOverlayContext);
 
 const BpmnActionsContext = createContext<BpmnActions | null>(null);
 
+/**
+ * Memoise the value, and keep its callbacks stable: every node and flow reads it, so a new
+ * object each render re-renders them all and rebuilds every toolbar.
+ */
 export const BpmnActionsProvider = BpmnActionsContext.Provider;
 
 export function useBpmnActions(): BpmnActions {

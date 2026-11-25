@@ -184,12 +184,14 @@ const ButtonHandleBase = ({
   // Where node-anchored visuals are portalled: beside the handle, out of reach of its clip.
   const [handleParent, setVisualsContainer] = useState<HTMLElement | null>(null);
   const visualsContainer = hostVisualsContainer === undefined ? handleParent : hostVisualsContainer;
+  // Only looked up when the host names no container, since the lookup costs every handle a render.
+  const findsContainer = anchor === 'node' && hostVisualsContainer === undefined;
   const setHandleElement = useCallback(
     (element: HTMLDivElement | null) => {
       handleRef.current = element;
-      if (anchor === 'node' && element) setVisualsContainer(element.parentElement);
+      if (findsContainer && element) setVisualsContainer(element.parentElement);
     },
-    [anchor]
+    [findsContainer]
   );
   const {
     className: hostClassName,

@@ -277,6 +277,7 @@ export function BpmnNodeShell({
   // How much further the expanded "+" reaches than the constants above assume.
   const extraReach = handleStyle === 'always' ? 0 : buttonOutset + BUTTON_SIZE * (controlScale - 1);
   const [overlayElement, setOverlayElement] = useState<HTMLDivElement | null>(null);
+  const [rootElement, setRootElement] = useState<HTMLDivElement | null>(null);
   const state = resolveElementState(data);
   const selectTarget = useMemo(() => selectTargetSide(id), [id]);
   const draggedTo = useStore(selectTarget);
@@ -370,10 +371,14 @@ export function BpmnNodeShell({
   );
   // `undefined` leaves each part where it renders by default.
   const overlayContainer = lifted ? overlayElement : undefined;
+  // The handles' visuals go in the overlay or, without one, in this node's own element: one
+  // lookup here instead of one per handle.
+  const handleVisuals = lifted ? overlayElement : rootElement;
 
   return (
     <NodeOverlayContext.Provider value={overlayContainer}>
       <div
+        ref={setRootElement}
         data-connection-state={data.connectionState}
         data-drop-state={data.dropState}
         className={cx('group/bpmn-node relative transition-opacity duration-100', state.className)}
@@ -473,7 +478,7 @@ export function BpmnNodeShell({
               hitRegion="quadrant"
               showNotches={false}
               handleProps={TARGET_HANDLE_PROPS}
-              visualsContainer={overlayContainer}
+              visualsContainer={handleVisuals}
             />
           ))}
         {connectable &&
@@ -502,7 +507,7 @@ export function BpmnNodeShell({
               }
               buttonOutset={buttonOutset}
               buttonScale={controlScale}
-              visualsContainer={overlayContainer}
+              visualsContainer={handleVisuals}
             />
           ))}
       </div>
