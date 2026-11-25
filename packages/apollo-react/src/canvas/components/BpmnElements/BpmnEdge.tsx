@@ -101,6 +101,19 @@ function toolbarPositionAt(
   };
 }
 
+// Within half a pixel, so a dock rebuilt from its anchor and offset still counts as unmoved.
+const near = (point: Point, x: number, y: number) =>
+  Math.abs(point.x - x) < 0.5 && Math.abs(point.y - y) < 0.5;
+
+/** Whether the node, or any node it sits in, is being dragged. */
+function isMoving(state: ReactFlowState, nodeId: string) {
+  for (let node = state.nodeLookup.get(nodeId); node; ) {
+    if (node.dragging) return true;
+    node = node.parentId ? state.nodeLookup.get(node.parentId) : undefined;
+  }
+  return false;
+}
+
 const samePoints = (a: Point[], b: Point[]) =>
   a.length === b.length && a.every((point, i) => point.x === b[i]!.x && point.y === b[i]!.y);
 
@@ -237,7 +250,13 @@ function BpmnEdgeBase({
   const stored = data?.waypoints && data.waypoints.length >= 2 ? data.waypoints : null;
   const { bends, cache } = useBendWaypoints(data?.waypoints);
 
-  const endDragging = useStore(
+  // xyflow only marks the node under the pointer, so a node moved with its parent (a pool, a
+  // boundary event's activity) counts as moving through its ancestors.
+  const endMoving = useStore(
+    (state: ReactFlowState) => isMoving(state, source) || isMoving(state, target)
+  );
+  // The ends themselves, which is when the rebalancer moves a selected flow's bends.
+  const endsDragging = useStore(
     (state: ReactFlowState) =>
       !!(state.nodeLookup.get(source)?.dragging || state.nodeLookup.get(target)?.dragging)
   );
@@ -261,6 +280,23 @@ function BpmnEdgeBase({
   const startY = sourceAnchorY + (dock.current?.source.y ?? 0);
   const endX = targetAnchorX + (dock.current?.target.x ?? 0);
   const endY = targetAnchorY + (dock.current?.target.y ?? 0);
+  const drifted =
+    !!stored && !(near(stored[0]!, startX, startY) && near(stored[stored.length - 1]!, endX, endY));
+  // Both docks moved by the same amount, as when their pool is dragged: the whole route moves
+  // with them. Left to the rebalancer while it is moving a selected flow's bends itself.
+  const shiftX = stored ? startX - stored[0]!.x : 0;
+  const shiftY = stored ? startY - stored[0]!.y : 0;
+  const groupMove =
+    drifted &&
+    !(editingEnabled && endsDragging) &&
+    near(stored![stored!.length - 1]!, endX - shiftX, endY - shiftY);
+  const followed = useMemo(
+    () =>
+      groupMove
+        ? bends.map((bend) => ({ ...bend, x: bend.x + shiftX, y: bend.y + shiftY }))
+        : bends,
+    [groupMove, bends, shiftX, shiftY]
+  );
 
   // apollo's edge geometry pulls each end in by the arrow offset, as for handles that sit
   // outside the node. BPMN docks are on the border, so push them out by as much.
@@ -319,36 +355,37 @@ function BpmnEdgeBase({
     targetX,
     targetY,
     targetPosition,
-    waypoints: bends,
+    waypoints: followed,
     enabled: editingEnabled,
     onChange: onRebalance,
   });
 
-  // After a node drag the docks have moved off the stored route. The rebalancer stores the new
-  // one for a selected flow when its bends follow the node; this covers the rest, including a
-  // drag along a dock's own axis that leaves the bends where they are. Runs after the
-  // rebalancer's own layout effect, since that hook is called first.
-  const wasEndDragging = useRef(false);
+  // Once a dock has moved off the stored route (a drag, a parent's drag, a keyboard nudge), the
+  // stored bends no longer meet it, so the route is derived and stored again when the move
+  // settles. The rebalancer stores it itself for a selected flow whose bends follow the node.
+  // Runs after the rebalancer's layout effect, since that hook is called first.
+  const savedDocks = useRef<string | null>(null);
   useLayoutEffect(() => {
-    const dragEnded = wasEndDragging.current && !endDragging;
-    wasEndDragging.current = endDragging;
-    if (!dragEnded) return;
-    const saved = rebalanceSaved.current;
-    rebalanceSaved.current = false;
-    if (saved || !stored || !canEdit) return;
-    const first = stored[0]!;
-    const last = stored[stored.length - 1]!;
-    if (first.x === startX && first.y === startY && last.x === endX && last.y === endY) return;
+    const docks = `${startX},${startY},${endX},${endY}`;
+    if (rebalanceSaved.current) {
+      rebalanceSaved.current = false;
+      savedDocks.current = docks;
+      return;
+    }
+    if (!drifted || endMoving || !stored || !canEdit) return;
+    // Once per position, in case the host has yet to apply it.
+    if (savedDocks.current === docks) return;
+    savedDocks.current = docks;
     // A straight kind keeps its bends as they are; routing them would make it orthogonal.
     if (!orthogonal) {
       setWaypoints(id, [
         { x: startX, y: startY },
-        ...bends.map(({ x, y }) => ({ x, y })),
+        ...waypoints.map(({ x, y }) => ({ x, y })),
         { x: endX, y: endY },
       ]);
       return;
     }
-    onWaypointsChange(bends);
+    onWaypointsChange(waypoints);
   });
 
   const filledArrow = kind === 'sequence';
@@ -372,7 +409,7 @@ function BpmnEdgeBase({
     enableLineJumps: orthogonal,
     // While an end node is dragged the stored bends no longer line up with the docks, so the
     // route is derived until the drag ends and the result is stored.
-    verbatimWaypoints: !!stored && !endDragging,
+    verbatimWaypoints: !!stored && !drifted,
   });
 
   const editor = useWaypointEditor({

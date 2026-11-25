@@ -329,6 +329,78 @@ describe('BPMN sequence flow', () => {
       expect(stored[stored.length - 1]).toEqual({ x: 220, y: 60 });
     });
 
+    it('stores the route once a parent of an end stops being dragged', () => {
+      const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
+      const dragPool = (dragging: boolean) =>
+        act(() =>
+          store.setState({
+            nodeLookup: new Map([
+              ['a', { parentId: 'pool', dragging: false }],
+              ['pool', { dragging }],
+            ]) as never,
+          })
+        );
+
+      dragPool(true);
+      rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, { sourceX: 100, sourceY: 70 })));
+      expect(setWaypoints).not.toHaveBeenCalled();
+
+      dragPool(false);
+      expect(setWaypoints).toHaveBeenCalledTimes(1);
+      expect(setWaypoints.mock.calls[0]![1][0]).toEqual({ x: 100, y: 50 });
+    });
+
+    it('moves the whole route with a pool that holds both ends', () => {
+      const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
+      const dragPool = (dragging: boolean) =>
+        act(() =>
+          store.setState({
+            nodeLookup: new Map([
+              ['a', { parentId: 'pool', dragging: false }],
+              ['b', { parentId: 'pool', dragging: false }],
+              ['pool', { dragging }],
+            ]) as never,
+          })
+        );
+
+      dragPool(true);
+      rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, { sourceY: 70, targetY: 70 })));
+      dragPool(false);
+
+      expect(setWaypoints).toHaveBeenCalledTimes(1);
+      expect(setWaypoints.mock.calls[0]![1]).toEqual(
+        OFF_CENTRE.map(({ x, y }) => ({ x, y: y + 30 }))
+      );
+    });
+
+    it('stores the route when an end moves without a drag, as a keyboard nudge does', () => {
+      const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
+
+      rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, { sourceX: 100, sourceY: 70 })));
+
+      expect(setWaypoints).toHaveBeenCalledTimes(1);
+      expect(setWaypoints.mock.calls[0]![1][0]).toEqual({ x: 100, y: 50 });
+    });
+
+    it('stores a moved route once, while the host has yet to apply it', () => {
+      const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
+      const moved = edgeProps({ waypoints: OFF_CENTRE }, { sourceX: 100, sourceY: 70 });
+
+      rerender(tree(moved));
+      rerender(tree({ ...moved }));
+
+      expect(setWaypoints).toHaveBeenCalledTimes(1);
+    });
+
+    it('draws a moved route through fresh docks, not the stale stored bends', () => {
+      const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
+
+      rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, { sourceX: 100, sourceY: 70 })));
+
+      // Verbatim, it would run diagonally from the moved dock to the stored first bend.
+      expect(path().getAttribute('d')).toMatch(/^M 100 50 L [\d.]+ 50 /);
+    });
+
     describe('for a selected flow with bends', () => {
       const dragSource = (to: { sourceX: number; sourceY: number }) => {
         const selected = { waypoints: OFF_CENTRE };
