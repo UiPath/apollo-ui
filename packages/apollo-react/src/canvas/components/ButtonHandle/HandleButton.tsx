@@ -204,6 +204,15 @@ export const HandleButton = memo(
       teardownRef.current = cleanup;
     }, []);
 
+    // The expanding button's size and shape, the same whether it is kept mounted or not.
+    const compactClassName = cx(
+      compact !== undefined && SIZE_TRANSITION,
+      // Button sizes its svg to 16px, which overflows this box and lands off-centre.
+      compact && 'h-4 w-4 [&_svg]:size-2.5',
+      compact !== undefined && shape === 'circle' ? 'rounded-full' : compact && 'rounded-md'
+    );
+    const iconSize = compact ? 10 : undefined;
+
     const addButton = keepButtonMounted ? (
       // Always mounted: toggle opacity so the slot is reserved and the label never reflows.
       // When not visible, disable it (non-focusable, non-interactive) and hide it from the
@@ -219,8 +228,12 @@ export const HandleButton = memo(
         onPointerDown={handlePointerDown}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
+        iconSize={iconSize}
         className={cx(
-          'nodrag nopan transition-opacity duration-250',
+          'nodrag nopan',
+          // The size transition covers opacity too.
+          compact === undefined && 'transition-opacity duration-250',
+          compactClassName,
           visible
             ? 'pointer-events-auto opacity-100'
             : 'pointer-events-none opacity-0 disabled:opacity-0',
@@ -237,13 +250,10 @@ export const HandleButton = memo(
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
-          iconSize={compact ? 10 : undefined}
+          iconSize={iconSize}
           className={cx(
             'nodrag nopan pointer-events-auto animate-fade-in',
-            compact !== undefined && SIZE_TRANSITION,
-            // Button sizes its svg to 16px, which overflows this box and lands off-centre.
-            compact && 'h-4 w-4 [&_svg]:size-2.5',
-            compact !== undefined && shape === 'circle' ? 'rounded-full' : compact && 'rounded-md',
+            compactClassName,
             buttonClassName
           )}
         />

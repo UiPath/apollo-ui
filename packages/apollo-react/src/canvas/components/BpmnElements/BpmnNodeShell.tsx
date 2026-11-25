@@ -25,10 +25,10 @@ import {
   type BpmnNodeData,
   handleId,
   handleSide,
+  useBpmnActions,
   useBpmnButtonReveal,
   useBpmnButtonShape,
   useBpmnControls,
-  useBpmnActions,
   useBpmnOverlay,
   useBpmnStrings,
 } from './bpmn.model';
@@ -55,9 +55,9 @@ const selectTargetSide = (nodeId: string) => (state: ReactFlowState) => {
 // dark themes, and slightly translucent so an overlapped element's outline still shows through.
 const ELEMENT_FILL = 'color-mix(in srgb, var(--canvas-background) 92%, transparent)';
 const noop = () => {};
-// Important, since the button's own rest and hover border colours are equally specific.
 // Flow's container minimums are sized for its cards and would snap a small BPMN element up.
 const DEFAULT_RESIZE_MINIMUMS = { width: 60, height: 40 };
+// Important, since the button's own rest and hover border colours are equally specific.
 const SELECTED_BUTTON_OUTLINE = 'border-(color:--canvas-primary)!';
 // A target takes a drop anywhere on its quarter of the node, but never starts a connection, so
 // xyflow leaves it inert and the body draggable until one is in progress.
@@ -91,7 +91,7 @@ export const ELEMENT_GLYPH = 'text-[color:var(--bpmn-element-icon,var(--color-fo
 export const ELEMENT_STATE_FILL = 'bg-(--bpmn-element-fill)';
 
 /** How the host's connection and drop states show on an element. A drop state wins. */
-function resolveElementState({ connectionState, dropState }: BpmnNodeData) {
+export function resolveElementState({ connectionState, dropState }: BpmnNodeData) {
   const tint =
     dropState === 'invalid'
       ? 'error'
@@ -361,7 +361,8 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
             : TOOLBAR_OFFSET[handleStyle] + extraReach
           : false
       }
-      scale={controlScale}
+      // Only with zoom scaling on, since a scaled toolbar gives up its layout animation.
+      scale={maxZoomScale ? controlScale : undefined}
     />
   );
   // `undefined` leaves each part where it renders by default.

@@ -6,7 +6,7 @@ import type { ValidationErrorSeverity } from '../../types/validation';
 import type { Point } from '../Edges/shared/types';
 
 /**
- * The shapes below mirror PO.Frontend's BPMN model on purpose: the xyflow `type` is the BPMN
+ * The shapes below mirror a BPMN host's own model on purpose: the xyflow `type` is the BPMN
  * `$type`, `data` is a flat bag, size lives on the node, handle ids encode the side, and an edge's
  * waypoints include both endpoints. These renderers adapt apollo primitives to this, not the reverse.
  */
@@ -113,10 +113,6 @@ export const handleId = (nodeId: string, kind: 'source' | 'target', position: Po
 export const handleSide = (id?: string | null) =>
   id?.split(HANDLE_ID_SEPARATOR).at(-1) as Position | undefined;
 
-/**
- * What the host (Redux thunks in PO.Frontend, story state here) does when a primitive fires.
- * Leaving out an optional action leaves out its control.
- */
 /** The node toolbar's buttons, as named in `hoverToolbarAction` and their `toolbar-item-` test ids. */
 export type BpmnToolbarActionId =
   | 'delete'
@@ -127,6 +123,10 @@ export type BpmnToolbarActionId =
   | 'breakpoint'
   | 'duplicate';
 
+/**
+ * What the host (its own store, story state here) does when a primitive fires.
+ * Leaving out an optional action leaves out its control.
+ */
 export interface BpmnActions {
   addAfter: (nodeId: string, side: Position) => void;
   addBoundaryEvent?: (nodeId: string) => void;

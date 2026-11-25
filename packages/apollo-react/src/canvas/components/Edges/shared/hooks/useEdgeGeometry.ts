@@ -89,14 +89,6 @@ export type EdgeGeometry = {
   };
 };
 
-/**
- * Compute edge geometry for the active routing strategy. The waypoint pipeline
- * (vertices → segments → rounded path) runs only for `waypoint` routing;
- * handle-routed edges skip it entirely. The handle strategy (`useEdgePath`) is
- * a memoized hook that must be called unconditionally (rules of hooks), so for
- * waypoint routing it is fed constant inputs — its memo never invalidates and
- * no smooth-step path is recomputed on coordinate changes.
- */
 /** Direction of travel along the last segment with any length, in the arrow's convention. */
 function lastSegmentAngle(points: readonly { x: number; y: number }[]) {
   for (let i = points.length - 1; i > 0; i--) {
@@ -107,6 +99,14 @@ function lastSegmentAngle(points: readonly { x: number; y: number }[]) {
   return undefined;
 }
 
+/**
+ * Compute edge geometry for the active routing strategy. The waypoint pipeline
+ * (vertices → segments → rounded path) runs only for `waypoint` routing;
+ * handle-routed edges skip it entirely. The handle strategy (`useEdgePath`) is
+ * a memoized hook that must be called unconditionally (rules of hooks), so for
+ * waypoint routing it is fed constant inputs — its memo never invalidates and
+ * no smooth-step path is recomputed on coordinate changes.
+ */
 export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
   const {
     routing,

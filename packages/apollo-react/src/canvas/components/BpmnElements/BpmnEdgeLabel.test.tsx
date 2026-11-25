@@ -174,6 +174,15 @@ describe('BPMN edge label', () => {
       fireEvent.pointerUp(label(), { clientX: 300 + dx, clientY: 200 + dy });
     };
 
+    it('treats a press that barely moves as a click, not a drag', () => {
+      const onMove = vi.fn();
+      renderLabel({ text: 'Yes', onMove });
+
+      dragBy(1, 1);
+
+      expect(onMove).not.toHaveBeenCalled();
+    });
+
     it('reports the label centre in flow coordinates when the drag ends', () => {
       const onMove = vi.fn();
       renderLabel({ text: 'Yes', onMove });

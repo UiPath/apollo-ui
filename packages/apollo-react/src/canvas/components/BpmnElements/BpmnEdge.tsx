@@ -574,8 +574,6 @@ function BpmnEdgeBase({
             dimmed={dimmed}
             onRename={canEdit ? renameEdge : undefined}
             onMove={canEdit ? moveEdgeLabel : undefined}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
           />
         )}
       </g>
@@ -606,7 +604,7 @@ export const BpmnMessageFlowEdge = forKind('message');
 export const BpmnAssociationEdge = forKind('association');
 export const BpmnDataAssociationEdge = forKind('data');
 
-/** Keyed by BPMN `$type`, as PO.Frontend's `BPMN_ALL_EDGE_TYPES` is. */
+/** Keyed by BPMN `$type`, as a host registers its edge types. */
 export const bpmnEdgeTypes: EdgeTypes = {
   'bpmn:SequenceFlow': BpmnSequenceFlowEdge,
   'bpmn:MessageFlow': BpmnMessageFlowEdge,

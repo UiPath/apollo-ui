@@ -15,13 +15,14 @@ import {
   BpmnActivityNode,
   BpmnDataNode,
   type BpmnEdge,
+  BpmnEventNode,
   BpmnGatewayNode,
   BpmnGroupNode,
-  BpmnSwimlaneNode,
   type BpmnNode,
   type BpmnNodeData,
   BpmnOverlayProvider,
   BpmnStringsProvider,
+  BpmnSwimlaneNode,
   BpmnTextAnnotationNode,
   bpmnEdgeTypes,
   bpmnNodeTypes,
@@ -950,6 +951,33 @@ describe('BPMN element family', () => {
         0
       );
       expect(screen.queryByRole('button', { name: 'Add node' })).toBeNull();
+    });
+  });
+
+  describe('host data and options', () => {
+    it('renders an event whose definition has no glyph instead of throwing', () => {
+      expect(() =>
+        renderNode(BpmnEventNode, requiredActions, {
+          type: 'bpmn:StartEvent',
+          data: { eventDefinition: 'cancel' as never },
+        })
+      ).not.toThrow();
+    });
+
+    it('scales no toolbar unless zoom scaling is on', () => {
+      renderActivity({ label: 'Review' }, 'bpmn:UserTask', { selected: true });
+
+      const toolbar = screen.getByTestId('node-toolbar');
+      expect(toolbar.closest('[style*="scale"]')).toBeNull();
+    });
+
+    it('keeps a selected lane its selection fill while a state sets no fill', () => {
+      renderNode(BpmnSwimlaneNode, requiredActions, {
+        type: 'bpmn:Lane',
+        data: { connectionState: 'unavailable' },
+      });
+
+      expect(document.querySelector('.bg-foreground-accent-muted\\/5')).not.toBeNull();
     });
   });
 });

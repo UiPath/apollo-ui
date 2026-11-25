@@ -1,8 +1,8 @@
 /**
- * Every element of PO.Frontend's BPMN canvas, rendered from apollo canvas primitives.
+ * Every element of a BPMN canvas, rendered from apollo canvas primitives.
  *
  * The node and edge model is BPMN's own (see `bpmn.model.tsx`) and lives in plain React
- * state here, standing in for PO.Frontend's Redux slice. No manifest, no `BaseNode`, no
+ * state here, standing in for the host's own store. No manifest, no `BaseNode`, no
  * `CanvasEdge`, and nothing writes the xyflow store.
  */
 import type { Meta, StoryObj } from '@storybook/react';
@@ -31,20 +31,20 @@ import {
   exampleDiagram,
 } from './bpmn.diagram';
 import {
+  type BpmnActions,
+  BpmnActionsProvider,
   type BpmnButtonReveal,
   BpmnButtonRevealProvider,
   type BpmnButtonShape,
   BpmnButtonShapeProvider,
   type BpmnControls,
   BpmnControlsProvider,
-  BpmnOverlayProvider,
-  BpmnStringsProvider,
   type BpmnEdge,
   type BpmnEventDefinition,
   type BpmnLoop,
   type BpmnNode,
-  type BpmnActions,
-  BpmnActionsProvider,
+  BpmnOverlayProvider,
+  BpmnStringsProvider,
   handleId,
   handleSide,
 } from './bpmn.model';
@@ -180,7 +180,7 @@ function poolOf(nodes: BpmnNode[], id: string) {
   return current?.id;
 }
 
-/** A cut-down `getBPMNConnectionTypeForNodes`. The real rules stay in PO.Frontend. */
+/** A cut-down version of a host's connection rules. The real rules stay with the host. */
 function connectionType(nodes: BpmnNode[], source: string, target: string) {
   const types = [byId(nodes, source)?.type ?? '', byId(nodes, target)?.type ?? ''];
   if (types.includes('bpmn:TextAnnotation')) return 'bpmn:Association';
@@ -410,7 +410,7 @@ function BpmnCanvasStory({
             edge.id !== edgeId
               ? [edge]
               : [
-                  // The incoming half keeps the id, label and condition, as PO.Frontend's split does.
+                  // The incoming half keeps the id, label and condition, as a BPMN editor's split does.
                   {
                     ...edge,
                     target: id,

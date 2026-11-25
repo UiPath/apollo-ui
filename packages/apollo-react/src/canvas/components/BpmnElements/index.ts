@@ -5,6 +5,8 @@ export {
   BpmnSequenceFlowEdge,
   bpmnEdgeTypes,
 } from './BpmnEdge';
+export type { BpmnNodeShellProps } from './BpmnNodeShell';
+export { BpmnLabel, BpmnNodeShell } from './BpmnNodeShell';
 export {
   BpmnActivityNode,
   BpmnDataNode,
@@ -15,8 +17,6 @@ export {
   BpmnTextAnnotationNode,
   bpmnNodeTypes,
 } from './BpmnNodes';
-export type { BpmnNodeShellProps } from './BpmnNodeShell';
-export { BpmnLabel, BpmnNodeShell } from './BpmnNodeShell';
 export type {
   BpmnActions,
   BpmnButtonReveal,
@@ -24,7 +24,6 @@ export type {
   BpmnConnectionState,
   BpmnControls,
   BpmnDropState,
-  BpmnToolbarActionId,
   BpmnEdge,
   BpmnEdgeData,
   BpmnEventDefinition,
@@ -33,6 +32,7 @@ export type {
   BpmnNodeData,
   BpmnOverlay,
   BpmnStrings,
+  BpmnToolbarActionId,
 } from './bpmn.model';
 export {
   BpmnActionsProvider,

@@ -14,7 +14,7 @@ import {
 
 const { Left, Right, Top, Bottom } = Position;
 
-/** Default sizes, as PO.Frontend's type registry declares them. */
+/** Default sizes, as a BPMN host's type registry declares them. */
 export function defaultSize(type: string) {
   if (type.endsWith('Event')) return { width: 36, height: 36 };
   // 48, not BPMN's usual 50: a multiple of the 16px grid, so centres line up with tasks after snapping.

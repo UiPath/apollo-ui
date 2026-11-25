@@ -45,6 +45,7 @@ import {
   ELEMENT_BORDER,
   ELEMENT_GLYPH,
   ELEMENT_STATE_FILL,
+  resolveElementState,
 } from './BpmnNodeShell';
 import {
   type BpmnEventDefinition,
@@ -94,7 +95,9 @@ const TASK_GLYPH: Record<string, Glyph> = {
   'bpmn:BusinessRuleTask': BpmnGlyphTaskBusinessRule,
 };
 
-const Loop: Glyph = ({ size }) => <CanvasIcon icon="rotate-cw" size={Number(size)} />;
+const Loop: Glyph = ({ size }) => (
+  <CanvasIcon icon="rotate-cw" size={size === undefined ? undefined : Number(size)} />
+);
 const LOOP_GLYPH: Record<'loop' | 'parallel' | 'sequential', Glyph> = {
   loop: Loop,
   parallel: BpmnGlyphMarkerParallel,
@@ -116,7 +119,7 @@ function useToolbar(kind: 'activity' | 'element' | 'container', data: BpmnNodeDa
   const strings = useBpmnStrings();
   return useMemo<ToolbarAction[]>(() => {
     const hover = actions.hoverToolbarAction;
-    // Test ids are the ones PO.Frontend's toolbar gives its buttons, so one end-to-end suite
+    // Test ids match the ones the host's own toolbar gives its buttons, so one end-to-end suite
     // drives both.
     const tested = (action: ToolbarItem): ToolbarActionItem => ({
       ...action,
@@ -222,8 +225,9 @@ export const BpmnEventNode = memo(function BpmnEventNode(props: Props) {
   const isIntermediate = !isEnd && type !== 'bpmn:StartEvent';
   const throwing = isEnd || type === 'bpmn:IntermediateThrowEvent';
   const toolbar = useToolbar('element', data);
+  // Optional chaining, since a host can pass a definition this family draws no glyph for.
   const EventGlyph =
-    data.eventDefinition && EVENT_GLYPH[data.eventDefinition][throwing ? 'throwing' : 'catching'];
+    data.eventDefinition && EVENT_GLYPH[data.eventDefinition]?.[throwing ? 'throwing' : 'catching'];
 
   return (
     <BpmnNodeShell
@@ -498,7 +502,8 @@ export const BpmnDataNode = memo(function BpmnDataNode(props: Props) {
 });
 
 const selectedOutline = 'outline outline-2 outline-foreground-accent-muted';
-const hasState = (data: BpmnNodeData) => !!(data.connectionState || data.dropState);
+// Only states that set the fill variable, or an unset one would replace the element's own fill.
+const tintsFill = (data: BpmnNodeData) => resolveElementState(data).tintsFill;
 
 /** Text annotation: no apollo card applies, so only handles, toolbar and label are shared. */
 export const BpmnTextAnnotationNode = memo(function BpmnTextAnnotationNode(props: Props) {
@@ -522,7 +527,7 @@ export const BpmnTextAnnotationNode = memo(function BpmnTextAnnotationNode(props
         className={cx(
           'relative h-full w-full rounded-sm',
           selected && selectedOutline,
-          hasState(data) && ELEMENT_STATE_FILL
+          tintsFill(data) && ELEMENT_STATE_FILL
         )}
       >
         <span
@@ -568,7 +573,7 @@ export const BpmnGroupNode = memo(function BpmnGroupNode(props: Props) {
           'h-full w-full rounded-xl border-2 border-dashed',
           ELEMENT_BORDER,
           selected && selectedOutline,
-          hasState(data) && ELEMENT_STATE_FILL
+          tintsFill(data) && ELEMENT_STATE_FILL
         )}
       >
         <BpmnLabel
@@ -621,7 +626,7 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
           // Each lane is alone in its shell, so the divider comes from its index, not a sibling.
           divided && (vertical ? 'border-l' : 'border-t'),
           selected && selectedOutline,
-          hasState(data)
+          tintsFill(data)
             ? ELEMENT_STATE_FILL
             : selected && !isPool && 'bg-foreground-accent-muted/5',
           data.dropTarget && DROP_TARGET
@@ -687,7 +692,7 @@ const dataTypes = [
 const register = (types: string[], component: NodeTypes[string]) =>
   Object.fromEntries(types.map((type) => [type, component]));
 
-/** Keyed by BPMN `$type`, as PO.Frontend's `ElementTypesProvider` registers them. */
+/** Keyed by BPMN `$type`, as a host registers its node types. */
 export const bpmnNodeTypes: NodeTypes = {
   ...register(eventTypes, BpmnEventNode),
   ...register(Object.keys(GATEWAY_GLYPH), BpmnGatewayNode),

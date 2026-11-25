@@ -1,13 +1,13 @@
 import {
   EdgeLabelRenderer,
-  ViewportPortal,
   useReactFlow,
   useStoreApi,
+  ViewportPortal,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { CanvasTooltip } from '../CanvasTooltip';
 import { useInlineLabelEditing } from '../BaseNode/useInlineLabelEditing';
+import { CanvasTooltip } from '../CanvasTooltip';
 import type { Point } from '../Edges/shared/types';
 import { useBpmnStrings } from './bpmn.model';
 
@@ -31,6 +31,9 @@ const LABEL_UNSET_CLASS =
 const LABEL_SELECTED_CLASS = 'border-(--canvas-primary)';
 const LABEL_DIMMED_CLASS = 'pointer-events-none opacity-30';
 
+// Screen pixels a press must travel before it drags the label.
+const DRAG_THRESHOLD_PX = 3;
+
 /** xyflow listens on the focused edge for Escape to deselect it. */
 const focusEdge = (flow: HTMLElement | null, edgeId: string) =>
   flow
@@ -38,8 +41,8 @@ const focusEdge = (flow: HTMLElement | null, edgeId: string) =>
     ?.focus({ preventScroll: true });
 
 /**
- * apollo's `EdgeLabel` restyled as a pill, with what a BPMN host can opt into: inline renaming on double-click, a
- * placeholder for a flow with no label, and dragging the label off the path.
+ * apollo's `EdgeLabel` restyled as a pill, with what a BPMN host can opt into: inline renaming
+ * on double-click, a placeholder for a flow with no label, and dragging the label off the path.
  */
 export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   edgeId,
@@ -52,8 +55,6 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   dimmed,
   onRename,
   onMove,
-  onMouseEnter,
-  onMouseLeave,
 }: {
   edgeId: string;
   x: number;
@@ -72,8 +73,6 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   onRename?: (edgeId: string, label: string) => void;
   /** Called on drag end with the label's centre in flow coordinates. */
   onMove?: (edgeId: string, position: Point) => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
 }) {
   const strings = useBpmnStrings();
   const { screenToFlowPosition } = useReactFlow();
@@ -131,6 +130,13 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   };
   const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current) return;
+    // A click's jitter is not a move, or it would pin the label off the path's midpoint.
+    if (
+      !drag.current.moved &&
+      Math.hypot(event.clientX - drag.current.start.x, event.clientY - drag.current.start.y) <
+        DRAG_THRESHOLD_PX
+    )
+      return;
     drag.current.moved = true;
     setDropped({ from: { x, y }, at: positionFor(event, drag.current) });
   };
@@ -194,8 +200,6 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
             drag.current = null;
             setDropped(null);
           }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
         >
           {edit.isEditing ? (
             <textarea
