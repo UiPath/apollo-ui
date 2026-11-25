@@ -730,6 +730,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           subLabelPlaceholder={subLabelPlaceholder}
           shape={displayShape}
           labelLines={display.labelLines}
+          singleLineSubLabel={display.singleLineSubLabel}
           hasBottomHandles={hasVisibleBottomHandles}
           selected={selected}
           dragging={dragging}

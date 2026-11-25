@@ -145,6 +145,7 @@ export function resolveDisplay(
     labelLines: context?.display?.labelLines ?? manifestDisplay.labelLines,
     shadow: context?.display?.shadow ?? manifestDisplay.shadow,
     shadowType: context?.display?.shadowType ?? manifestDisplay.shadowType,
+    singleLineSubLabel: context?.display?.singleLineSubLabel ?? manifestDisplay.singleLineSubLabel,
   };
 }
 

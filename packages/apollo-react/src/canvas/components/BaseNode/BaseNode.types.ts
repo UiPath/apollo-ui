@@ -37,6 +37,8 @@ export interface BaseNodeData extends Record<string, unknown> {
     labelLines?: NodeLabelLines;
     /** Per-node override of the manifest's `display.shadowType`. */
     shadowType?: NodeShadowType;
+    /** Per-node override of the manifest's `display.singleLineSubLabel`. */
+    singleLineSubLabel?: boolean;
   };
 
   /**

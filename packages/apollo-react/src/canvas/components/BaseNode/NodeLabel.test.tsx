@@ -106,6 +106,18 @@ describe('NodeLabel', () => {
       expect(screen.getByTestId('node-sublabel')).toHaveClass('line-clamp-2');
     });
 
+    it('keeps the description to one line under a one-line name with singleLineSubLabel', async () => {
+      const user = userEvent.setup();
+      render(<NodeLabel {...defaultProps} label={LONG} shape="rectangle" singleLineSubLabel />);
+      expect(screen.getByTestId('node-sublabel')).toHaveClass('line-clamp-1');
+
+      await user.dblClick(screen.getByTestId('node-label'));
+      expect(screen.getByRole('textbox', { name: 'Edit node description' })).toHaveAttribute(
+        'rows',
+        '1'
+      );
+    });
+
     it('leaves names below other shapes as they are', () => {
       render(<NodeLabel {...defaultProps} label={LONG} shape="square" labelLines={2} />);
       expect(screen.getByTestId('node-label')).toHaveClass('line-clamp-3');

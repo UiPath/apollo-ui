@@ -130,6 +130,15 @@ export const nodeDisplayManifestSchema = z.object({
    */
   labelLines: nodeLabelLinesSchema.optional(),
 
+  /**
+   * Keeps a wide node's description to one line before it's cut off with "…" (default false).
+   * Otherwise it takes two lines, or one when the name takes two or more (`labelLines`). Set it
+   * to keep a 64px node to two lines of text: a one-line name over a one-line description.
+   * To also let a name with no description wrap onto the second line, set `labelLines` per node:
+   * 2 on a node without a description, 1 on a node with one.
+   */
+  singleLineSubLabel: z.boolean().optional(),
+
   /** Container presentation. Only read when `shape` is `'container'`. */
   container: nodeContainerDisplayManifestSchema.optional(),
 });
