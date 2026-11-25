@@ -735,7 +735,7 @@ Contract highlights:
 - **Mask is opt-in and never targets LLM calls.** `showMask` offers the mask action
   (`{ $actionType: 'mask' }`: PII is replaced with placeholders before the call and restored in
   the output), for a host whose backend supports it; it is never offered with `scope="Llm"`,
-  and `allowedActionTypes` still applies. LLM calls are masked through the AI Trust Layer
+  and `allowedActionTypes` still applies. LLM calls can be masked through the AI Trust Layer
   policy, not agent-level guardrails, so picking mask drops `Llm` from the selector in the same
   update, and opening a saved mask guardrail drops it too. While mask is selected the LLM calls
   chip is disabled, with `scopeLlmMaskDisabledHint` under the chips; another action re-enables
