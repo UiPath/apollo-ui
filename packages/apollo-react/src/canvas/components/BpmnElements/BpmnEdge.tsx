@@ -299,6 +299,16 @@ function BpmnEdgeBase({
     [cache, id, setWaypoints, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition]
   );
 
+  // Whether the rebalancer stored the route at the end of this drag, so the fallback below does
+  // not write the pre-drag bends over it.
+  const rebalanceSaved = useRef(false);
+  const onRebalance = useCallback(
+    (next: Waypoint[]) => {
+      rebalanceSaved.current = true;
+      onWaypointsChange(next);
+    },
+    [onWaypointsChange]
+  );
   const waypoints = useNodeDragRebalance({
     edgeId: id,
     source,
@@ -311,17 +321,21 @@ function BpmnEdgeBase({
     targetPosition,
     waypoints: bends,
     enabled: editingEnabled,
-    onChange: onWaypointsChange,
+    onChange: onRebalance,
   });
 
   // After a node drag the docks have moved off the stored route. The rebalancer stores the new
-  // one for a selected flow with bends; this covers the rest.
+  // one for a selected flow when its bends follow the node; this covers the rest, including a
+  // drag along a dock's own axis that leaves the bends where they are. Runs after the
+  // rebalancer's own layout effect, since that hook is called first.
   const wasEndDragging = useRef(false);
   useLayoutEffect(() => {
     const dragEnded = wasEndDragging.current && !endDragging;
     wasEndDragging.current = endDragging;
-    if (!dragEnded || !stored || !canEdit) return;
-    if (editingEnabled && bends.length > 0) return;
+    if (!dragEnded) return;
+    const saved = rebalanceSaved.current;
+    rebalanceSaved.current = false;
+    if (saved || !stored || !canEdit) return;
     const first = stored[0]!;
     const last = stored[stored.length - 1]!;
     if (first.x === startX && first.y === startY && last.x === endX && last.y === endY) return;

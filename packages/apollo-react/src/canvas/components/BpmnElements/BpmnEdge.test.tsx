@@ -328,6 +328,39 @@ describe('BPMN sequence flow', () => {
       expect(stored[0]).toEqual({ x: 100, y: 50 });
       expect(stored[stored.length - 1]).toEqual({ x: 220, y: 60 });
     });
+
+    describe('for a selected flow with bends', () => {
+      const dragSource = (to: { sourceX: number; sourceY: number }) => {
+        const selected = { waypoints: OFF_CENTRE };
+        const { rerender } = render(tree(edgeProps(selected, { selected: true })));
+        const drag = (dragging: boolean) =>
+          act(() => store.setState({ nodeLookup: new Map([['a', { dragging }]]) as never }));
+        drag(true);
+        rerender(tree(edgeProps(selected, { selected: true, ...to })));
+        drag(false);
+      };
+
+      it('stores the moved dock when the drag leaves the bends where they are', () => {
+        // Along the right-hand dock's own axis, so the bends do not follow.
+        dragSource({ sourceX: 130, sourceY: 40 });
+
+        expect(setWaypoints).toHaveBeenCalledTimes(1);
+        const stored = setWaypoints.mock.calls[0]![1];
+        expect(stored[0]).toEqual({ x: 130, y: 20 });
+        expect(stored).toContainEqual({ x: 160, y: 20 });
+        expect(stored[stored.length - 1]).toEqual({ x: 220, y: 60 });
+      });
+
+      it('stores the bends that followed the node once, and nothing over them', () => {
+        // Across the dock's axis, so the first bend follows the node down.
+        dragSource({ sourceX: 100, sourceY: 70 });
+
+        expect(setWaypoints).toHaveBeenCalledTimes(1);
+        const stored = setWaypoints.mock.calls[0]![1];
+        expect(stored[0]).toEqual({ x: 100, y: 50 });
+        expect(stored).toContainEqual({ x: 160, y: 50 });
+      });
+    });
   });
 
   describe('dimmed', () => {
