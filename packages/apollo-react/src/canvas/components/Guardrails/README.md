@@ -735,12 +735,14 @@ Contract highlights:
 - **Mask is opt-in and never targets LLM calls.** `showMask` offers the mask action
   (`{ $actionType: 'mask' }`: PII is replaced with placeholders before the call and restored in
   the output), for a host whose backend supports it; it is never offered with `scope="Llm"`,
-  and `allowedActionTypes` still applies. The AI Trust Layer policy already masks LLM calls, so
-  picking mask drops `Llm` from the selector in the same update, and opening a saved mask
-  guardrail drops it too. While mask is selected the LLM calls chip is disabled, with
-  `scopeLlmMaskDisabledHint` under the chips; another action re-enables the chip, unticked. A
-  guardrail left with no scope fails the usual scopes check. The detection scope is not locked
-  to text for mask: the validator form has no way to disable a single parameter yet.
+  and `allowedActionTypes` still applies. LLM calls are masked through the AI Trust Layer
+  policy, not agent-level guardrails, so picking mask drops `Llm` from the selector in the same
+  update, and opening a saved mask guardrail drops it too. While mask is selected the LLM calls
+  chip is disabled, with `scopeLlmMaskDisabledHint` under the chips; another action re-enables
+  the chip, unticked. A guardrail left with no scope fails the usual scopes check. Masking reads
+  text only, so while mask is selected a detection scope other than Text blocks Save with
+  `maskDetectionScopeTextOnlyError` under that field (the backend rejects it); the field stays
+  editable, since the validator form cannot disable a single parameter.
 - **Bring-your-own display is opt-in**, because the two products' legacy builders differ.
   `byoDisplay` names a BYO definition by its configuration (`byoValidatorName`) in the computed
   title, as both do; `providerField` adds a read-only Provider field above the name holding
