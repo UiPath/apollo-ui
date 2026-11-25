@@ -112,6 +112,21 @@ describe('BPMN edge label', () => {
       return addSelectedEdges;
     };
 
+    it('fades and ignores the pointer only when dimmed', () => {
+      const { rerender } = renderLabel({ text: 'Yes' });
+      expect(label()).not.toHaveAttribute('data-dimmed');
+      expect(label().className).toContain('pointer-events-auto');
+
+      rerender(
+        <ReactFlowProvider>
+          <BpmnEdgeLabel edgeId="flow" x={160} y={40} text="Yes" dimmed />
+        </ReactFlowProvider>
+      );
+      expect(label()).toHaveAttribute('data-dimmed', 'true');
+      expect(label().className).toContain('pointer-events-none');
+      expect(label().className).not.toContain('pointer-events-auto');
+    });
+
     it('carries the flow id, as an edge element does', () => {
       renderLabel({ text: 'Yes' });
 

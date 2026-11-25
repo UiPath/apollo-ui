@@ -35,12 +35,14 @@ vi.mock('./BpmnEdgeLabel', () => ({
     x,
     y,
     text,
+    dimmed,
     onRename,
     onMove,
   }: {
     x: number;
     y: number;
     text?: string;
+    dimmed?: boolean;
     onRename?: unknown;
     onMove?: unknown;
   }) => (
@@ -49,6 +51,7 @@ vi.mock('./BpmnEdgeLabel', () => ({
       data-x={x}
       data-y={y}
       data-editable={!!onRename || !!onMove}
+      data-dimmed={dimmed}
     >
       {text}
     </text>
@@ -324,6 +327,25 @@ describe('BPMN sequence flow', () => {
       const stored = setWaypoints.mock.calls[0]![1];
       expect(stored[0]).toEqual({ x: 100, y: 50 });
       expect(stored[stored.length - 1]).toEqual({ x: 220, y: 60 });
+    });
+  });
+
+  describe('dimmed', () => {
+    it('is off by default', () => {
+      render(tree(edgeProps({}, { selected: true })));
+
+      expect(document.querySelector('[data-dimmed]')).toBeNull();
+      expect(screen.getByTestId('edge-toolbar')).toBeInTheDocument();
+    });
+
+    it('fades the flow, takes it off the pointer and drops its toolbar', () => {
+      render(tree(edgeProps({ dimmed: true, label: 'Yes' }, { selected: true })));
+
+      const group = document.querySelector('g[data-dimmed]')!;
+      expect(group.getAttribute('class')).toContain('opacity-30');
+      expect(group.getAttribute('class')).toContain('pointer-events-none');
+      expect(screen.queryByTestId('edge-toolbar')).toBeNull();
+      expect(screen.getByTestId('bpmn-edge-label')).toHaveAttribute('data-dimmed', 'true');
     });
   });
 

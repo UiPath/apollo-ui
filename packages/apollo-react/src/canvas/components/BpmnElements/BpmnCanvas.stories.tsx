@@ -23,7 +23,13 @@ import { BaseCanvas } from '../BaseCanvas';
 import type { Point } from '../Edges/shared/types';
 import { bpmnEdgeTypes } from './BpmnEdge';
 import { BPMN_GATEWAY_TYPES, BPMN_TASK_TYPES, bpmnNodeTypes } from './BpmnNodes';
-import { defaultSize, elementCatalog, exampleDiagram } from './bpmn.diagram';
+import {
+  connectionDiagram,
+  defaultSize,
+  dropDiagram,
+  elementCatalog,
+  exampleDiagram,
+} from './bpmn.diagram';
 import {
   type BpmnButtonReveal,
   BpmnButtonRevealProvider,
@@ -528,4 +534,16 @@ export const ElementCatalog: Story = {
   render: (args) => (
     <BpmnCanvasStory {...args} title="BPMN element catalog" initial={elementCatalog} />
   ),
+};
+
+export const ConnectionInProgress: Story = {
+  name: 'Connection in progress',
+  render: (args) => (
+    <BpmnCanvasStory {...args} title="BPMN connection states" initial={connectionDiagram} />
+  ),
+};
+
+export const DropTargets: Story = {
+  name: 'Drop targets',
+  render: (args) => <BpmnCanvasStory {...args} title="BPMN drop states" initial={dropDiagram} />,
 };

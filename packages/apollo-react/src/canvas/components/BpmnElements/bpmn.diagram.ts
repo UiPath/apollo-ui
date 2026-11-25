@@ -2,6 +2,8 @@ import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ValidationErrorSeverity } from '../../types/validation';
 import { BPMN_GATEWAY_TYPES, BPMN_TASK_TYPES } from './BpmnNodes';
 import {
+  type BpmnConnectionState,
+  type BpmnDropState,
   type BpmnEdge,
   type BpmnEdgeData,
   type BpmnEventDefinition,
@@ -524,4 +526,44 @@ export const exampleDiagram: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
 export const elementCatalog: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
   nodes: [...galleryNodes, ...galleryBoundaryEvents, ...sequenceFlows.nodes, ...otherFlows.nodes],
   edges: [...sequenceFlows.edges, ...otherFlows.edges],
+};
+
+const withData = (data: (node: BpmnNode) => BpmnNodeData): BpmnNode[] =>
+  processNodes.map((item) => ({ ...item, data: { ...item.data, ...data(item) } }));
+
+// A connection dragged out of "Review order", over "Approved?". The host decides each state.
+const CONNECTION_STATES: Record<string, BpmnConnectionState> = {
+  Task_review: 'anchor',
+  Gateway_approved: 'target-picked',
+  Start_order: 'target',
+  Task_remind: 'target',
+  Task_reserve: 'target',
+  End_rejected: 'target',
+  Gateway_split: 'target',
+  SubProcess_invoice: 'target',
+  Data_orders: 'target',
+  Annotation_hold: 'target',
+  Participant_customer: 'target',
+};
+
+/** The example diagram while a connection is in progress: valid ends tinted, the rest faded. */
+export const connectionDiagram: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
+  nodes: withData(({ id }) => ({ connectionState: CONNECTION_STATES[id] ?? 'unavailable' })),
+  edges: processEdges.map((item) => ({ ...item, data: { ...item.data, dimmed: true } })),
+};
+
+const DROP_STATES: Record<string, BpmnDropState> = {
+  [FULFIL]: 'valid',
+  [SHIP]: 'valid',
+  SubProcess_invoice: 'valid-border',
+  Task_reserve: 'invalid',
+  Gateway_approved: 'invalid',
+  End_rejected: 'invalid',
+  Participant_finance: 'invalid',
+};
+
+/** The example diagram with each state a dragged node can put on what it is over. */
+export const dropDiagram: { nodes: BpmnNode[]; edges: BpmnEdge[] } = {
+  nodes: withData(({ id }) => ({ dropState: DROP_STATES[id] })),
+  edges: processEdges,
 };

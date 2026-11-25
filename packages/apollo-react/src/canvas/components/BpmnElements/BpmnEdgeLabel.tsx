@@ -29,6 +29,7 @@ const LABEL_SET_CLASS =
 const LABEL_UNSET_CLASS =
   'text-(--canvas-foreground-de-emp) border-dashed border-(--canvas-border) italic font-normal';
 const LABEL_SELECTED_CLASS = 'border-(--canvas-primary)';
+const LABEL_DIMMED_CLASS = 'pointer-events-none opacity-30';
 
 /** xyflow listens on the focused edge for Escape to deselect it. */
 const focusEdge = (flow: HTMLElement | null, edgeId: string) =>
@@ -48,6 +49,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   borderColor,
   selected,
   zIndex,
+  dimmed,
   onRename,
   onMove,
   onMouseEnter,
@@ -65,6 +67,8 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
    * layer, whose own z-index would cap it below a lifted flow, and takes this one.
    */
   zIndex?: number;
+  /** Fades the label and takes it off the pointer. */
+  dimmed?: boolean;
   onRename?: (edgeId: string, label: string) => void;
   /** Called on drag end with the label's centre in flow coordinates. */
   onMove?: (edgeId: string, position: Point) => void;
@@ -152,6 +156,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
           data-bpmn-edge-label={edgeId}
           data-id={edgeId}
           data-placeholder={unset || undefined}
+          data-dimmed={dimmed || undefined}
           className={cn(
             LABEL_CLASS,
             unset ? LABEL_UNSET_CLASS : LABEL_SET_CLASS,
@@ -159,7 +164,8 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
             // Move while it can be dragged, else the pointer of a click that selects. The text
             // cursor belongs to the textarea alone.
             draggable && 'cursor-move',
-            edit.isEditing && 'cursor-default'
+            edit.isEditing && 'cursor-default',
+            dimmed && LABEL_DIMMED_CLASS
           )}
           style={{
             transform: `translate(-50%, -50%) translate(${at.x}px, ${at.y}px)`,

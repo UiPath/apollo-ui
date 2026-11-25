@@ -39,7 +39,13 @@ import { BaseBadgeSlot } from '../BaseNode/BaseNodeBadgeSlot';
 import type { NodeOutlinePath } from '../BaseNode/BaseNodeOutline';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import type { ToolbarAction, ToolbarActionItem } from '../Toolbar/shared/toolbar.types';
-import { BpmnLabel, BpmnNodeShell } from './BpmnNodeShell';
+import {
+  BpmnLabel,
+  BpmnNodeShell,
+  ELEMENT_BORDER,
+  ELEMENT_GLYPH,
+  ELEMENT_STATE_FILL,
+} from './BpmnNodeShell';
 import {
   type BpmnEventDefinition,
   type BpmnNode,
@@ -414,7 +420,9 @@ export const BpmnActivityNode = memo(function BpmnActivityNode(props: Props) {
       />
       {(LoopGlyph || isCollapsed) && (
         // No apollo slot for bottom-centre markers yet.
-        <div className="absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-1 text-foreground">
+        <div
+          className={cx('absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-1', ELEMENT_GLYPH)}
+        >
           {LoopGlyph && <LoopGlyph size={14} />}
           {isCollapsed && <BpmnGlyphMarkerSubProcess size={14} />}
         </div>
@@ -490,6 +498,7 @@ export const BpmnDataNode = memo(function BpmnDataNode(props: Props) {
 });
 
 const selectedOutline = 'outline outline-2 outline-foreground-accent-muted';
+const hasState = (data: BpmnNodeData) => !!(data.connectionState || data.dropState);
 
 /** Text annotation: no apollo card applies, so only handles, toolbar and label are shared. */
 export const BpmnTextAnnotationNode = memo(function BpmnTextAnnotationNode(props: Props) {
@@ -509,8 +518,19 @@ export const BpmnTextAnnotationNode = memo(function BpmnTextAnnotationNode(props
       addSides={NO_ADD}
       toolbar={toolbar}
     >
-      <div className={cx('relative h-full w-full rounded-sm', selected && selectedOutline)}>
-        <span className="absolute inset-y-0 left-0 w-2 rounded-l-sm border-y border-l border-foreground-muted" />
+      <div
+        className={cx(
+          'relative h-full w-full rounded-sm',
+          selected && selectedOutline,
+          hasState(data) && ELEMENT_STATE_FILL
+        )}
+      >
+        <span
+          className={cx(
+            'absolute inset-y-0 left-0 w-2 rounded-l-sm border-y border-l',
+            ELEMENT_BORDER
+          )}
+        />
         <BpmnLabel
           nodeId={id}
           label={data.label}
@@ -545,8 +565,10 @@ export const BpmnGroupNode = memo(function BpmnGroupNode(props: Props) {
     >
       <div
         className={cx(
-          'h-full w-full rounded-xl border-2 border-dashed border-foreground-muted',
-          selected && selectedOutline
+          'h-full w-full rounded-xl border-2 border-dashed',
+          ELEMENT_BORDER,
+          selected && selectedOutline,
+          hasState(data) && ELEMENT_STATE_FILL
         )}
       >
         <BpmnLabel
@@ -592,13 +614,16 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
       <div
         data-bpmn-drop-target={data.dropTarget || undefined}
         className={cx(
-          'relative flex h-full w-full border-foreground-muted',
+          'relative flex h-full w-full',
+          ELEMENT_BORDER,
           vertical && 'flex-col',
           isPool && 'rounded-lg border',
           // Each lane is alone in its shell, so the divider comes from its index, not a sibling.
           divided && (vertical ? 'border-l' : 'border-t'),
           selected && selectedOutline,
-          selected && !isPool && 'bg-foreground-accent-muted/5',
+          hasState(data)
+            ? ELEMENT_STATE_FILL
+            : selected && !isPool && 'bg-foreground-accent-muted/5',
           data.dropTarget && DROP_TARGET
         )}
       >
@@ -612,10 +637,7 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
           />
         ) : (
           <div
-            className={cx(
-              'shrink-0 border-foreground-muted',
-              vertical ? 'h-7 border-b' : 'w-7 border-r'
-            )}
+            className={cx('shrink-0', ELEMENT_BORDER, vertical ? 'h-7 border-b' : 'w-7 border-r')}
           >
             <BpmnLabel
               nodeId={id}
@@ -629,7 +651,10 @@ export const BpmnSwimlaneNode = memo(function BpmnSwimlaneNode(props: Props) {
         {isPool && data.multiplicity && (
           <span
             data-bpmn-multiplicity
-            className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-foreground"
+            className={cx(
+              'pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2',
+              ELEMENT_GLYPH
+            )}
           >
             <BpmnGlyphMarkerParallel size={14} />
           </span>

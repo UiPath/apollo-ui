@@ -10,7 +10,9 @@ import {
   BpmnActivityNode,
   BpmnDataNode,
   type BpmnEdge,
+  BpmnGatewayNode,
   BpmnGroupNode,
+  BpmnSwimlaneNode,
   type BpmnNode,
   type BpmnNodeData,
   BpmnOverlayProvider,
@@ -673,6 +675,150 @@ describe('BPMN element family', () => {
       );
 
       expect(overlayOf('end')!.querySelector('textarea')).toHaveValue('Done');
+    });
+  });
+
+  describe('connection and drop states', () => {
+    const root = () => document.querySelector('.group\\/bpmn-node') as HTMLElement;
+    const container = () => screen.getByTestId('base-container');
+
+    it('leaves an element with no state as it is', () => {
+      renderActivity({ label: 'Review', backgroundColor: 'rgb(1, 2, 3)' });
+
+      expect(root()).not.toHaveAttribute('data-connection-state');
+      expect(root()).not.toHaveAttribute('data-drop-state');
+      expect(container().style.borderColor).toBe('');
+      expect(container().style.background).toBe('rgb(1, 2, 3)');
+    });
+
+    it.each([
+      ['connectionState', 'target', 'data-connection-state'],
+      ['connectionState', 'target-picked', 'data-connection-state'],
+      ['dropState', 'invalid', 'data-drop-state'],
+    ] as const)('tints the border and fill for %s "%s", over a custom background', (key, value, attribute) => {
+      renderActivity({ label: 'Review', backgroundColor: 'rgb(1, 2, 3)', [key]: value });
+
+      expect(root()).toHaveAttribute(attribute, value);
+      expect(root().className).toContain('--bpmn-element-border');
+      expect(container().style.borderColor).toBe('var(--bpmn-element-border)');
+      expect(container().style.background).toBe('var(--bpmn-element-fill)');
+    });
+
+    it('strokes and fills the outline of an outline-drawn element', () => {
+      renderNode(BpmnGatewayNode, requiredActions, {
+        type: 'bpmn:ExclusiveGateway',
+        data: { connectionState: 'target' },
+      });
+
+      const outline = screen.getByTestId('base-node-outline').querySelector('path')!;
+      expect(outline.style.stroke).toBe('var(--bpmn-element-border)');
+      expect(outline.style.fill).toBe('var(--bpmn-element-fill)');
+    });
+
+    it('stands in for the status colours while the border is tinted', () => {
+      renderActivity({ executionStatus: 'Failed', dropState: 'invalid' });
+
+      expect(container()).not.toHaveAttribute('data-execution-status');
+    });
+
+    it('lets a drop state win over a connection state', () => {
+      renderActivity({ connectionState: 'unavailable', dropState: 'invalid' });
+
+      expect(root().className).not.toContain('opacity-30');
+      expect(container().style.borderColor).toBe('var(--bpmn-element-border)');
+    });
+
+    it('fades an unavailable element and takes it off the pointer', () => {
+      renderActivity({ connectionState: 'unavailable' });
+
+      expect(root().className).toContain('opacity-30');
+      expect(root().className).toContain('pointer-events-none');
+      expect(container().style.borderColor).toBe('');
+    });
+
+    it('leaves the anchor as it is, with its toolbar', () => {
+      renderActivity({ connectionState: 'anchor' }, 'bpmn:UserTask', { selected: true });
+
+      expect(container().style.borderColor).toBe('');
+      expect(toolbarButtons()).toContain('Delete');
+    });
+
+    it.each([
+      'target',
+      'target-picked',
+      'unavailable',
+    ] as const)('hides the toolbar and "+" of a selected %s', (connectionState) => {
+      renderActivity({ connectionState }, 'bpmn:UserTask', { selected: true });
+
+      expect(screen.queryAllByRole('button')).toEqual([]);
+      expect(document.querySelector('[data-testid^="quick-add-handle-"]')).toBeNull();
+    });
+
+    it('washes a valid drop target and keeps its border', () => {
+      renderActivity({ dropState: 'valid' });
+
+      expect(container().style.background).toBe('var(--bpmn-element-fill)');
+      expect(container().style.borderColor).toBe('');
+    });
+
+    it('rings a drop onto the border and keeps the fill', () => {
+      renderActivity({ dropState: 'valid-border', backgroundColor: 'rgb(1, 2, 3)' });
+
+      expect(document.querySelector('[data-bpmn-drop-ring]')).not.toBeNull();
+      expect(container().style.borderColor).toBe('var(--bpmn-element-border)');
+      expect(container().style.background).toBe('rgb(1, 2, 3)');
+    });
+
+    it('fills an element with no card only while a state is on', () => {
+      const { rerender } = renderNode(BpmnSwimlaneNode, requiredActions, {
+        type: 'bpmn:Lane',
+        selected: false,
+      });
+      expect(document.querySelector('.bg-\\(--bpmn-element-fill\\)')).toBeNull();
+
+      rerender(
+        <ReactFlowProvider>
+          <BpmnActionsProvider value={requiredActions}>
+            <BpmnSwimlaneNode
+              {...({
+                id: 'node',
+                type: 'bpmn:Lane',
+                data: { dropState: 'valid' },
+              } as NodeProps<BpmnNode>)}
+            />
+          </BpmnActionsProvider>
+        </ReactFlowProvider>
+      );
+      expect(document.querySelector('.bg-\\(--bpmn-element-fill\\)')).not.toBeNull();
+    });
+
+    it('carries the state to the overlay box, where the outside label is drawn', () => {
+      render(
+        <div style={{ width: 800, height: 600 }}>
+          <BpmnOverlayProvider value={{ zIndex: 2000 }}>
+            <BpmnActionsProvider value={actions}>
+              <ReactFlow
+                nodes={[
+                  {
+                    ...node('end', 'bpmn:EndEvent', 300, {
+                      label: 'Done',
+                      connectionState: 'unavailable',
+                    }),
+                    width: 36,
+                    height: 36,
+                  },
+                ]}
+                nodeTypes={bpmnNodeTypes}
+              />
+            </BpmnActionsProvider>
+          </BpmnOverlayProvider>
+        </div>
+      );
+
+      const box = document.querySelector('[data-bpmn-node-overlay="end"]') as HTMLElement;
+      expect(box).toHaveAttribute('data-connection-state', 'unavailable');
+      expect(box.className).toContain('opacity-30');
+      expect(box.querySelector('[data-bpmn-label-overlay]')).not.toBeNull();
     });
   });
 });

@@ -39,6 +39,8 @@ const DOTTED = '2,5';
 // the resting colour matches the element borders.
 const REST_COLOR = 'var(--foreground-muted)';
 const STROKE = { strokeWidth: 2 };
+// Important, since the path and its handles set their own pointer events inline.
+const DIMMED = 'opacity-30 transition-opacity duration-100 [&_*]:pointer-events-none!';
 const SELECTED_STROKE = { strokeWidth: 4 };
 // The arrowhead BPMN draws today: 8px long and 12px wide, its corners rounded by a 2px stroke.
 const ARROW_LENGTH = 8;
@@ -371,7 +373,8 @@ function BpmnEdgeBase({
     statusColor: REST_COLOR,
   });
 
-  const toolbarEnabled = canEdit && (isHovered || !!selected) && !editor.isDragging;
+  const dimmed = data?.dimmed === true;
+  const toolbarEnabled = canEdit && (isHovered || !!selected) && !editor.isDragging && !dimmed;
   const { insertOnEdge, deleteEdge, startReconnect } = actions;
   const toolbarConfig = useMemo<EdgeToolbarConfig>(
     () => ({
@@ -442,6 +445,8 @@ function BpmnEdgeBase({
     <>
       <g
         data-edge-hovered={isHovered || undefined}
+        data-dimmed={dimmed || undefined}
+        className={dimmed ? DIMMED : undefined}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
@@ -534,6 +539,7 @@ function BpmnEdgeBase({
             borderColor={data?.modification ? color : undefined}
             selected={selected}
             zIndex={overlay?.zIndex}
+            dimmed={dimmed}
             onRename={canEdit ? renameEdge : undefined}
             onMove={canEdit ? moveEdgeLabel : undefined}
             onMouseEnter={onMouseEnter}

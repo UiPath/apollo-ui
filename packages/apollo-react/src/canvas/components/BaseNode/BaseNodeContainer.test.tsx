@@ -429,3 +429,37 @@ describe('custom background', () => {
     );
   });
 });
+
+describe('border colour override', () => {
+  it('is off by default', () => {
+    render(
+      <BaseContainer>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container').style.borderColor).toBe('');
+  });
+
+  it('colours the border of a bordered node over its status', () => {
+    render(
+      <BaseContainer borderColor="rgb(1, 2, 3)" executionStatus="Failed" isSelected>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container').style.borderColor).toBe('rgb(1, 2, 3)');
+  });
+
+  it('strokes the outline of an outline-drawn node', () => {
+    render(
+      <BaseContainer borderColor="rgb(1, 2, 3)" outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-node-outline').querySelector('path')?.style.stroke).toBe(
+      'rgb(1, 2, 3)'
+    );
+  });
+});

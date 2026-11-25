@@ -66,6 +66,11 @@ interface BaseContainerProps {
    */
   borderTone?: 'default' | 'strong';
   /**
+   * A border colour that wins over the rest, hover, selection and status colours, for a state
+   * the host drives (a connection target, an invalid drop).
+   */
+  borderColor?: string;
+  /**
    * Host content laid over the whole node, above its children: a "view" button on a collapsed
    * node, a badge, a scrim. The layer ignores the pointer; give interactive content
    * `pointer-events-auto`.
@@ -90,6 +95,7 @@ export const BaseContainer = ({
   outlinePath,
   borderStyle,
   borderTone = 'default',
+  borderColor,
   overlay,
   children,
 }: BaseContainerProps) => {
@@ -154,6 +160,12 @@ export const BaseContainer = ({
   ]);
 
   const hasOutline = !!outlinePath || isOutlineDrawnShape(shape);
+  const style = useMemo(() => {
+    // An outline-drawn node takes the colour as its path fill: on the container it would paint
+    // the whole rectangle behind the shape.
+    const fill = hasOutline ? undefined : background;
+    return fill || borderColor ? { background: fill, borderColor } : undefined;
+  }, [hasOutline, background, borderColor]);
 
   return (
     <div
@@ -164,9 +176,7 @@ export const BaseContainer = ({
       data-suggestion-type={suggestionType}
       data-stacked={isStacked || undefined}
       className={className}
-      // An outline-drawn node takes the colour as its path fill: on the container it would paint
-      // the whole rectangle behind the shape.
-      style={background && !hasOutline ? { background } : undefined}
+      style={style}
       aria-busy={loading || undefined}
     >
       {hasOutline && (
@@ -179,6 +189,7 @@ export const BaseContainer = ({
           shadow={shadow}
           status={activeStatus}
           fill={background}
+          stroke={borderColor}
           borderTone={borderTone}
         />
       )}

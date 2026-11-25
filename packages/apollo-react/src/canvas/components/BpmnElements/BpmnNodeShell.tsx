@@ -57,6 +57,60 @@ const TARGET_HANDLE_PROPS = { isConnectableStart: false } as const;
 // Keeps a source's strip from shadowing the target underneath it while a connection is dragged.
 const SOURCE_HANDLE_PROPS = { isConnectableEnd: false } as const;
 
+// A host-driven state only sets these variables, which the border, fill, label and glyphs read:
+// one rule colours every part, in the node and in its overlay, and a host stylesheet can
+// override it.
+const TINT = {
+  primary:
+    '[--bpmn-element-border:var(--canvas-primary)] [--bpmn-element-foreground:var(--canvas-primary)] [--bpmn-element-icon:var(--canvas-primary)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-primary)_5%,var(--canvas-background,var(--color-background)))]',
+  success:
+    '[--bpmn-element-border:var(--canvas-success-icon)] [--bpmn-element-foreground:var(--canvas-success-icon)] [--bpmn-element-icon:var(--canvas-success-icon)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-success-icon)_5%,var(--canvas-background,var(--color-background)))]',
+  error:
+    '[--bpmn-element-border:var(--canvas-error-text)] [--bpmn-element-foreground:var(--canvas-error-text)] [--bpmn-element-icon:var(--canvas-error-text)] [--bpmn-element-fill:color-mix(in_srgb,var(--canvas-error-text)_10%,var(--canvas-background,var(--color-background)))]',
+  wash: '[--bpmn-element-fill:color-mix(in_srgb,var(--canvas-primary)_10%,transparent)]',
+  ring: '[--bpmn-element-border:var(--canvas-primary)]',
+} as const;
+const GLYPH_TINT = 'text-(color:--bpmn-element-icon)';
+// Important, since handles set their own pointer events.
+const UNAVAILABLE = 'opacity-30 delay-100 pointer-events-none [&_*]:pointer-events-none!';
+/** What an element's parts read, each falling back to its own colour with no state on. */
+export const ELEMENT_BORDER =
+  'border-[color:var(--bpmn-element-border,var(--color-foreground-muted))]';
+export const ELEMENT_FOREGROUND =
+  'text-[color:var(--bpmn-element-foreground,var(--color-foreground))]';
+export const ELEMENT_GLYPH = 'text-[color:var(--bpmn-element-icon,var(--color-foreground))]';
+/** For elements with no card. Only while a state is on, so it does not fight a selection fill. */
+export const ELEMENT_STATE_FILL = 'bg-(--bpmn-element-fill)';
+
+/** How the host's connection and drop states show on an element. A drop state wins. */
+function resolveElementState({ connectionState, dropState }: BpmnNodeData) {
+  const tint =
+    dropState === 'invalid'
+      ? 'error'
+      : dropState === 'valid'
+        ? 'wash'
+        : dropState === 'valid-border'
+          ? 'ring'
+          : connectionState === 'target'
+            ? 'primary'
+            : connectionState === 'target-picked'
+              ? 'success'
+              : undefined;
+  const unavailable = !dropState && connectionState === 'unavailable';
+  return {
+    tintsBorder: !!tint && tint !== 'wash',
+    tintsFill: !!tint && tint !== 'ring',
+    ring: tint === 'ring',
+    // No toolbar or "+" on an element the connection can end on, or cannot use.
+    quiet: !!connectionState && connectionState !== 'anchor',
+    className: cx(
+      tint && TINT[tint],
+      tint && tint !== 'wash' && tint !== 'ring' && GLYPH_TINT,
+      unavailable && UNAVAILABLE
+    ),
+  };
+}
+
 /**
  * The node's overlay element while the host opted into `BpmnOverlayProvider`: `null` until it is
  * mounted, `undefined` with no opt-in.
@@ -71,6 +125,8 @@ const NodeOverlayContext = createContext<HTMLElement | null | undefined>(undefin
 function NodeOverlay({
   nodeId,
   selected,
+  data,
+  stateClassName,
   zIndex,
   width,
   height,
@@ -79,6 +135,8 @@ function NodeOverlay({
 }: {
   nodeId: string;
   selected?: boolean;
+  data: BpmnNodeData;
+  stateClassName?: string;
   zIndex: number;
   width: number;
   height: number;
@@ -99,7 +157,12 @@ function NodeOverlay({
         data-bpmn-node-overlay={nodeId}
         // The box is outside the node's element, so its `selected` class does not reach it.
         data-node-selected={selected ? 'true' : 'false'}
-        className="pointer-events-none absolute"
+        data-connection-state={data.connectionState}
+        data-drop-state={data.dropState}
+        className={cx(
+          'pointer-events-none absolute transition-opacity duration-100',
+          stateClassName
+        )}
         style={{ left: x, top: y, width, height, zIndex }}
       >
         {children}
@@ -185,8 +248,9 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
   // How much further the expanded "+" reaches than the constants above assume.
   const extraReach = handleStyle === 'always' ? 0 : buttonOutset + BUTTON_SIZE * (controlScale - 1);
   const [overlayElement, setOverlayElement] = useState<HTMLDivElement | null>(null);
+  const state = resolveElementState(data);
 
-  const { shouldShowHandles, isAddButtonVisible } = resolveNodeHandleAffordances({
+  const affordances = resolveNodeHandleAffordances({
     isConnecting,
     selected,
     hovered,
@@ -194,6 +258,8 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
     canEdit,
     multipleNodesSelected,
   });
+  const { shouldShowHandles } = affordances;
+  const isAddButtonVisible = affordances.isAddButtonVisible && !state.quiet;
 
   const onAdd = useCallback(
     (event: HandleActionEvent) => addAfter(event.nodeId, event.position),
@@ -255,7 +321,7 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
       nodeId={id}
       config={toolbarConfig}
       expanded={selected || (toolbarOnHover && hovered)}
-      hidden={dragging || multipleNodesSelected}
+      hidden={dragging || multipleNodesSelected || state.quiet}
       // Sits 8px above the expanded "+" on the top handle.
       offsetToolbar={
         isAddButtonVisible && sidesWithAdd.includes(Position.Top)
@@ -273,7 +339,9 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
   return (
     <NodeOverlayContext.Provider value={overlayContainer}>
       <div
-        className="group/bpmn-node relative"
+        data-connection-state={data.connectionState}
+        data-drop-state={data.dropState}
+        className={cx('group/bpmn-node relative transition-opacity duration-100', state.className)}
         style={style}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -287,10 +355,14 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
             interactionState={
               dragging ? 'drag' : selected ? 'selected' : hovered ? 'hover' : 'default'
             }
-            executionStatus={data.executionStatus}
-            validationStatus={data.validationStatus}
-            suggestionType={data.modification}
-            background={data.backgroundColor ?? ELEMENT_FILL}
+            // A tinted border stands in for the status colours while the state is on.
+            executionStatus={state.tintsBorder ? undefined : data.executionStatus}
+            validationStatus={state.tintsBorder ? undefined : data.validationStatus}
+            suggestionType={state.tintsBorder ? undefined : data.modification}
+            background={
+              state.tintsFill ? 'var(--bpmn-element-fill)' : (data.backgroundColor ?? ELEMENT_FILL)
+            }
+            borderColor={state.tintsBorder ? 'var(--bpmn-element-border)' : undefined}
             outlinePath={outlinePath}
             borderStyle={borderStyle}
             // BPMN borders carry meaning (event and activity kinds), so they read darker than Flow's.
@@ -303,6 +375,12 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
           children
         )}
         {outside}
+        {state.ring && (
+          <span
+            data-bpmn-drop-ring
+            className="pointer-events-none absolute -inset-0.5 rounded-[calc(var(--node-radius)+2px)] border-2 border-(color:--canvas-primary)"
+          />
+        )}
         {data.breakpoint && (
           <span
             role="img"
@@ -314,6 +392,8 @@ export const BpmnNodeShell = memo(function BpmnNodeShell({
           <NodeOverlay
             nodeId={id}
             selected={selected}
+            data={data}
+            stateClassName={state.className}
             zIndex={lifted.zIndex}
             width={width}
             height={height}
@@ -503,7 +583,7 @@ export const BpmnLabel = memo(function BpmnLabel({
   );
   const textClassName = cx(
     'text-xs leading-4 font-semibold',
-    showPlaceholder ? 'text-foreground-muted' : 'text-foreground',
+    showPlaceholder ? 'text-foreground-muted' : ELEMENT_FOREGROUND,
     placement === 'header' || placement === 'header-top'
       ? 'whitespace-nowrap'
       : multiline

@@ -23,6 +23,25 @@ export type BpmnEventDefinition =
 
 export type BpmnLoop = 'loop' | 'parallel' | 'sequential';
 
+/**
+ * - `target`: a valid end for the connection, tinted primary.
+ * - `target-picked`: the target the connection is over, tinted success.
+ * - `anchor`: the end the connection is fixed to. Stays as it is.
+ * - `unavailable`: not part of the connection. Faded, and ignores the pointer.
+ *
+ * Every state but `anchor` also hides the toolbar and "+".
+ */
+export type BpmnConnectionState = 'target' | 'target-picked' | 'anchor' | 'unavailable';
+
+/**
+ * - `valid`: a primary wash over the element.
+ * - `valid-border`: a primary border and ring, for a drop onto the element's border.
+ * - `invalid`: tinted error.
+ *
+ * Wins over `connectionState` when both are given.
+ */
+export type BpmnDropState = 'valid' | 'valid-border' | 'invalid';
+
 export interface BpmnNodeData extends Record<string, unknown> {
   label?: string;
   /** Shown on an activity in place of the built-in task glyph, for kinds only the host knows. */
@@ -43,6 +62,10 @@ export interface BpmnNodeData extends Record<string, unknown> {
   laneIndex?: number;
   /** A node is being dragged over this expanded sub-process, pool or lane. */
   dropTarget?: boolean;
+  /** The element's part in a connection the host has in progress. The host decides validity. */
+  connectionState?: BpmnConnectionState;
+  /** Whether the node being dragged over this element can be dropped on it. */
+  dropState?: BpmnDropState;
   /** Side of an event, gateway or data node its label sits on. Defaults to `bottom`. */
   labelPlacement?: 'bottom' | 'top' | 'left' | 'right';
   backgroundColor?: string;
@@ -70,6 +93,8 @@ export interface BpmnEdgeData extends Record<string, unknown> {
   defaultFlow?: boolean;
   conditionExpression?: string;
   modification?: SuggestionType;
+  /** Fades the flow and its label and takes them off the pointer, say while a connection runs. */
+  dimmed?: boolean;
 }
 
 export type BpmnEdge = Edge<BpmnEdgeData>;

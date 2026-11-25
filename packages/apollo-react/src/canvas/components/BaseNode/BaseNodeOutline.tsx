@@ -109,6 +109,8 @@ interface BaseNodeOutlineProps {
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType;
   /** A custom fill, in place of the default surface colour. */
   fill?: string;
+  /** A stroke colour that wins over the rest, hover, selection and status colours. */
+  stroke?: string;
   /** `strong` draws a full-strength stroke at rest. Defaults to `default`. */
   borderTone?: 'default' | 'strong';
 }
@@ -131,6 +133,7 @@ export const BaseNodeOutline = memo(
     shadow,
     status,
     fill,
+    stroke,
     borderTone = 'default',
   }: BaseNodeOutlineProps) => {
     const strong = borderTone === 'strong';
@@ -193,7 +196,7 @@ export const BaseNodeOutline = memo(
                     : 'stroke-border')
           )}
           strokeWidth={isSelected ? 2 : 1}
-          style={fill ? { fill } : undefined}
+          style={fill || stroke ? { fill, stroke } : undefined}
         />
       </svg>
     );
