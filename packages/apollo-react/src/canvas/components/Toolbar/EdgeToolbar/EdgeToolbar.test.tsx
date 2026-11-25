@@ -5,6 +5,9 @@ import type { EdgeToolbarConfig } from './EdgeToolbar.types';
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   EdgeLabelRenderer: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  ViewportPortal: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="viewport-portal">{children}</div>
+  ),
 }));
 
 const config: EdgeToolbarConfig = {
@@ -51,5 +54,50 @@ describe('EdgeToolbar layout', () => {
     );
 
     expect(toolbar()).toHaveClass('flex-row');
+  });
+
+  it('stays in the label layer by default', () => {
+    render(<EdgeToolbar edgeId="e1" visible positioning={BESIDE_VERTICAL_RUN} config={config} />);
+
+    expect(screen.queryByTestId('viewport-portal')).toBeNull();
+  });
+
+  it('moves to the viewport portal at the given z-index', () => {
+    render(
+      <EdgeToolbar
+        edgeId="e1"
+        visible
+        positioning={BESIDE_VERTICAL_RUN}
+        config={config}
+        zIndex={2000}
+      />
+    );
+
+    const toolbar = screen.getAllByRole('button')[0]!.parentElement!;
+    expect(toolbar.closest('[data-testid="viewport-portal"]')).not.toBeNull();
+    expect(toolbar.style.zIndex).toBe('2000');
+  });
+
+  it('adds no hover bridge by default', () => {
+    render(<EdgeToolbar edgeId="e1" visible positioning={BESIDE_VERTICAL_RUN} config={config} />);
+
+    expect(document.querySelector('[data-edge-toolbar-bridge]')).toBeNull();
+  });
+
+  it('extends its hover area by the bridge on the given side', () => {
+    render(
+      <EdgeToolbar
+        edgeId="e1"
+        visible
+        positioning={BESIDE_VERTICAL_RUN}
+        config={config}
+        hoverBridge={{ side: 'bottom', size: 8 }}
+      />
+    );
+
+    const bridge = document.querySelector('[data-edge-toolbar-bridge="bottom"]') as HTMLElement;
+    expect(bridge.style.top).toBe('100%');
+    expect(bridge.style.height).toBe('8px');
+    expect(bridge.parentElement).toBe(screen.getAllByRole('button')[0]!.parentElement);
   });
 });

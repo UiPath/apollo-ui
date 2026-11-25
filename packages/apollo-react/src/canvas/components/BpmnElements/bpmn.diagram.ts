@@ -495,6 +495,12 @@ const sequenceFlows = flowRow(8, 'Sequence flows', [
   },
   { caption: 'Default', type: SEQUENCE, ends: EVENTS, data: { defaultFlow: true } },
   { caption: 'With label', type: SEQUENCE, ends: EVENTS, data: { label: 'Yes' } },
+  {
+    caption: 'Multi-line label',
+    type: SEQUENCE,
+    ends: EVENTS,
+    data: { label: 'Approved\nby manager' },
+  },
   { caption: 'Added', type: SEQUENCE, ends: EVENTS, data: { modification: 'add' } },
   { caption: 'Updated', type: SEQUENCE, ends: EVENTS, data: { modification: 'update' } },
   { caption: 'Deleted', type: SEQUENCE, ends: EVENTS, data: { modification: 'delete' } },

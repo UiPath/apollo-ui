@@ -1,8 +1,13 @@
-import { EdgeLabelRenderer } from '@uipath/apollo-react/canvas/xyflow/react';
+import { EdgeLabelRenderer, ViewportPortal } from '@uipath/apollo-react/canvas/xyflow/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { memo, useMemo } from 'react';
 import { CanvasInlineButton } from '../../ButtonHandle/CanvasInlineButton';
 import type { EdgeToolbarProps } from './EdgeToolbar.types';
+
+const bridgeStyle = (side: 'top' | 'right' | 'bottom' | 'left', size: number) =>
+  side === 'top' || side === 'bottom'
+    ? { left: 0, right: 0, [side === 'top' ? 'bottom' : 'top']: '100%', height: size }
+    : { top: 0, bottom: 0, [side === 'left' ? 'right' : 'left']: '100%', width: size };
 
 const EdgeToolbarComponent = ({
   edgeId,
@@ -10,6 +15,8 @@ const EdgeToolbarComponent = ({
   positioning,
   config,
   layout = 'row',
+  zIndex,
+  hoverBridge,
   onMouseEnter,
   onMouseLeave,
 }: EdgeToolbarProps) => {
@@ -26,8 +33,9 @@ const EdgeToolbarComponent = ({
     Math.abs(positioning.offsetPosition.x - positioning.pathPosition.x) >
       Math.abs(positioning.offsetPosition.y - positioning.pathPosition.y);
 
+  const Layer = zIndex === undefined ? EdgeLabelRenderer : ViewportPortal;
   return (
-    <EdgeLabelRenderer>
+    <Layer>
       <AnimatePresence>
         {visible && (
           <motion.div
@@ -39,10 +47,18 @@ const EdgeToolbarComponent = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            style={{ transform }}
+            style={{ transform, zIndex }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
           >
+            {hoverBridge && (
+              <span
+                aria-hidden
+                data-edge-toolbar-bridge={hoverBridge.side}
+                className="absolute pointer-events-auto"
+                style={bridgeStyle(hoverBridge.side, hoverBridge.size)}
+              />
+            )}
             {config.actions.map((action) => (
               <CanvasInlineButton
                 key={action.id}
@@ -61,7 +77,7 @@ const EdgeToolbarComponent = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </EdgeLabelRenderer>
+    </Layer>
   );
 };
 

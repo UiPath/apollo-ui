@@ -61,25 +61,39 @@ const DIRECTION: Record<Position, Point> = {
   [Position.Bottom]: { x: 0, y: 1 },
 };
 
-// Toolbar centre, measured from the path or, when there is a label, from the label's centre.
+// Toolbar centre, measured from the path.
 const TOOLBAR_OFFSET = 24;
-const TOOLBAR_OFFSET_OVER_LABEL = 28;
+// `CanvasInlineButton` is 28px across, with 4px between buttons.
+const BUTTON_SIZE = 28;
+const BUTTON_GAP = 4;
+// Space kept between a label and a toolbar moved off it.
+const LABEL_GAP = 4;
+// Reaches past that space, and past the 0-4px between the toolbar and the path's hit area.
+const HOVER_BRIDGE = LABEL_GAP + 4;
+// Until the label is measured: one line of a short word.
+const UNMEASURED_LABEL = { width: 48, height: 20 };
+
+type Box = { center: Point; width: number; height: number };
+type ToolbarPlacement = {
+  positioning: EdgeToolbarPositionData;
+  bridge: { side: 'left' | 'bottom'; size: number };
+};
+
+const overlaps = (a: Box, b: Box, margin: number) =>
+  Math.abs(a.center.x - b.center.x) < (a.width + b.width) / 2 + margin &&
+  Math.abs(a.center.y - b.center.y) < (a.height + b.height) / 2 + margin;
 
 /**
- * Fixed toolbar spot at the label point, in place of apollo's pointer-following one: above a
- * label or a horizontal run, beside a vertical run.
+ * Fixed toolbar spot at the path's midpoint, in place of apollo's pointer-following one: above a
+ * horizontal run, beside a vertical run. Only a label that would sit under it moves it, to just
+ * above the label, however many lines the label runs to.
  */
-function toolbarPositionAt(
+function placeToolbar(
   anchor: Point,
   pathPoints: Point[],
-  hasLabel: boolean
-): EdgeToolbarPositionData {
-  if (hasLabel) {
-    return {
-      pathPosition: anchor,
-      offsetPosition: { x: anchor.x, y: anchor.y - TOOLBAR_OFFSET_OVER_LABEL },
-    };
-  }
+  label: Box | null,
+  buttons: number
+): ToolbarPlacement {
   let nearest = Number.POSITIVE_INFINITY;
   let vertical = false;
   for (let i = 0; i < pathPoints.length - 1; i++) {
@@ -93,11 +107,22 @@ function toolbarPositionAt(
       vertical = Math.abs(b.y - a.y) > Math.abs(b.x - a.x);
     }
   }
+  // `along-path` stacks the buttons beside a vertical run.
+  const span = buttons * BUTTON_SIZE + (buttons - 1) * BUTTON_GAP;
+  const toolbar: Box = vertical
+    ? { center: { x: anchor.x + TOOLBAR_OFFSET, y: anchor.y }, width: BUTTON_SIZE, height: span }
+    : { center: { x: anchor.x, y: anchor.y - TOOLBAR_OFFSET }, width: span, height: BUTTON_SIZE };
+
+  if (label && overlaps(toolbar, label, LABEL_GAP)) {
+    const y = label.center.y - label.height / 2 - LABEL_GAP - BUTTON_SIZE / 2;
+    return {
+      positioning: { pathPosition: anchor, offsetPosition: { x: label.center.x, y } },
+      bridge: { side: 'bottom', size: HOVER_BRIDGE },
+    };
+  }
   return {
-    pathPosition: anchor,
-    offsetPosition: vertical
-      ? { x: anchor.x + TOOLBAR_OFFSET, y: anchor.y }
-      : { x: anchor.x, y: anchor.y - TOOLBAR_OFFSET },
+    positioning: { pathPosition: anchor, offsetPosition: toolbar.center },
+    bridge: { side: vertical ? 'left' : 'bottom', size: HOVER_BRIDGE },
   };
 }
 
@@ -252,6 +277,7 @@ function BpmnEdgeBase({
   const [isHovered, setIsHovered] = useState(false);
   const onMouseEnter = useCallback(() => setIsHovered(true), []);
   const onMouseLeave = useCallback(() => setIsHovered(false), []);
+  const [labelSize, setLabelSize] = useState(UNMEASURED_LABEL);
   const pathRef = useRef<SVGPathElement | null>(null);
 
   const orthogonal = kind === 'sequence' || kind === 'message';
@@ -382,8 +408,10 @@ function BpmnEdgeBase({
       savedDocks.current = docks;
       return;
     }
+    // The host has the route: a later move to the same spot (after an undo) is a new write.
+    if (!drifted) savedDocks.current = null;
     if (!drifted || endMoving || !stored || !canEdit) return;
-    // Once per position, in case the host has yet to apply it.
+    // Once per position, while the host has yet to apply it.
     if (savedDocks.current === docks) return;
     savedDocks.current = docks;
     // A straight kind keeps its bends as they are; routing them would make it orthogonal.
@@ -476,10 +504,15 @@ function BpmnEdgeBase({
   const { renameEdge, moveEdgeLabel } = actions;
   const labelPlaceholder = canEdit && !!renameEdge && !!selected && !data?.label;
   const hasLabel = !!data?.label || labelPlaceholder;
-  const labelOnPath = hasLabel && !data?.labelPosition;
-  const toolbarPosition = useMemo(
-    () => toolbarPositionAt(midPoint, orthogonal ? pathPoints : line, labelOnPath),
-    [midPoint, orthogonal, pathPoints, line, labelOnPath]
+  const toolbarPlacement = useMemo(
+    () =>
+      placeToolbar(
+        midPoint,
+        orthogonal ? pathPoints : line,
+        hasLabel ? { center: labelPoint, ...labelSize } : null,
+        toolbarConfig.actions.length
+      ),
+    [midPoint, orthogonal, pathPoints, line, hasLabel, labelPoint, labelSize, toolbarConfig]
   );
   const associationDirection = data?.associationDirection ?? 'none';
   const sourceMarker =
@@ -596,6 +629,7 @@ function BpmnEdgeBase({
             selected={selected}
             zIndex={overlay?.zIndex}
             dimmed={dimmed}
+            onSizeChange={setLabelSize}
             onRename={canEdit ? renameEdge : undefined}
             onMove={canEdit ? moveEdgeLabel : undefined}
           />
@@ -606,9 +640,12 @@ function BpmnEdgeBase({
         <EdgeToolbar
           edgeId={id}
           visible
-          positioning={toolbarPosition}
+          positioning={toolbarPlacement.positioning}
+          hoverBridge={toolbarPlacement.bridge}
           config={toolbarConfig}
           layout="along-path"
+          // Above the flow labels the overlay lifts to the same layer.
+          zIndex={overlay ? overlay.zIndex + 1 : undefined}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
         />

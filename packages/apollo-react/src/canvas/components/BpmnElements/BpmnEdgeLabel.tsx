@@ -10,6 +10,7 @@ import { useInlineLabelEditing } from '../BaseNode/useInlineLabelEditing';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type { Point } from '../Edges/shared/types';
 import { useBpmnStrings } from './bpmn.model';
+import { useMultilineKeyDown } from './labelKeys';
 
 /** `origin` is the label centre shown when the drag began, which can be ahead of the host's. */
 type Drag = { start: Point; origin: Point; moved: boolean };
@@ -19,8 +20,8 @@ type Dropped = { from: Point; at: Point };
 // A pill over the flow it names: translucent so the path reads through it, with a quiet
 // border that the selection tints.
 const LABEL_CLASS =
-  'react-flow__edge-label nodrag nopan absolute top-0 left-0 max-w-48 overflow-hidden text-ellipsis ' +
-  'whitespace-nowrap pointer-events-auto cursor-pointer px-2.5 py-0.5 rounded-md text-xs font-medium ' +
+  'react-flow__edge-label nodrag nopan absolute top-0 left-0 max-w-48 whitespace-pre-wrap wrap-break-word ' +
+  'text-center pointer-events-auto cursor-pointer px-2.5 py-0.5 rounded-md text-xs font-medium ' +
   'border backdrop-blur-sm transition-colors ' +
   'bg-[color-mix(in_srgb,var(--canvas-background,var(--color-background))_80%,transparent)]';
 const LABEL_SET_CLASS =
@@ -53,6 +54,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   selected,
   zIndex,
   dimmed,
+  onSizeChange,
   onRename,
   onMove,
 }: {
@@ -70,6 +72,8 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   zIndex?: number;
   /** Fades the label and takes it off the pointer. */
   dimmed?: boolean;
+  /** The label's size in flow units, whenever it changes, for laying out around it. */
+  onSizeChange?: (size: { width: number; height: number }) => void;
   onRename?: (edgeId: string, label: string) => void;
   /** Called on drag end with the label's centre in flow coordinates. */
   onMove?: (edgeId: string, position: Point) => void;
@@ -84,6 +88,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
   );
   // Blur ends the edit, so deselecting the flow does not have to.
   const edit = useInlineLabelEditing({ label: text, subLabel: '', selected: true, onChange });
+  const onKeyDown = useMultilineKeyDown(edit.handleKeyDown, edit.setLocalLabel);
   // The hook reads focus leaving for nowhere as a move to its sub-label input, which is not
   // mounted here. Name the document so the blur commits.
   const { handleBlur } = edit;
@@ -107,6 +112,19 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
     const active = domNode?.ownerDocument.activeElement;
     if (!active || active === domNode?.ownerDocument.body) focusEdge(domNode, edgeId);
   }, [edit.isEditing, selected, store, edgeId]);
+
+  // Measured, not guessed: a label wraps onto as many lines as its text and width need.
+  const labelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = labelRef.current;
+    if (!element || !onSizeChange || typeof ResizeObserver === 'undefined') return;
+    // Offsets are in the element's own px, which inside the viewport are flow units.
+    const report = () => onSizeChange({ width: element.offsetWidth, height: element.offsetHeight });
+    report();
+    const observer = new ResizeObserver(report);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [onSizeChange]);
 
   const drag = useRef<Drag | null>(null);
   const [dropped, setDropped] = useState<Dropped | null>(null);
@@ -159,6 +177,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
         disableHoverableContent
       >
         <div
+          ref={labelRef}
           data-bpmn-edge-label={edgeId}
           data-id={edgeId}
           data-placeholder={unset || undefined}
@@ -184,8 +203,9 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
           onClick={() => {
             // A click in the editor places the caret; taking focus to the edge would commit.
             if (edit.isEditing) return;
-            const { elementsSelectable, addSelectedEdges, domNode } = store.getState();
-            if (!elementsSelectable) return;
+            const { elementsSelectable, addSelectedEdges, domNode, edgeLookup } = store.getState();
+            // A flow's own setting wins over the canvas's, as for a click on the flow itself.
+            if (!(edgeLookup.get(edgeId)?.selectable ?? elementsSelectable)) return;
             if (!selected) addSelectedEdges([edgeId]);
             focusEdge(domNode, edgeId);
           }}
@@ -208,7 +228,7 @@ export const BpmnEdgeLabel = memo(function BpmnEdgeLabel({
               rows={1}
               aria-label={strings.editLabel}
               onChange={(event) => edit.setLocalLabel(event.target.value)}
-              onKeyDown={edit.handleKeyDown}
+              onKeyDown={onKeyDown}
               onBlur={onBlur}
               // A host's edge menu stays closed during an edit; the browser's own still opens.
               onContextMenu={(event) => event.stopPropagation()}

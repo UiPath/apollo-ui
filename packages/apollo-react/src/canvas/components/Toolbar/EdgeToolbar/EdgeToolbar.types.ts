@@ -39,6 +39,16 @@ export interface EdgeToolbarProps {
    * multi-button toolbar does not cover the edge. Defaults to `row`.
    */
   layout?: 'row' | 'along-path';
+  /**
+   * For a canvas that stacks nodes and edges together: the toolbar leaves xyflow's label layer,
+   * whose own z-index would cap it below a lifted flow or node, and takes this one.
+   */
+  zIndex?: number;
+  /**
+   * An invisible strip of this many px on the given side, part of the toolbar's hover area, so
+   * the pointer can cross the gap to the toolbar from what it floats beside (a label, the path).
+   */
+  hoverBridge?: { side: 'top' | 'right' | 'bottom' | 'left'; size: number };
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }

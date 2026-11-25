@@ -5,7 +5,7 @@ import {
   useStoreApi,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { act } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '../../utils/testing';
 import {
   type BpmnActions,
@@ -22,12 +22,15 @@ import {
 vi.unmock('@uipath/apollo-react/canvas/xyflow/react');
 
 // The label portals into a container that only a mounted ReactFlow provides.
+// The size the mocked label reports, as the real one measures itself.
+let labelSize: { width: number; height: number } | undefined;
 vi.mock('./BpmnEdgeLabel', () => ({
   BpmnEdgeLabel: ({
     x,
     y,
     text,
     dimmed,
+    onSizeChange,
     onRename,
     onMove,
   }: {
@@ -35,10 +38,12 @@ vi.mock('./BpmnEdgeLabel', () => ({
     y: number;
     text?: string;
     dimmed?: boolean;
+    onSizeChange?: (size: { width: number; height: number }) => void;
     onRename?: unknown;
     onMove?: unknown;
   }) => (
     <text
+      ref={() => labelSize && onSizeChange?.(labelSize)}
       data-testid="bpmn-edge-label"
       data-x={x}
       data-y={y}
@@ -50,8 +55,21 @@ vi.mock('./BpmnEdgeLabel', () => ({
   ),
 }));
 vi.mock('../Toolbar/EdgeToolbar', () => ({
-  EdgeToolbar: ({ config }: { config: { actions: { id: string; label: string }[] } }) => (
-    <g data-testid="edge-toolbar">
+  EdgeToolbar: ({
+    config,
+    positioning,
+    hoverBridge,
+  }: {
+    config: { actions: { id: string; label: string }[] };
+    positioning: { offsetPosition: { x: number; y: number } };
+    hoverBridge?: { side: string; size: number };
+  }) => (
+    <g
+      data-testid="edge-toolbar"
+      data-x={positioning.offsetPosition.x}
+      data-y={positioning.offsetPosition.y}
+      data-bridge={hoverBridge && `${hoverBridge.side} ${hoverBridge.size}`}
+    >
       {config.actions.map((action) => (
         <text key={action.id}>{action.label}</text>
       ))}
@@ -382,6 +400,20 @@ describe('BPMN sequence flow', () => {
       expect(setWaypoints).toHaveBeenCalledTimes(1);
     });
 
+    it('stores a repeated move again once the host applied and undid the first', () => {
+      const moved = { sourceX: 100, sourceY: 70 };
+      const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
+      rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, moved)));
+      const applied = setWaypoints.mock.calls[0]![1];
+
+      // The host applies the route, then undoes both the move and the route.
+      rerender(tree(edgeProps({ waypoints: applied }, moved)));
+      rerender(tree(edgeProps({ waypoints: OFF_CENTRE })));
+      rerender(tree(edgeProps({ waypoints: OFF_CENTRE }, moved)));
+
+      expect(setWaypoints).toHaveBeenCalledTimes(2);
+    });
+
     it('draws a moved route through fresh docks, not the stale stored bends', () => {
       const { rerender } = render(tree(edgeProps({ waypoints: OFF_CENTRE })));
 
@@ -451,6 +483,46 @@ describe('BPMN sequence flow', () => {
       fireEvent.mouseDown(reconnect('target'));
       expect(startReconnect).toHaveBeenCalledWith('flow', 'target', expect.anything());
       expect(onMouseDown).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('toolbar placement', () => {
+    const toolbar = () => screen.getByTestId('edge-toolbar');
+    const at = () => [Number(toolbar().dataset.x), Number(toolbar().dataset.y)];
+    afterEach(() => {
+      labelSize = undefined;
+    });
+
+    it('sits above the path midpoint with no label, bridged down to the path', () => {
+      render(tree(edgeProps({}, { selected: true })));
+
+      expect(at()).toEqual([160, 16]);
+      expect(toolbar().dataset.bridge).toBe('bottom 8');
+    });
+
+    it('moves just above a label that would sit under it', () => {
+      labelSize = { width: 40, height: 20 };
+      render(tree(edgeProps({ label: 'Yes' }, { selected: true })));
+
+      // Label centre 40, top 30; 4px gap; half the 28px toolbar.
+      expect(at()).toEqual([160, 12]);
+      expect(toolbar().dataset.bridge).toBe('bottom 8');
+    });
+
+    it('rises with a label that runs to several lines', () => {
+      labelSize = { width: 40, height: 52 };
+      render(tree(edgeProps({ label: 'Approved\nby manager' }, { selected: true })));
+
+      expect(at()).toEqual([160, -4]);
+    });
+
+    it('stays on the path when the label was moved out of its way', () => {
+      labelSize = { width: 40, height: 20 };
+      render(
+        tree(edgeProps({ label: 'Yes', labelPosition: { x: 160, y: 120 } }, { selected: true }))
+      );
+
+      expect(at()).toEqual([160, 16]);
     });
   });
 

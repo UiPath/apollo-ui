@@ -575,5 +575,19 @@ describe('NodeToolbar', () => {
 
       await waitFor(() => expect(onHoverChange).toHaveBeenLastCalledWith('test-node', false));
     });
+
+    it('ends the report when the host stops listening while an action is hovered', async () => {
+      const onHoverChange = vi.fn();
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <NodeToolbar {...defaultProps} config={hoverConfig(onHoverChange)} />
+      );
+
+      await user.hover(screen.getByRole('button', { name: 'Edit' }));
+      rerender(<NodeToolbar {...defaultProps} config={hoverConfig(undefined)} />);
+
+      expect(onHoverChange).toHaveBeenLastCalledWith('test-node', false);
+      expect(onHoverChange).toHaveBeenCalledTimes(2);
+    });
   });
 });

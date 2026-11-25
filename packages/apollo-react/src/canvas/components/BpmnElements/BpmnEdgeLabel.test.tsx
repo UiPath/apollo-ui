@@ -64,6 +64,30 @@ describe('BPMN edge label', () => {
       expect(screen.queryByLabelText('Edit label')).not.toBeInTheDocument();
     });
 
+    it('adds a line on Shift or Alt with Enter, and keeps editing', () => {
+      const onRename = vi.fn();
+      show({ text: 'Approved by', onRename });
+
+      fireEvent.doubleClick(screen.getByText('Approved by'));
+      const editor = screen.getByLabelText('Edit label') as HTMLTextAreaElement;
+      editor.setSelectionRange(8, 9);
+      fireEvent.keyDown(editor, { key: 'Enter', altKey: true });
+      expect(editor).toHaveValue('Approved\nby');
+      // A textarea adds Shift+Enter's line itself; the label only keeps it from committing.
+      fireEvent.keyDown(editor, { key: 'Enter', shiftKey: true });
+
+      expect(onRename).not.toHaveBeenCalled();
+      fireEvent.keyDown(editor, { key: 'Enter' });
+      expect(onRename).toHaveBeenCalledWith('flow', 'Approved\nby');
+    });
+
+    it('wraps a long or multi-line label instead of cutting it off', () => {
+      show({ text: 'Approved\nby manager' });
+
+      expect(label().className).toContain('whitespace-pre-wrap');
+      expect(label().className).not.toContain('text-ellipsis');
+    });
+
     it('keeps editing on a click or double-click inside the editor', () => {
       const onRename = vi.fn();
       show({ text: 'Yes', onRename });
@@ -143,6 +167,22 @@ describe('BPMN edge label', () => {
       fireEvent.click(label());
 
       expect(addSelectedEdges).toHaveBeenCalledWith(['flow']);
+    });
+
+    it.each([
+      [false, true, false],
+      [true, false, true],
+    ])('lets a flow selectable=%s override the canvas setting %s', (own, canvas, selects) => {
+      show({ text: 'Yes', selected: false });
+      const addSelectedEdges = selectEdges();
+      store.setState({
+        elementsSelectable: canvas,
+        edgeLookup: new Map([['flow', { id: 'flow', selectable: own }]]) as never,
+      });
+
+      fireEvent.click(label());
+
+      expect(addSelectedEdges).toHaveBeenCalledTimes(selects ? 1 : 0);
     });
 
     it('leaves the selection alone when elements are not selectable', () => {

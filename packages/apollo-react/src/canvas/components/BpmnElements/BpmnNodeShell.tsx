@@ -30,6 +30,7 @@ import {
   useBpmnOverlay,
   useBpmnStrings,
 } from './bpmn.model';
+import { useMultilineKeyDown } from './labelKeys';
 
 const SIDES = [Position.Left, Position.Right, Position.Top, Position.Bottom];
 // BPMN offers "+" on every side but the incoming one.
@@ -580,23 +581,7 @@ export const BpmnLabel = memo(function BpmnLabel({
   });
 
   const { handleKeyDown, setLocalLabel } = edit;
-  const onKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // Plain Enter commits, as in a single-line label; Shift or Alt with it adds a line.
-      if (!multiline || event.key !== 'Enter' || !(event.shiftKey || event.altKey)) {
-        handleKeyDown(event);
-        return;
-      }
-      // Kept from the canvas. A textarea adds the line for Shift+Enter but not for Alt+Enter.
-      event.stopPropagation();
-      if (event.shiftKey) return;
-      event.preventDefault();
-      const textarea = event.currentTarget;
-      textarea.setRangeText('\n', textarea.selectionStart, textarea.selectionEnd, 'end');
-      setLocalLabel(textarea.value);
-    },
-    [multiline, handleKeyDown, setLocalLabel]
-  );
+  const onKeyDown = useMultilineKeyDown(handleKeyDown, setLocalLabel, multiline);
   // The hook skips the save when focus moves to its sub-label input, and with none mounted it
   // reads focus leaving for nowhere as that case. Name the document so the blur commits.
   const { handleBlur } = edit;

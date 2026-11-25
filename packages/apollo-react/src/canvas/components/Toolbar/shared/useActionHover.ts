@@ -9,15 +9,25 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 export function useActionHover(onHover: ((hovered: boolean) => void) | undefined) {
   // The latest callback, kept out of render so a render React throws away cannot leave it set.
   const latest = useRef(onHover);
+  // Whoever was told `true`, so the matching `false` reaches them even if the callback changes.
+  const recipient = useRef<typeof onHover>(undefined);
+  const state = useRef({ pointer: false, focus: false });
+
+  const end = () => {
+    recipient.current?.(false);
+    recipient.current = undefined;
+  };
+
   useLayoutEffect(() => {
     latest.current = onHover;
+    // Reporting stopped while hovered: no leave event will follow, so end the report now.
+    if (!onHover && recipient.current) end();
   });
-  const state = useRef({ pointer: false, focus: false, reported: false });
 
   useEffect(
     () => () => {
-      if (state.current.reported) latest.current?.(false);
-      state.current = { pointer: false, focus: false, reported: false };
+      end();
+      state.current = { pointer: false, focus: false };
     },
     []
   );
@@ -28,9 +38,10 @@ export function useActionHover(onHover: ((hovered: boolean) => void) | undefined
     const set = (change: { pointer?: boolean; focus?: boolean }) => {
       Object.assign(state.current, change);
       const hovered = state.current.pointer || state.current.focus;
-      if (hovered === state.current.reported) return;
-      state.current.reported = hovered;
-      latest.current?.(hovered);
+      if (hovered === !!recipient.current) return;
+      if (!hovered) return end();
+      recipient.current = latest.current;
+      recipient.current?.(true);
     };
     return {
       onPointerEnter: () => set({ pointer: true }),
