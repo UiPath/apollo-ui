@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.52.0...@uipath/apollo-react@7.53.0) (2026-11-26)
+
+### Features
+
+* **apollo-react:** let a node manifest choose a shadow for dense graphs ([44dce09](https://github.com/UiPath/apollo-ui/commit/44dce0974f82d71d05805d178c9ac8632989cded))
+
 ## [@uipath/apollo-react-v7.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.51.0...@uipath/apollo-react@7.52.0) (2026-11-26)
 
 ### Features
