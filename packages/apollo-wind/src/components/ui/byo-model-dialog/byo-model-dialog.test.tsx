@@ -272,9 +272,7 @@ describe('ByoModelDialog', () => {
     await addCustomAlias(user, 'taken');
 
     expect(
-      screen.getByText(
-        'Custom alias overlaps with already configured BYO LLM for this product and feature'
-      )
+      screen.getByText('"taken" is already in your model list. Pick another name.')
     ).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Provider' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
@@ -1377,7 +1375,7 @@ describe('ByoModelDialog', () => {
       await addCustomAlias(user, 'gpt-4o');
 
       expect(
-        screen.getByText('Custom alias overlaps with existing UiPath LLM')
+        screen.getByText('"gpt-4o" is the name of a UiPath model. Pick another name.')
       ).toBeInTheDocument();
       expect(screen.getByRole('combobox', { name: 'Provider' })).toBeDisabled();
     });
