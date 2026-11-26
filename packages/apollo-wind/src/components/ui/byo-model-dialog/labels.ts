@@ -151,9 +151,8 @@ export const DEFAULT_BYO_MODEL_DIALOG_LABELS: ByoModelDialogLabels = {
 
   nameStep: 'Model alias',
   nameHint: 'Shown in the model picker.',
-  nameTaken: () =>
-    'Custom alias overlaps with already configured BYO LLM for this product and feature',
-  nameReserved: () => 'Custom alias overlaps with existing UiPath LLM',
+  nameTaken: (name) => `"${name}" is already in your model list. Pick another name.`,
+  nameReserved: (name) => `"${name}" is the name of a UiPath model. Pick another name.`,
   useOwnName: 'Custom',
   aliasSearch: 'Search UiPath models…',
   aliasNoMatch: (query) => `No UiPath model matches "${query}".`,
