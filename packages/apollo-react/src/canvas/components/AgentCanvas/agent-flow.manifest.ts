@@ -81,6 +81,13 @@ export const conversationalAgentManifest: NodeManifest = {
           showButton: false,
         },
         {
+          id: 'subagent',
+          type: 'source',
+          handleType: 'artifact',
+          label: 'Subagents',
+          showButton: false,
+        },
+        {
           id: 'tool',
           type: 'source',
           handleType: 'artifact',
@@ -133,6 +140,13 @@ export const autonomousAgentManifest: NodeManifest = {
           type: 'source',
           handleType: 'artifact',
           label: 'Context',
+          showButton: false,
+        },
+        {
+          id: 'subagent',
+          type: 'source',
+          handleType: 'artifact',
+          label: 'Subagents',
           showButton: false,
         },
         {
@@ -307,6 +321,32 @@ export const a2aResourceManifest: NodeManifest = {
   ],
 };
 
+export const subagentResourceManifest: NodeManifest = {
+  nodeType: 'uipath.resource.subagent',
+  version: '1.0.0',
+  category: 'resource',
+  tags: ['resource', 'subagent', 'agent'],
+  sortOrder: 7,
+  display: {
+    label: 'Subagent',
+    description: 'Delegated agent that runs inside the parent agent',
+    icon: 'bot',
+    shape: 'circle',
+  },
+  handleConfiguration: [
+    {
+      position: 'bottom',
+      handles: [
+        {
+          id: 'input',
+          type: 'target',
+          handleType: 'artifact',
+        },
+      ],
+    },
+  ],
+};
+
 // ============================================================================
 // Combined Manifest
 // ============================================================================
@@ -323,5 +363,6 @@ export const agentFlowManifest = {
     escalationResourceManifest,
     memoryResourceManifest,
     a2aResourceManifest,
+    subagentResourceManifest,
   ],
 };

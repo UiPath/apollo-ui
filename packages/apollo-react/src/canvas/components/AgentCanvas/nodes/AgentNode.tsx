@@ -4,6 +4,7 @@ import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { HandleGroupManifest } from '../../../schema/node-definition';
 import {
+  type AgentFlowResourceType,
   type AgentNodeTranslations,
   DefaultSuggestionTranslations,
   type SuggestionTranslations,
@@ -68,15 +69,17 @@ interface AgentNodeProps {
   hasTool?: boolean;
   hasMcp?: boolean;
   hasA2a?: boolean;
+  hasSubagent?: boolean;
   a2aEnabled?: boolean;
   mcpEnabled?: boolean;
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
-  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a') => void;
+  onAddResource?: (type: AgentFlowResourceType) => void;
   onAddInstructions?: () => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
+  enableSubagents?: boolean;
   enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
@@ -101,6 +104,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     hasTool = false,
     hasMcp = false,
     hasA2a = false,
+    hasSubagent = false,
     a2aEnabled = false,
     mcpEnabled = true,
     hasError = false,
@@ -110,6 +114,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     onAddInstructions,
     translations,
     enableMemory,
+    enableSubagents,
     enableInstructions = false,
     healthScore,
     onHealthScoreClick,
@@ -216,6 +221,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   const displayMemory =
     enableMemory === true && (mode === 'design' || (mode === 'view' && hasMemory));
+  const displaySubagent =
+    enableSubagents === true && (mode === 'design' || (mode === 'view' && hasSubagent));
   const displayContext = mode === 'design' || (mode === 'view' && hasContext);
   const displayEscalation = mode === 'design' || (mode === 'view' && hasEscalation);
   const displayTool = mode === 'design' || (mode === 'view' && hasTool);
@@ -230,7 +237,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
     // Top handles (Memory, Escalation)
     const topHandles: ButtonHandleConfig[] = [];
-    // Bottom handles (Context, Tool)
+    // Bottom handles (Context, Subagents, Tool)
     const bottomHandles: ButtonHandleConfig[] = [];
 
     if (displayMemory) {
@@ -271,40 +278,52 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    if (displayContext || displayTool || displayMcp || displayA2a) {
-      bottomHandles.push(
-        {
-          id: ResourceNodeType.Context,
-          type: 'source',
-          handleType: 'artifact',
-          label: translations.context,
-          showButton: canEditNode,
-          labelBackgroundColor: 'var(--canvas-background-secondary)',
-          visible: displayContext,
-          onAction: (_e: HandleActionEvent) => {
-            onAddResource?.('context');
-          },
+    if (displayContext || displaySubagent || displayTool || displayMcp || displayA2a) {
+      bottomHandles.push({
+        id: ResourceNodeType.Context,
+        type: 'source',
+        handleType: 'artifact',
+        label: translations.context,
+        showButton: canEditNode,
+        labelBackgroundColor: 'var(--canvas-background-secondary)',
+        visible: displayContext,
+        onAction: (_e: HandleActionEvent) => {
+          onAddResource?.('context');
         },
-        {
-          id: ResourceNodeType.Tool,
+      });
+      if (displaySubagent) {
+        bottomHandles.push({
+          id: ResourceNodeType.Subagent,
           type: 'source',
           handleType: 'artifact',
-          label: translations.tools,
+          label: translations.subagents,
           showButton: canEditNode,
           labelBackgroundColor: 'var(--canvas-background-secondary)',
-          visible: displayTool || displayMcp || displayA2a,
+          visible: displaySubagent,
           onAction: (_e: HandleActionEvent) => {
-            // Default to tool when both are available, or show the available option
-            if (displayTool) {
-              onAddResource?.('tool');
-            } else if (displayMcp) {
-              onAddResource?.('mcp');
-            } else if (displayA2a) {
-              onAddResource?.('a2a');
-            }
+            onAddResource?.('subagent');
           },
-        }
-      );
+        });
+      }
+      bottomHandles.push({
+        id: ResourceNodeType.Tool,
+        type: 'source',
+        handleType: 'artifact',
+        label: translations.tools,
+        showButton: canEditNode,
+        labelBackgroundColor: 'var(--canvas-background-secondary)',
+        visible: displayTool || displayMcp || displayA2a,
+        onAction: (_e: HandleActionEvent) => {
+          // Default to tool when both are available, or show the available option
+          if (displayTool) {
+            onAddResource?.('tool');
+          } else if (displayMcp) {
+            onAddResource?.('mcp');
+          } else if (displayA2a) {
+            onAddResource?.('a2a');
+          }
+        },
+      });
       configs.push({
         position: Position.Bottom,
         handles: bottomHandles,
@@ -320,6 +339,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     displayMcp,
     displayTool,
     displayA2a,
+    displaySubagent,
     displayEscalation,
     hasMemory,
     onAddResource,
@@ -615,6 +635,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     hasTool,
     hasMcp,
     hasA2a,
+    hasSubagent,
     a2aEnabled,
     mcpEnabled,
     hasError,
@@ -624,6 +645,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     onAddInstructions,
     translations,
     enableMemory,
+    enableSubagents,
     enableInstructions,
     healthScore,
     onHealthScoreClick,
@@ -643,6 +665,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       hasTool={hasTool}
       hasMcp={hasMcp}
       hasA2a={hasA2a}
+      hasSubagent={hasSubagent}
       a2aEnabled={a2aEnabled}
       mcpEnabled={mcpEnabled}
       hasError={hasError}
@@ -652,6 +675,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       onAddInstructions={onAddInstructions}
       translations={translations}
       enableMemory={enableMemory}
+      enableSubagents={enableSubagents}
       enableInstructions={enableInstructions}
       healthScore={healthScore}
       onHealthScoreClick={onHealthScoreClick}

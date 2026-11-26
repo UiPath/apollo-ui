@@ -40,6 +40,12 @@ const mockNodes = [
     position: { x: 0, y: 100 },
     data: { type: 'context', name: 'Test Context' },
   },
+  {
+    id: 'subagent-1',
+    type: 'resource',
+    position: { x: 0, y: -100 },
+    data: { type: 'subagent', name: 'general-purpose' },
+  },
 ];
 
 const mockEdges = [
@@ -601,6 +607,15 @@ describe('AgentFlow', () => {
     render(<AgentFlow {...mockProps} />);
     expect(screen.getByTestId('nodes-count')).toHaveTextContent('3');
     expect(screen.getByTestId('edges-count')).toHaveTextContent('2');
+  });
+
+  it('hides subagent nodes unless enableSubagents is set', () => {
+    const { unmount } = render(<AgentFlow {...mockProps} />);
+    expect(screen.getByTestId('nodes-count')).toHaveTextContent('3');
+    unmount();
+
+    render(<AgentFlow {...mockProps} enableSubagents />);
+    expect(screen.getByTestId('nodes-count')).toHaveTextContent('4');
   });
 
   it('renders in design mode', () => {

@@ -162,13 +162,33 @@ export type AgentFlowA2aResource = {
   errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
+export type AgentFlowSubagentMode = 'isolated' | 'fork';
+
+export type AgentFlowSubagentResource = {
+  id: string;
+  type: 'subagent';
+  name: string;
+  originalName?: string;
+  description: string;
+  model?: string;
+  mode?: AgentFlowSubagentMode;
+  errors?: ErrorInfo[];
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
+  isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
+};
+
 export type AgentFlowResource =
   | AgentFlowContextResource
   | AgentFlowEscalationResource
   | AgentFlowMcpResource
   | AgentFlowToolResource
   | AgentFlowMemorySpaceResource
-  | AgentFlowA2aResource;
+  | AgentFlowA2aResource
+  | AgentFlowSubagentResource;
 export type AgentFlowResourceType = AgentFlowResource['type'];
 
 /**
@@ -280,7 +300,7 @@ export type AgentFlowProps = {
   resources: AgentFlowResource[];
   allowDragging?: boolean;
   initialSelectedResource?: {
-    type: 'context' | 'escalation' | 'mcp' | 'pane' | 'run' | 'tool' | 'memorySpace' | 'a2a';
+    type: AgentFlowResourceType | 'pane' | 'run';
     name: string;
   } | null;
   onSelectResource?: (resourceId: string | null) => void;
@@ -376,6 +396,7 @@ export type AgentFlowProps = {
   /** TODO: Remove once memory feature is fully implemented */
   enableMemory?: boolean;
   enableA2a?: boolean;
+  enableSubagents?: boolean;
   enableStickyNotes?: boolean;
   enableInstructions?: boolean;
 
@@ -486,6 +507,11 @@ export type MemorySpaceResourceData = {
 export type A2aResourceData = {
   type: 'a2a';
 };
+export type SubagentResourceData = {
+  type: 'subagent';
+  model?: string;
+  mode?: AgentFlowSubagentMode;
+};
 
 export type SharedResourceData = {
   name: string;
@@ -533,6 +559,7 @@ export type AgentFlowResourceNodeData = (
   | ToolResourceData
   | MemorySpaceResourceData
   | A2aResourceData
+  | SubagentResourceData
 ) &
   SharedResourceData;
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, 'resource'> & {
@@ -573,6 +600,7 @@ export interface AgentNodeTranslations {
   context: string;
   tools: string;
   memory: string;
+  subagents: string;
   instructions: string;
   addInstructions: string;
   // Settings preview
@@ -600,6 +628,7 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  subagents: 'Subagents',
   instructions: 'Instructions',
   addInstructions: 'Add Instructions',
   // Settings preview

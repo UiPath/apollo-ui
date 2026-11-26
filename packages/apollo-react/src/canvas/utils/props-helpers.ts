@@ -277,6 +277,14 @@ const createResourceNode = (
         projectId: resource.projectId,
         parentNodeId,
       });
+    case 'subagent':
+      return createBaseNode({
+        ...baseData,
+        type: 'subagent',
+        model: resource.model,
+        mode: resource.mode,
+        parentNodeId,
+      });
     case 'escalation':
     default:
       return createBaseNode({
@@ -323,6 +331,9 @@ const calculateOptimalHandles = (
       break;
     case 'memorySpace':
       sourceHandle = ResourceNodeType.MemorySpace;
+      break;
+    case 'subagent':
+      sourceHandle = ResourceNodeType.Subagent;
       break;
     default:
       sourceHandle = resourceType;

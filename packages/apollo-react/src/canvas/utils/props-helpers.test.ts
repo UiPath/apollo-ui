@@ -149,6 +149,33 @@ describe('props-helpers', () => {
       expect(result.edges.length).toBeGreaterThan(0);
     });
 
+    it('creates a subagent node carrying model and mode, wired to the subagent handle', () => {
+      const { nodes, edges } = computeNodesAndEdges({
+        ...mockAgentFlowProps,
+        resources: [
+          {
+            id: 'subagent-1',
+            name: 'general-purpose',
+            description: 'Delegates research',
+            type: 'subagent' as const,
+            model: 'gpt-4o',
+            mode: 'fork' as const,
+          },
+        ],
+      });
+
+      const subagentNode = nodes.find(
+        (node) => node.type === 'resource' && node.data.type === 'subagent'
+      );
+      expect(subagentNode?.data).toMatchObject({
+        type: 'subagent',
+        name: 'general-purpose',
+        model: 'gpt-4o',
+        mode: 'fork',
+      });
+      expect(edges.map((edge) => edge.sourceHandle)).toContain(ResourceNodeType.Subagent);
+    });
+
     it('handles parent node ID correctly', () => {
       const parentNodeId = 'parent-node';
       const result = computeNodesAndEdges(mockAgentFlowProps, parentNodeId);
@@ -226,6 +253,27 @@ describe('props-helpers', () => {
       },
       draggable: true,
     } as any;
+
+    const mockSubagentNode = {
+      id: 'subagent-1',
+      type: 'resource' as const,
+      position: { x: 0, y: 0 },
+      data: {
+        type: 'subagent' as const,
+        name: 'general-purpose',
+        description: 'Delegates research',
+        isActive: false,
+      },
+      draggable: true,
+    } as any;
+
+    it('creates subagent edge from the subagent handle', () => {
+      const edge = createResourceEdge(mockAgentNode, mockSubagentNode, mockAgentFlowProps);
+
+      expect(edge.source).toBe(mockAgentNode.id);
+      expect(edge.target).toBe(mockSubagentNode.id);
+      expect(edge.sourceHandle).toBe(ResourceNodeType.Subagent);
+    });
 
     it('creates tool edge correctly', () => {
       const edge = createResourceEdge(mockAgentNode, mockToolNode, mockAgentFlowProps);

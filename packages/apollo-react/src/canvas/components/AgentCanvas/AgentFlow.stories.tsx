@@ -168,6 +168,15 @@ const createSampleMemorySpace = (): AgentFlowResource => {
   };
 };
 
+const createSampleSubagent = (): AgentFlowResource => {
+  return {
+    id: generateResourceId(),
+    type: 'subagent',
+    name: 'general-purpose',
+    description: 'General-purpose agent for researching complex questions and multi-step tasks',
+  };
+};
+
 const createSampleA2a = (): AgentFlowResource => {
   const sample = sampleA2aAgents[a2aIndex % sampleA2aAgents.length] as NonNullable<
     (typeof sampleA2aAgents)[number]
@@ -352,6 +361,7 @@ interface AgentFlowWrapperProps {
   definition?: any;
   enableTimelinePlayer?: boolean;
   enableMemory?: boolean;
+  enableSubagents?: boolean;
   enableStickyNotes?: boolean;
   enableInstructions?: boolean;
   healthScore?: number;
@@ -371,6 +381,7 @@ const AgentFlowWrapper = ({
   definition = sampleAgentDefinition,
   enableTimelinePlayer = true,
   enableMemory = true,
+  enableSubagents = false,
   enableStickyNotes = true,
   enableInstructions = false,
   healthScore,
@@ -436,6 +447,10 @@ const AgentFlowWrapper = ({
       }
       case 'a2a': {
         newResource = createSampleA2a();
+        break;
+      }
+      case 'subagent': {
+        newResource = createSampleSubagent();
         break;
       }
       default: {
@@ -624,6 +639,7 @@ const AgentFlowWrapper = ({
             onSelectResource={handleSelectResource}
             enableTimelinePlayer={mode === 'view' && enableTimelinePlayer}
             enableMemory={enableMemory}
+            enableSubagents={enableSubagents}
             enableStickyNotes={enableStickyNotes}
             enableInstructions={enableInstructions}
             stickyNotes={stickyNotes}
@@ -741,6 +757,9 @@ const DesignModePlayground = () => {
         break;
       case 'a2a':
         newResource = createSampleA2a();
+        break;
+      case 'subagent':
+        newResource = createSampleSubagent();
         break;
       default:
         return;

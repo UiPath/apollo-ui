@@ -152,6 +152,9 @@ export const ResourceNode = memo(
         case 'a2a':
           icon = <Icons.A2aIcon w={40} h={40} />;
           break;
+        case 'subagent':
+          icon = <Icons.AgentIcon w={40} h={40} />;
+          break;
         case 'tool':
           icon = <ToolResourceIcon size={48} tool={data} />;
           break;
@@ -447,6 +450,8 @@ export const ResourceNode = memo(
           return 'uipath.resource.memory';
         case 'a2a':
           return 'uipath.resource.a2a';
+        case 'subagent':
+          return 'uipath.resource.subagent';
         default:
           return 'uipath.resource.tool'; // fallback
       }

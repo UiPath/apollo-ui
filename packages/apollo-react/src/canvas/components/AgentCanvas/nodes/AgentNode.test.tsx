@@ -84,6 +84,7 @@ const defaultTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  subagents: 'Subagents',
   instructions: 'Instructions',
   addInstructions: 'Add Instructions',
   agentSettings: 'Agent Settings',

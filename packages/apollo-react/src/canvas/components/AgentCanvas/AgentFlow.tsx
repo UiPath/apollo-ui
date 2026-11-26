@@ -15,6 +15,7 @@ import {
   type AgentFlowProps,
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
+  type AgentFlowResourceType,
   type AgentNodeTranslations,
   type CanvasTranslations,
   DefaultAgentNodeTranslations,
@@ -60,12 +61,13 @@ const AGENT_FLOW_FIT_VIEW_OPTIONS = {
 
 // agent node wrapper
 const createAgentNodeWrapper = (handlers: {
-  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a') => void;
+  onAddResource?: (type: AgentFlowResourceType) => void;
   translations?: AgentNodeTranslations;
   suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
   enableMemory?: boolean;
   enableA2a?: boolean;
+  enableSubagents?: boolean;
   enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
@@ -110,6 +112,15 @@ const createAgentNodeWrapper = (handlers: {
         node.data.type === 'memorySpace' &&
         node.data.parentNodeId === props.id
     );
+
+    const hasSubagent =
+      handlers.enableSubagents === true &&
+      nodes.some(
+        (node) =>
+          isAgentFlowResourceNode(node) &&
+          node.data.type === 'subagent' &&
+          node.data.parentNodeId === props.id
+      );
 
     const hasA2a =
       handlers.enableA2a === true &&
@@ -161,6 +172,7 @@ const createAgentNodeWrapper = (handlers: {
         hasMcp={hasMcp}
         hasMemory={hasMemory}
         hasA2a={hasA2a}
+        hasSubagent={hasSubagent}
         a2aEnabled={handlers.enableA2a === true}
         mcpEnabled={handlers.enableMcpTools !== false}
         mode={storeProps.mode}
@@ -172,6 +184,7 @@ const createAgentNodeWrapper = (handlers: {
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
         suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}
+        enableSubagents={handlers.enableSubagents === true}
         enableInstructions={handlers.enableInstructions === true}
         healthScore={handlers.healthScore}
         onHealthScoreClick={handlers.onHealthScoreClick}
@@ -252,6 +265,7 @@ const AgentFlowInner = memo(
     enableMcpTools,
     enableMemory,
     enableA2a,
+    enableSubagents,
     enableStickyNotes,
     enableInstructions,
     healthScore,
@@ -360,9 +374,7 @@ const AgentFlowInner = memo(
     }, [timelineHeight, suggestionGroupPanelHeight, toolbarContainerHeight]);
 
     const nodeTypes = useMemo(() => {
-      const handleAddResource = (
-        type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a'
-      ) => {
+      const handleAddResource = (type: AgentFlowResourceType) => {
         // Use createResourcePlaceholder which will either create a placeholder or call onAddResource
         createResourcePlaceholder(type);
       };
@@ -378,6 +390,7 @@ const AgentFlowInner = memo(
           enableMcpTools,
           enableMemory,
           enableA2a,
+          enableSubagents,
           enableInstructions,
           healthScore,
           onHealthScoreClick,
@@ -416,6 +429,9 @@ const AgentFlowInner = memo(
       onCollapseResource,
       enableMcpTools,
       enableMemory,
+      enableA2a,
+      enableSubagents,
+      enableInstructions,
       suggestionGroup?.metadata?.version,
     ]);
 
@@ -584,6 +600,7 @@ const AgentFlowInner = memo(
       if (node.data.isVirtual) return true; // Always keep virtual nodes
       if (node.data.type === 'memorySpace') return !!enableMemory;
       if (node.data.type === 'a2a') return !!enableA2a;
+      if (node.data.type === 'subagent') return !!enableSubagents;
       return true;
     });
 

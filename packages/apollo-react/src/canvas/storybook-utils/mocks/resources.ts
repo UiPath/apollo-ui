@@ -5,6 +5,7 @@ import {
   type AgentFlowMcpResource,
   type AgentFlowMemorySpaceResource,
   type AgentFlowResource,
+  type AgentFlowSubagentResource,
   type AgentFlowToolResource,
   ProjectType,
 } from '../../types';
@@ -186,6 +187,21 @@ export function createResourceGenerators() {
         type: 'a2a',
         name: sample.name,
         description: sample.description,
+        hasBreakpoint: false,
+        hasGuardrails: false,
+        ...overrides,
+      };
+    },
+
+    /**
+     * Creates a sample subagent resource.
+     */
+    subagent: (overrides?: Partial<AgentFlowSubagentResource>): AgentFlowSubagentResource => {
+      return {
+        id: generateResourceId(),
+        type: 'subagent',
+        name: 'general-purpose',
+        description: 'General-purpose agent for researching complex questions and multi-step tasks',
         hasBreakpoint: false,
         hasGuardrails: false,
         ...overrides,
