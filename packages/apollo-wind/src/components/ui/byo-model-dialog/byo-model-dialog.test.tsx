@@ -272,7 +272,9 @@ describe('ByoModelDialog', () => {
     await addCustomAlias(user, 'taken');
 
     expect(
-      screen.getByText('Custom alias overlaps with already configured BYO LLM for this product and feature')
+      screen.getByText(
+        'Custom alias overlaps with already configured BYO LLM for this product and feature'
+      )
     ).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Provider' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Test and add' })).toBeDisabled();
