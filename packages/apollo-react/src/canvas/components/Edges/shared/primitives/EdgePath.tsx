@@ -23,6 +23,8 @@ export type EdgePathProps = {
    */
   animated?: boolean;
   strokeStyle?: EdgeStrokeStyle;
+  /** A custom `stroke-dasharray`, for patterns beyond `strokeStyle` (a dotted association). */
+  dasharray?: string;
   isReadOnly?: boolean;
   /** Optional ref for the visible path element. */
   pathRef?: React.Ref<SVGPathElement>;
@@ -31,6 +33,11 @@ export type EdgePathProps = {
   style?: CSSProperties;
   /** Resolved opacity for the visible path. */
   opacity?: number;
+  /**
+   * Also sets the stroke width as an inline style. The attribute alone loses to any stylesheet
+   * rule on `.react-flow__edge-path`, such as xyflow's own in a host that loads it unreset.
+   */
+  enforceStrokeWidth?: boolean;
 };
 
 /**
@@ -50,18 +57,22 @@ export const EdgePath = memo(function EdgePath(props: EdgePathProps) {
     selected,
     animated,
     strokeStyle,
+    dasharray: customDasharray,
     isReadOnly,
     pathRef,
     id,
     style,
     opacity = 1,
+    enforceStrokeWidth = false,
   } = props;
 
   const dasharray = animated
     ? undefined
-    : strokeStyle === 'dashed'
-      ? EDGE_DASHARRAY.dashed
-      : EDGE_DASHARRAY.solid;
+    : customDasharray
+      ? customDasharray
+      : strokeStyle === 'dashed'
+        ? EDGE_DASHARRAY.dashed
+        : EDGE_DASHARRAY.solid;
   const strokeWidth =
     (style?.strokeWidth as number | undefined) ?? (selected ? SELECTED_STROKE_WIDTH : STROKE_WIDTH);
 
@@ -98,6 +109,7 @@ export const EdgePath = memo(function EdgePath(props: EdgePathProps) {
           strokeDasharray: dasharray,
           opacity,
           transition: EDGE_PATH_TRANSITION,
+          ...(enforceStrokeWidth && { strokeWidth }),
         }}
       />
     </>

@@ -14,6 +14,28 @@ const BUTTON_POSITION: Record<Position, string> = {
   [Position.Right]: 'flex-row left-full top-1/2 -translate-y-1/2',
 };
 
+// How far the button is pulled in from the handle's outer edge (12px off the node). Its inner
+// edge stays there in both sizes, so it grows outward. `rounded` sits 2px off the node; `circle`
+// is centred on the node's edge when small, where the notch would be.
+const ANCHOR_INSET_PX = { rounded: 10, circle: 20 } as const;
+// Half of a `ButtonHandle`'s 24px cross-axis: how far its box reaches outside the node.
+const ANCHOR_MARGIN: Record<Position, 'marginBottom' | 'marginTop' | 'marginRight' | 'marginLeft'> =
+  {
+    [Position.Top]: 'marginBottom',
+    [Position.Bottom]: 'marginTop',
+    [Position.Left]: 'marginRight',
+    [Position.Right]: 'marginLeft',
+  };
+// The side facing the node, so a scaled button grows away from it.
+const SCALE_ORIGIN: Record<Position, string> = {
+  [Position.Top]: 'center bottom',
+  [Position.Bottom]: 'center top',
+  [Position.Left]: 'right center',
+  [Position.Right]: 'left center',
+};
+const SIZE_TRANSITION =
+  '[transition:width_120ms_ease,height_120ms_ease,border-radius_120ms_ease,opacity_120ms_ease,color_120ms_ease,background-color_120ms_ease,border-color_120ms_ease]';
+
 export type HandleButtonPortal = {
   nodeId: string;
   left: number;
@@ -47,6 +69,13 @@ export const HandleButton = memo(
     renderLabel = true,
     portal,
     title,
+    ariaLabel,
+    testId,
+    buttonClassName,
+    outset = 0,
+    scale = 1,
+    compact,
+    shape = 'rounded',
   }: {
     visible?: boolean;
     labelVisible?: boolean;
@@ -75,8 +104,25 @@ export const HandleButton = memo(
     portal?: HandleButtonPortal;
     /** Native tooltip for the add button. The accessible name stays `label`-driven. */
     title?: string;
+    /** Overrides the built-in accessible name. */
+    ariaLabel?: string;
+    /** `data-testid` for the add button. */
+    testId?: string;
+    /** Appended to the add button's own classes. */
+    buttonClassName?: string;
+    /** With `compact` set: moves the button this many px further out from the node. */
+    outset?: number;
+    /** Scales the button and its label, growing away from the node. Defaults to 1. */
+    scale?: number;
+    /**
+     * Set to make the button stand in for the handle, anchored against the node: `true` small,
+     * `false` full size. Leave undefined for the default button beyond the handle.
+     */
+    compact?: boolean;
+    /** Only applies when `compact` is set. */
+    shape?: 'rounded' | 'circle';
   }) => {
-    const accessibleName = label ? `Add node from ${label} handle` : 'Add node';
+    const accessibleName = ariaLabel ?? (label ? `Add node from ${label} handle` : 'Add node');
     const didDragRef = useRef(false);
     const teardownRef = useRef<(() => void) | null>(null);
 
@@ -150,6 +196,15 @@ export const HandleButton = memo(
       teardownRef.current = cleanup;
     }, []);
 
+    // The expanding button's size and shape, the same whether it is kept mounted or not.
+    const compactClassName = cx(
+      compact !== undefined && SIZE_TRANSITION,
+      // Button sizes its svg to 16px, which overflows this box and lands off-centre.
+      compact && 'h-4 w-4 [&_svg]:size-2.5',
+      compact !== undefined && shape === 'circle' ? 'rounded-full' : compact && 'rounded-md'
+    );
+    const iconSize = compact ? 10 : undefined;
+
     const addButton = keepButtonMounted ? (
       // Always mounted: toggle opacity so the slot is reserved and the label never reflows.
       // When not visible, disable it (non-focusable, non-interactive) and hide it from the
@@ -158,17 +213,23 @@ export const HandleButton = memo(
       <CanvasInlineButton
         aria-label={accessibleName}
         title={title}
+        data-testid={testId}
         aria-hidden={visible ? undefined : true}
         disabled={visible ? undefined : true}
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
+        iconSize={iconSize}
         className={cx(
-          'nodrag nopan transition-opacity duration-250',
+          'nodrag nopan',
+          // The size transition covers opacity too.
+          compact === undefined && 'transition-opacity duration-250',
+          compactClassName,
           visible
             ? 'pointer-events-auto opacity-100'
-            : 'pointer-events-none opacity-0 disabled:opacity-0'
+            : 'pointer-events-none opacity-0 disabled:opacity-0',
+          buttonClassName
         )}
       />
     ) : (
@@ -176,11 +237,17 @@ export const HandleButton = memo(
         <CanvasInlineButton
           aria-label={accessibleName}
           title={title}
+          data-testid={testId}
           onClick={handleClick}
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
-          className="nodrag nopan pointer-events-auto animate-fade-in"
+          iconSize={iconSize}
+          className={cx(
+            'nodrag nopan pointer-events-auto animate-fade-in',
+            compactClassName,
+            buttonClassName
+          )}
         />
       )
     );
@@ -188,6 +255,13 @@ export const HandleButton = memo(
     const content = (
       <div
         className={cx('absolute flex items-center pointer-events-none', BUTTON_POSITION[position])}
+        style={{
+          ...(compact !== undefined && {
+            [ANCHOR_MARGIN[position]]: outset - ANCHOR_INSET_PX[shape],
+          }),
+          // A string, since React 18 appends `px` to a number here.
+          ...(scale !== 1 && { scale: String(scale), transformOrigin: SCALE_ORIGIN[position] }),
+        }}
       >
         {addButton}
         {label && renderLabel && (
@@ -265,11 +339,27 @@ const BRIDGE_POSITION: Record<Position, string> = {
  * Invisible bridge to cover gaps between handle buttons preventing flickering when moving the pointer between them.
  */
 export const HandleHoverBridge = memo(
-  ({ position, visible }: { position: Position; visible?: boolean }) => {
+  ({
+    position,
+    visible,
+    extent,
+  }: {
+    position: Position;
+    visible?: boolean;
+    /** How far the bridge reaches out from the node, in px. Defaults to 60. */
+    extent?: number;
+  }) => {
     if (!visible) return null;
     const isVertical = position === Position.Top || position === Position.Bottom;
     return (
-      <div className={cx(BRIDGE_BASE, BRIDGE_POSITION[position], isVertical ? 'h-15' : 'w-15')} />
+      <div
+        className={cx(
+          BRIDGE_BASE,
+          BRIDGE_POSITION[position],
+          extent === undefined && (isVertical ? 'h-15' : 'w-15')
+        )}
+        style={extent === undefined ? undefined : { [isVertical ? 'height' : 'width']: extent }}
+      />
     );
   }
 );

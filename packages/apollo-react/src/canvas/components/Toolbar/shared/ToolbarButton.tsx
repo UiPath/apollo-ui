@@ -4,9 +4,12 @@ import { CanvasIcon } from '../../../utils/icon-registry';
 import { CanvasTooltip } from '../../CanvasTooltip';
 import { ToolbarIconButton } from './ToolbarIconButton';
 import type { ToolbarActionItem } from './toolbar.types';
+import { useActionHover } from './useActionHover';
 
 export interface ExtendedToolbarAction extends ToolbarActionItem {
   onClick: () => void;
+  /** `onHoverChange` bound to the toolbar's node. */
+  onHover?: (hovered: boolean) => void;
 }
 
 export interface ToolbarButtonProps {
@@ -21,6 +24,7 @@ export interface ToolbarButtonProps {
 export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => {
   const isEnabled = !action.disabled;
   const hoverBg = action.color ? getLighterColor(action.color) : undefined;
+  const hoverProps = useActionHover(action.onHover);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -39,12 +43,14 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
       className="nodrag nopan"
       onClick={handleClick}
       aria-label={action.label}
+      data-testid={action.testId}
       aria-disabled={!isEnabled}
       aria-pressed={action.isToggled}
       disabled={!isEnabled}
       isToggled={action.isToggled}
       color={action.color}
       hoverBg={hoverBg}
+      {...(isEnabled ? hoverProps : undefined)}
     >
       {action.icon && typeof action.icon === 'string' ? (
         <CanvasIcon icon={action.icon} size={16} color={action.color} />
@@ -62,7 +68,7 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
         // A disabled button emits no pointer events, so the tooltip trigger has
         // to sit on a wrapper. Without it a disabled action is an unlabelled
         // grey icon, which is exactly when the label matters most.
-        <span className="inline-flex" data-testid="toolbar-action-hover-target">
+        <span className="inline-flex" data-testid="toolbar-action-hover-target" {...hoverProps}>
           {button}
         </span>
       )}

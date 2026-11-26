@@ -7,6 +7,8 @@ export type EdgeLabelProps = {
   y: number;
   text: string;
   borderColor?: string;
+  /** Lifts the label over nodes in a canvas that stacks nodes and edges together. */
+  zIndex?: number;
   onClick?: MouseEventHandler<HTMLDivElement>;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -39,6 +41,7 @@ export const EdgeLabel = memo(function EdgeLabel({
   y,
   text,
   borderColor = EDGE_LABEL_DEFAULT_BORDER_COLOR,
+  zIndex,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -50,7 +53,7 @@ export const EdgeLabel = memo(function EdgeLabel({
       <CanvasTooltip content={text} smartTooltip delay disableHoverableContent>
         <div
           className={EDGE_LABEL_BASE_CLASS}
-          style={{ transform, borderColor }}
+          style={{ transform, borderColor, zIndex }}
           onClick={onClick}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}

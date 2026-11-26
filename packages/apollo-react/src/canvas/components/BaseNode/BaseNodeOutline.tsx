@@ -6,6 +6,8 @@ import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
 
+// Close to a CSS dashed border at 1px.
+const OUTLINE_DASH = '4 3';
 /** Inset so the stroke sits inside the box rather than half-outside it. */
 const EDGE = 0.5;
 /**
@@ -95,13 +97,26 @@ const outlineShadow = (isDragging?: boolean, isHovered?: boolean) => {
     : '[filter:var(--canvas-node-filter-rest)]';
 };
 
+/** Builds an outline in the node's own pixel space, as `pathFor` does for the built-in shapes. */
+export type NodeOutlinePath = (width: number, height: number) => string;
+
 interface BaseNodeOutlineProps {
-  shape: OutlineDrawnNodeShape;
+  shape?: OutlineDrawnNodeShape;
+  /** A host-drawn outline. Takes precedence over `shape`. */
+  path?: NodeOutlinePath;
   isSelected?: boolean;
   isHovered?: boolean;
   isDragging?: boolean;
   shadow?: boolean;
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType;
+  /** A custom fill, in place of the default surface colour. */
+  fill?: string;
+  /** A stroke colour that wins over the rest, hover, selection and status colours. */
+  stroke?: string;
+  /** `dashed` dashes the stroke, as `BaseContainer` does a border. */
+  borderStyle?: 'solid' | 'dashed';
+  /** `strong` draws a full-strength stroke at rest. Defaults to `default`. */
+  borderTone?: 'default' | 'strong';
 }
 
 /**
@@ -113,7 +128,20 @@ interface BaseNodeOutlineProps {
  * have to be drawn here too.
  */
 export const BaseNodeOutline = memo(
-  ({ shape, isSelected, isHovered, isDragging, shadow, status }: BaseNodeOutlineProps) => {
+  ({
+    shape,
+    path,
+    isSelected,
+    isHovered,
+    isDragging,
+    shadow,
+    status,
+    fill,
+    stroke,
+    borderStyle,
+    borderTone = 'default',
+  }: BaseNodeOutlineProps) => {
+    const strong = borderTone === 'strong';
     const ref = useRef<SVGSVGElement>(null);
     // Seeded with the wide-card default so the shape is drawn even before it is measured, and in
     // any environment without a ResizeObserver. Measurement refines it.
@@ -156,17 +184,25 @@ export const BaseNodeOutline = memo(
         viewBox={`0 0 ${box.width} ${box.height}`}
       >
         <path
-          d={pathFor(shape, box.width, box.height)}
+          d={
+            path ? path(box.width, box.height) : shape ? pathFor(shape, box.width, box.height) : ''
+          }
           className={cn(
             'fill-surface-overlay transition-[stroke,stroke-width] duration-150',
             statusStroke ||
               (isSelected
                 ? 'stroke-foreground-accent-muted'
                 : isHovered
-                  ? 'stroke-border-hover'
-                  : 'stroke-border')
+                  ? strong
+                    ? 'stroke-foreground'
+                    : 'stroke-border-hover'
+                  : strong
+                    ? 'stroke-foreground-muted'
+                    : 'stroke-border')
           )}
           strokeWidth={isSelected ? 2 : 1}
+          strokeDasharray={borderStyle === 'dashed' ? OUTLINE_DASH : undefined}
+          style={fill || stroke ? { fill, stroke } : undefined}
         />
       </svg>
     );

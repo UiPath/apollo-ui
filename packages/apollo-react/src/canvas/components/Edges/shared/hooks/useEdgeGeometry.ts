@@ -60,6 +60,12 @@ export type UseEdgeGeometryArgs = {
    * produce a path string with no vertices to intersect.
    */
   enableLineJumps?: boolean;
+  /**
+   * When true the drawn path runs straight from anchor to anchor through `waypoints` as given:
+   * no derived stubs or elbows, so a stored route that is not orthogonal is kept as is.
+   * `buildPath` still routes orthogonally, for previewing and writing edits. Waypoint routing only.
+   */
+  verbatimWaypoints?: boolean;
 };
 
 export type EdgeGeometry = {
@@ -82,6 +88,16 @@ export type EdgeGeometry = {
     offset: Point;
   };
 };
+
+/** Direction of travel along the last segment with any length, in the arrow's convention. */
+function lastSegmentAngle(points: readonly { x: number; y: number }[]) {
+  for (let i = points.length - 1; i > 0; i--) {
+    const to = points[i]!;
+    const from = points[i - 1]!;
+    if (to.x !== from.x || to.y !== from.y) return Math.atan2(to.y - from.y, to.x - from.x);
+  }
+  return undefined;
+}
 
 /**
  * Compute edge geometry for the active routing strategy. The waypoint pipeline
@@ -110,6 +126,7 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     enableSegments = true,
     hideArrowHead = false,
     enableLineJumps = false,
+    verbatimWaypoints = false,
   } = args;
 
   const arrowOffset = ARROW_OFFSETS[targetPosition];
@@ -133,10 +150,27 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     [sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, autoRouted]
   );
 
-  const pathPoints = useMemo(
-    () => (isWaypoint ? buildPath(waypoints) : EMPTY_VERTICES),
-    [isWaypoint, buildPath, waypoints]
-  );
+  const pathPoints = useMemo(() => {
+    if (!isWaypoint) return EMPTY_VERTICES;
+    if (!verbatimWaypoints) return buildPath(waypoints);
+    const sourceOffset = ARROW_OFFSETS[sourcePosition];
+    return [
+      { x: sourceX + sourceOffset.x, y: sourceY + sourceOffset.y, waypointIndex: -1 },
+      ...waypoints.map(({ x, y }, waypointIndex) => ({ x, y, waypointIndex })),
+      { x: targetX + arrowOffset.x, y: targetY + arrowOffset.y, waypointIndex: -1 },
+    ];
+  }, [
+    isWaypoint,
+    verbatimWaypoints,
+    buildPath,
+    waypoints,
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    arrowOffset,
+  ]);
 
   const segments = useMemo(
     () => (enableSegments ? extractSegments(pathPoints) : EMPTY_SEGMENTS),
@@ -171,7 +205,12 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     [isHandle, handle.labelX, handle.labelY, pathPoints]
   );
 
-  const arrow = { angle: ARROW_ANGLE_MAP[targetPosition], offset: arrowOffset };
+  // A verbatim route can end at any angle, so the arrow follows its last segment.
+  const angle =
+    isWaypoint && verbatimWaypoints
+      ? (lastSegmentAngle(pathPoints) ?? ARROW_ANGLE_MAP[targetPosition])
+      : ARROW_ANGLE_MAP[targetPosition];
+  const arrow = { angle, offset: arrowOffset };
 
   if (isHandle) {
     return {

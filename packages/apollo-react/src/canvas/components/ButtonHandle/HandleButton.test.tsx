@@ -310,3 +310,22 @@ describe('HandleButton mount & label visibility', () => {
     expect(screen.queryByText('Escalations')).toBeNull();
   });
 });
+
+describe('HandleButton kept mounted', () => {
+  it('keeps the compact size and shape of an expanding button', () => {
+    render(
+      <HandleButton
+        visible
+        keepButtonMounted
+        compact
+        shape="circle"
+        position={Position.Right}
+        onAction={vi.fn()}
+        handleRef={{ current: null }}
+      />
+    );
+
+    const button = screen.getByRole('button', { name: 'Add node' });
+    expect(button).toHaveClass('h-4', 'w-4', 'rounded-full');
+  });
+});

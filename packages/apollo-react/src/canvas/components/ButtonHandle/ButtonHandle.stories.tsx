@@ -25,7 +25,13 @@ import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from './ButtonHandle';
+import {
+  ButtonHandle,
+  type ButtonHandleConfig,
+  ButtonHandles,
+  type HandleActionEvent,
+} from './ButtonHandle';
+import { HandleHoverBridge } from './HandleButton';
 
 // ============================================================================
 // Meta Configuration
@@ -711,6 +717,196 @@ function LogicFlowStory() {
 }
 
 // ============================================================================
+// Expanding add button (opt-in)
+// ============================================================================
+
+const EXPANDING_SIDES = [Position.Top, Position.Right, Position.Bottom, Position.Left];
+
+type ExpandingNodeData = { label: string; buttonShape: 'rounded' | 'circle' };
+
+/**
+ * A small host-rendered node: the "+" stands in for the handle notch, and only the half of the
+ * handle outside the node starts a connection, so the body stays draggable.
+ */
+function ExpandingNode({
+  id,
+  data,
+  selected,
+}: {
+  id: string;
+  data: ExpandingNodeData;
+  selected: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const active = hovered || selected;
+
+  return (
+    <div
+      className="relative flex h-20 w-25 items-center justify-center rounded-xl border border-border bg-surface-overlay text-xs font-semibold text-foreground"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {data.label}
+      {EXPANDING_SIDES.map((side) => (
+        <HandleHoverBridge key={`bridge-${side}`} position={side} visible={active} />
+      ))}
+      {EXPANDING_SIDES.map((side) => (
+        <ButtonHandle
+          key={side}
+          id={side}
+          nodeId={id}
+          type="source"
+          handleType="output"
+          position={side}
+          visible={active}
+          showButton={active}
+          selected={selected}
+          buttonReveal="expand-on-hover"
+          buttonShape={data.buttonShape}
+          onAction={handleAction}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ExpandingButtonStory() {
+  const nodeTypes = useMemo(() => ({ expandingNode: ExpandingNode }), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes: [
+      {
+        id: 'circle',
+        type: 'expandingNode',
+        position: { x: 200, y: 160 },
+        data: { label: 'Circle', buttonShape: 'circle' },
+      },
+      {
+        id: 'rounded',
+        type: 'expandingNode',
+        position: { x: 440, y: 160 },
+        data: { label: 'Rounded', buttonShape: 'rounded' },
+      },
+    ],
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
+      <StoryInfoPanel
+        title="Expanding add button"
+        description='Opt-in: buttonReveal="expand-on-hover". Hover a node for the small buttons, hover a handle to expand it, select the node to expand them all.'
+      />
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
+// Node anchor (opt-in)
+// ============================================================================
+
+const NOT_A_START = { isConnectableStart: false } as const;
+
+/**
+ * A host-rendered node whose handles fill it: edges end on the node's border, a connection starts
+ * from the 8px strip along each side or from a notch, and one dropped anywhere on the node lands
+ * on the nearest side.
+ */
+function NodeAnchorNode({
+  id,
+  data,
+  selected,
+}: {
+  id: string;
+  data: { label: string; buttonReveal: 'always' | 'expand-on-hover' };
+  selected: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const active = hovered || selected;
+
+  return (
+    <div
+      className="relative flex h-20 w-25 items-center justify-center rounded-xl border border-border bg-surface-overlay text-xs font-semibold text-foreground"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {data.label}
+      {EXPANDING_SIDES.map((side) => (
+        <HandleHoverBridge key={`bridge-${side}`} position={side} visible={active} />
+      ))}
+      {EXPANDING_SIDES.map((side) => (
+        <ButtonHandle
+          key={`target-${side}`}
+          id={`target-${side}`}
+          nodeId={id}
+          type="target"
+          handleType="input"
+          position={side}
+          anchor="node"
+          hitRegion="quadrant"
+          showNotches={false}
+          handleProps={NOT_A_START}
+        />
+      ))}
+      {EXPANDING_SIDES.map((side) => (
+        <ButtonHandle
+          key={`source-${side}`}
+          id={`source-${side}`}
+          nodeId={id}
+          type="source"
+          handleType="output"
+          position={side}
+          anchor="node"
+          hitRegion="strip"
+          visible={active}
+          showButton={active}
+          selected={selected}
+          buttonReveal={data.buttonReveal}
+          buttonShape="circle"
+          onAction={handleAction}
+        />
+      ))}
+    </div>
+  );
+}
+
+function NodeAnchorStory() {
+  const nodeTypes = useMemo(() => ({ nodeAnchorNode: NodeAnchorNode }), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes: [
+      {
+        id: 'a',
+        type: 'nodeAnchorNode',
+        position: { x: 200, y: 160 },
+        data: { label: 'Expanding +', buttonReveal: 'expand-on-hover' },
+      },
+      {
+        id: 'b',
+        type: 'nodeAnchorNode',
+        position: { x: 440, y: 240 },
+        data: { label: 'Notch and +', buttonReveal: 'always' },
+      },
+    ],
+    initialEdges: [
+      {
+        id: 'a-b',
+        source: 'a',
+        sourceHandle: 'source-right',
+        target: 'b',
+        targetHandle: 'target-left',
+      },
+    ],
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
+      <StoryInfoPanel
+        title="Node anchor"
+        description='Opt-in: anchor="node". Edges end on the node border. Drag from the strip along a side, or from a notch, to connect, and drop anywhere on the other node to land on its nearest side.'
+      />
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
 // Exported Stories
 // ============================================================================
 
@@ -729,4 +925,14 @@ export const HandleConfiguration: Story = {
 export const LogicFlow: Story = {
   name: 'Logic flow',
   render: () => <LogicFlowStory />,
+};
+
+export const ExpandingAddButton: Story = {
+  name: 'Expanding add button',
+  render: () => <ExpandingButtonStory />,
+};
+
+export const NodeAnchor: Story = {
+  name: 'Node anchor',
+  render: () => <NodeAnchorStory />,
 };

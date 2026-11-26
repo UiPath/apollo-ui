@@ -9,7 +9,7 @@ import {
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
-import { BaseNodeOutline } from './BaseNodeOutline';
+import { BaseNodeOutline, type NodeOutlinePath } from './BaseNodeOutline';
 
 export const getStatusBorder = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType
@@ -40,7 +40,7 @@ export const getStatusBorder = (
   }
 };
 
-interface BaseContainerProps {
+export interface BaseContainerProps {
   isSelected?: boolean;
   isHovered?: boolean;
   isStacked?: boolean;
@@ -53,6 +53,29 @@ interface BaseContainerProps {
   background?: string;
   loading?: boolean;
   shadow?: boolean;
+  /**
+   * Draws the node's fill and outline from a host-supplied path instead of the container's own
+   * border, for shapes a border-radius cannot express (a diamond, a folded-corner document).
+   */
+  outlinePath?: NodeOutlinePath;
+  /** `dashed` is BPMN's non-interrupting event and event sub-process border. */
+  borderStyle?: 'solid' | 'dashed';
+  /**
+   * `strong` draws a full-strength border at rest (and the foreground colour on hover), for
+   * hosts where the border itself carries meaning (BPMN). Defaults to `default`.
+   */
+  borderTone?: 'default' | 'strong';
+  /**
+   * A border colour that wins over the rest, hover, selection and status colours, for a state
+   * the host drives (a connection target, an invalid drop).
+   */
+  borderColor?: string;
+  /**
+   * Host content laid over the whole node, above its children: a "view" button on a collapsed
+   * node, a badge, a scrim. The layer ignores the pointer; give interactive content
+   * `pointer-events-auto`.
+   */
+  overlay?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -69,6 +92,11 @@ export const BaseContainer = ({
   background,
   loading,
   shadow = true,
+  outlinePath,
+  borderStyle,
+  borderTone = 'default',
+  borderColor,
+  overlay,
   children,
 }: BaseContainerProps) => {
   const activeStatus = suggestionType ?? validationStatus ?? executionStatus;
@@ -81,14 +109,17 @@ export const BaseContainer = ({
 
     // A outline shape draws its own fill and outline, so the container drops both rather than
     // showing a rectangle behind the SVG.
-    const drawnByOutline = isOutlineDrawnShape(shape);
+    const drawnByOutline = !!outlinePath || isOutlineDrawnShape(shape);
+    const strong = borderTone === 'strong';
 
     return cn(
       'relative flex items-center cursor-pointer',
       drawnByOutline
         ? 'bg-transparent border-0'
         : cn(
-            'bg-surface-overlay border border-border',
+            'bg-surface-overlay border',
+            strong ? 'border-foreground-muted' : 'border-border',
+            borderStyle === 'dashed' && 'border-dashed',
             isRoundEndedShape(shape) ? 'rounded-full' : 'rounded-(--node-radius)'
           ),
       'w-(--node-w) h-(--node-h)',
@@ -100,7 +131,10 @@ export const BaseContainer = ({
       hasFooter && 'flex-wrap',
       !drawnByOutline && statusBorder,
       shadow && !drawnByOutline && isHovered && 'shadow-(--canvas-node-shadow-hover)',
-      isHovered && !hasStatusBorder && !drawnByOutline && 'border-border-hover',
+      isHovered &&
+        !hasStatusBorder &&
+        !drawnByOutline &&
+        (strong ? 'border-foreground' : 'border-border-hover'),
       isSelected && !drawnByOutline && 'outline outline-2 outline-foreground-accent-muted',
       interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
       interactionState === 'drag' &&
@@ -111,7 +145,27 @@ export const BaseContainer = ({
       isStacked &&
         'before:content-[""] before:absolute before:inset-x-0 before:top-0 before:h-full before:rounded-[inherit] before:bg-surface-overlay before:border before:border-brand before:translate-y-[6px] before:-z-10 before:pointer-events-none'
     );
-  }, [shape, hasFooter, activeStatus, isSelected, isHovered, isStacked, interactionState, shadow]);
+  }, [
+    shape,
+    hasFooter,
+    activeStatus,
+    isSelected,
+    isHovered,
+    isStacked,
+    interactionState,
+    shadow,
+    outlinePath,
+    borderStyle,
+    borderTone,
+  ]);
+
+  const hasOutline = !!outlinePath || isOutlineDrawnShape(shape);
+  const style = useMemo(() => {
+    // An outline-drawn node takes the colour as its path fill: on the container it would paint
+    // the whole rectangle behind the shape.
+    const fill = hasOutline ? undefined : background;
+    return fill || borderColor ? { background: fill, borderColor } : undefined;
+  }, [hasOutline, background, borderColor]);
 
   return (
     <div
@@ -122,20 +176,33 @@ export const BaseContainer = ({
       data-suggestion-type={suggestionType}
       data-stacked={isStacked || undefined}
       className={className}
-      style={background ? { background } : undefined}
+      style={style}
       aria-busy={loading || undefined}
     >
-      {isOutlineDrawnShape(shape) && (
+      {hasOutline && (
         <BaseNodeOutline
-          shape={shape}
+          shape={isOutlineDrawnShape(shape) ? shape : undefined}
+          path={outlinePath}
           isSelected={isSelected}
           isHovered={isHovered}
           isDragging={interactionState === 'drag'}
           shadow={shadow}
           status={activeStatus}
+          fill={background}
+          stroke={borderColor}
+          borderStyle={borderStyle}
+          borderTone={borderTone}
         />
       )}
       {children}
+      {overlay != null && (
+        <div
+          data-testid="base-container-overlay"
+          className="pointer-events-none absolute inset-0 z-10 rounded-[inherit]"
+        >
+          {overlay}
+        </div>
+      )}
     </div>
   );
 };

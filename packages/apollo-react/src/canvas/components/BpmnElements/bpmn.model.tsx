@@ -1,0 +1,286 @@
+import type { Edge, Node, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
+import type { SuggestionType } from '../../types';
+import type { ElementStatusValues } from '../../types/execution';
+import type { ValidationErrorSeverity } from '../../types/validation';
+import type { Point } from '../Edges/shared/types';
+
+/**
+ * The shapes below mirror a BPMN host's own model on purpose: the xyflow `type` is the BPMN
+ * `$type`, `data` is a flat bag, size lives on the node, handle ids encode the side, and an edge's
+ * waypoints include both endpoints. These renderers adapt apollo primitives to this, not the reverse.
+ */
+export type BpmnEventDefinition =
+  | 'message'
+  | 'timer'
+  | 'error'
+  | 'signal'
+  | 'escalation'
+  | 'compensation'
+  | 'conditional'
+  | 'link'
+  | 'terminate';
+
+export type BpmnLoop = 'loop' | 'parallel' | 'sequential';
+
+/**
+ * - `target`: a valid end for the connection, tinted primary.
+ * - `target-picked`: the target the connection is over, tinted success.
+ * - `anchor`: the end the connection is fixed to. Stays as it is.
+ * - `unavailable`: not part of the connection. Faded, and ignores the pointer.
+ *
+ * Every state but `anchor` also hides the toolbar and "+".
+ */
+export type BpmnConnectionState = 'target' | 'target-picked' | 'anchor' | 'unavailable';
+
+/**
+ * - `valid`: a primary wash over the element, say an expanded sub-process, pool or lane that
+ *   would take the dragged node as its child.
+ * - `valid-border`: a primary border and ring, for a drop onto the element's border.
+ * - `invalid`: tinted error.
+ *
+ * Wins over `connectionState` when both are given.
+ */
+export type BpmnDropState = 'valid' | 'valid-border' | 'invalid';
+
+export interface BpmnNodeData extends Record<string, unknown> {
+  label?: string;
+  /** Shown on an activity in place of the built-in task glyph, for kinds only the host knows. */
+  icon?: ReactNode;
+  eventDefinition?: BpmnEventDefinition;
+  /** `cancelActivity === false` on a boundary event, `isInterrupting === false` on a start event. */
+  nonInterrupting?: boolean;
+  loopCharacteristics?: BpmnLoop;
+  isExpanded?: boolean;
+  triggeredByEvent?: boolean;
+  /** `false` turns a pool or lane vertical: header band along the top, lanes side by side. */
+  isHorizontal?: boolean;
+  /** Participant multiplicity marker on a pool. */
+  multiplicity?: boolean;
+  /** A black-box pool: no header band, the label centred in the pool. */
+  isEmpty?: boolean;
+  /** Position of a lane among its siblings; every lane after the first draws a divider. */
+  laneIndex?: number;
+  /** The element's part in a connection the host has in progress. The host decides validity. */
+  connectionState?: BpmnConnectionState;
+  /**
+   * The side a connection the host runs itself (click-to-connect) would end on, to fill that
+   * side's notch. A connection xyflow drags is picked up without it.
+   */
+  connectionSide?: Position;
+  /** Whether the node being dragged over this element can be dropped on it. */
+  dropState?: BpmnDropState;
+  /** Side of an event, gateway or data node its label sits on. Defaults to `bottom`. */
+  labelPlacement?: 'bottom' | 'top' | 'left' | 'right';
+  backgroundColor?: string;
+  executionStatus?: ElementStatusValues;
+  validationStatus?: ValidationErrorSeverity;
+  modification?: SuggestionType;
+  breakpoint?: boolean;
+  mocked?: boolean;
+  connected?: boolean;
+}
+
+export type BpmnNode = Node<BpmnNodeData>;
+
+export interface BpmnEdgeData extends Record<string, unknown> {
+  label?: string;
+  /** Centre of the label in flow coordinates, as BPMN DI stores it. Defaults to the path's midpoint. */
+  labelPosition?: Point;
+  /**
+   * Source dock, bends, target dock: the list BPMN DI stores. With two or more points the flow is
+   * drawn through exactly these, wherever on the nodes the docks sit.
+   */
+  waypoints?: Point[];
+  /** Arrowheads on an association: at the target (`one`) or at both ends. Defaults to `none`. */
+  associationDirection?: 'none' | 'one' | 'both';
+  defaultFlow?: boolean;
+  conditionExpression?: string;
+  modification?: SuggestionType;
+  /** Fades the flow and its label and takes them off the pointer, say while a connection runs. */
+  dimmed?: boolean;
+}
+
+export type BpmnEdge = Edge<BpmnEdgeData>;
+
+const HANDLE_ID_SEPARATOR = '____';
+
+export const bpmnHandleId = (nodeId: string, kind: 'source' | 'target', position: Position) =>
+  [nodeId, kind, position].join(HANDLE_ID_SEPARATOR);
+
+// The last segment, since a node id may itself contain the separator.
+export const bpmnHandleSide = (id?: string | null) =>
+  id?.split(HANDLE_ID_SEPARATOR).at(-1) as Position | undefined;
+
+/** The node toolbar's buttons, as named in `hoverToolbarAction` and their `toolbar-item-` test ids. */
+export type BpmnToolbarActionId =
+  | 'delete'
+  | 'change-element'
+  | 'iteration'
+  | 'boundary-event'
+  | 'bpmn:TextAnnotation'
+  | 'breakpoint'
+  | 'duplicate';
+
+/**
+ * What the host (its own store, story state here) does when a primitive fires.
+ * Leaving out an optional action leaves out its control.
+ */
+export interface BpmnActions {
+  addAfter: (nodeId: string, side: Position) => void;
+  addBoundaryEvent?: (nodeId: string) => void;
+  /** Attach a new text annotation to the element. */
+  addAnnotation?: (nodeId: string) => void;
+  changeElement?: (nodeId: string) => void;
+  toggleLoop?: (nodeId: string) => void;
+  toggleBreakpoint?: (nodeId: string) => void;
+  duplicate?: (nodeId: string) => void;
+  deleteNode?: (nodeId: string) => void;
+  /**
+   * The pointer or keyboard focus entered or left a toolbar button, for a host that previews
+   * the action (say, outlining what Delete would remove). Always ends on `false`.
+   */
+  hoverToolbarAction?: (nodeId: string, action: BpmnToolbarActionId, hovered: boolean) => void;
+  /**
+   * A resize control was dragged. The controls only render when this is given; xyflow reports
+   * the new position and size through `onNodesChange` as well.
+   */
+  resize?: (nodeId: string, size: { width: number; height: number }) => void;
+  rename: (nodeId: string, label: string) => void;
+  /**
+   * With it, double-clicking a flow's label edits it inline, and a selected flow with no label
+   * shows a placeholder to start from.
+   */
+  renameEdge?: (edgeId: string, label: string) => void;
+  /**
+   * With it, a selected flow's label can be dragged. Called on drag end with the label's centre
+   * in flow coordinates, for the host to pass back as `data.labelPosition`.
+   */
+  moveEdgeLabel?: (edgeId: string, position: Point) => void;
+  /** Drill into a collapsed sub-process. */
+  view?: (nodeId: string) => void;
+  insertOnEdge?: (edgeId: string, position: Point) => void;
+  deleteEdge: (edgeId: string) => void;
+  /** The whole polyline, docks included, whenever an edit or a node drag changes the route. */
+  setWaypoints: (edgeId: string, waypoints: Point[]) => void;
+  /**
+   * Pointer down on a source handle or its notch. The host tells a click from a drag and runs
+   * its own click-to-connect; xyflow still starts a drag connection by itself.
+   */
+  startConnection?: (nodeId: string, side: Position, event: React.PointerEvent) => void;
+  /**
+   * Mouse down on the grab handle at either end of a selected flow. The handles only render
+   * when this is given; the host runs the reconnect.
+   */
+  startReconnect?: (edgeId: string, end: 'source' | 'target', event: React.MouseEvent) => void;
+}
+
+/** Every user-facing string in the family, for a host to translate. */
+export interface BpmnStrings {
+  delete: string;
+  changeElement: string;
+  iteration: string;
+  addBoundaryEvent: string;
+  addAnnotation: string;
+  toggleBreakpoint: string;
+  duplicate: string;
+  addElement: string;
+  view: string;
+  editLabel: string;
+  breakpoint: string;
+  annotationPlaceholder: string;
+  edgeLabelPlaceholder: string;
+  /** Accessible name of the "+" on a node's side. */
+  quickAdd: string;
+}
+
+export const DEFAULT_BPMN_STRINGS: BpmnStrings = {
+  delete: 'Delete',
+  changeElement: 'Change element',
+  iteration: 'Iteration',
+  addBoundaryEvent: 'Add boundary event',
+  addAnnotation: 'Add text annotation',
+  toggleBreakpoint: 'Toggle breakpoint',
+  duplicate: 'Duplicate',
+  addElement: 'Add element',
+  view: 'View',
+  editLabel: 'Edit label',
+  breakpoint: 'Breakpoint',
+  annotationPlaceholder: 'Add text',
+  edgeLabelPlaceholder: 'Add label',
+  quickAdd: 'Add node',
+};
+
+const BpmnStringsContext = createContext<BpmnStrings>(DEFAULT_BPMN_STRINGS);
+
+/** Overrides any of the family's strings; the rest stay English. */
+export function BpmnStringsProvider({
+  strings,
+  children,
+}: {
+  strings?: Partial<BpmnStrings>;
+  children: ReactNode;
+}) {
+  const value = useMemo(() => ({ ...DEFAULT_BPMN_STRINGS, ...strings }), [strings]);
+  return <BpmnStringsContext.Provider value={value}>{children}</BpmnStringsContext.Provider>;
+}
+
+export const useBpmnStrings = () => useContext(BpmnStringsContext);
+
+/** How the "+" on a handle appears: full size at once, or small until the handle is hovered. */
+export type BpmnButtonReveal = 'always' | 'expand-on-hover';
+export type BpmnButtonShape = 'rounded' | 'circle';
+
+/** How a node's toolbar and "+" buttons look and sit. */
+export interface BpmnControls {
+  /**
+   * How the "+" on a handle appears: full size at once, or small until the handle is hovered.
+   * Defaults to `expand-on-hover`.
+   */
+  buttonReveal?: BpmnButtonReveal;
+  /** With `expand-on-hover`, the shape of the expanding "+". Defaults to `circle`. */
+  buttonShape?: BpmnButtonShape;
+  /**
+   * Keeps a selected node's toolbar and "+" buttons from shrinking as the canvas zooms out:
+   * they scale by the inverse of the zoom, up to this factor.
+   */
+  maxZoomScale?: number;
+  /** Outlines the "+" buttons of a selected node in the primary colour. */
+  selectedButtonOutline?: boolean;
+  /** Moves the expanding "+" this many px further out from the node. */
+  buttonOutset?: number;
+  /** The smallest size a resize leaves an element at. Defaults to 60x40. */
+  resizeMinimums?: { width: number; height: number };
+}
+const NO_CONTROLS: BpmnControls = {};
+const BpmnControlsContext = createContext<BpmnControls>(NO_CONTROLS);
+/** Memoise the value: every node reads it, so a new object each render re-renders them all. */
+export const BpmnControlsProvider = BpmnControlsContext.Provider;
+export const useBpmnControls = () => useContext(BpmnControlsContext);
+
+/**
+ * For a host that gives every node and edge its own z-index, so a flow or a neighbour can paint
+ * over a node's own parts. With it the toolbar, the "+" and notches, and labels outside the
+ * element are drawn in xyflow's viewport portal at this z-index, and flow labels take it too.
+ * Pick one above the host's selected flows: xyflow lifts a selected edge by 1000.
+ */
+export interface BpmnOverlay {
+  zIndex: number;
+}
+const BpmnOverlayContext = createContext<BpmnOverlay | null>(null);
+export const BpmnOverlayProvider = BpmnOverlayContext.Provider;
+export const useBpmnOverlay = () => useContext(BpmnOverlayContext);
+
+const BpmnActionsContext = createContext<BpmnActions | null>(null);
+
+/**
+ * Memoise the value, and keep its callbacks stable: every node and flow reads it, so a new
+ * object each render re-renders them all and rebuilds every toolbar.
+ */
+export const BpmnActionsProvider = BpmnActionsContext.Provider;
+
+export function useBpmnActions(): BpmnActions {
+  const actions = useContext(BpmnActionsContext);
+  if (!actions) throw new Error('useBpmnActions needs a BpmnActionsProvider');
+  return actions;
+}

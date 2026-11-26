@@ -85,17 +85,20 @@ export const BodyFrame = memo(function BodyFrame({
   );
 });
 
+export interface ResizeControlsProps {
+  /** Smallest width (`left`/`right`) and height (`top`/`bottom`) each corner control allows. */
+  minimums?: ContainerResizeMinimums;
+  onResize: (_event: unknown, params: { width: number; height: number }) => void;
+  onResizeStart: () => void;
+  onResizeEnd: () => void;
+}
+
 export const ResizeControls = memo(function ResizeControls({
   minimums = DEFAULT_RESIZE_MINIMUMS,
   onResize,
   onResizeStart,
   onResizeEnd,
-}: {
-  minimums?: ContainerResizeMinimums;
-  onResize: (_event: unknown, params: { width: number; height: number }) => void;
-  onResizeStart: () => void;
-  onResizeEnd: () => void;
-}) {
+}: ResizeControlsProps) {
   return (
     <>
       {RESIZE_CONTROLS.map(({ position, widthSide, heightSide, cursor }) => (

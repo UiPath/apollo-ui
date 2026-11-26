@@ -51,6 +51,8 @@ export const useToolbarState = ({
             console.error(`Error executing action ${item.id}:`, error);
           }
         },
+        onHover:
+          item.onHoverChange && ((hovered: boolean) => item.onHoverChange?.(nodeId, hovered)),
       };
     });
   }, [config.actions, nodeId]);
@@ -81,6 +83,8 @@ export const useToolbarState = ({
             console.error(`Error executing action ${item.id}:`, error);
           }
         },
+        onHover:
+          item.onHoverChange && ((hovered: boolean) => item.onHoverChange?.(nodeId, hovered)),
       };
     });
   }, [config.overflowActions, nodeId]);

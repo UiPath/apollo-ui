@@ -6,6 +6,8 @@ export interface NodeToolbarConfig {
   overflowLabel?: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
   align?: 'start' | 'center' | 'end'; // start = left/top, center = middle, end = right/bottom
+  /** `data-testid` for the element that holds the toolbar's buttons. */
+  testId?: string;
 }
 
 export interface NodeToolbarProps {
@@ -18,9 +20,13 @@ export interface NodeToolbarProps {
    * Push the toolbar further from the node to clear a colliding handle affordance.
    * `'button'` clears a source add button (larger offset); `'label'` clears a
    * label-only handle (smaller offset). Omit/`false` for no offset.
+   * `'button-only'` clears an add button whose handle has no label.
+   * A number is an explicit offset in px, for hosts whose handle affordances have other sizes.
    * `true` is accepted as a back-compat alias for `'button'`.
    */
-  offsetToolbar?: boolean | 'button' | 'label';
+  offsetToolbar?: boolean | 'button' | 'button-only' | 'label' | number;
+  /** Scales the toolbar about the middle of its node-facing edge, so it grows away from the node. */
+  scale?: number;
   /** Render the toolbar in the node overlay layer instead of inside the node wrapper. */
   portalToNodeOverlay?: boolean;
 }

@@ -310,3 +310,188 @@ describe('BaseContainer cancel status treatment', () => {
     expect(outline).not.toHaveClass('stroke-error');
   });
 });
+
+describe('host-drawn outlines and border style', () => {
+  it('draws the host path as the outline instead of a bordered box', () => {
+    const outlinePath = (width: number, height: number) => `M0,0 L${width},${height}`;
+    render(
+      <BaseContainer shape="square" outlinePath={outlinePath}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const path = screen.getByTestId('base-node-outline').querySelector('path');
+    expect(path?.getAttribute('d')).toMatch(/^M0,0 L/);
+    expect(screen.getByTestId('base-container')).not.toHaveClass('border');
+  });
+
+  it('dashes the border for borderStyle="dashed" and leaves it solid by default', () => {
+    const { rerender } = render(
+      <BaseContainer borderStyle="dashed">
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(screen.getByTestId('base-container')).toHaveClass('border-dashed');
+
+    rerender(
+      <BaseContainer>
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(screen.getByTestId('base-container')).not.toHaveClass('border-dashed');
+  });
+});
+
+describe('border tone and overlay', () => {
+  it('draws a full-strength border at rest and on hover for borderTone="strong"', () => {
+    const { rerender } = render(
+      <BaseContainer borderTone="strong">
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(screen.getByTestId('base-container')).toHaveClass('border-foreground-muted');
+
+    rerender(
+      <BaseContainer borderTone="strong" isHovered>
+        <span>content</span>
+      </BaseContainer>
+    );
+    expect(screen.getByTestId('base-container')).toHaveClass('border-foreground');
+  });
+
+  it('keeps the default border when no tone is given', () => {
+    render(
+      <BaseContainer>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container')).toHaveClass('border-border');
+    expect(screen.getByTestId('base-container')).not.toHaveClass('border-border-hover');
+  });
+
+  it('strengthens a host-drawn outline stroke too', () => {
+    render(
+      <BaseContainer borderTone="strong" outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-node-outline').querySelector('path')).toHaveClass(
+      'stroke-foreground-muted'
+    );
+  });
+
+  it('lays host content over the node without catching the pointer', () => {
+    render(
+      <BaseContainer overlay={<button type="button">View</button>}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const layer = screen.getByTestId('base-container-overlay');
+    expect(layer).toContainElement(screen.getByRole('button', { name: 'View' }));
+    expect(layer).toHaveClass('pointer-events-none', 'absolute', 'inset-0');
+  });
+
+  it('renders no overlay layer when none is passed', () => {
+    render(
+      <BaseContainer>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.queryByTestId('base-container-overlay')).not.toBeInTheDocument();
+  });
+});
+
+describe('custom background', () => {
+  it('paints the container of a bordered node', () => {
+    render(
+      <BaseContainer background="rgb(1, 2, 3)">
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container').style.background).toBe('rgb(1, 2, 3)');
+  });
+
+  it('fills the outline of an outline-drawn node instead of its rectangle', () => {
+    render(
+      <BaseContainer background="rgb(1, 2, 3)" outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container').style.background).toBe('');
+    expect(screen.getByTestId('base-node-outline').querySelector('path')?.style.fill).toBe(
+      'rgb(1, 2, 3)'
+    );
+  });
+});
+
+describe('border colour override', () => {
+  it('is off by default', () => {
+    render(
+      <BaseContainer>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container').style.borderColor).toBe('');
+  });
+
+  it('colours the border of a bordered node over its status', () => {
+    render(
+      <BaseContainer borderColor="rgb(1, 2, 3)" executionStatus="Failed" isSelected>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container').style.borderColor).toBe('rgb(1, 2, 3)');
+  });
+
+  it('strokes the outline of an outline-drawn node', () => {
+    render(
+      <BaseContainer borderColor="rgb(1, 2, 3)" outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-node-outline').querySelector('path')?.style.stroke).toBe(
+      'rgb(1, 2, 3)'
+    );
+  });
+});
+
+describe('dashed outline', () => {
+  it('dashes the stroke of an outline-drawn node', () => {
+    render(
+      <BaseContainer borderStyle="dashed" outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(
+      screen
+        .getByTestId('base-node-outline')
+        .querySelector('path')
+        ?.getAttribute('stroke-dasharray')
+    ).toBeTruthy();
+  });
+
+  it('keeps it solid by default', () => {
+    render(
+      <BaseContainer outlinePath={() => 'M0,0 L1,1'}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(
+      screen
+        .getByTestId('base-node-outline')
+        .querySelector('path')
+        ?.hasAttribute('stroke-dasharray')
+    ).toBe(false);
+  });
+});

@@ -169,6 +169,35 @@ describe('NodeToolbar', () => {
     });
   });
 
+  describe('test ids', () => {
+    it('has none by default', () => {
+      render(<NodeToolbar {...defaultProps} />);
+
+      expect(screen.getByRole('toolbar')).not.toHaveAttribute('data-testid');
+      expect(screen.getByLabelText('Edit')).not.toHaveAttribute('data-testid');
+    });
+
+    it('puts the config testId on the toolbar and each action testId on its button', async () => {
+      const user = userEvent.setup();
+      render(
+        <NodeToolbar
+          {...defaultProps}
+          config={{
+            actions: [{ ...mockAction1, testId: 'item-edit' }],
+            overflowActions: [{ ...mockAction2, testId: 'item-delete' }],
+            testId: 'toolbar',
+          }}
+        />
+      );
+
+      expect(screen.getByTestId('toolbar')).toHaveAttribute('role', 'toolbar');
+      expect(screen.getByTestId('item-edit')).toBe(screen.getByLabelText('Edit'));
+
+      await user.click(screen.getByLabelText('More options'));
+      expect(screen.getByTestId('item-delete')).toHaveAttribute('role', 'menuitem');
+    });
+  });
+
   describe('Overflow menu', () => {
     let user: UserEvent;
 
@@ -496,10 +525,69 @@ describe('NodeToolbar', () => {
       expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('48px');
     });
 
+    it('applies a smaller offset for an add button that has no label', () => {
+      render(<NodeToolbar {...defaultProps} offsetToolbar="button-only" />);
+
+      expect(bridge()).not.toBeInTheDocument();
+      expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('36px');
+    });
+
+    it('applies an explicit pixel offset and keeps the hover bridge', () => {
+      render(<NodeToolbar {...defaultProps} offsetToolbar={16} />);
+
+      expect(bridge()).toBeInTheDocument();
+      expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('16px');
+    });
+
     it('does not render the hover bridge when the toolbar is hidden', () => {
       render(<NodeToolbar {...defaultProps} expanded={false} />);
 
       expect(bridge()).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Action hover', () => {
+    const hoverConfig = (onHoverChange: ToolbarActionItem['onHoverChange']): NodeToolbarConfig => ({
+      actions: [{ ...mockAction1, onHoverChange }],
+    });
+
+    it('reports the pointer entering and leaving an action', async () => {
+      const onHoverChange = vi.fn();
+      const user = userEvent.setup();
+      render(<NodeToolbar {...defaultProps} config={hoverConfig(onHoverChange)} />);
+
+      await user.hover(screen.getByRole('button', { name: 'Edit' }));
+      expect(onHoverChange).toHaveBeenLastCalledWith('test-node', true);
+
+      await user.unhover(screen.getByRole('button', { name: 'Edit' }));
+      expect(onHoverChange).toHaveBeenLastCalledWith('test-node', false);
+      expect(onHoverChange).toHaveBeenCalledTimes(2);
+    });
+
+    it('reports the leave when the toolbar closes under the pointer', async () => {
+      const onHoverChange = vi.fn();
+      const user = userEvent.setup();
+      const config = hoverConfig(onHoverChange);
+      const { rerender } = render(<NodeToolbar {...defaultProps} config={config} />);
+
+      await user.hover(screen.getByRole('button', { name: 'Edit' }));
+      rerender(<NodeToolbar {...defaultProps} config={config} hidden />);
+
+      await waitFor(() => expect(onHoverChange).toHaveBeenLastCalledWith('test-node', false));
+    });
+
+    it('ends the report when the host stops listening while an action is hovered', async () => {
+      const onHoverChange = vi.fn();
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <NodeToolbar {...defaultProps} config={hoverConfig(onHoverChange)} />
+      );
+
+      await user.hover(screen.getByRole('button', { name: 'Edit' }));
+      rerender(<NodeToolbar {...defaultProps} config={hoverConfig(undefined)} />);
+
+      expect(onHoverChange).toHaveBeenLastCalledWith('test-node', false);
+      expect(onHoverChange).toHaveBeenCalledTimes(2);
     });
   });
 });
