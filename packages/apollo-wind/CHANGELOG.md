@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.96.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.96.1...@uipath/apollo-wind@2.96.2) (2026-11-26)
+
+### Bug Fixes
+
+* **apollo-react:** word model name errors as AI Trust Layer does [LLM-4518] ([d9ae265](https://github.com/UiPath/apollo-ui/commit/d9ae265252cf375261a73c54f510459c0dca3fbb))
+
+### Reverts
+
+* **apollo-react:** keep the dialog's own model name errors [LLM-4518] ([6a078c3](https://github.com/UiPath/apollo-ui/commit/6a078c39ecd17f3720d3ea848550436fc66c4c53))
+
 ## [@uipath/apollo-wind-v2.96.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.96.0...@uipath/apollo-wind@2.96.1) (2026-11-24)
 
 ### Bug Fixes

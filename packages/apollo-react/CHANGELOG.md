@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v7.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.54.0...@uipath/apollo-react@7.54.1) (2026-11-26)
+
+### Bug Fixes
+
+* **apollo-react:** drop Nvidia NIM from the BYO dialog [LLM-4518] ([7a8da1a](https://github.com/UiPath/apollo-ui/commit/7a8da1a24b9a88b0e1e80b51c5afc965282f0bce))
+* **apollo-react:** word model name errors as AI Trust Layer does [LLM-4518] ([d9ae265](https://github.com/UiPath/apollo-ui/commit/d9ae265252cf375261a73c54f510459c0dca3fbb))
+
+### Reverts
+
+* **apollo-react:** keep the dialog's own model name errors [LLM-4518] ([6a078c3](https://github.com/UiPath/apollo-ui/commit/6a078c39ecd17f3720d3ea848550436fc66c4c53))
+
 ## [@uipath/apollo-react-v7.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.53.0...@uipath/apollo-react@7.54.0) (2026-11-26)
 
 ### Features
