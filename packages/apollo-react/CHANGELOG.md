@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v7.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.51.0...@uipath/apollo-react@7.52.0) (2026-11-26)
+
+### Features
+
+* **apollo-react:** offer a mask action in the guardrail builder [AL-706] ([ec916fd](https://github.com/UiPath/apollo-ui/commit/ec916fdddbf24559f90e1f0fc3dee97df5825150))
+* **apollo-react:** require a text detection scope for the mask action [AL-706] ([f4b95e0](https://github.com/UiPath/apollo-ui/commit/f4b95e09c473c002abd30af989f4fd6e9b96c386))
+
+### Bug Fixes
+
+* **apollo-react:** keep host parameter errors through the save-time revalidation [AL-706] ([7fb2af7](https://github.com/UiPath/apollo-ui/commit/7fb2af743f29f3a2c898de8de93d5681d5abd4df))
+
 ## [@uipath/apollo-react-v7.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.50.0...@uipath/apollo-react@7.51.0) (2026-11-25)
 
 ### Features
