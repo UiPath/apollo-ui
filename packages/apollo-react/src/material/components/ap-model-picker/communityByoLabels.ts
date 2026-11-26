@@ -145,11 +145,11 @@ const M = {
   }),
   nameTaken: msg({
     id: 'modelPicker.community.nameTaken',
-    message: '"{name}" is already in your model list. Pick another name.',
+    message: 'Custom alias overlaps with already configured BYO LLM for this product and feature',
   }),
   nameReserved: msg({
     id: 'modelPicker.community.nameReserved',
-    message: '"{name}" is the name of a UiPath model. Pick another name.',
+    message: 'Custom alias overlaps with existing UiPath LLM',
   }),
   useOwnName: msg({
     id: 'modelPicker.community.useOwnName',
@@ -298,8 +298,8 @@ export function communityDialogLabels({ _ }: PickerTranslator): ByoModelDialogLa
     modelIdLabel: t(M.modelIdLabel),
     nameStep: t(M.nameStep),
     nameHint: t(M.nameHint),
-    nameTaken: (name) => t(M.nameTaken, { name }),
-    nameReserved: (name) => t(M.nameReserved, { name }),
+    nameTaken: () => t(M.nameTaken),
+    nameReserved: () => t(M.nameReserved),
     useOwnName: t(M.useOwnName),
     aliasSearch: t(M.aliasSearch),
     aliasNoMatch: (query) => t(M.aliasNoMatch, { query }),
