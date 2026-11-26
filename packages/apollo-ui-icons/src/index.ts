@@ -1507,6 +1507,39 @@ export { default as BpmnGatewayExclusive } from './svg/ui-bpmn-canvas/bpmn-gatew
 export { default as BpmnGatewayInclusive } from './svg/ui-bpmn-canvas/bpmn-gateway/bpmn-gateway-inclusive.svg';
 export { default as BpmnGatewayParallel } from './svg/ui-bpmn-canvas/bpmn-gateway/bpmn-gateway-parallel.svg';
 
+// ui-bpmn-canvas/bpmn-glyph
+export { default as BpmnGlyphEventCompensationCatch } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-compensation-catch.svg';
+export { default as BpmnGlyphEventCompensationThrow } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-compensation-throw.svg';
+export { default as BpmnGlyphEventConditional } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-conditional.svg';
+export { default as BpmnGlyphEventErrorCatch } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-error-catch.svg';
+export { default as BpmnGlyphEventErrorThrow } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-error-throw.svg';
+export { default as BpmnGlyphEventEscalationCatch } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-escalation-catch.svg';
+export { default as BpmnGlyphEventEscalationThrow } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-escalation-throw.svg';
+export { default as BpmnGlyphEventLinkCatch } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-link-catch.svg';
+export { default as BpmnGlyphEventLinkThrow } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-link-throw.svg';
+export { default as BpmnGlyphEventMessageCatch } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-message-catch.svg';
+export { default as BpmnGlyphEventMessageThrow } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-message-throw.svg';
+export { default as BpmnGlyphEventSignalCatch } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-signal-catch.svg';
+export { default as BpmnGlyphEventSignalThrow } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-signal-throw.svg';
+export { default as BpmnGlyphEventTerminate } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-terminate.svg';
+export { default as BpmnGlyphEventTimer } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-event-timer.svg';
+export { default as BpmnGlyphGatewayComplex } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-gateway-complex.svg';
+export { default as BpmnGlyphGatewayEventBased } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-gateway-event-based.svg';
+export { default as BpmnGlyphGatewayExclusive } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-gateway-exclusive.svg';
+export { default as BpmnGlyphGatewayInclusive } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-gateway-inclusive.svg';
+export { default as BpmnGlyphGatewayParallel } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-gateway-parallel.svg';
+export { default as BpmnGlyphMarkerParallel } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-marker-parallel.svg';
+export { default as BpmnGlyphMarkerSequential } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-marker-sequential.svg';
+export { default as BpmnGlyphMarkerSubProcess } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-marker-sub-process.svg';
+export { default as BpmnGlyphTaskAgentic } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-agentic.svg';
+export { default as BpmnGlyphTaskBusinessRule } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-business-rule.svg';
+export { default as BpmnGlyphTaskManual } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-manual.svg';
+export { default as BpmnGlyphTaskReceive } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-receive.svg';
+export { default as BpmnGlyphTaskScript } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-script.svg';
+export { default as BpmnGlyphTaskSend } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-send.svg';
+export { default as BpmnGlyphTaskService } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-service.svg';
+export { default as BpmnGlyphTaskUser } from './svg/ui-bpmn-canvas/bpmn-glyph/bpmn-glyph-task-user.svg';
+
 // ui-bpmn-canvas/bpmn-participant
 export { default as BpmnParticipantParticipant } from './svg/ui-bpmn-canvas/bpmn-participant/bpmn-participant-participant.svg';
 
