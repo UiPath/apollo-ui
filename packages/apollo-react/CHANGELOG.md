@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.53.0...@uipath/apollo-react@7.54.0) (2026-11-26)
+
+### Features
+
+* **apollo-react:** let a node manifest cap its description at one line ([1b415b8](https://github.com/UiPath/apollo-ui/commit/1b415b8a836b423301cc8f5c6282324829c5774e))
+
 ## [@uipath/apollo-react-v7.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.52.0...@uipath/apollo-react@7.53.0) (2026-11-26)
 
 ### Features
