@@ -309,19 +309,8 @@ export const COMMUNITY_BYO_PROVIDERS: readonly CommunityByoProvider[] = [
     ),
   },
   {
-    id: 'nvidia-nim',
-    name: 'Nvidia NIM',
-    connector: 'uipath-nvidia-nim',
-    connectorType: 'NvidiaNim',
-    form: singleAuth(
-      field('url', 'Base URL', { defaultValue: 'https://integrate.api.nvidia.com' }),
-      secret('apikey', 'API key'),
-      field('api_version', 'API version', { defaultValue: 'v1' })
-    ),
-  },
-  {
     id: 'openai-compatible',
-    name: 'OpenAI-compatible',
+    name: 'OpenAI V1 Compliant',
     connector: 'uipath-openai-openaiv1compliant',
     connectorType: 'OpenAiV1Compatible',
     form: singleAuth(
