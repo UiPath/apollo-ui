@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.54.1...@uipath/apollo-react@7.55.0) (2026-11-26)
+
+### Features
+
+* **apollo-react:** animate node moves and canvas zoom by default [MST-18539] ([5be6625](https://github.com/UiPath/apollo-ui/commit/5be66251df84275692037b4919080d32c12d83e3))
+
 ## [@uipath/apollo-react-v7.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.54.0...@uipath/apollo-react@7.54.1) (2026-11-26)
 
 ### Bug Fixes
