@@ -199,6 +199,41 @@ describe('MultiSelect', () => {
     expect(combobox).toBeDisabled();
   });
 
+  it.each([
+    'control',
+    'group',
+  ])('closes and clears a search when disabled by %s', async (source) => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onBlur = vi.fn();
+    const props = { options: mockOptions, selected: ['react'], onChange, onBlur };
+    const picker = (disabled: boolean) => (
+      <InputGroup disabled={source === 'group' && disabled}>
+        <MultiSelect {...props} disabled={source === 'control' && disabled} />
+      </InputGroup>
+    );
+    const { rerender } = render(picker(false));
+    const trigger = screen.getByRole('combobox');
+
+    await user.click(trigger);
+    await user.type(screen.getByPlaceholderText('Search...'), 'vue');
+    expect(screen.getByPlaceholderText('Search...')).toHaveValue('vue');
+
+    rerender(picker(true));
+    expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onBlur).toHaveBeenCalledOnce();
+
+    rerender(picker(false));
+    expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
+    await user.click(trigger);
+    expect(screen.getByPlaceholderText('Search...')).toHaveValue('');
+    expect(screen.getByRole('option', { name: 'React' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Angular' })).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('accepts custom className', () => {
     const onChange = vi.fn();
     const { container } = render(
