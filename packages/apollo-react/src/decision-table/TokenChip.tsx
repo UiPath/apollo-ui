@@ -24,6 +24,8 @@ const chipMark = (mark: Mark | undefined) =>
     title: mark?.title,
     matched: mark?.matched,
     glyph: undefined,
+    // The grid's review marks; the text view words a diff from its own `DiffRows` instead.
+    review: undefined,
   }) satisfies MarkFields<Mark>;
 
 /** A token's own look: an output's value is a pill, or muted when the cell is empty. */

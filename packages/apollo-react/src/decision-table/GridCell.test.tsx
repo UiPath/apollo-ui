@@ -190,4 +190,64 @@ describe('GridCell', () => {
       expect(screen.getByTestId('cell-editor')).toHaveAttribute('aria-label', 'Amount, row 1');
     });
   });
+
+  describe('a change mark', () => {
+    it('paints the change from its data attribute', () => {
+      renderCell({ mark: { review: { change: 'add' } } });
+      expect(screen.getByTestId('cell').getAttribute('data-change')).toBe('add');
+    });
+
+    it('shows what the cell held, struck through, above what it holds', () => {
+      renderCell({ mark: { review: { change: 'update', previous: '30' } } });
+      const cell = screen.getByTestId('cell');
+      expect(cell.querySelector('del')?.textContent).toBe('30');
+      expect(cell.textContent).toBe('3042');
+    });
+
+    it('shows an empty previous value as the dash, not as nothing', () => {
+      renderCell({ value: '', mark: { review: { change: 'update', previous: '' } } });
+      expect(screen.getByTestId('cell').querySelector('del')?.textContent).toBe('—');
+    });
+
+    it('shows an empty previous value as the dash, not as the placeholder', () => {
+      renderCell({
+        value: '',
+        placeholder: 'Any',
+        mark: { review: { change: 'update', previous: '' } },
+      });
+      expect(screen.getByTestId('cell').querySelector('del')?.textContent).toBe('—');
+    });
+
+    it('shows a note under the text, outside the old value', () => {
+      renderCell({ mark: { review: { note: 'Moved up 3' } } });
+      const cell = screen.getByTestId('cell');
+      expect(screen.getByText('Moved up 3')).toBeTruthy();
+      expect(cell.querySelector('del')).toBeNull();
+      expect(cell.hasAttribute('data-change')).toBe(false);
+    });
+
+    /** A third stacked line would overflow the row's fixed height and clip the glyph. */
+    it.each([
+      ['the old value', { change: 'update', previous: '30' }],
+      ['a note', { note: 'Moved up 3' }],
+    ] as const)("keeps the glyph on the value's line under %s", (_, review) => {
+      renderCell({ mark: { tone: 'error', glyph: true, review } });
+      const surface = screen.getByTestId('cell').firstElementChild;
+      const valueLine = screen.getByText('42').parentElement;
+      expect(valueLine?.parentElement).toBe(surface);
+      expect(valueLine?.querySelector('svg')).not.toBeNull();
+      expect(surface?.children).toHaveLength(2);
+    });
+
+    it('drops the old value and the note while editing', () => {
+      renderCell({ editing: true, mark: { review: { change: 'update', previous: '30' } } });
+      expect(screen.getByTestId('cell').querySelector('del')).toBeNull();
+    });
+
+    it('stays one line without a change', () => {
+      renderCell();
+      expect(screen.getByTestId('cell').hasAttribute('data-change')).toBe(false);
+      expect(screen.getByTestId('cell').className).not.toContain('align-top');
+    });
+  });
 });
