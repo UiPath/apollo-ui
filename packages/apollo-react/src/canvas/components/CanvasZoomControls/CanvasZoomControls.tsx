@@ -3,7 +3,7 @@ import { BrushCleaning, Scan, ZoomIn, ZoomOut } from 'lucide-react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ToolbarButton } from '../ToolbarButton';
 import { useSafeLingui } from '../../../i18n';
-import { withViewportMotion } from '../../utils/transitions';
+import { withViewportMotion } from '../../utils/reduced-motion';
 import { BASE_CANVAS_DEFAULTS } from '../BaseCanvas/BaseCanvas.constants';
 
 export interface CanvasZoomControlsLabels {

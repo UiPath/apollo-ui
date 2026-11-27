@@ -8,7 +8,7 @@ import { Button } from '@uipath/apollo-wind';
 import { memo, useCallback } from 'react';
 import type { CanvasTranslations } from '../types';
 import { CanvasIcon } from '../utils/icon-registry';
-import { withViewportMotion } from '../utils/transitions';
+import { withViewportMotion } from '../utils/reduced-motion';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from './BaseCanvas/BaseCanvas.types';
 import { CanvasTooltip } from './CanvasTooltip';

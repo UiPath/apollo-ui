@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { prefersReducedMotion, withViewportMotion } from './transitions';
+import { prefersReducedMotion, withViewportMotion } from './reduced-motion';
 
 const setReducedMotion = (matches: boolean) =>
   vi.spyOn(window, 'matchMedia').mockReturnValue({ matches } as MediaQueryList);

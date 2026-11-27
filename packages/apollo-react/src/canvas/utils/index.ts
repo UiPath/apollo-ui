@@ -18,7 +18,7 @@ export * from './NodeUtils';
 export * from './node-size';
 export * from './nodePropsEqual';
 export * from './props-helpers';
+export * from './reduced-motion';
 export * from './resource-operations';
 export * from './Storage';
 export * from './StyleUtil';
-export { prefersReducedMotion, withViewportMotion } from './transitions';

@@ -53,7 +53,7 @@ import type { CanvasLevel } from '../../types/canvas.types';
 import { type CanvasHandleActionEvent, isContainerNodeManifest } from '../../utils';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { CanvasIcon } from '../../utils/icon-registry';
-import { prefersReducedMotion } from '../../utils/transitions';
+import { prefersReducedMotion } from '../../utils/reduced-motion';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
