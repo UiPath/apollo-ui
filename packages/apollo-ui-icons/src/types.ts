@@ -238,6 +238,37 @@ export type IconName =
   | 'BpmnGatewayExclusive'
   | 'BpmnGatewayInclusive'
   | 'BpmnGatewayParallel'
+  | 'BpmnGlyphEventCompensationCatch'
+  | 'BpmnGlyphEventCompensationThrow'
+  | 'BpmnGlyphEventConditional'
+  | 'BpmnGlyphEventErrorCatch'
+  | 'BpmnGlyphEventErrorThrow'
+  | 'BpmnGlyphEventEscalationCatch'
+  | 'BpmnGlyphEventEscalationThrow'
+  | 'BpmnGlyphEventLinkCatch'
+  | 'BpmnGlyphEventLinkThrow'
+  | 'BpmnGlyphEventMessageCatch'
+  | 'BpmnGlyphEventMessageThrow'
+  | 'BpmnGlyphEventSignalCatch'
+  | 'BpmnGlyphEventSignalThrow'
+  | 'BpmnGlyphEventTerminate'
+  | 'BpmnGlyphEventTimer'
+  | 'BpmnGlyphGatewayComplex'
+  | 'BpmnGlyphGatewayEventBased'
+  | 'BpmnGlyphGatewayExclusive'
+  | 'BpmnGlyphGatewayInclusive'
+  | 'BpmnGlyphGatewayParallel'
+  | 'BpmnGlyphMarkerParallel'
+  | 'BpmnGlyphMarkerSequential'
+  | 'BpmnGlyphMarkerSubProcess'
+  | 'BpmnGlyphTaskAgentic'
+  | 'BpmnGlyphTaskBusinessRule'
+  | 'BpmnGlyphTaskManual'
+  | 'BpmnGlyphTaskReceive'
+  | 'BpmnGlyphTaskScript'
+  | 'BpmnGlyphTaskSend'
+  | 'BpmnGlyphTaskService'
+  | 'BpmnGlyphTaskUser'
   | 'BpmnParticipantParticipant'
   | 'BpmnToolbarChangeElement'
   | 'BpmnToolbarComment'
@@ -1578,6 +1609,37 @@ export const iconNames: readonly IconName[] = [
   'BpmnGatewayExclusive',
   'BpmnGatewayInclusive',
   'BpmnGatewayParallel',
+  'BpmnGlyphEventCompensationCatch',
+  'BpmnGlyphEventCompensationThrow',
+  'BpmnGlyphEventConditional',
+  'BpmnGlyphEventErrorCatch',
+  'BpmnGlyphEventErrorThrow',
+  'BpmnGlyphEventEscalationCatch',
+  'BpmnGlyphEventEscalationThrow',
+  'BpmnGlyphEventLinkCatch',
+  'BpmnGlyphEventLinkThrow',
+  'BpmnGlyphEventMessageCatch',
+  'BpmnGlyphEventMessageThrow',
+  'BpmnGlyphEventSignalCatch',
+  'BpmnGlyphEventSignalThrow',
+  'BpmnGlyphEventTerminate',
+  'BpmnGlyphEventTimer',
+  'BpmnGlyphGatewayComplex',
+  'BpmnGlyphGatewayEventBased',
+  'BpmnGlyphGatewayExclusive',
+  'BpmnGlyphGatewayInclusive',
+  'BpmnGlyphGatewayParallel',
+  'BpmnGlyphMarkerParallel',
+  'BpmnGlyphMarkerSequential',
+  'BpmnGlyphMarkerSubProcess',
+  'BpmnGlyphTaskAgentic',
+  'BpmnGlyphTaskBusinessRule',
+  'BpmnGlyphTaskManual',
+  'BpmnGlyphTaskReceive',
+  'BpmnGlyphTaskScript',
+  'BpmnGlyphTaskSend',
+  'BpmnGlyphTaskService',
+  'BpmnGlyphTaskUser',
   'BpmnParticipantParticipant',
   'BpmnToolbarChangeElement',
   'BpmnToolbarComment',
