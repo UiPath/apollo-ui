@@ -196,13 +196,11 @@ export function getCanvasSize(containerElement?: HTMLElement | null): {
 }
 
 /**
- * Check if user prefers reduced motion
+ * Whether the user asked for reduced motion. False where `matchMedia` is missing, as in jsdom.
  */
 export function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined') return false;
-
-  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  return mediaQuery.matches;
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
 }
 
 /**
