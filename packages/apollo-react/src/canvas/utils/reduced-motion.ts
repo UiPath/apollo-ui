@@ -10,9 +10,9 @@ export function prefersReducedMotion(): boolean {
  * Lays a caller's viewport options over the defaults, so a caller that sets only `padding` still
  * animates. Under reduced motion, any duration drops to 0.
  */
-export function withViewportMotion<D extends object, O extends { duration?: number }>(
+export function withViewportMotion<D extends object, O extends object>(
   defaults: D,
-  options?: O
+  options?: O & { duration?: number }
 ): D & O {
   const merged = { ...defaults, ...options } as D & O;
   return prefersReducedMotion() ? { ...merged, duration: 0 } : merged;
