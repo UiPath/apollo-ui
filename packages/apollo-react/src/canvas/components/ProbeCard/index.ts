@@ -16,5 +16,9 @@
  * See `ProbeCardProps` for the full callback contract.
  */
 export { ProbeCard } from './ProbeCard';
+export { ProbeCardFrame } from './ProbeCardFrame';
+export { ProbeResizeHandles } from './ProbeResizeHandles';
+export { useDragSession } from './useDragSession';
 export type { ProbeCardProps, WatchResult, IterationControl } from './ProbeCard';
+export type { ProbeCardFrameProps, ProbeCardFrameStrings } from './ProbeCardFrame';
 export type { ResizeEdges } from './ProbeResizeHandles';

@@ -1,9 +1,8 @@
 import { Button } from '@uipath/apollo-wind';
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useLatestRef } from '../../hooks/useLatestRef';
-import { ProbeResizeHandles, type ResizeEdges } from './ProbeResizeHandles';
-import { useDragSession } from './useDragSession';
+import { ProbeCardFrame } from './ProbeCardFrame';
+import type { ResizeEdges } from './ProbeResizeHandles';
 
 // ============================================================================
 // Public types
@@ -39,6 +38,10 @@ export interface ProbeCardProps {
   onResize: (cumulativeDelta: { x: number; y: number }, edges: ResizeEdges) => void;
   onResizeEnd: () => void;
   onClose: () => void;
+  /** Moves the card by a number of screen pixels, for the arrow keys. See {@link ProbeCardFrameProps.onNudge}. */
+  onNudge?: (delta: { x: number; y: number }) => void;
+  /** Grows or shrinks the card by a number of screen pixels, for Shift + the arrow keys. */
+  onResizeBy?: (delta: { x: number; y: number }) => void;
   /**
    * Called when the user scrolls or middle-mouse-drags over the card while
    * it is embedded in a canvas — allows the card to pan the underlying canvas
@@ -228,8 +231,6 @@ function WatchRow({
 // ProbeCard
 // ============================================================================
 
-const PAN_ON_SCROLL_SPEED = 0.5;
-
 function ProbeCardComponent({
   watches,
   iterationControl,
@@ -243,27 +244,14 @@ function ProbeCardComponent({
   onResize,
   onResizeEnd,
   onClose,
+  onNudge,
+  onResizeBy,
   onCanvasPan,
   onCanvasZoom,
 }: ProbeCardProps) {
-  const [hovered, setHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
   const watchListRef = useRef<HTMLDivElement>(null);
   const pendingFocusNewWatchRef = useRef(false);
   const previousWatchCountRef = useRef(watches.length);
-  const onCloseRef = useLatestRef(onClose);
-  const onCanvasPanRef = useLatestRef(onCanvasPan);
-  const onCanvasZoomRef = useLatestRef(onCanvasZoom);
-  const isSpacePressedRef = useRef(false);
-  const canvasPanCleanupRef = useRef<(() => void) | null>(null);
-  const canvasPanLastPointRef = useRef<{ x: number; y: number } | null>(null);
-  const suppressNextClickRef = useRef(false);
-
-  const handleHeaderMouseDown = useDragSession({
-    onStart: onDragStart,
-    onMove: onDrag,
-    onEnd: onDragEnd,
-  });
 
   const handleAddWatch = () => {
     pendingFocusNewWatchRef.current = true;
@@ -284,248 +272,93 @@ function ProbeCardComponent({
     input.focus({ preventScroll: true });
   }, [watches.length]);
 
-  // Keyboard shortcuts — capture phase so we run before ReactFlow's handlers.
-  //   Escape          → dismiss the probe (always, even from an input)
-  //   Delete/Backspace → dismiss when card has focus but no editable is active
-  //   ArrowUp/Down    → move focus between watch expression inputs
+  // ArrowUp/Down move focus between watch expression inputs — capture phase so we run before
+  // ReactFlow's handlers.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      const card = cardRef.current;
-      if (!card || !card.contains(document.activeElement)) return;
-
-      if (e.key === 'Escape') {
-        e.stopPropagation();
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const list = watchListRef.current;
+      if (!list || !list.contains(document.activeElement)) return;
+      const inputs = Array.from(
+        list.querySelectorAll<HTMLInputElement>('[data-probe-watch-input="true"]')
+      );
+      const idx = inputs.indexOf(document.activeElement as HTMLInputElement);
+      if (idx === -1) return;
+      const next = inputs[e.key === 'ArrowDown' ? idx + 1 : idx - 1];
+      if (next) {
         e.preventDefault();
-        onCloseRef.current();
-        return;
+        e.stopPropagation();
+        next.focus();
+        next.select();
       }
-
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        const inputs = Array.from(
-          card.querySelectorAll<HTMLInputElement>('[data-probe-watch-input="true"]')
-        );
-        const idx = inputs.indexOf(document.activeElement as HTMLInputElement);
-        if (idx === -1) return;
-        const next = inputs[e.key === 'ArrowDown' ? idx + 1 : idx - 1];
-        if (next) {
-          e.preventDefault();
-          e.stopPropagation();
-          next.focus();
-          next.select();
-        }
-        return;
-      }
-
-      if (e.key !== 'Delete' && e.key !== 'Backspace') return;
-      const active = document.activeElement as HTMLElement | null;
-      const isEditable =
-        !!active &&
-        (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
-      if (isEditable) return;
-      e.stopPropagation();
-      e.preventDefault();
-      onCloseRef.current();
     };
     window.addEventListener('keydown', handler, true);
     return () => window.removeEventListener('keydown', handler, true);
-  }, [onCloseRef]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === ' ' || e.code === 'Space') isSpacePressedRef.current = true;
-    };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === ' ' || e.code === 'Space') isSpacePressedRef.current = false;
-    };
-    window.addEventListener('keydown', handleKeyDown, true);
-    window.addEventListener('keyup', handleKeyUp, true);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown, true);
-      window.removeEventListener('keyup', handleKeyUp, true);
-      canvasPanCleanupRef.current?.();
-    };
   }, []);
 
-  const startCanvasPan = (e: React.MouseEvent) => {
-    if (!onCanvasPanRef.current) return;
-    e.stopPropagation();
-    e.preventDefault();
-    suppressNextClickRef.current = true;
-    canvasPanCleanupRef.current?.();
-    canvasPanLastPointRef.current = { x: e.clientX, y: e.clientY };
-
-    const handleMove = (ev: MouseEvent) => {
-      const last = canvasPanLastPointRef.current;
-      if (!last) return;
-      const next = { x: ev.clientX, y: ev.clientY };
-      canvasPanLastPointRef.current = next;
-      onCanvasPanRef.current?.({ x: next.x - last.x, y: next.y - last.y });
-    };
-    const handleUp = () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', handleUp);
-      canvasPanCleanupRef.current = null;
-      canvasPanLastPointRef.current = null;
-      window.setTimeout(() => {
-        suppressNextClickRef.current = false;
-      }, 0);
-    };
-    canvasPanCleanupRef.current = handleUp;
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleUp);
-  };
-
-  const handleMouseDownCapture = (e: React.MouseEvent) => {
-    const target = e.target instanceof Element ? e.target : null;
-    const startedMiddlePan = e.button === 1;
-    const startedSpacePan =
-      e.button === 0 && isSpacePressedRef.current && !isInteractiveTarget(target);
-    if (startedMiddlePan || startedSpacePan) {
-      startCanvasPan(e);
-      return;
-    }
-    if (e.button === 0 && !isInteractiveTarget(target)) cardRef.current?.focus();
-  };
-
-  const handleClickCapture = (e: React.MouseEvent) => {
-    if (!suppressNextClickRef.current) return;
-    suppressNextClickRef.current = false;
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
-  // Non-passive wheel listener so we can preventDefault on pinch-to-zoom
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-
-    const onWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        if (onCanvasZoomRef.current) {
-          e.stopPropagation();
-          e.preventDefault();
-          onCanvasZoomRef.current({
-            clientX: e.clientX,
-            clientY: e.clientY,
-            deltaY: e.deltaY,
-            deltaMode: e.deltaMode,
-            ctrlKey: e.ctrlKey,
-          });
-        }
-        return;
-      }
-      const target = e.target instanceof Node ? e.target : null;
-      if (
-        target &&
-        watchListRef.current?.contains(target) &&
-        canScrollVertically(watchListRef.current, e.deltaY)
-      ) {
-        e.stopPropagation();
-        return;
-      }
-      if (onCanvasPanRef.current) {
-        e.stopPropagation();
-        e.preventDefault();
-        const deltaNormalize = e.deltaMode === 1 ? 20 : 1;
-        let deltaX = e.deltaX * deltaNormalize;
-        let deltaY = e.deltaY * deltaNormalize;
-        if (!isMac() && e.shiftKey) {
-          deltaX = e.deltaY * deltaNormalize;
-          deltaY = 0;
-        }
-        onCanvasPanRef.current({
-          x: -deltaX * PAN_ON_SCROLL_SPEED,
-          y: -deltaY * PAN_ON_SCROLL_SPEED,
-        });
-      }
-    };
-
-    card.addEventListener('wheel', onWheel, { passive: false });
-    return () => card.removeEventListener('wheel', onWheel);
-  }, [onCanvasZoomRef, onCanvasPanRef]);
+  const headerActions = (
+    <>
+      {iterationControl && (
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Button
+            variant="ghost"
+            size="3xs"
+            icon
+            disabled={iterationControl.current === 0}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={iterationControl.onPrev}
+            title="Previous iteration"
+            aria-label="Previous iteration"
+          >
+            <ChevronLeft />
+          </Button>
+          <span className="text-[10px] font-mono text-foreground-subtle tabular-nums select-none">
+            {iterationControl.current + 1}/{iterationControl.total}
+          </span>
+          <Button
+            variant="ghost"
+            size="3xs"
+            icon
+            disabled={iterationControl.current === iterationControl.total - 1}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={iterationControl.onNext}
+            title="Next iteration"
+            aria-label="Next iteration"
+          >
+            <ChevronRight />
+          </Button>
+        </div>
+      )}
+      <Button
+        variant="ghost"
+        size="3xs"
+        icon
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={handleAddWatch}
+        title="Add watch"
+        aria-label="Add watch"
+      >
+        <Plus />
+      </Button>
+    </>
+  );
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: no semantic element maps to a focusable probe card container; <fieldset> would add form semantics and unwanted styles
-    <div
-      ref={cardRef}
-      // biome-ignore lint/a11y/noNoninteractiveTabindex: card requires programmatic focus for keyboard shortcuts (Escape/Delete/ArrowUp/ArrowDown)
-      tabIndex={0}
-      role="group"
-      aria-label="Probe"
-      className="relative h-full flex flex-col rounded-[20px] border border-dashed border-border bg-surface-raised shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-foreground-accent-muted nodrag"
-      onMouseDownCapture={handleMouseDownCapture}
-      onClickCapture={handleClickCapture}
-      onMouseDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.stopPropagation()}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <ProbeCardFrame
+      headerActions={headerActions}
+      onDragStart={onDragStart}
+      onDrag={onDrag}
+      onDragEnd={onDragEnd}
+      onResizeStart={onResizeStart}
+      onResize={onResize}
+      onResizeEnd={onResizeEnd}
+      onClose={onClose}
+      onNudge={onNudge}
+      onResizeBy={onResizeBy}
+      onCanvasPan={onCanvasPan}
+      onCanvasZoom={onCanvasZoom}
     >
-      {/* Header */}
-      <div
-        onMouseDown={handleHeaderMouseDown}
-        className="flex items-center gap-2 px-3 py-2 border-b border-border-subtle bg-surface-overlay/30 cursor-move select-none shrink-0"
-      >
-        <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">Probe</span>
-
-        {iterationControl && (
-          <div className="flex items-center gap-0.5 shrink-0">
-            <Button
-              variant="ghost"
-              size="3xs"
-              icon
-              disabled={iterationControl.current === 0}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={iterationControl.onPrev}
-              title="Previous iteration"
-              aria-label="Previous iteration"
-            >
-              <ChevronLeft />
-            </Button>
-            <span className="text-[10px] font-mono text-foreground-subtle tabular-nums select-none">
-              {iterationControl.current + 1}/{iterationControl.total}
-            </span>
-            <Button
-              variant="ghost"
-              size="3xs"
-              icon
-              disabled={iterationControl.current === iterationControl.total - 1}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={iterationControl.onNext}
-              title="Next iteration"
-              aria-label="Next iteration"
-            >
-              <ChevronRight />
-            </Button>
-          </div>
-        )}
-
-        <Button
-          variant="ghost"
-          size="3xs"
-          icon
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={handleAddWatch}
-          title="Add watch"
-          aria-label="Add watch"
-        >
-          <Plus />
-        </Button>
-        <Button
-          variant="ghost"
-          size="3xs"
-          icon
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={onClose}
-          title="Remove probe"
-          aria-label="Remove probe"
-        >
-          <X />
-        </Button>
-      </div>
-
-      {/* Watch list */}
-      <div ref={watchListRef} className="flex-1 min-h-0 overflow-y-auto">
+      <div ref={watchListRef} className="h-full">
         {watches.length === 0 ? (
           <div className="flex items-center justify-center h-full px-4">
             <span className="text-[11px] text-foreground-subtle text-center leading-relaxed">
@@ -543,14 +376,7 @@ function ProbeCardComponent({
           ))
         )}
       </div>
-
-      <ProbeResizeHandles
-        active={hovered}
-        onResizeStart={onResizeStart}
-        onResize={onResize}
-        onResizeEnd={onResizeEnd}
-      />
-    </div>
+    </ProbeCardFrame>
   );
 }
 
@@ -604,24 +430,3 @@ function ProbeCardComponent({
  * ```
  */
 export const ProbeCard = memo(ProbeCardComponent);
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function isInteractiveTarget(target: Element | null): boolean {
-  return !!target?.closest(
-    'input, textarea, select, button, a, [contenteditable], [role="button"], [role="menuitem"]'
-  );
-}
-
-function isMac(): boolean {
-  return typeof navigator !== 'undefined' && navigator.userAgent.includes('Mac');
-}
-
-function canScrollVertically(element: HTMLElement, deltaY: number): boolean {
-  if (deltaY === 0) return false;
-  const maxScrollTop = element.scrollHeight - element.clientHeight;
-  if (maxScrollTop <= 0) return false;
-  return deltaY < 0 ? element.scrollTop > 0 : element.scrollTop < maxScrollTop;
-}
