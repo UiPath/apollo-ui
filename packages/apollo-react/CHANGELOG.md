@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.55.0...@uipath/apollo-react@7.56.0) (2026-11-27)
+
+### Features
+
+* **apollo-react:** export prefersReducedMotion and withViewportMotion [MST-18539] ([14040d1](https://github.com/UiPath/apollo-ui/commit/14040d1dc9168b868357cf65653ee32194b57fb4))
+
+### Bug Fixes
+
+* **apollo-react:** accept options without a duration in withViewportMotion ([17dff58](https://github.com/UiPath/apollo-ui/commit/17dff58767abed8e93b87d8226c53b9f50f2486c))
+
 ## [@uipath/apollo-react-v7.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.54.1...@uipath/apollo-react@7.55.0) (2026-11-26)
 
 ### Features
