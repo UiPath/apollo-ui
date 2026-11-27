@@ -1,6 +1,6 @@
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BASE_CANVAS_DEFAULTS } from '../components/BaseCanvas/BaseCanvas.constants';
-import { prefersReducedMotion } from './transitions';
+import { prefersReducedMotion } from './reduced-motion';
 
 export interface AnimateNodesOptions<N extends Node = Node> {
   /** Milliseconds. 0 applies the targets in one update. Defaults to the canvas transition duration. */
