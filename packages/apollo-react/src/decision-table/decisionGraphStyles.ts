@@ -2,7 +2,7 @@ import { cn } from '@uipath/apollo-wind';
 import { TEXT_COLUMN_CLASS } from './sentenceStyles';
 
 export const GRAPH_FRAME_CLASS =
-  'relative flex min-h-0 flex-1 flex-col bg-background-secondary future:bg-background';
+  'relative flex min-h-0 flex-1 flex-col bg-background-secondary future:bg-background [&:is(.future-dark,.future-light)]:bg-background';
 
 export const GRAPH_SCROLLER_CLASS = 'min-h-0 flex-1 scroll-pt-12 overflow-auto';
 
@@ -75,7 +75,7 @@ export const GRAPH_REFERENCE_CHIP_CLASS =
   'inline-flex h-6 cursor-pointer items-center gap-1 rounded-md border border-[color-mix(in_srgb,var(--sentence-output-hue)_35%,transparent)] bg-background px-2 align-middle text-xs font-medium text-[var(--sentence-output-hue)] hover:bg-[color-mix(in_srgb,var(--sentence-output-hue)_8%,var(--color-background))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 export const GRAPH_OUTPUT_HUE_CLASS =
-  '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)]';
+  '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)] [&:is(.cartographer,.cartographer_*)]:[--sentence-output-hue:var(--color-chart-purple)] dark:[&:is(.cartographer,.cartographer_*)]:[--sentence-output-hue:var(--color-chart-purple)]';
 
 export const MINIMAP_FLOATING_CLASS =
   'rounded-xl border border-border-subtle bg-surface-raised p-1 text-foreground shadow-lg backdrop-blur-sm';

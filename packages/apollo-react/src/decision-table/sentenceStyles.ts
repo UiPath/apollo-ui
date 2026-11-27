@@ -3,8 +3,8 @@ import { DROP_INDICATOR_Z_CLASS } from './gridStyles';
 import type { MarkTone } from './marks';
 
 const DECISION_TEXT_SURFACE_CLASS = cn(
-  'relative bg-background-secondary future:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
-  '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)]'
+  'relative bg-background-secondary future:bg-background [&:is(.future-dark,.future-light)]:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
+  '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)] [&:is(.cartographer,.cartographer_*)]:[--sentence-output-hue:var(--color-chart-purple)] dark:[&:is(.cartographer,.cartographer_*)]:[--sentence-output-hue:var(--color-chart-purple)]'
 );
 
 export const TEXT_COLUMN_CLASS = 'mx-auto w-full max-w-3xl';

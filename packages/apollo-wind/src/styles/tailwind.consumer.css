@@ -617,6 +617,57 @@ body.canvas, .canvas {
   --color-gradient-human-end: var(--color-gradient-human-end-dark);
 }
 
+/* ============================================================================
+ * Cartographer (Autopilot) — aliases only
+ *
+ * Points Wind tokens at the Cartographer app's own variables, so the
+ * component follows its data-theme and accent presets. No colour lives here.
+ * --primary, --primary-foreground, --border-subtle and --surface-hover are
+ * Cartographer's own names and are inherited as they are.
+ * Source: UiPath/Autopilot src/aria/app/src/styles/globals.css
+ * ============================================================================ */
+
+.cartographer {
+  --background: var(--bg-primary);
+  --foreground: var(--fg-emphasized);
+  --foreground-muted: var(--fg-deemphasized);
+  --surface-raised: var(--bg-elevated);
+  --popover: var(--popover-bg);
+  --popover-foreground: var(--fg-emphasized);
+  --muted: var(--bg-secondary);
+  --muted-foreground: var(--fg-deemphasized);
+  --secondary: var(--bg-secondary);
+  --secondary-foreground: var(--fg-emphasized);
+  --accent: var(--bg-highlight);
+  --accent-foreground: var(--fg-emphasized);
+  --ap-wind-border: var(--border-primary);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--input-border);
+  --ring: var(--ui-accent);
+  --destructive: var(--status-error);
+  --destructive-foreground: var(--fg-on-error);
+  --error: var(--status-error-text);
+  --success: var(--status-success-text);
+  --warning: var(--status-warning-text);
+  --info: var(--status-info);
+  --color-foreground: var(--fg-emphasized);
+  --color-foreground-de-emp: var(--fg-deemphasized);
+  --color-foreground-disable: var(--fg-disabled);
+  --color-background: var(--bg-primary);
+  --color-background-secondary: var(--bg-secondary);
+  --color-background-hover: var(--ui-bg-hover);
+  --color-error-icon: var(--status-error);
+  --color-warning-icon: var(--status-warning);
+  --color-success-icon: var(--status-success);
+  --color-chart-purple: var(--chart-purple);
+  --color-info-text: var(--status-info);
+  --color-primary: var(--button-primary);
+  --color-border-de-emp: var(--border-subtle);
+  --color-background-selected: var(--bg-select);
+  --warning-background: var(--status-warning-bg);
+  --color-warning-background: var(--status-warning-bg);
+}
+
 /**
  * Demo themes (wireframe / vertex / canvas) have no apollo-core theme blocks,
  * so the semantic --color-* tokens from theme-variables.css don't apply.

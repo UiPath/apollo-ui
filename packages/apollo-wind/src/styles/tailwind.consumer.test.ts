@@ -323,3 +323,20 @@ describe('host Material shield', () => {
     expect(shield).toMatch(/letter-spacing: var\(--tracking-normal\)/);
   });
 });
+
+describe('tailwind.consumer.css cartographer theme', () => {
+  const block = /\n\.cartographer \{([^}]*)\}/.exec(css)?.[1] ?? '';
+
+  it('only aliases Wind tokens to Cartographer variables', () => {
+    const values = [...block.matchAll(/--[\w-]+:\s*([^;]+);/g)].map(([, value]) => value);
+    expect(values.length).toBeGreaterThan(0);
+    expect(values.filter((value) => !/^var\(--[\w-]+\)$/.test(value))).toEqual([]);
+  });
+
+  it('never points a token at its own name', () => {
+    const cycles = [...block.matchAll(/(--[\w-]+):\s*var\((--[\w-]+)\)/g)].filter(
+      ([, name, target]) => name === target
+    );
+    expect(cycles).toEqual([]);
+  });
+});
