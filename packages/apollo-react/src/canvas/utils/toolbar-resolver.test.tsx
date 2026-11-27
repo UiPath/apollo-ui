@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { NodeStatusContext } from '../components/BaseNode/BaseNode.types';
 import { getToolbarActionStore, setToolbarActionStore } from '../hooks/ToolbarActionContext';
 import type { NodeManifest } from '../schema/node-definition';
-import { resolveToolbar } from './toolbar-resolver';
+import { CLIPBOARD_TOOLBAR_ACTIONS, DRILL_INTO_TOOLBAR_ACTION } from '../schema/toolbar';
+import { resolveToolbar, type ToolbarSelection } from './toolbar-resolver';
 
 const context: NodeStatusContext = { nodeId: 'n1' };
 
@@ -140,6 +141,113 @@ describe('resolveToolbar', () => {
       expect(onToolbarAction).toHaveBeenCalledWith(
         expect.objectContaining({ actionId: 'delete', nodeId: 'n1', nodeData })
       );
+    });
+  });
+
+  describe('drill into', () => {
+    const withDrillInto = (manifest: NodeManifest) =>
+      ({
+        ...manifest,
+        toolbarExtensions: { design: { actions: [DRILL_INTO_TOOLBAR_ACTION] } },
+      }) as NodeManifest;
+
+    it('offers Drill into on a drillable manifest that lists it', () => {
+      expect(
+        actionIds(withDrillInto({ ...plainManifest, drillable: true } as NodeManifest))
+      ).toContain('drill-into');
+    });
+
+    it('withholds it from a manifest that is not drillable', () => {
+      expect(actionIds(withDrillInto(plainManifest))).not.toContain('drill-into');
+    });
+
+    it('adds nothing to a drillable manifest that does not list it', () => {
+      expect(actionIds({ ...plainManifest, drillable: true } as NodeManifest)).not.toContain(
+        'drill-into'
+      );
+    });
+  });
+
+  describe('clipboard actions', () => {
+    it('take the overflow and replace the default delete', () => {
+      const manifest = {
+        ...plainManifest,
+        toolbarExtensions: {
+          design: { actions: [], overflowActions: [...CLIPBOARD_TOOLBAR_ACTIONS] },
+        },
+      } as NodeManifest;
+
+      const toolbar = resolveToolbar(manifest, context);
+
+      expect((toolbar?.actions ?? []).map((action) => action.id)).not.toContain('delete');
+      expect((toolbar?.overflowActions ?? []).map((action) => action.id)).toEqual([
+        'copy',
+        'cut',
+        'paste',
+        'delete',
+      ]);
+    });
+  });
+
+  describe('actions that apply to the selection', () => {
+    const onToolbarAction = vi.fn();
+    const store = { mode: 'design', onToolbarAction };
+    const manifest = {
+      ...plainManifest,
+      toolbarExtensions: {
+        design: { actions: [], overflowActions: [...CLIPBOARD_TOOLBAR_ACTIONS] },
+      },
+    } as NodeManifest;
+    const selectionOf = (
+      selected: string[]
+    ): ToolbarSelection & { selectOnly: ReturnType<typeof vi.fn> } => ({
+      selectedNodeIds: () => selected,
+      selectOnly: vi.fn(),
+    });
+    const run = (actionId: string, nodeId: string, selection?: ToolbarSelection) =>
+      resolveToolbar(manifest, context, undefined, store, selection)
+        ?.overflowActions?.find((action) => action.id === actionId)
+        ?.onAction(nodeId);
+
+    afterEach(() => onToolbarAction.mockClear());
+
+    it('acts on the whole selection when the node is part of it', () => {
+      const selection = selectionOf(['n1', 'n2']);
+
+      run('cut', 'n1', selection);
+
+      expect(selection.selectOnly).not.toHaveBeenCalled();
+      expect(onToolbarAction).toHaveBeenCalledWith(
+        expect.objectContaining({ actionId: 'cut', nodeId: 'n1', nodeIds: ['n1', 'n2'] })
+      );
+    });
+
+    it('selects a node that is not selected, and acts on it alone', () => {
+      const selection = selectionOf(['n2']);
+
+      run('delete', 'n1', selection);
+
+      expect(selection.selectOnly).toHaveBeenCalledWith('n1');
+      expect(onToolbarAction).toHaveBeenCalledWith(
+        expect.objectContaining({ actionId: 'delete', nodeIds: ['n1'] })
+      );
+    });
+
+    it('acts on the node alone where there is no selection to read', () => {
+      run('copy', 'n1');
+
+      expect(onToolbarAction).toHaveBeenCalledWith(
+        expect.objectContaining({ actionId: 'copy', nodeIds: ['n1'] })
+      );
+    });
+
+    it('leaves the selection and the event alone for an action that does not apply to it', () => {
+      const selection = selectionOf(['n2']);
+
+      run('paste', 'n1', selection);
+
+      expect(selection.selectOnly).not.toHaveBeenCalled();
+      expect(onToolbarAction.mock.calls[0]![0]).not.toHaveProperty('nodeIds');
     });
   });
 });

@@ -8,6 +8,7 @@ import {
   useNodeExecutionState,
   useToolbarActionStoreContext,
 } from '../../hooks';
+import { useToolbarSelection } from '../../hooks/useToolbarSelection';
 import type { SuggestionType } from '../../types';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import {
@@ -209,14 +210,17 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
 
   // This node's own canvas store, so side-by-side canvases keep separate toolbars.
   const toolbarActionStore = useToolbarActionStoreContext();
+  const toolbarSelection = useToolbarSelection();
 
   const toolbarConfig = useMemo(() => {
     if (toolbarConfigProp !== undefined) {
       return toolbarConfigProp === null ? undefined : toolbarConfigProp;
     }
 
-    return manifest ? resolveToolbar(manifest, statusContext, data, toolbarActionStore) : undefined;
-  }, [data, manifest, statusContext, toolbarConfigProp, toolbarActionStore]);
+    return manifest
+      ? resolveToolbar(manifest, statusContext, data, toolbarActionStore, toolbarSelection)
+      : undefined;
+  }, [data, manifest, statusContext, toolbarConfigProp, toolbarActionStore, toolbarSelection]);
 
   // Matches BaseNode: a locked container keeps its toolbar with every action
   // disabled rather than hiding it. See `lockToolbarConfig` for why.

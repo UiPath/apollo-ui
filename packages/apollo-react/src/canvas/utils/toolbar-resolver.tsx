@@ -15,6 +15,25 @@ import { getToolbarActionStore, type ToolbarActionStore } from '../hooks/Toolbar
 import type { ModeToolbarConfig, ToolbarActionSchema } from '../schema/toolbar';
 import { getIcon } from './icon-registry';
 
+/** How a node's toolbar reads and changes the canvas selection, for actions with `appliesToSelection`. */
+export interface ToolbarSelection {
+  selectedNodeIds: () => string[];
+  /** Makes `nodeId` the only selected node. */
+  selectOnly: (nodeId: string) => void;
+}
+
+/**
+ * The nodes an `appliesToSelection` action acts on: the whole selection when it holds `nodeId`,
+ * otherwise `nodeId` alone, selected first. Without a selection to read, `nodeId` alone.
+ */
+function selectionActionNodeIds(nodeId: string, selection?: ToolbarSelection): string[] {
+  if (!selection) return [nodeId];
+  const selected = selection.selectedNodeIds();
+  if (selected.includes(nodeId)) return selected;
+  selection.selectOnly(nodeId);
+  return [nodeId];
+}
+
 interface ExtendedNodeContext extends NodeStatusContext {
   /** Optional permission set for the current user */
   permissions?: string[];
@@ -100,6 +119,10 @@ function evaluateCondition(
     if (!shape || !condition.shapes.includes(shape)) return false;
   }
 
+  if (condition.drillable !== undefined && Boolean(manifest.drillable) !== condition.drillable) {
+    return false;
+  }
+
   // Check if node has matching handles
   if (condition.handles?.length) {
     const manifestHandles = manifest.handleConfiguration.flatMap(
@@ -125,7 +148,8 @@ function convertToNodeAction(
   action: ToolbarActionSchema,
   mode: string,
   nodeData?: Record<string, unknown>,
-  store?: ToolbarActionStore
+  store?: ToolbarActionStore,
+  selection?: ToolbarSelection
 ) {
   const IconComponent = getIcon(action.icon);
 
@@ -137,11 +161,15 @@ function convertToNodeAction(
       // Read the handler at click time so one set after render still fires; mode stays
       // the render-time value so it matches the actions shown.
       const { onToolbarAction } = store ?? getToolbarActionStore();
+      const nodeIds = action.appliesToSelection
+        ? selectionActionNodeIds(nodeId, selection)
+        : undefined;
       onToolbarAction?.({
         actionId: action.id,
         nodeId,
         mode,
         nodeData,
+        ...(nodeIds && { nodeIds }),
       });
     },
   };
@@ -189,7 +217,9 @@ export function resolveToolbar(
   context: ExtendedNodeContext,
   nodeData?: Record<string, unknown>,
   // The owning canvas's toolbar store; the module-level store when omitted.
-  store?: ToolbarActionStore
+  store?: ToolbarActionStore,
+  // The owning canvas's selection, for actions with `appliesToSelection`.
+  selection?: ToolbarSelection
 ): NodeToolbarConfig | undefined {
   const {
     nodeType,
@@ -219,7 +249,7 @@ export function resolveToolbar(
   const resolveActions = (actions: ToolbarActionSchema[]) =>
     dedupeById(
       actions.filter((action) => evaluateCondition(manifest, action, nodeType, context))
-    ).map((action) => convertToNodeAction(action, mode, nodeData, store));
+    ).map((action) => convertToNodeAction(action, mode, nodeData, store, selection));
 
   const filteredActions = resolveActions(merged.actions);
   const filteredOverflow = resolveActions(merged.overflowActions ?? []);

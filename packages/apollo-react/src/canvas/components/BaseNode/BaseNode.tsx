@@ -25,6 +25,7 @@ import {
   useToolbarActionStoreContext,
 } from '../../hooks';
 import { useBatchedUpdateNodeInternals } from '../../hooks/useBatchedUpdateNodeInternals';
+import { useToolbarSelection } from '../../hooks/useToolbarSelection';
 import { isRoundEndedShape, isWideNodeShape, type NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
@@ -248,6 +249,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // This node's own canvas store, so side-by-side canvases keep separate toolbars.
   const toolbarActionStore = useToolbarActionStoreContext();
+  const toolbarSelection = useToolbarSelection();
 
   // Toolbar config resolution with priority: props > manifest
   const resolvedToolbarConfig = useMemo(() => {
@@ -261,9 +263,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     // Priority 2: Manifest default
     return manifest
-      ? resolveToolbar(manifest, statusContext, undefined, toolbarActionStore)
+      ? resolveToolbar(manifest, statusContext, undefined, toolbarActionStore, toolbarSelection)
       : undefined;
-  }, [toolbarConfigProp, manifest, statusContext, toolbarActionStore]);
+  }, [toolbarConfigProp, manifest, statusContext, toolbarActionStore, toolbarSelection]);
 
   const toolbarConfig = useMemo(
     () => hideToolbarActions(resolvedToolbarConfig, hiddenToolbarActionIds),
