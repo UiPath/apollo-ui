@@ -4,7 +4,7 @@ title: "Feedback Vote Widget"
 
 import { FeedbackVoteWidgetTemplate } from '../../../templates/FeedbackVoteWidgetTemplate';
 
-A thumbs up / thumbs down control with an optional comment textarea. Designed to capture user sentiment on AI-generated content and integrate with the UiPath Platform Feedback API via [`@uipath/vs-feedback`](https://github.com/UiPath/vertical-solutions).
+A thumbs up / thumbs down control with an optional comment textarea, designed to capture user sentiment on AI-generated content.
 
 <div className="not-prose my-8 rounded-lg border overflow-hidden bg-gradient-to-br from-muted/40 via-background to-muted/40 dark:from-muted/20 dark:via-background dark:to-muted/20">
   <FeedbackVoteWidgetTemplate />
@@ -63,37 +63,40 @@ const [comment, setComment] = React.useState("");
 
 When `showComment` is `true`, `comment`, `onCommentChange`, and `commentPlaceholder` become required (enforced via the props' discriminated union). When omitted or `false`, the comment-related props can't be passed at all — the type system prevents inconsistent states.
 
-### Wiring to the Platform Feedback API
+### Wiring to VSS feedback
 
-Use `@uipath/vs-feedback`'s `PlatformFeedbackClient` to submit. The vote becomes `FeedbackDraft.isPositive`; the comment goes into the typed `comment` field — your mapper stringifies it on the wire.
+The widget only renders the vote. Your app submits it with `@uipath/vs-feedback`, which writes through the Vertical Solution Service (VSS) feedback gateway. Declare your feedback types and build the client as the SDK README describes in [Setup](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md#setup), [The types module](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md#the-types-module) and [Testing that clients use the exports](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md#testing-that-clients-use-the-exports).
 
-```tsx
-import type { FeedbackDraft } from "@uipath/vs-feedback";
-import { client } from "./feedback-client"; // your PlatformFeedbackClient<MyCustom, MyComment>
-import { resolveTraceContext } from "./trace-context";
+The widget's `value` becomes `isPositive` and its `comment` goes into the comment schema you declared. `traceId` is required: use the trace id your app stored next to the agent output. Pass `agentId` and VSS tries to fill in the span and agent version from that run; if it can't, the write goes ahead without them.
 
-async function handleSubmit(args: {
+The example assumes your types module exports an `answerVote` feedback type with metadata `{ itemId: string }` and comment `{ text?: string }`, and that `./feedbackClient` exports a client built from those exports.
+
+```ts
+import { feedbackClient } from "./feedbackClient";
+import { answerVote } from "./feedbackTypes";
+
+export async function submitVote(args: {
   vote: "up" | "down";
   comment: string;
-  maestroInstanceId: string;
-  sectionName: string;
+  traceId: string;
+  agentId: string;
+  itemId: string;
 }) {
-  const { traceId } = await resolveTraceContext(args.maestroInstanceId);
-
-  const draft: FeedbackDraft<MyCustom, MyComment> = {
-    traceId,
-    spanId: "", // Feedback API auto-resolves the root span
+  const text = args.comment.trim();
+  await feedbackClient.submit({
+    feedbackType: answerVote.name,
+    traceId: args.traceId,
+    agentId: args.agentId,
     isPositive: args.vote === "up",
-    customFields: {
-      sectionName: args.sectionName,
-      aiProducedFields: { aiSeverity: null, aiTriaged: false },
-    },
-    comment: { text: args.comment },
-  };
-
-  await client.submit(draft);
+    metadata: { itemId: args.itemId },
+    comment: text ? { text } : {},
+  });
 }
 ```
+
+### Before you release
+
+Register your schema versions in VSS and turn on the schema checks. See [Schemas live in VSS](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md#schemas-live-in-vss) and [Declaring feedback types for the schema check](https://github.com/UiPath/vertical-solutions/blob/main/packages/feedback/README.md#declaring-feedback-types-for-the-schema-check) in the SDK README, and the [tech spec](https://uipath.atlassian.net/wiki/spaces/VA/pages/91090157583/Feedback+capture+via+VSS+-+tech+spec).
 
 ## API Reference
 
