@@ -1793,7 +1793,8 @@ const ADORNMENT_ROWS = [
   { key: 'status-completed', label: 'Status: Completed (top-right)' },
   { key: 'status-inprogress', label: 'Status: InProgress (top-right)' },
   { key: 'status-failed', label: 'Status: Failed (top-right)' },
-  { key: 'start-point', label: 'Start Point (bottom-left)' },
+  { key: 'start-point', label: 'Default trigger (filled)' },
+  { key: 'start-point-secondary', label: 'Secondary trigger (outline)' },
   { key: 'mock-static', label: 'Custom: static mock (bottom-right)' },
   { key: 'mock-generated', label: 'Custom: generated mock (bottom-right)' },
   { key: 'all', label: 'All Adornments' },
@@ -1910,6 +1911,12 @@ function getAdornmentExecutionState(key: string) {
       return { status: 'Failed' as const };
     case 'start-point':
       return { status: 'None' as const, isExecutionStartPoint: true };
+    case 'start-point-secondary':
+      return {
+        status: 'None' as const,
+        isExecutionStartPoint: true,
+        executionStartPointVariant: 'secondary' as const,
+      };
     case 'mock-static':
     case 'mock-generated':
       return { status: 'None' as const };

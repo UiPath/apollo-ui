@@ -78,6 +78,24 @@ describe('resolveAdornments', () => {
     expect(result.bottomLeft).toBeTruthy();
   });
 
+  it.each([
+    [undefined, true],
+    ['default', true],
+    ['secondary', false],
+  ] as const)('start point variant %s renders filled=%s', (variant, filled) => {
+    const { bottomLeft } = resolveAdornments({
+      ...baseContext,
+      executionState: {
+        status: 'None',
+        isExecutionStartPoint: true,
+        executionStartPointVariant: variant,
+      },
+    });
+    expect(isValidElement<{ filled?: boolean }>(bottomLeft) && bottomLeft.props.filled).toBe(
+      filled
+    );
+  });
+
   // ── Validation errors (topRight) ────────────────────────
 
   it('shows validation indicator for ERROR severity', () => {

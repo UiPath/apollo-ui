@@ -22,6 +22,8 @@ export interface NodeExecutionStateWithDebug {
   count?: number;
   debug?: boolean;
   isExecutionStartPoint?: boolean;
+  /** `secondary` draws the start point bolt as an outline, e.g. a non-default trigger. */
+  executionStartPointVariant?: 'default' | 'secondary';
   /**
    * @deprecated No longer read. The bottom-right adornment slot is owned by the
    * consumer: supply `adornments.bottomRight` through `BaseNodeOverrideConfig`
