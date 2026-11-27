@@ -290,5 +290,6 @@ function CssVariablesPage() {
 }
 
 export const All: Story = {
+  tags: ['search-docs'],
   render: () => <CssVariablesPage />,
 };

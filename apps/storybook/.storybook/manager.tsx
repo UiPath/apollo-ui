@@ -3,6 +3,8 @@ import { PaintBrushIcon } from '@storybook/icons';
 import React, { useEffect } from 'react';
 import { IconButton, TooltipLinkList, WithTooltip } from 'storybook/internal/components';
 import { addons, types, useGlobals, useParameter } from 'storybook/manager-api';
+import { convert } from 'storybook/theming';
+import { mountSearch } from './search/Search';
 import theme from './theme';
 import {
   ALL_THEME_ITEMS,
@@ -71,6 +73,9 @@ const ThemeSelector = () => {
     </WithTooltip>
   );
 };
+
+// Full-text search, opened from the sidebar search field or Cmd/Ctrl+K.
+addons.register('apollo/search', (api) => mountSearch(api, convert(theme)));
 
 addons.register('apollo/theme-selector', () => {
   addons.add('apollo/theme-selector/tool', {

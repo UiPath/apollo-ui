@@ -177,5 +177,6 @@ function SpacingPage() {
 }
 
 export const All: Story = {
+  tags: ['search-docs'],
   render: () => <SpacingPage />,
 };

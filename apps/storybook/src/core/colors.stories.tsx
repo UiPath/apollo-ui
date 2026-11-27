@@ -443,5 +443,6 @@ function ColorsPage() {
 }
 
 export const All: Story = {
+  tags: ['search-docs'],
   render: () => <ColorsPage />,
 };

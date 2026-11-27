@@ -272,7 +272,8 @@ function QuickStartTab() {
   const [path, setPath] = React.useState<QuickStartPath>('Add to existing project');
 
   return (
-    <div className="space-y-8">
+    // data-search-*: the Storybook search indexes both paths (see apps/storybook/scripts).
+    <div data-search-tabs="" className="space-y-8">
       {/* Path switcher */}
       <div className="rounded-xl border border-border bg-card p-5">
         <p className="mb-1 text-sm font-semibold text-foreground">What are you trying to do?</p>
@@ -284,6 +285,8 @@ function QuickStartTab() {
             <button
               key={p}
               type="button"
+              data-search-tab={p}
+              data-state={path === p ? 'active' : 'inactive'}
               onClick={() => setPath(p)}
               className={cn(
                 'flex-1 cursor-pointer rounded-lg border px-4 py-3 text-left text-sm transition-colors',
@@ -303,27 +306,28 @@ function QuickStartTab() {
         </div>
       </div>
 
-      {path === 'Add to existing project' && (
-        <>
-          <div className="space-y-6">
-            <StepItem step={1} title="Install the package">
-              <CodeBlock label="terminal">{'pnpm add @uipath/apollo-react'}</CodeBlock>
-              <p>
-                The canvas is included in the main package. No separate install needed for
-                ReactFlow.
-              </p>
-            </StepItem>
+      <div data-search-panel="" className="space-y-8">
+        {path === 'Add to existing project' && (
+          <>
+            <div className="space-y-6">
+              <StepItem step={1} title="Install the package">
+                <CodeBlock label="terminal">{'pnpm add @uipath/apollo-react'}</CodeBlock>
+                <p>
+                  The canvas is included in the main package. No separate install needed for
+                  ReactFlow.
+                </p>
+              </StepItem>
 
-            <StepItem step={2} title="Import the CSS theme">
-              <CodeBlock label="main.tsx or _app.tsx">
-                {"import '@uipath/apollo-react/core/theme.css';"}
-              </CodeBlock>
-              <p>This loads the Apollo design tokens as CSS custom properties.</p>
-            </StepItem>
+              <StepItem step={2} title="Import the CSS theme">
+                <CodeBlock label="main.tsx or _app.tsx">
+                  {"import '@uipath/apollo-react/core/theme.css';"}
+                </CodeBlock>
+                <p>This loads the Apollo design tokens as CSS custom properties.</p>
+              </StepItem>
 
-            <StepItem step={3} title="Render a canvas">
-              <CodeBlock label="MyCanvas.tsx">
-                {`import { useState, useCallback } from 'react';
+              <StepItem step={3} title="Render a canvas">
+                <CodeBlock label="MyCanvas.tsx">
+                  {`import { useState, useCallback } from 'react';
 import {
   type Node, type Edge,
   type NodeChange, type EdgeChange, type Connection,
@@ -375,39 +379,39 @@ export function MyCanvas() {
     </div>
   );
 }`}
-              </CodeBlock>
-            </StepItem>
-          </div>
-
-          <Divider />
-
-          <div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground">Import Paths</h3>
-            <SectionDescription>
-              Canvas exports are namespaced under the <InlineCode>/canvas</InlineCode> subpath.
-            </SectionDescription>
-            <div className="space-y-3">
-              <CodeBlock label="Canvas components">
-                {`import { BaseCanvas, CanvasModeToolbar, CanvasZoomControls } from '@uipath/apollo-react/canvas';`}
-              </CodeBlock>
-              <CodeBlock label="ReactFlow re-exports (nodes, edges, hooks)">
-                {`import { useReactFlow, Panel, Handle } from '@uipath/apollo-react/canvas/xyflow/react';`}
-              </CodeBlock>
-              <CodeBlock label="Canvas hooks">
-                {`import { useCanvasEvents, useExportCanvas, useElementsOverlap } from '@uipath/apollo-react/canvas';`}
-              </CodeBlock>
+                </CodeBlock>
+              </StepItem>
             </div>
-          </div>
 
-          <Divider />
+            <Divider />
 
-          <div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground">Writing Stories</h3>
-            <SectionDescription>
-              Use the built-in storybook utilities to reduce boilerplate in canvas stories.
-            </SectionDescription>
-            <CodeBlock label="MyNode.stories.tsx">
-              {`import { withCanvasProviders, useCanvasStory } from '../storybook-utils';
+            <div>
+              <h3 className="mb-3 text-lg font-semibold text-foreground">Import Paths</h3>
+              <SectionDescription>
+                Canvas exports are namespaced under the <InlineCode>/canvas</InlineCode> subpath.
+              </SectionDescription>
+              <div className="space-y-3">
+                <CodeBlock label="Canvas components">
+                  {`import { BaseCanvas, CanvasModeToolbar, CanvasZoomControls } from '@uipath/apollo-react/canvas';`}
+                </CodeBlock>
+                <CodeBlock label="ReactFlow re-exports (nodes, edges, hooks)">
+                  {`import { useReactFlow, Panel, Handle } from '@uipath/apollo-react/canvas/xyflow/react';`}
+                </CodeBlock>
+                <CodeBlock label="Canvas hooks">
+                  {`import { useCanvasEvents, useExportCanvas, useElementsOverlap } from '@uipath/apollo-react/canvas';`}
+                </CodeBlock>
+              </div>
+            </div>
+
+            <Divider />
+
+            <div>
+              <h3 className="mb-3 text-lg font-semibold text-foreground">Writing Stories</h3>
+              <SectionDescription>
+                Use the built-in storybook utilities to reduce boilerplate in canvas stories.
+              </SectionDescription>
+              <CodeBlock label="MyNode.stories.tsx">
+                {`import { withCanvasProviders, useCanvasStory } from '../storybook-utils';
 import { BaseCanvas } from '../BaseCanvas';
 
 const meta = {
@@ -426,69 +430,70 @@ function MyStory() {
 }
 
 export const Default = { render: () => <MyStory /> };`}
-            </CodeBlock>
-            <div className="mt-3">
-              <InfoCallout>
-                <span className="font-medium text-foreground">withCanvasProviders</span> wraps the
-                story in ReactFlowProvider, ExecutionStatusContext, and ValidationStatusContext.{' '}
-                <span className="font-medium text-foreground">useCanvasStory</span> manages
-                node/edge state and returns a ready-to-spread <InlineCode>canvasProps</InlineCode>{' '}
-                object.
-              </InfoCallout>
-            </div>
-          </div>
-        </>
-      )}
-
-      {path === 'Run locally' && (
-        <>
-          <InfoCallout>
-            <p className="mb-1 font-medium text-foreground">Before you begin</p>
-            <p>
-              This path is for contributors and team members who want to browse or modify Apollo
-              Canvas source files and run Storybook on their machine.
-            </p>
-            <ul className="mt-2 list-disc pl-4 space-y-1">
-              <li>
-                <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
-                <InlineCode>node --version</InlineCode>.
-              </li>
-              <li>
-                <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
-              </li>
-            </ul>
-          </InfoCallout>
-
-          <div className="space-y-6">
-            <StepItem step={1} title="Clone the repository">
-              <CodeBlock label="terminal">
-                {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
               </CodeBlock>
-            </StepItem>
+              <div className="mt-3">
+                <InfoCallout>
+                  <span className="font-medium text-foreground">withCanvasProviders</span> wraps the
+                  story in ReactFlowProvider, ExecutionStatusContext, and ValidationStatusContext.{' '}
+                  <span className="font-medium text-foreground">useCanvasStory</span> manages
+                  node/edge state and returns a ready-to-spread <InlineCode>canvasProps</InlineCode>{' '}
+                  object.
+                </InfoCallout>
+              </div>
+            </div>
+          </>
+        )}
 
-            <StepItem step={2} title="Install dependencies">
-              <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
+        {path === 'Run locally' && (
+          <>
+            <InfoCallout>
+              <p className="mb-1 font-medium text-foreground">Before you begin</p>
               <p>
-                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
-                version globally if you don't have it yet.
+                This path is for contributors and team members who want to browse or modify Apollo
+                Canvas source files and run Storybook on their machine.
               </p>
-            </StepItem>
+              <ul className="mt-2 list-disc pl-4 space-y-1">
+                <li>
+                  <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
+                  <InlineCode>node --version</InlineCode>.
+                </li>
+                <li>
+                  <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
+                </li>
+              </ul>
+            </InfoCallout>
 
-            <StepItem step={3} title="Build all packages">
-              <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
-              <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
-            </StepItem>
+            <div className="space-y-6">
+              <StepItem step={1} title="Clone the repository">
+                <CodeBlock label="terminal">
+                  {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
+                </CodeBlock>
+              </StepItem>
 
-            <StepItem step={4} title="Start Storybook">
-              <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
-              <p>
-                Opens Apollo Canvas Storybook at <InlineCode>http://localhost:6007</InlineCode>.
-                Changes to source files hot-reload automatically.
-              </p>
-            </StepItem>
-          </div>
-        </>
-      )}
+              <StepItem step={2} title="Install dependencies">
+                <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
+                <p>
+                  This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
+                  version globally if you don't have it yet.
+                </p>
+              </StepItem>
+
+              <StepItem step={3} title="Build all packages">
+                <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
+                <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
+              </StepItem>
+
+              <StepItem step={4} title="Start Storybook">
+                <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
+                <p>
+                  Opens Apollo Canvas Storybook at <InlineCode>http://localhost:6007</InlineCode>.
+                  Changes to source files hot-reload automatically.
+                </p>
+              </StepItem>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -685,30 +690,35 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
           for process automation UIs.
         </p>
 
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-border pb-0 pt-6">
-          {tabs.map((tab) => (
-            <button
-              type="button"
-              key={tab}
-              className={cn(
-                'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {/* Tabs. The data-search-* markers let the Storybook search index every
+            panel, not only the open one (see apps/storybook/scripts). */}
+        <div data-search-tabs="" className="space-y-2">
+          <div className="flex gap-1 border-b border-border pb-0 pt-6">
+            {tabs.map((tab) => (
+              <button
+                type="button"
+                data-search-tab={tab}
+                data-state={activeTab === tab ? 'active' : 'inactive'}
+                key={tab}
+                className={cn(
+                  'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
+                  activeTab === tab
+                    ? 'border-b-2 border-primary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-        {/* Tab content */}
-        <div className="pt-6">
-          {activeTab === 'Overview' && <OverviewTab />}
-          {activeTab === 'Quick Start' && <QuickStartTab />}
-          {activeTab === 'Components' && <ComponentsTab />}
+          {/* Tab content */}
+          <div data-search-panel="" className="pt-6">
+            {activeTab === 'Overview' && <OverviewTab />}
+            {activeTab === 'Quick Start' && <QuickStartTab />}
+            {activeTab === 'Components' && <ComponentsTab />}
+          </div>
         </div>
       </div>
     </div>

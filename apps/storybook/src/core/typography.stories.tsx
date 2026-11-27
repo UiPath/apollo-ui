@@ -357,5 +357,6 @@ function TypographyPage() {
 }
 
 export const All: Story = {
+  tags: ['search-docs'],
   render: () => <TypographyPage />,
 };
