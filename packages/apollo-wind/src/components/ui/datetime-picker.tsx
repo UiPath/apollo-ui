@@ -74,11 +74,15 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     },
     ref
   ) {
-    const [open, setOpenState] = React.useState(false);
-    const setOpen = (next: boolean) => {
-      setOpenState(next);
-      onOpenChange?.(next);
-    };
+    const [open, setOpen] = React.useState(false);
+    const previousOpen = React.useRef(open);
+    // Notify the owner after the open state commits, including a close caused by disabling.
+    React.useEffect(() => {
+      if (previousOpen.current !== open) {
+        previousOpen.current = open;
+        onOpenChange?.(open);
+      }
+    }, [open, onOpenChange]);
     const generatedId = React.useId();
     const baseId = id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`;
     const validationId = errorId ?? `${baseId}-error`;
@@ -142,6 +146,9 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     // panel anchors to it.
     const group = useInputGroup();
     const grouped = group.inGroup;
+    const isDisabled = disabled || group.disabled;
+
+    if (isDisabled && open) setOpen(false);
     const validation = useControlValidation(group, {
       error,
       errorId: validationId,
@@ -153,12 +160,12 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       id,
       'aria-labelledby': ariaLabelledBy,
       ...validation.aria,
-      disabled: disabled || group.disabled,
+      disabled: isDisabled,
     } as const;
 
     return (
       <>
-        <Popover data-slot="datetime-picker" open={open} onOpenChange={setOpen}>
+        <Popover data-slot="datetime-picker" open={open && !isDisabled} onOpenChange={setOpen}>
           {grouped ? (
             <InputGroupPopoverTrigger
               ref={ref}
@@ -189,7 +196,7 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
               </Button>
             </PopoverTrigger>
           )}
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent hidden={isDisabled} className="w-auto p-0" align="start">
             <div className="p-3 space-y-3">
               <Calendar
                 mode="single"
