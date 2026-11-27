@@ -37,7 +37,7 @@ function DataTableToolbar<TData extends RowData>({
       {enableSearch && (
         <DataTableSearch table={table} className="w-full sm:w-auto" />
       )}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {customContent}
         {enableViewOptions && <DataTableViewOptions table={table} />}
       </div>
