@@ -390,6 +390,11 @@ export function moveSegmentByDelta(
   const segmentEnd = initialSegment.end;
   const pathSource = initialPathPoints[0]!;
   const pathTarget = initialPathPoints[initialPathPoints.length - 1]!;
+  // The stubs follow the segment's own run, so an edge drawn right-to-left or bottom-to-top
+  // still leaves its source and enters its target instead of doubling back into the node.
+  const runDelta =
+    orientation === 'horizontal' ? segmentEnd.x - segmentStart.x : segmentEnd.y - segmentStart.y;
+  const stubDirection = runDelta < 0 ? -1 : 1;
 
   const movedCoordinate =
     orientation === 'horizontal'
@@ -398,7 +403,7 @@ export function moveSegmentByDelta(
 
   if (isConnectedToSource) {
     const stubCoord = snapToGrid(
-      (orientation === 'horizontal' ? segmentStart.x : segmentStart.y) + stubOffset
+      (orientation === 'horizontal' ? segmentStart.x : segmentStart.y) + stubDirection * stubOffset
     );
     const [anchorStub, movedStub] = makeStubPair(
       segmentStart,
@@ -412,7 +417,7 @@ export function moveSegmentByDelta(
 
   if (isConnectedToTarget) {
     const stubCoord = snapToGrid(
-      (orientation === 'horizontal' ? segmentEnd.x : segmentEnd.y) - stubOffset
+      (orientation === 'horizontal' ? segmentEnd.x : segmentEnd.y) - stubDirection * stubOffset
     );
     const [anchorStub, movedStub] = makeStubPair(
       segmentEnd,
