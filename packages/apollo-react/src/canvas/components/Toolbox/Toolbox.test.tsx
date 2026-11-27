@@ -685,6 +685,63 @@ describe('Toolbox', () => {
     });
   });
 
+  describe('renderBelowSearch', () => {
+    let user: UserEvent;
+
+    beforeEach(() => {
+      user = userEvent.setup();
+    });
+
+    it('renders its content between the search field and the list', () => {
+      render(
+        <Toolbox
+          {...defaultProps}
+          renderBelowSearch={() => <div data-testid="below-search">suggested</div>}
+        />
+      );
+
+      const search = screen.getByPlaceholderText('Search');
+      const below = screen.getByTestId('below-search');
+      const firstRow = screen.getByText('Item 1');
+      expect(search.compareDocumentPosition(below) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(
+        below.compareDocumentPosition(firstRow) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    });
+
+    it('tells the renderer whether a search is active, so it can hide itself', async () => {
+      const renderBelowSearch = vi.fn(({ isSearching }: { isSearching: boolean }) =>
+        isSearching ? null : <div data-testid="below-search">suggested</div>
+      );
+      render(<Toolbox {...defaultProps} renderBelowSearch={renderBelowSearch} />);
+      expect(renderBelowSearch).toHaveBeenLastCalledWith({
+        isSearching: false,
+        currentCategory: undefined,
+      });
+
+      await user.type(screen.getByPlaceholderText('Search'), 'Item');
+      expect(renderBelowSearch).toHaveBeenLastCalledWith(
+        expect.objectContaining({ isSearching: true })
+      );
+      expect(screen.queryByTestId('below-search')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Clear search' }));
+      expect(screen.getByTestId('below-search')).toBeInTheDocument();
+    });
+
+    it('passes the drilled-in category', async () => {
+      const renderBelowSearch = vi.fn(() => null);
+      render(<Toolbox {...defaultProps} renderBelowSearch={renderBelowSearch} />);
+
+      await user.click(screen.getByText('Item 2'));
+
+      expect(renderBelowSearch).toHaveBeenLastCalledWith({
+        isSearching: false,
+        currentCategory: expect.objectContaining({ id: 'item-2' }),
+      });
+    });
+  });
+
   describe('Keyboard shortcuts', () => {
     let user: UserEvent;
 

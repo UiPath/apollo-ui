@@ -22,6 +22,7 @@ export const AddNodePanel = memo(function AddNodePanel({
   title,
   loading,
   renderEmptyState,
+  renderBelowSearch,
   searchPlaceholder,
 }: AddNodePanelProps) {
   const { _ } = useSafeLingui();
@@ -90,6 +91,7 @@ export const AddNodePanel = memo(function AddNodePanel({
       onClose={onClose}
       onItemHover={onNodeHover}
       renderEmptyState={renderEmptyState}
+      renderBelowSearch={renderBelowSearch}
       searchPlaceholder={
         searchPlaceholder ?? _({ id: 'add-node-panel.search-nodes', message: 'Search nodes' })
       }

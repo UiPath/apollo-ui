@@ -88,6 +88,13 @@ export type ToolboxEmptyStateRenderer<T = any> = (ctx: {
   currentCategory?: ListItem<T>;
 }) => React.ReactElement | null;
 
+export type ToolboxBelowSearchRenderer<T = unknown> = (ctx: {
+  /** True while the search field holds a query. */
+  isSearching: boolean;
+  /** The category the user has drilled into; undefined at the root. */
+  currentCategory?: ListItem<T>;
+}) => React.ReactNode;
+
 export type ToolboxSearchHandler<T = any> = (
   query: string,
   isTopLevelSearch: boolean,
@@ -142,6 +149,13 @@ export interface ToolboxProps<T> {
    * When provided, replaces the built-in icon + message empty state.
    */
   renderEmptyState?: ToolboxEmptyStateRenderer<T>;
+  /**
+   * Custom content rendered between the search field and the list, such as a
+   * row of suggested items. Re-invoked as the search query and the current
+   * category change, so it can hide itself while searching or after drilling in
+   * (return null). It takes its height from the list, so the toolbox keeps its size.
+   */
+  renderBelowSearch?: ToolboxBelowSearchRenderer<T>;
   /**
    * Id of a category to open already drilled into, such as the one holding the
    * current selection. The root stays on the navigation stack, so the back
@@ -212,6 +226,7 @@ export function Toolbox<T>({
   maxHeight,
   quickActions,
   renderEmptyState,
+  renderBelowSearch,
   searchPlaceholder: searchPlaceholderProp,
   initialCategoryId,
 }: ToolboxProps<T>) {
@@ -799,6 +814,8 @@ export function Toolbox<T>({
           pending={searchLoading}
           pendingLabel={searchPendingLabel}
         />
+
+        {renderBelowSearch?.({ isSearching, currentCategory: currentParentItem ?? undefined })}
 
         <div className="relative flex min-h-[50px] flex-1 flex-col overflow-hidden">
           <div
