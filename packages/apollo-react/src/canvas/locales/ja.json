@@ -679,6 +679,7 @@
   "stage-node.status.warning": "警告",
   "stage-node.task-badge.ran-n-times": "実行: {count}",
   "stage-node.task-badge.running-again": "再度実行中",
+  "stage-node.task-drag-instructions": "Enter キーを押してタスクを開きます。並べ替えるには、スペース キーを押してタスクを選択し、矢印キーを使用して移動し、もう一度スペース キーを押してドロップします。キャンセルするには Esc キーを押します。",
   "stage-node.task-mocked": "このタスクの出力はモックされています。",
   "stage-node.ungroup-parallel-tasks": "並列タスクのグループ化を解除",
   "stage-node.untitled-stage": "無題のステージ",

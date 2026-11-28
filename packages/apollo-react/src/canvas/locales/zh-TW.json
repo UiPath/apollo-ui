@@ -679,6 +679,7 @@
   "stage-node.status.warning": "警告",
   "stage-node.task-badge.ran-n-times": "執行次數：{count}",
   "stage-node.task-badge.running-again": "再次執行",
+  "stage-node.task-drag-instructions": "按 Enter 鍵開啟任務。若要重新排序，請按空格鍵將其拿起，使用方向鍵移動，然後再次按空格鍵將其放下，或按 Escape 鍵取消。",
   "stage-node.task-mocked": "已模擬此任務的輸出",
   "stage-node.ungroup-parallel-tasks": "將平行任務取消分組",
   "stage-node.untitled-stage": "未命名階段",

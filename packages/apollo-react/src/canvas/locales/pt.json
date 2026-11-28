@@ -679,6 +679,7 @@
   "stage-node.status.warning": "Aviso",
   "stage-node.task-badge.ran-n-times": "Execuções: {count}",
   "stage-node.task-badge.running-again": "A executar novamente",
+  "stage-node.task-drag-instructions": "Prima Enter para abrir a tarefa. Para a reordenar, prima Espaço para a agarrar, utilize as teclas de seta para a mover e, em seguida, prima Espaço novamente para a largar ou Escape para cancelar.",
   "stage-node.task-mocked": "As saídas desta tarefa são fictícias",
   "stage-node.ungroup-parallel-tasks": "Desagrupar tarefas paralelas",
   "stage-node.untitled-stage": "Fase sem título",

@@ -679,6 +679,7 @@
   "stage-node.status.warning": "Uyarı",
   "stage-node.task-badge.ran-n-times": "Çalıştırma sayısı: {count}",
   "stage-node.task-badge.running-again": "Tekrar çalıştırılıyor",
+  "stage-node.task-drag-instructions": "Görevi açmak için Enter tuşuna basın. Yeniden sıralamak üzere Boşluk tuşuna basarak alın, taşımak için ok tuşlarını kullanın, ardından bırakmak için tekrar Boşluk tuşuna veya iptal etmek için Escape tuşuna basın.",
   "stage-node.task-mocked": "Bu görevin çıktıları sahte",
   "stage-node.ungroup-parallel-tasks": "Paralel görevlerin grubunu çöz",
   "stage-node.untitled-stage": "Adsız adım",

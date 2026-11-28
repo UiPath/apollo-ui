@@ -679,6 +679,7 @@
   "stage-node.status.warning": "Avertissement",
   "stage-node.task-badge.ran-n-times": "Exécutions : {count}",
   "stage-node.task-badge.running-again": "Nouvelle exécution",
+  "stage-node.task-drag-instructions": "Appuyez sur Entrée pour ouvrir la tâche. Pour la déplacer, appuyez sur Espace pour l’attraper. Utilisez les flèches pour la déplacer, puis appuyez sur Espace pour la déposer ou sur Échap pour annuler.",
   "stage-node.task-mocked": "Les sorties de cette tâche sont simulées",
   "stage-node.ungroup-parallel-tasks": "Dissocier les tâches parallèles",
   "stage-node.untitled-stage": "Étape sans titre",
