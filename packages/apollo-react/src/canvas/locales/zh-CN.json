@@ -679,6 +679,7 @@
   "stage-node.status.warning": "警告",
   "stage-node.task-badge.ran-n-times": "运行：{count}",
   "stage-node.task-badge.running-again": "正在再次运行",
+  "stage-node.task-drag-instructions": "按 Enter 键打开任务。要对其重新排序，请按空格键将其拾取，使用箭头键将其移动，然后再次按空格键将其放下，或按 Escape 键取消操作。",
   "stage-node.task-mocked": "此任务的输出已模拟",
   "stage-node.ungroup-parallel-tasks": "取消并行任务分组",
   "stage-node.untitled-stage": "无标题阶段",

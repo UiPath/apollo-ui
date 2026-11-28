@@ -679,6 +679,7 @@
   "stage-node.status.warning": "경고",
   "stage-node.task-badge.ran-n-times": "실행: {count}",
   "stage-node.task-badge.running-again": "다시 실행 중",
+  "stage-node.task-drag-instructions": "Enter 키를 눌러 태스크를 여십시오. 순서를 바꾸려면 Space 키를 눌러 집어 들고, 화살표 키로 이동한 다음, Space 키를 다시 눌러 놓거나 Escape 키를 눌러 취소하십시오.",
   "stage-node.task-mocked": "이 태스크의 출력은 모의 처리됩니다.",
   "stage-node.ungroup-parallel-tasks": "병렬 태스크 그룹 해제",
   "stage-node.untitled-stage": "제목 없는 단계",

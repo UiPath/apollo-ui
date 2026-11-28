@@ -679,6 +679,7 @@
   "stage-node.status.warning": "Warnung",
   "stage-node.task-badge.ran-n-times": "Ausführungen: {count}",
   "stage-node.task-badge.running-again": "Wird erneut ausgeführt",
+  "stage-node.task-drag-instructions": "Drücken Sie die Eingabetaste, um die Aufgabe zu öffnen. Um ihre Anordnung zu ändern, drücken Sie die Leertaste, um sie aufzunehmen, verwenden Sie die Pfeiltasten, um sie zu verschieben, und drücken Sie dann die erneut Leertaste, um sie abzulegen, oder die Escape-Taste, um den Vorgang abzubrechen.",
   "stage-node.task-mocked": "Die Ausgaben dieses Knotens sind Pseudo-Ausgaben",
   "stage-node.ungroup-parallel-tasks": "Gruppierung paralleler Aufgaben aufheben",
   "stage-node.untitled-stage": "Schritt ohne Titel",
